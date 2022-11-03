@@ -1,0 +1,58 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core.dll" #>
+<#@ assembly name="System.Xml.dll" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension=".cs" #>
+<#     
+    string texturesPath = "$(SolutionDir)/../../../1.4/Textures/Commune";    
+#>
+
+using System;
+using UnityEngine;
+using Verse;
+using System.IO;
+
+namespace CombatAI.R
+{    
+
+    // Auto generated file!
+    // -------------------------------------------------
+    // This file is auto generated! Mod path is:
+    // <#= texturesPath #>
+    // -------------------------------------------------
+    /// <summary>
+    /// <para>Texture database. This Class is generated automatically by a T4 template <c>Core/Assets/Tex.tt</c></para> 
+    /// <description>
+    /// <para>This class contains all textures as Texture2D.</para> 
+    /// </description>
+    /// <example>  
+    /// A texture <c>1.4/Textures/Commune/UI/gear_icon.png</c> 
+    /// <code>
+    /// public static Texture2D UI_gear_icon => ContentFinder<Texture2D>.Get("Commune/UI/gear_icon", true);
+    /// </code>        
+    /// </example>    
+    /// </summary>
+    public static class Tex
+    {     
+<#   
+    foreach (var file in Directory.GetFiles(texturesPath, "*.png", SearchOption.AllDirectories))
+    {                
+        string path = file.Substring(texturesPath.Length + 1, file.Length - texturesPath.Length - 5).Replace('\\', '/');
+        string name = path.Replace('/', '_').Replace('-', '_').Replace('.', '_').Trim();        
+#>
+
+        /// <summary> Texture at <c><#= file #></c>:        
+        /// <code><#= path #>.png</code>
+        /// </summary>       
+        public static readonly Texture2D <#= name #> = ContentFinder<Texture2D>.Get( "<#= path #>", true);      
+<#                       
+    }
+#>
+    }
+}

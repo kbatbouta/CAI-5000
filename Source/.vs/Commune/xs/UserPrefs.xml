@@ -1,0 +1,37 @@
+﻿<Properties>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <DisabledProjects>
+    <String>Commune-Base/Commune-Base.csproj</String>
+  </DisabledProjects>
+  <MonoDevelop.Ide.Workbench ActiveDocument="Commune/Core/CommuneMod.cs">
+    <Files>
+      <File FileName="../1.4/Languages/English/Keyed/Translations.xml" Line="4" Column="16" />
+      <File FileName="Commune/Commune.csproj" Line="61" Column="27" />
+      <File FileName="../About/About.xml" Line="3" Column="15" />
+      <File FileName="Commune/Core/CommuneMod.cs" Line="11" Column="10" />
+      <File FileName="Commune/T4/Sources/Keyed.tt" Line="1" Column="1" />
+      <File FileName="Commune/T4/Sources/Tex.tt" Line="1" Column="1" />
+      <File FileName="Commune/T4/Outputs/Keyed.generated.cs" Line="1" Column="1" />
+      <File FileName="Commune/T4/Outputs/Tex.generated.cs" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="Commune" expanded="True">
+            <Node name="Commune" expanded="True" selected="True">
+              <Node name="Core" expanded="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MultiItemStartupConfigurations />
+</Properties>

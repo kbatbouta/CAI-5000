@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>        
+    <CombatAI>CombatAI</CombatAI>
+    <CombatAI.Sym.Empty></CombatAI.Sym.Empty>
+    <CombatAI.Close>Close</CombatAI.Close>
+    <CombatAI.Open>Open</CombatAI.Open>
+    <CombatAI.Hide>Hide</CombatAI.Hide>
+    <CombatAI.Expand>Hide</CombatAI.Expand>
+
+    <CombatAI.Settings.Basic>Basic Settings</CombatAI.Settings.Basic>
+    <CombatAI.Settings.Basic.Caster>Enable fire position tweaks</CombatAI.Settings.Basic.Caster>
+    <CombatAI.Settings.Basic.Targeter>Enable target selection tweaks</CombatAI.Settings.Basic.Targeter>
+    <CombatAI.Settings.Basic.Pather>Enable pathfinding tweaks</CombatAI.Settings.Basic.Pather>
+
+    <CombatAI.Settings.Debugging>Debugging</CombatAI.Settings.Debugging>
+    <CombatAI.Settings.Debugging.Enable>Enable Debugging</CombatAI.Settings.Debugging.Enable>
+
+    <CombatAI.Settings.Advance>Advance Settings</CombatAI.Settings.Advance>
+    <CombatAI.Settings.Advance.Warning>WARNING: This is only for advanced users! Don't enable this if you don't know what you're doing!</CombatAI.Settings.Advance.Warning>   
+    <CombatAI.Settings.Advance.Enable>I'm an advanced user!</CombatAI.Settings.Advance.Enable>    
+</LanguageData>
