@@ -7,7 +7,7 @@ namespace CombatAI
     {
         public static Harmony Harmony;
         public static CombatAIMod Mod;
-        public static Settings Settings;
+        public static Settings Settings;                
     }
 }
 

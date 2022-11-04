@@ -13,7 +13,7 @@ namespace CombatAI.Patches
     internal static class AttackTargetFinder_Patch
     {
         private static Map map;
-        private static List<CompProjectileInterceptor> interceptors;
+        //private static List<CompProjectileInterceptor> interceptors;
         private static SightTracker.SightReader sightReader;
         private static TurretTracker turretTracker;
         //private static CompTacticalManager manager;
@@ -46,28 +46,33 @@ namespace CombatAI.Patches
 
             internal static void Prefix(IAttackTargetSearcher searcher)
             {            
-                //tpsLow = PerformanceTracker.TpsCriticallyLow;
+                // tpsLow = PerformanceTracker.TpsCriticallyLow;
                 map = searcher.Thing?.Map;
-                //combatReservationManager = map.GetComp_Fast<CombatReservationManager>();
-                interceptors = searcher.Thing?.Map.listerThings.ThingsInGroup(ThingRequestGroup.ProjectileInterceptor)
-                                               .Select(t => t.TryGetComp<CompProjectileInterceptor>())
-                                               .ToList() ?? new List<CompProjectileInterceptor>();
-                if (searcher.Thing is Pawn pawn && pawn.Faction != null)
+                // combatReservationManager = map.GetComp_Fast<CombatReservationManager>();
+                // interceptors = searcher.Thing?.Map.listerThings.ThingsInGroup(ThingRequestGroup.ProjectileInterceptor)
+                //                               .Select(t => t.TryGetComp<CompProjectileInterceptor>())
+                //                               .ToList() ?? new List<CompProjectileInterceptor>();
+                if (searcher.Thing is Pawn pawn)
                 {
                     //manager = pawn.GetComp<CompTacticalManager>();
                     pawn.GetSightReader(out sightReader);
 
                     if (pawn.Faction.HostileTo(map.ParentFaction))
-                        turretTracker = map.GetComponent<TurretTracker>();
+                    {
+                        turretTracker = map.GetComp_Fast<TurretTracker>();
+                    }
                 }
             }
 
             internal static void Postfix()
-            {                
+            {
+                map = null;
                 sightReader = null;
                 turretTracker = null;
-                //combatReservationManager = null;
-            }            
+                // interceptors.Clear();
+                // interceptors = null;
+                // combatReservationManager = null;
+            }
         }
 
         [HarmonyPatch(typeof(AttackTargetFinder), nameof(AttackTargetFinder.GetShootingTargetScore))]
@@ -116,48 +121,49 @@ namespace CombatAI.Patches
                 //    }
                 //    result += 10 - attackers.Count * 3.5f;
                 //}
-                if (target.Thing is Pawn other && searcher.Thing is Pawn pawn)
-                {
-                    if (other.jobs?.curJob?.def == JobDefOf.AttackMelee && verb.EffectiveRange > 5)
-                        result -= 20;
-                }
-                if (target.Thing != null && (verb.IsMeleeAttack || verb.EffectiveRange <= 25))
+                if (verb.IsMeleeAttack || verb.EffectiveRange <= 15)
                 {
                     if (sightReader != null)
-                        result += 15 - sightReader.GetVisibility(target.Thing.Position);
-
-                    result += 10 - Mathf.Abs(16f * 16f - distSqr) / (16f * 16f) * 10;
-                }
-                if (verb.EffectiveRange >= 14)
-                {
-                    //if (searcher.Thing.Map?.GetLightingTracker() is LightingTracker tracker)
-                    //    result *= tracker.CombatGlowAt(target.Thing.Position) * 0.5f;
-
-                    if (map != null)
                     {
-                        Vector3 srcPos = searcher.Thing.Position.ToVector3();
-                        Vector3 trgPos = target.Thing.Position.ToVector3();
-
-                        for (int i = 0; i < interceptors.Count; i++)
-                        {
-                            CompProjectileInterceptor interceptor = interceptors[i];
-                            float radiusSqr = interceptor.Props.radius * interceptor.Props.radius;
-                            if (interceptor.Active)
-                            {
-                                if (interceptor.parent.Position.DistanceToSquared(target.Thing.Position) < radiusSqr)
-                                {
-                                    if (interceptor.parent.Position.DistanceToSquared(searcher.Thing.Position) < radiusSqr)
-                                        result += 60f;
-                                    else
-                                        result -= 30;
-                                }
-                                else if (interceptor.parent.Position.DistanceToSquared(searcher.Thing.Position) > radiusSqr
-                                      && interceptor.parent.Position.ToVector3().DistanceToSegmentSquared(srcPos, trgPos, out _) < radiusSqr)
-                                    result -= 30;
-                            }
-                        }
+                        result += 10 - sightReader.GetVisibilityToEnemies(target.Thing.Position);
                     }
-                }
+                    result += (16f * 16f - distSqr) / (16f * 16f) * 15;
+                }                           
+                //else
+                //{
+                //if (searcher.Thing.Map?.GetLightingTracker() is LightingTracker tracker)
+                //    result *= tracker.CombatGlowAt(target.Thing.Position) * 0.5f;
+                //if (map != null)
+                //{
+                //    Vector3 srcPos = searcher.Thing.Position.ToVector3();
+                //    Vector3 trgPos = target.Thing.Position.ToVector3();
+
+                //    for (int i = 0; i < interceptors.Count; i++)
+                //    {
+                //        CompProjectileInterceptor interceptor = interceptors[i];
+                //        float radiusSqr = interceptor.Props.radius * interceptor.Props.radius;
+                //        if (interceptor.Active)
+                //        {
+                //            if (interceptor.parent.Position.DistanceToSquared(target.Thing.Position) < radiusSqr)
+                //            {
+                //                if (interceptor.parent.Position.DistanceToSquared(searcher.Thing.Position) < radiusSqr)
+                //                {
+                //                    result += 60f;
+                //                }
+                //                else
+                //                {
+                //                    result -= 30;
+                //                }
+                //            }
+                //            else if (interceptor.parent.Position.DistanceToSquared(searcher.Thing.Position) > radiusSqr
+                //                  && interceptor.parent.Position.ToVector3().DistanceToSegmentSquared(srcPos, trgPos, out _) < radiusSqr)
+                //            {
+                //                result -= 30;
+                //            }
+                //        }
+                //    }
+                //}
+                //}
                 return result;
             }
         }

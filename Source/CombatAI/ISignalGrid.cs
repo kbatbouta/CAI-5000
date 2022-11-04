@@ -107,7 +107,7 @@ namespace CombatAI
         
         private readonly CellIndices cellIndices;        
         private readonly ISightCell[] signalArray;               
-        private readonly Map map;        
+        private readonly Map map;
         private readonly int mapCellNum;
 
         #endregion
@@ -132,6 +132,11 @@ namespace CombatAI
                     extras = new ISignalFields()
                 };
             }
+        }
+
+        public int dude()
+        {
+            return 0;
         }
 
         public void Set(IntVec3 cell, float signalStrength, Vector2 dir) => Set(cellIndices.CellToIndex(cell), signalStrength, dir);
@@ -263,9 +268,13 @@ namespace CombatAI
         public void NextCycle()
         {
             if (sig++ == short.MaxValue)
+            {
                 sig = 19;
+            }
             if (cycle++ == short.MaxValue)
-                cycle = 13;            
+            {
+                cycle = 13;
+            }
             this.currentSignalFlags = 0;
         }
 

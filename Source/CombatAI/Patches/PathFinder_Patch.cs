@@ -21,12 +21,12 @@ namespace CombatAI.Patches
             private static Map map;
             private static PathFinder instance;
             private static SightTracker.SightReader sightReader;
-            private static AvoidanceTracker.AvoidanceReader avoidanceReader;
-            //private static bool crouching;
-            private static bool raiders;
-            //private static bool tpsLow;
+            private static AvoidanceTracker.AvoidanceReader avoidanceReader;            
+            private static bool raiders;            
             private static int counter;
-            //private static float tpsLevel;
+            // private static bool crouching;
+            // private static bool tpsLow;
+            // private static float tpsLevel;
             private static float visibilityAtDest;
             private static float factionMultiplier = 1.0f;
 
@@ -55,7 +55,7 @@ namespace CombatAI.Patches
                     // get the visibility at the destination
                     if (sightReader != null)
                     {
-                        visibilityAtDest = sightReader.GetVisibility(dest.Cell);
+                        visibilityAtDest = sightReader.GetVisibilityToEnemies(dest.Cell) * 0.90f;
                         //Verb verb = pawn.GetWeaponVerbWithFallback();
                         //if (verb != null)
                         //{
@@ -161,21 +161,27 @@ namespace CombatAI.Patches
                     var value = 0;
                     if (sightReader != null)
                     {
-                        var visibility = sightReader.GetVisibility(index);
+                        var visibility = sightReader.GetVisibilityToEnemies(index);
                         if (visibility > visibilityAtDest)
+                        {
                             value += (int)(visibility * 45);
+                        }
                     }
                     if (value > 0)
                     {
                         if (avoidanceReader != null)
+                        {
                             value += (int)(avoidanceReader.GetPathing(index) * 25 + avoidanceReader.GetDanger(index) * 10);
+                        }
                         //if (lightingTracker != null)
                         //    value += (int)(lightingTracker.CombatGlowAt(map.cellIndices.IndexToCell(index)) * 25f);
                     }
                     else
                     {
                         if (avoidanceReader != null)
+                        {
                             value += (int)(avoidanceReader.GetPathing(index) * 15);
+                        }
                     }
                     //Log.Message($"{value} {sightReader != null} {sightReader.hostile != null} {sightReader.GetVisibility(index)} {sightReader.hostile.GetSignalStrengthAt(index)}");
                     //map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), sightReader.hostile.GetSignalStrengthAt(index), $"{value}_ ");
@@ -187,7 +193,7 @@ namespace CombatAI.Patches
                         var l1 = 450 * (1f - Mathf.Lerp(0f, 0.75f, counter / (openNum + 1f))) * (1f - Mathf.Min(openNum, 5000) / (7500));
                         var l2 = 250 * (1f - Mathf.Clamp01(PathFinder.calcGrid[parentIndex].knownCost / 2500));
                         // we use this so the game doesn't die
-                        var v = (Mathf.Min(value, l1 + l2) * factionMultiplier * 1);
+                        //var v = (Mathf.Min(value, l1 + l2) * factionMultiplier * 1);
                         //map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), v, $" _{v}");
                         return (int)(Mathf.Min(value, l1 + l2) * factionMultiplier * 1);
                     }

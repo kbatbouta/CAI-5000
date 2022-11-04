@@ -7,14 +7,17 @@ using Verse;
 using Verse.AI;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq;
+using System.Net.NetworkInformation;
+using static UnityEngine.GraphicsBuffer;
 
 namespace CombatAI
 {
-    public abstract class SightHandler<T> where T : Thing
+    public class SightHandler
     {
         private const int COVERCARRYLIMIT = 6;
 
-        protected class IThingSightRecord
+        private class IThingSightRecord
         {
             /// <summary>
             /// The bucket index of the owner pawn.
@@ -23,36 +26,43 @@ namespace CombatAI
             /// <summary>
             /// Owner pawn.
             /// </summary>
-            public T thing;
+            public Thing thing;
             /// <summary>
             /// The tick at which this pawn was updated.
             /// </summary>
             public int lastCycle;
+            /// <summary>
+            /// The thing faction on registeration.
+            /// </summary>
+            public Faction faction; 
         }
 
-        public readonly Map map;        
+        public readonly Map map;
+        public readonly SightTracker sightTracker;
         public readonly ISignalGrid grid;
         public readonly int bucketCount;
         public readonly int updateInterval;
 
         private object locker = new object();
 
-        private List<IThingSightRecord> tmpRecords = new List<IThingSightRecord>();
-        
+        private List<IThingSightRecord> tmpInvalidRecords = new List<IThingSightRecord>();
+        private List<IThingSightRecord> tmpInconsistentRecords = new List<IThingSightRecord>();
+
         private int ticksUntilUpdate;        
         private int curIndex;
         private ThreadStart threadStart;
         private Thread thread;        
-        private readonly Dictionary<T, IThingSightRecord> records = new Dictionary<T, IThingSightRecord>();
+        private readonly Dictionary<Thing, IThingSightRecord> records = new Dictionary<Thing, IThingSightRecord>();
         private readonly List<IThingSightRecord>[] pool;
         private readonly List<Action> castingQueue = new List<Action>();
         
         private bool mapIsAlive = true;
         private bool wait = false;
 
-        public SightHandler(Map map, int bucketCount, int updateInterval)
+        public SightHandler(SightTracker sightTracker, int bucketCount, int updateInterval)
         {
-            this.map = map;
+            this.sightTracker = sightTracker;
+            this.map = sightTracker.map;
             this.updateInterval = updateInterval;
             this.bucketCount = bucketCount;            
             grid = new ISignalGrid(map);
@@ -61,7 +71,9 @@ namespace CombatAI
             
             pool = new List<IThingSightRecord>[this.bucketCount];
             for (int i = 0; i < this.bucketCount; i++)
+            {
                 pool[i] = new List<IThingSightRecord>();
+            }
 
             threadStart = new ThreadStart(OffMainThreadLoop);
             thread = new Thread(threadStart);
@@ -74,28 +86,40 @@ namespace CombatAI
             {
                 return;
             }            
-            tmpRecords.Clear();
+            tmpInvalidRecords.Clear();
+            tmpInconsistentRecords.Clear();
             List<IThingSightRecord> curPool = pool[curIndex];
-
             for(int i = 0; i < curPool.Count; i++)
             {
                 IThingSightRecord record = curPool[i];
-                if(!Valid(record.thing))
+                if(!Valid(record))
                 {
-                    tmpRecords.Add(record);
+                    tmpInvalidRecords.Add(record);
                     continue;
                 }
-                // cast sight.
+                if (!Consistent(record))
+                {
+                    tmpInconsistentRecords.Add(record);
+                    continue;
+                }
                 TryCastSight(record);                                      
             }
-            if(tmpRecords.Count != 0)
+            if(tmpInvalidRecords.Count != 0)
             {
-                for (int i = 0; i < tmpRecords.Count; i++)
+                for (int i = 0; i < tmpInvalidRecords.Count; i++)
                 {
-                    DeRegister(tmpRecords[i].thing);
+                    TryDeRegister(tmpInvalidRecords[i].thing);
+                }        
+                tmpInvalidRecords.Clear();
+            }
+            if (tmpInconsistentRecords.Count != 0)
+            {
+                for (int i = 0; i < tmpInconsistentRecords.Count; i++)
+                {
+                    TryDeRegister(tmpInconsistentRecords[i].thing);
+                    sightTracker.Register(tmpInconsistentRecords[i].thing);
                 }
-                // clean up.
-                tmpRecords.Clear();
+                tmpInconsistentRecords.Clear();
             }
             ticksUntilUpdate = (int) updateInterval;            
             curIndex++;
@@ -108,8 +132,7 @@ namespace CombatAI
                     {
                         lock (locker)
                         {
-                            grid.NextCycle();
-                            OnFinishedCycle();
+                            grid.NextCycle();                            
                             wait = false;
                         }
                     });
@@ -118,19 +141,24 @@ namespace CombatAI
             }                                                 
         }
 
-        public virtual void Register(T thing)
+        public virtual void Register(Thing thing)
         {
-            if(Valid(thing) && !records.TryGetValue(thing, out IThingSightRecord record))
+            if (records.ContainsKey(thing))
             {
-                record = new IThingSightRecord();
+                TryDeRegister(thing);
+            }
+            if (Valid(thing))
+            {
+                IThingSightRecord record = new IThingSightRecord();
                 record.thing = thing;
-                record.bucketIndex = (thing.thingIDNumber + 19) % bucketCount;                
+                record.bucketIndex = (thing.thingIDNumber + 19) % bucketCount;
+                record.faction = thing.Faction;
                 records.Add(thing, record);
                 pool[record.bucketIndex].Add(record);
             }
         }
 
-        public virtual void DeRegister(T thing)
+        public virtual void TryDeRegister(Thing thing)
         {            
             if (thing != null && records.TryGetValue(thing, out IThingSightRecord record))
             {
@@ -150,28 +178,49 @@ namespace CombatAI
             {
                 Log.Error($"CAI: SightGridManager Notify_MapRemoved failed to stop thread with {er}");
             }
-        }
-        
-        protected abstract bool Skip(IThingSightRecord record);        
-        protected abstract int GetSightRange(IThingSightRecord record);
+        }       
 
-        protected virtual UInt64 GetFlags(IThingSightRecord record) => record.thing.GetCombatFlags();
-        protected virtual bool Valid(T thing)
+        private bool Consistent(IThingSightRecord record)
         {
-            if (thing == null)
-            {
-                return false;
-            }          
-            if (!thing.Spawned)
+            if(record.faction != record.thing.Faction)
             {
                 return false;
             }
             return true;
         }
 
-        protected virtual void OnFinishedCycle()
+        private bool Valid(IThingSightRecord record) => Valid(record.thing);
+
+        private bool Valid(Thing thing)
         {
-        }        
+            if (thing == null)
+            {
+                return false;
+            }
+            if (!thing.Spawned || thing.Destroyed)
+            {
+                return false;
+            }            
+            return (thing is Pawn pawn && !pawn.Dead) || thing is Building_TurretGun;
+        }
+
+        private bool Skip(IThingSightRecord record)
+        {
+            if (record.thing is Pawn pawn)
+            {                
+                return (GenTicks.TicksGame - pawn.needs?.rest?.lastRestTick <= 30) || pawn.Downed;
+            }
+            if (record.thing is Building_TurretGun turret)
+            {
+                return !turret.Active || (turret.IsMannable && !(turret.mannableComp?.MannedNow ?? false));
+            }
+            return false;
+        }
+
+        private UInt64 GetFlags(IThingSightRecord record)
+        {
+            return record.thing.GetCombatFlags();
+        }
 
         private bool TryCastSight(IThingSightRecord record)
         {
@@ -179,7 +228,7 @@ namespace CombatAI
             {
                 return false;
             }
-            int range = GetSightRange(record);
+            int range = SightUtility.GetSightRange(record.thing);
             if (range < 3)
             {
                 return false;
@@ -191,25 +240,19 @@ namespace CombatAI
                 return false;
             }            
             lock (locker)
-            {                
+            {
                 castingQueue.Add(delegate
                 {
                     grid.Next(GetFlags(record));
-                    grid.Set(pos, 1.0f, Vector2.zero);                                        
-                    float r = range * 1.43f;
+                    grid.Set(pos, 1.0f, Vector2.zero);                    
+                    float r = range * 1.23f;
+                    float rSqr = range * range;
                     ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
-                    {
-                        // we ignore the cover rating early on because it benefits the caster not the enemy
-                        //if (dist < r1)
-                        //    coverRating = 0.0f;
-                        //else if (coverRating > 0f)
-                        //    coverRating = coverRating * Mathf.Lerp(0, 1.0f, (dist - r1) / r2);
-                        // float visibility = (range - dist) / range * num;
-                        //
+                    {                        
                         // NOTE: the carry is the number of cover things between the source and the current cell.                       
                         float visibility = (float)(r - dist) / r * (1 - coverRating);
                         // only set anything if visibility is ok
-                        if (visibility >= 0f)
+                        if (visibility >= 0f && pos.DistanceToSquared(cell) < rSqr)
                         {
                             grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z) * visibility);
                         }
@@ -218,32 +261,7 @@ namespace CombatAI
             }                       
             record.lastCycle = grid.CycleNum;            
             return true;
-        }        
-
-        private IntVec3 GetShiftedPosition(IThingSightRecord record)
-        {
-            if (record.thing is Pawn pawn)
-            {
-                return GetMovingShiftedPosition(pawn);
-            }
-            else
-            {
-                return record.thing.Position;
-            }
-        }
-
-        private IntVec3 GetMovingShiftedPosition(Pawn pawn)
-        {
-            PawnPath path;
-
-            if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
-            {
-                return pawn.Position;
-            }
-
-            float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * (updateInterval * bucketCount) / 60f, path.NodesLeftCount - 1);            
-            return path.Peek(Mathf.FloorToInt(distanceTraveled));            
-        }
+        }                
 
         private void OffMainThreadLoop()
         {
@@ -260,20 +278,43 @@ namespace CombatAI
                         castAction = castingQueue[0];
                         castingQueue.RemoveAt(0);
                     }
-                }
-                // threading goes brrrrrr
+                }                
                 if (castAction != null)
                 {
                     castAction.Invoke();
-                }
-                // sleep so other threads can do stuff
+                }                
                 if (castActionsLeft == 0)
                 {
                     Thread.Sleep(Finder.Settings.Advanced_SightThreadIdleSleepTimeMS);
                 }
             }
             Log.Message("CE: SightGridManager thread stopped!");
-        }        
+        }
+
+        private IntVec3 GetShiftedPosition(IThingSightRecord record)
+        {
+            if (record.thing is Pawn pawn)
+            {
+                return GetMovingShiftedPosition(pawn, updateInterval, bucketCount);
+            }
+            else
+            {
+                return record.thing.Position;
+            }
+        }
+
+        private static IntVec3 GetMovingShiftedPosition(Pawn pawn, float updateInterval, int bucketCount)
+        {
+            PawnPath path;
+
+            if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
+            {
+                return pawn.Position;
+            }
+
+            float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * (updateInterval * bucketCount) / 60f, path.NodesLeftCount - 1);
+            return path.Peek(Mathf.FloorToInt(distanceTraveled));
+        }
     }
 }
 

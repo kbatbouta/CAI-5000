@@ -34,11 +34,13 @@
 	  <Folder Include="T4\Outputs\" />
 	  <Folder Include="Patches\" />
 	  <Folder Include="Collections\" />
+	  <Folder Include="Comps\" />
 	</ItemGroup>	
 	<ItemGroup>
 	  <None Remove="Gui\Core\GUIUtility.ScrollViews" />
 	  <None Remove="Patches\" />
 	  <None Remove="Collections\" />
+	  <None Remove="Comps\" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">

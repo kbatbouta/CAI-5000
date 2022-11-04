@@ -16,10 +16,8 @@ namespace CombatAI
 
         public class SightReader
         {            
-            public ISignalGrid friendly;
-            public ISignalGrid hostile;
-            public ISignalGrid universal;
-            public ISignalGrid turrets;
+            public ISignalGrid[] friendlies;
+            public ISignalGrid[] hostiles;                                  
 
             private readonly Map map;
             private readonly CellIndices indices;
@@ -34,55 +32,59 @@ namespace CombatAI
                 get => map;
             }
 
-            public SightReader(SightTracker tracker)
+            public SightReader(SightTracker tracker, ISignalGrid[] friendlies, ISignalGrid[] hostiles)
             {
                 this.tacker = tracker;
                 this.map = tracker.map;
                 this.indices = tracker.map.cellIndices;
+                this.friendlies = friendlies.ToArray();
+                this.hostiles = hostiles.ToArray();
             }
 
-            public float GetEnemies(IntVec3 cell) => GetEnemies(indices.CellToIndex(cell));
-            public float GetEnemies(int index)
+            public float GetAbsVisibilityToEnemies(IntVec3 cell) => GetAbsVisibilityToEnemies(indices.CellToIndex(cell));
+            public float GetAbsVisibilityToEnemies(int index)
             {                
                 float value = 0f;
-                if (hostile != null)
-                    value += hostile.GetSignalNum(index);
-                if (turrets != null)
-                    value += turrets.GetSignalNum(index);
-                if (universal != null)
-                    value += universal.GetSignalNum(index);
+                for(int i = 0;i < hostiles.Length; i++)
+                {
+                    value += hostiles[i].GetSignalNum(index);
+                }               
                 return value;
             }
 
-            public float GetFriendlies(IntVec3 cell) => GetFriendlies(indices.CellToIndex(cell));
-            public float GetFriendlies(int index) => friendly != null ? friendly.GetSignalNum(index) : 0f;            
-
-            public float GetVisibility(IntVec3 cell) => GetVisibility(indices.CellToIndex(cell));
-            public float GetVisibility(int index)
+            public float GetAbsVisibilityToFriendlies(IntVec3 cell) => GetAbsVisibilityToFriendlies(indices.CellToIndex(cell));
+            public float GetAbsVisibilityToFriendlies(int index)
             {
                 float value = 0f;
-                if (hostile != null)
-                    value += hostile.GetSignalStrengthAt(index);
-                if (turrets != null)
-                    value += turrets.GetSignalStrengthAt(index);
-                if (universal != null)
-                    value += universal.GetSignalStrengthAt(index);
+                for (int i = 0; i < friendlies.Length; i++)
+                {
+                    value += friendlies[i].GetSignalNum(index);
+                }
+                return value;
+            }            
+
+            public float GetVisibilityToEnemies(IntVec3 cell) => GetVisibilityToEnemies(indices.CellToIndex(cell));
+            public float GetVisibilityToEnemies(int index)
+            {
+                float value = 0f;
+                for (int i = 0; i < hostiles.Length; i++)
+                {
+                    value += hostiles[i].GetSignalStrengthAt(index);
+                }                
                 return value;
             }
 
             public bool CheckFlags(IntVec3 cell, UInt64 flags) => CheckFlags(indices.CellToIndex(cell), flags);
-            public bool CheckFlags(int index, UInt64 flags) => (flags & GetFlags(index)) == flags;
+            public bool CheckFlags(int index, UInt64 flags) => (flags & GetEnemyFlags(index)) == flags;
 
-            public UInt64 GetFlags(IntVec3 cell) => GetFlags(indices.CellToIndex(cell));
-            public UInt64 GetFlags(int index)
+            public UInt64 GetEnemyFlags(IntVec3 cell) => GetEnemyFlags(indices.CellToIndex(cell));
+            public UInt64 GetEnemyFlags(int index)
             {
                 UInt64 value = 0;
-                if (hostile != null)
-                    value |= hostile.GetFlagsAt(index);
-                if (turrets != null)
-                    value |= turrets.GetFlagsAt(index);
-                if (universal != null)
-                    value |= universal.GetFlagsAt(index);
+                for (int i = 0; i < hostiles.Length; i++)
+                {
+                    value |= hostiles[i].GetFlagsAt(index);
+                }
                 return value;
             }
 
@@ -90,56 +92,64 @@ namespace CombatAI
             public UInt64 GetFriendlyFlags(int index)
             {
                 UInt64 value = 0;
-                if (friendly != null)
-                    value |= friendly.GetFlagsAt(index);                
+                for (int i = 0; i < friendlies.Length; i++)
+                {
+                    value |= friendlies[i].GetFlagsAt(index);
+                }                
                 return value;
             }
 
-            public Vector2 GetDirection(IntVec3 cell) => GetDirection(indices.CellToIndex(cell));
-            public Vector2 GetDirection(int index)
+            public Vector2 GetEnemyDirection(IntVec3 cell) => GetEnemyDirection(indices.CellToIndex(cell));
+            public Vector2 GetEnemyDirection(int index)
             {
                 Vector2 value = Vector2.zero;
-                if (hostile != null)
-                    value += hostile.GetSignalDirectionAt(index);
-                if (turrets != null)
-                    value += turrets.GetSignalDirectionAt(index);
-                if (universal != null)
-                    value += universal.GetSignalDirectionAt(index);                
+                for (int i = 0; i < hostiles.Length; i++)
+                {
+                    value += hostiles[i].GetSignalDirectionAt(index);
+                }                
                 return value;
             }
 
             public Vector2 GetFriendlyDirection(IntVec3 cell) => GetFriendlyDirection(indices.CellToIndex(cell));
-            public Vector2 GetFriendlyDirection(int index) => friendly != null ? friendly.GetSignalDirectionAt(index) : Vector2.zero;          
+            public Vector2 GetFriendlyDirection(int index)
+            {
+                Vector2 value = Vector2.zero;
+                for (int i = 0; i < friendlies.Length; i++)
+                {
+                    value += friendlies[i].GetSignalDirectionAt(index);
+                }
+                return value;                
+            }
         }
 
-        public readonly SightHandler_Pawns friendly;
-        public readonly SightHandler_Pawns hostile;
-        public readonly SightHandler_Pawns universal;
-        public readonly SightHandler_Turrets turrets;       
+        public readonly SightHandler colonistsAndFriendlies;
+        public readonly SightHandler raidersAndHostiles;
+        public readonly SightHandler wildlifeAndMechs;
+        public readonly SightHandler settlementTurrets;       
         
         public SightTracker(Map map) : base(map)
         {
-            friendly =
-                new SightHandler_Pawns(map, 20, 4);
-            hostile =
-                new SightHandler_Pawns(map, 20, 4);
-            universal =
-                new SightHandler_Pawns(map, 20, 10);
-            turrets =
-                new SightHandler_Turrets(map, 20, 100);            
+            colonistsAndFriendlies =
+                new SightHandler(this, 20, 4);
+            raidersAndHostiles =
+                new SightHandler(this, 20, 4);
+            wildlifeAndMechs =
+                new SightHandler(this, 20, 10);
+            settlementTurrets =
+                new SightHandler(this, 20, GenTicks.TickRareInterval);            
         }        
 
         public override void MapComponentTick()
         {            
             base.MapComponentTick();
             // --------------
-            friendly.Tick();
+            colonistsAndFriendlies.Tick();
             // --------------
-            hostile.Tick();
+            raidersAndHostiles.Tick();
             // --------------
-            universal.Tick();
+            wildlifeAndMechs.Tick();
             // --------------
-            turrets.Tick();
+            settlementTurrets.Tick();
             //
             // debugging stuff.
             if (GenTicks.TicksGame % 15 == 0 && Finder.Settings.Debug_DrawShadowCasts)
@@ -149,7 +159,7 @@ namespace CombatAI
                 {
                     foreach (Pawn pawn in Find.Selector.SelectedPawns)
                     {
-                        pawn.GetSightReader(out SightReader reader);
+                        TryGetReader(pawn, out SightReader reader);
                         if (reader != null)
                         {
                             IntVec3 center = pawn.Position;
@@ -163,9 +173,9 @@ namespace CombatAI
                                         if (cell.InBounds(map) && !_drawnCells.Contains(cell))
                                         {
                                             _drawnCells.Add(cell);
-                                            var value = reader.GetEnemies(cell);
+                                            var value = reader.GetAbsVisibilityToEnemies(cell);
                                             if (value > 0)
-                                                map.debugDrawer.FlashCell(cell, Mathf.Clamp((float)reader.GetVisibility(cell) / 10f, 0f, 0.99f), $"{Math.Round(value, 3)} {value}", 15);
+                                                map.debugDrawer.FlashCell(cell, Mathf.Clamp((float)reader.GetVisibilityToEnemies(cell) / 10f, 0f, 0.99f), $"{Math.Round(value, 3)} {value}", 15);
                                         }
                                     }
                                 }
@@ -175,7 +185,7 @@ namespace CombatAI
                 }
                 else
                 {
-                    IntVec3 center = UI.MouseMapPosition().ToIntVec3();
+                    IntVec3 center = UI.MouseMapPosition().ToIntVec3();                   
                     if (center.InBounds(map))
                     {
                         for (int i = center.x - 64; i < center.x + 64; i++)
@@ -186,16 +196,20 @@ namespace CombatAI
                                 if (cell.InBounds(map) && !_drawnCells.Contains(cell))
                                 {
                                     _drawnCells.Add(cell);
-                                    var value = hostile.grid.GetSignalStrengthAt(cell, out int enemies1) + friendly.grid.GetSignalStrengthAt(cell, out int enemies2);
+                                    var value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2) + settlementTurrets.grid.GetSignalStrengthAt(cell, out int enemies3) + wildlifeAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4);
                                     if (value > 0)
-                                        map.debugDrawer.FlashCell(cell, Mathf.Clamp(value / 10f, 0f, 0.99f), $"{Math.Round(value, 3)} {enemies1 + enemies2}", 15);
+                                    {
+                                        map.debugDrawer.FlashCell(cell, Mathf.Clamp(value / 7f, 0.1f, 0.99f), $"{Math.Round(value, 3)} {enemies1 + enemies2}", 15);
+                                    }
                                 }
                             }
                         }
                     }
                 }
                 if (_drawnCells.Count > 0)
+                {
                     _drawnCells.Clear();
+                }
             }
         }
 
@@ -210,11 +224,11 @@ namespace CombatAI
                 {
                     foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, 24, true))
                     {
-                        float enemies = hostile.grid.GetSignalNum(cell) + friendly.grid.GetSignalNum(cell);
-                        Vector3 dir = hostile.grid.GetSignalDirectionAt(cell) + friendly.grid.GetSignalDirectionAt(cell);
+                        float enemies = settlementTurrets.grid.GetSignalNum(cell) + colonistsAndFriendlies.grid.GetSignalNum(cell);
+                        Vector3 dir = colonistsAndFriendlies.grid.GetSignalDirectionAt(cell);
                         if (cell.InBounds(map) && enemies > 0)
                         {
-                            Vector2 direction = dir.normalized * 0.5f;
+                            Vector2 direction = dir * 0.25f;
                             Vector2 start = UI.MapToUIPosition(cell.ToVector3Shifted());
                             Vector2 end = UI.MapToUIPosition(cell.ToVector3Shifted() + new Vector3(direction.x, 0, direction.y));
                             if (Vector2.Distance(start, end) > 1f
@@ -231,107 +245,141 @@ namespace CombatAI
                     }
                 }
             }
-        }
+        }        
 
-        public bool TryGetReader(Pawn pawn, out SightReader reader)
-        {
-            if (pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect)
-            {
-                reader = new SightReader(this);
-                reader.hostile = friendly.grid;
-                reader.friendly = universal.grid;
-                reader.turrets = turrets.grid;
-                reader.universal = hostile.grid;
-                return true;
-            }
-            return TryGetReader(pawn.Faction, out reader);
-        }
-
+        public bool TryGetReader(Pawn pawn, out SightReader reader) => TryGetReader(pawn.Faction, out reader);
         public bool TryGetReader(Faction faction, out SightReader reader)
-        {
+        {           
             if (faction == null)
             {
-                reader = null;
-                return false;
+                reader = new SightReader(this,
+                    friendlies: new ISignalGrid[]
+                    {
+                    },
+                    hostiles: new ISignalGrid[]
+                    {
+                        colonistsAndFriendlies.grid, wildlifeAndMechs.grid, raidersAndHostiles.grid, settlementTurrets.grid
+                    });
+                return true;
             }
             if (faction.def == FactionDefOf.Mechanoid || faction.def == FactionDefOf.Insect)
             {
-                reader = new SightReader(this);
-                reader.hostile = friendly.grid;
-                reader.friendly = universal.grid;
-                reader.turrets = turrets.grid;
-                reader.universal = hostile.grid;
+                reader = new SightReader(this,
+                    friendlies: new ISignalGrid[]
+                    {
+                        wildlifeAndMechs.grid
+                    },
+                    hostiles: new ISignalGrid[]
+                    {
+                        colonistsAndFriendlies.grid, raidersAndHostiles.grid, settlementTurrets.grid
+                    });
                 return true;
             }
-            reader = new SightReader(this);
-            if (faction.HostileTo(map.ParentFaction))
-            {                
-                reader.hostile = friendly.grid;
-                reader.friendly = hostile.grid;
-                reader.turrets = turrets.grid;                
+            Faction mapFaction = map.ParentFaction;
+            if ((mapFaction != null && !faction.HostileTo(map.ParentFaction)) || (mapFaction == null && Faction.OfPlayerSilentFail != null && !faction.HostileTo(Faction.OfPlayerSilentFail)))
+            {
+                reader = new SightReader(this,
+                    friendlies: new ISignalGrid[]
+                    {
+                        colonistsAndFriendlies.grid, settlementTurrets.grid
+                    },
+                    hostiles: new ISignalGrid[]
+                    {
+                        raidersAndHostiles.grid, wildlifeAndMechs.grid
+                    });
             }
             else
-            {                
-                reader.hostile = hostile.grid;
-                reader.friendly = friendly.grid;
-                reader.turrets = null;
-            }
-            reader.universal = universal.grid;
+            {
+                reader = new SightReader(this,
+                    friendlies: new ISignalGrid[]
+                    {
+                        raidersAndHostiles.grid,
+                    },
+                    hostiles: new ISignalGrid[]
+                    {
+                        colonistsAndFriendlies.grid, settlementTurrets.grid, wildlifeAndMechs.grid
+                    });
+            }              
             return true;
+        }
+
+        public void Register(Thing thing)
+        {
+            if (thing is Pawn pawn)
+            {
+                Register(pawn);
+            }
+            else if(thing is Building_TurretGun turret)
+            {
+                Register(turret);
+            }
+            throw new NotImplementedException();
         }
 
         public void Register(Building_TurretGun turret)
         {
-            if(turret.Faction == map.ParentFaction)
+            Faction mapFaction = map.ParentFaction;
+            if (turret.Faction != null && mapFaction != null && !turret.Faction.HostileTo(mapFaction))
             {
-                turrets.DeRegister(turret);
-                turrets.Register(turret);
+                raidersAndHostiles.TryDeRegister(turret);                
+                settlementTurrets.Register(turret);
+            }
+            else if(map.ParentFaction != null && (turret.Faction?.HostileTo(map.ParentFaction) ?? false))
+            {
+                raidersAndHostiles.TryDeRegister(turret);
             }
         }
 
         public void Register(Pawn pawn)
-        {
-            if (pawn.Faction == null)
-                return;
+        {           
             // make sure it's not already in.
-            friendly.DeRegister(pawn);
+            colonistsAndFriendlies.TryDeRegister(pawn);
             // make sure it's not already in.
-            hostile.DeRegister(pawn);
+            raidersAndHostiles.TryDeRegister(pawn);
             // make sure it's not already in.
-            universal.DeRegister(pawn);
+            wildlifeAndMechs.TryDeRegister(pawn);
 
-            if ((pawn.Faction.def == FactionDefOf.Insect || pawn.RaceProps.Insect) || (pawn.Faction.def == FactionDefOf.Mechanoid || pawn.RaceProps.IsMechanoid))
+            Faction faction = pawn.Faction;
+            Faction mapFaction = map.ParentFaction;
+            if (faction == null || faction.def == FactionDefOf.Insect || faction.def == FactionDefOf.Mechanoid)
             {
-                universal.Register(pawn);
-                return;
+                wildlifeAndMechs.Register(pawn);
             }
-            // now register the new pawn.
-            if (pawn.Faction?.HostileTo(map.ParentFaction) ?? true)
-                hostile.Register(pawn);
+            else if ((mapFaction != null && !faction.HostileTo(mapFaction)) || (mapFaction == null && Faction.OfPlayerSilentFail != null && !faction.HostileTo(Faction.OfPlayerSilentFail)))
+            {
+                colonistsAndFriendlies.Register(pawn);
+            }
             else
-                friendly.Register(pawn);            
+            {
+                raidersAndHostiles.Register(pawn);
+            }
         }
 
-        public void DeRegister(Building_TurretGun turret) => turrets.DeRegister(turret);
+        public void DeRegister(Building_TurretGun turret)
+        {            
+            settlementTurrets.TryDeRegister(turret);
+            raidersAndHostiles.TryDeRegister(turret);
+        }
+
         public void DeRegister(Pawn pawn)
         {
             // cleanup hostiltes incase pawn switched factions.
-            hostile.DeRegister(pawn);
+            raidersAndHostiles.TryDeRegister(pawn);
             // cleanup friendlies incase pawn switched factions.
-            friendly.DeRegister(pawn);
+            colonistsAndFriendlies.TryDeRegister(pawn);
             // cleanup universals incase everything else fails.
-            universal.DeRegister(pawn);           
+            wildlifeAndMechs.TryDeRegister(pawn);           
         }
 
         public override void MapRemoved()
         {
             base.MapRemoved();
             // TODO redo this
-            hostile.Notify_MapRemoved();
+            raidersAndHostiles.Notify_MapRemoved();
             // TODO redo this
-            friendly.Notify_MapRemoved();
+            colonistsAndFriendlies.Notify_MapRemoved();
             // TODO redo this
-            universal.Notify_MapRemoved();
+            wildlifeAndMechs.Notify_MapRemoved();
         }
     }
 }

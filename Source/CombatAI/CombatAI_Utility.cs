@@ -49,6 +49,11 @@ namespace CombatAI
             }
             return dx * dx + dz * dz;
         }
+
+        public static CellFlooder GetCellFlooder(this Map map)
+        {
+            return map.GetComp_Fast<MapComponent_CombatAI>().flooder;
+        }
     }
 }
 

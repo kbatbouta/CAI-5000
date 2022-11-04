@@ -11,7 +11,8 @@ namespace CombatAI
         {
             public IntVec3 cell;
             public IntVec3 parent;            
-            public float dist;           
+            public float dist;
+            public float distAbs;
 
             public int CompareTo(Node other)
             {
@@ -55,8 +56,8 @@ namespace CombatAI
             IntVec3 nextCell;
             IntVec3 offset;            
             //
-            //floodedCells.Clear();
-            //floodedCells.Add(node);
+            // floodedCells.Clear();
+            // floodedCells.Add(node);
             floodQueue.Clear();
             floodQueue.Enqueue(GetIntialFloodedCell(center));
             while (floodQueue.Count > 0)
@@ -69,9 +70,10 @@ namespace CombatAI
                 // map.debugDrawer.FlashCell(node.cell, node.dist / 25f, $"{map.cellIndices.CellToIndex(node.cell)} {map.cellIndices.CellToIndex(node.parent)}", duration: 15);
                 //
                 // check for the distance
-                if (node.dist >= maxDist)
+                if (node.distAbs >= maxDist)
+                {
                     continue;
-
+                }
                 for (int i = 0; i < 4; i++)
                 {
                     offset = offsets[i];
@@ -91,15 +93,18 @@ namespace CombatAI
                                 {
                                     nextNode.parent = node.parent;
                                     nextNode.dist = node.dist + 0.4123f;
+                                    nextNode.distAbs = node.distAbs + 0.4123f;
                                 }
                                 else
                                 {
                                     nextNode.parent = node.cell;                                   
                                     nextNode.dist = node.dist + 1;
+                                    nextNode.distAbs = node.distAbs + 1;
                                 }
-                                if(costFunction != null)                      
+                                if (costFunction != null)
+                                {
                                     nextNode.dist += costFunction(nextCell);
-
+                                }
                                 floodQueue.Enqueue(nextNode);
                                 //
                                 //floodedCells.Add(nextNode);
@@ -113,9 +118,13 @@ namespace CombatAI
         private Func<IntVec3, bool> GetBlockedTestFunc(Func<IntVec3, bool> validator)
         {
             if (validator == null)
+            {
                 return (cell) => walls.GetFillCategory(cell) == FillCategory.Full;
+            }
             else
+            {
                 return (cell) => walls.GetFillCategory(cell) == FillCategory.Full || !validator(cell);
+            }
         }        
 
         private Node GetIntialFloodedCell(IntVec3 center)
