@@ -52,6 +52,7 @@
 		<None Update="..\..\1.4\Languages\English\Keyed\Translations.xml">
 			<Link>English.Lang</Link>
 		</None>
+		<None Include="ShadowCastingUtility.old.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
 	</ItemGroup>
 	<!-- ................ -->
 	<!--     Packages     -->
@@ -68,6 +69,9 @@
 	</ItemGroup>	
 	<!-- ................ -->
 	<!-- Process T4 files -->
+	<ItemGroup>
+	  <Compile Remove="ShadowCastingUtility.old.cs" />
+	</ItemGroup>
 	<Target Name="ProcessTT" BeforeTargets="BeforeBuild">
 		<ItemGroup>
 			<TTFiles Include="T4\Sources\*.tt" CopyToOutputDirectory="Never" />		

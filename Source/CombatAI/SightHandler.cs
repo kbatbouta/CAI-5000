@@ -238,27 +238,28 @@ namespace CombatAI
             {
                 Log.Error($"CE: SighGridUpdater {record.thing} position is outside the map's bounds!");
                 return false;
-            }            
+            }
+            Action action = () =>
+            {
+                grid.Next(GetFlags(record));
+                grid.Set(pos, 1.0f, Vector2.zero);
+                float r = range * 1.23f;
+                float rSqr = range * range;
+                ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
+                {
+                    // NOTE: the carry is the number of cover things between the source and the current cell.                       
+                    float visibility = (float)(r - dist) / r * (1 - coverRating);
+                    // only set anything if visibility is ok
+                    if (visibility >= 0f && pos.DistanceToSquared(cell) < rSqr)
+                    {
+                        grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z) * visibility);
+                    }
+                }, range, COVERCARRYLIMIT);
+            };
             lock (locker)
             {
-                castingQueue.Add(delegate
-                {
-                    grid.Next(GetFlags(record));
-                    grid.Set(pos, 1.0f, Vector2.zero);                    
-                    float r = range * 1.23f;
-                    float rSqr = range * range;
-                    ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
-                    {                        
-                        // NOTE: the carry is the number of cover things between the source and the current cell.                       
-                        float visibility = (float)(r - dist) / r * (1 - coverRating);
-                        // only set anything if visibility is ok
-                        if (visibility >= 0f && pos.DistanceToSquared(cell) < rSqr)
-                        {
-                            grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z) * visibility);
-                        }
-                    }, range, COVERCARRYLIMIT, out int _);
-                });                
-            }                       
+                castingQueue.Add(action);
+            }
             record.lastCycle = grid.CycleNum;            
             return true;
         }                

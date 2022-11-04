@@ -5,7 +5,6 @@ using UnityEngine;
 using RimWorld.BaseGen;
 using System.Linq;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 
 namespace CombatAI
 {
@@ -15,25 +14,25 @@ namespace CombatAI
     /// The algorithem used is a modified version of   
     /// https://www.albertford.com/shadowcasting/
     /// </summary>
-    public static partial class ShadowCastingUtility
+    public static partial class ShadowCastingUtility2
     {
         private const int VISIBILITY_CARRY_MAX = 5;
-        
+
+        private static int carryLimit = VISIBILITY_CARRY_MAX;
+
         private static readonly Func<IntVec3, IntVec3>[] _transformationFuncs;        
         private static readonly Func<IntVec3, IntVec3>[] _transformationInverseFuncs;
         private static readonly Func<Vector3, Vector3>[] _transformationFuncsV3;
         private static readonly Func<Vector3, Vector3>[] _transformationInverseFuncsV3;
 
-        private static readonly Vector3 InvalidOffset = new Vector3(0, -1, 0);        
+        private static readonly Vector3 InvalidOffset = new Vector3(0, -1, 0);
+        private static int cellsScanned;
 
-        private class CastRequest
-        {            
-            public VisibleRow firstRow;
-            public int carryLimit = 5;
-            public IntVec3 source;                       
-            public Map map;            
-            public Action<IntVec3, int, int, float> setAction;
-        }
+        private static IntVec3 source;
+        private static List<VisibleRow> rowQueue = new List<VisibleRow>();
+        private static Map map;
+        private static WallGrid grid;
+        private static Action<IntVec3, int, int, float> setAction;
 
         static ShadowCastingUtility()
         {
@@ -183,18 +182,11 @@ namespace CombatAI
             return 1;
         }
 
-        private static void TryWeightedScan(CastRequest request)
-        {
-            int cellsScanned = 0;
-            WallGrid grid = request.map.GetComponent<WallGrid>();
-            if (grid == null)
-            {
-                Log.Error($"Wall grid not found for {request.map} with cast center {request.source}");
-                return;
-            }
-            List<VisibleRow> rowQueue = new List<VisibleRow>();            
-            rowQueue.Add(request.firstRow);
-            float coverMinDist = Mathf.Max(request.firstRow.maxDepth / 3f, 10f);
+        private static void TryWeightedScan(VisibleRow start)
+        {            
+            rowQueue.Clear();
+            rowQueue.Add(start);
+            var coverMinDist = Mathf.Max(start.maxDepth / 3f, 10f);
             while (rowQueue.Count > 0)
             {                
                 VisibleRow nextRow;                
@@ -213,17 +205,17 @@ namespace CombatAI
                 foreach (Vector3 offset in row.Tiles())
                 {
                     FillCategory fill = FillCategory.None;
-                    IntVec3 cell = request.source + row.Transform(offset.ToIntVec3());                    
-                    bool isWall = !cell.InBounds(request.map) || (fill = grid.GetFillCategory(cell)) == FillCategory.Full;
+                    IntVec3 cell = source + row.Transform(offset.ToIntVec3());                    
+                    bool isWall = !cell.InBounds(map) || (fill = grid.GetFillCategory(cell)) == FillCategory.Full;
                     bool isCover = !isWall && fill == FillCategory.Partial;
                     
                     if (isWall || (offset.z >= row.depth * row.startSlope && offset.z <= row.depth * row.endSlope))
                     {
-                        request.setAction(cell, row.visibilityCarry, row.depth, row.blockChance);
+                        setAction(cell, row.visibilityCarry, row.depth, row.blockChance);
                     }            
                     if (isCover)
                     { 
-                        if (row.visibilityCarry >= request.carryLimit)                        
+                        if (row.visibilityCarry >= carryLimit)                        
                         {
                             isCover = false;
                             isWall = true;
@@ -285,17 +277,10 @@ namespace CombatAI
             }
         }
 
-        private static void TryVisibilityScan(CastRequest request)
+        private static void TryVisibilityScan(VisibleRow start)
         {
-            int cellsScanned = 0;
-            WallGrid grid = request.map.GetComponent<WallGrid>();
-            if (grid == null)
-            {
-                Log.Error($"Wall grid not found for {request.map} with cast center {request.source}");
-                return;
-            }
-            List<VisibleRow> rowQueue = new List<VisibleRow>();            
-            rowQueue.Add(request.firstRow);
+            rowQueue.Clear();
+            rowQueue.Add(start);
             while (rowQueue.Count > 0)
             {
                 VisibleRow nextRow;
@@ -310,12 +295,12 @@ namespace CombatAI
                 
                 foreach (Vector3 offset in row.Tiles())
                 {
-                    var cell = request.source + row.Transform(offset.ToIntVec3());
-                    var isWall = !cell.InBounds(request.map) || !grid.CanBeSeenOver(cell);                    
+                    var cell = source + row.Transform(offset.ToIntVec3());
+                    var isWall = !cell.InBounds(map) || !grid.CanBeSeenOver(cell);                    
 
                     if (isWall || (offset.z >= row.depth * row.startSlope && offset.z <= row.depth * row.endSlope))
                     {
-                        request.setAction(cell, 1, row.depth, row.blockChance);
+                        setAction(cell, 1, row.depth, row.blockChance);
                     }
                     if (IsValid(lastCell)) // check so it's a valid offsets
                     {                        
@@ -329,7 +314,7 @@ namespace CombatAI
                             nextRow.endSlope = GetSlope(offset);                               
                             rowQueue.Add(nextRow);
                         }                        
-                    }
+                    }                    
                     cellsScanned++;                    
                     lastCell = offset;
                     lastIsWall = isWall;
@@ -341,28 +326,22 @@ namespace CombatAI
             }
         }
 
-        private static void TryCastVisibility(float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction) => TryCast(TryVisibilityScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction);
-        private static void TryCastWeighted(float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction) => TryCast(TryWeightedScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction);
+        private static void TryCastVisibility(float startSlope, float endSlope, int quartor, int maxDepth) => TryCast(TryVisibilityScan, startSlope, endSlope, quartor, maxDepth);
+        private static void TryCastWeighted(float startSlope, float endSlope, int quartor, int maxDepth) => TryCast(TryWeightedScan, startSlope, endSlope, quartor, maxDepth);
 
-        private static void TryCast(Action<CastRequest> castAction, float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction)
+        private static void TryCast(Action<VisibleRow> castAction, float startSlope, float endSlope, int quartor, int maxDepth)
         {            
             if (endSlope > 1.0f || startSlope < -1 || startSlope > endSlope)
             {
                 throw new InvalidOperationException($"CE: Scan quartor {quartor} endSlope and start slop must be between (-1, 1) but got start:{startSlope}\tend:{endSlope}");
             }
-            CastRequest request = new CastRequest();            
             VisibleRow arc = VisibleRow.First;
             arc.startSlope = startSlope;
             arc.endSlope = endSlope;
             arc.visibilityCarry = 1;
             arc.maxDepth = maxDepth;
             arc.quartor = quartor;
-            request.firstRow = arc;
-            request.carryLimit = carryLimit;
-            request.map = map;
-            request.source = source;
-            request.setAction = setAction;            
-            castAction(request);
+            castAction(arc);
         }                         
     }
 }

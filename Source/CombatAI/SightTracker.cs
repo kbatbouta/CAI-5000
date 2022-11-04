@@ -130,13 +130,13 @@ namespace CombatAI
         public SightTracker(Map map) : base(map)
         {
             colonistsAndFriendlies =
-                new SightHandler(this, 20, 4);
+                new SightHandler(this, 20, 2);
             raidersAndHostiles =
-                new SightHandler(this, 20, 4);
+                new SightHandler(this, 20, 2);
             wildlifeAndMechs =
-                new SightHandler(this, 20, 10);
+                new SightHandler(this, 20, 4);
             settlementTurrets =
-                new SightHandler(this, 20, GenTicks.TickRareInterval);            
+                new SightHandler(this, 10, 10);            
         }        
 
         public override void MapComponentTick()
