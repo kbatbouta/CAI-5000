@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Redux - Combat AI</name>
+	<name>Imperial Stormtrooper Marksmanship Academy - Open BETA</name>
 	<author>Krkr</author>
 	<supportedVersions>	
 		<li>1.4</li>
 	</supportedVersions>
-	<packageId>Krkr.CombatAI</packageId>
+	<packageId>Krkr.rule56</packageId>
 	<modDependenciesByVersion>		
 		<v1.4>
 			<li>
@@ -23,6 +23,10 @@
 	</loadAfter>
 	<incompatibleWith>
 	</incompatibleWith>
-	<description>     
+	<description>
+"My Legions of Terror will be trained in basic marksmanship. Any [troops] who cannot learn to hit a man-sized target at 10 meters will be used for target practice."
+— Evil Overlord List, Rule #56
+
+Advance combat AI brought you by the RocketMan Team - Discord: https://discord.gg/Jx8UYNtS24
 	</description>
 </ModMetaData>

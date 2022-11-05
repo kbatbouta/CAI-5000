@@ -52,7 +52,6 @@
 		<None Update="..\..\1.4\Languages\English\Keyed\Translations.xml">
 			<Link>English.Lang</Link>
 		</None>
-		<None Include="ShadowCastingUtility.old.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
 	</ItemGroup>
 	<!-- ................ -->
 	<!--     Packages     -->

@@ -122,28 +122,25 @@ namespace CombatAI.Patches
                 //        //if (interceptor.parent.Position.PawnsInRange(map, interceptor.Props.radius).All(p => p.HostileTo(pawn)))
                 //        //    __result -= 15.0f * tpsLevel;
                 //        //else
-                //            __result += 12f;
+                //        __result += 12f;
                 //    }
                 //}
                 //}
                 if (sightReader != null)
                 {
-                    Vector2 f_vec = sightReader.GetFriendlyDirection(c);                   
-                    Vector2 h_vec = sightReader.GetEnemyDirection(c);
-                    float d = f_vec.x * h_vec.x + f_vec.y * h_vec.y;
-                    if(verb != null && range < 16)
-                    {
-                        __result -= Mathf.Clamp(d, -25, 25);
-                    }
-                    __result += 5 - sightReader.GetVisibilityToEnemies(c) * 2f  - sightReader.GetAbsVisibilityToEnemies(c) / 5f;
+                    __result += 5 - sightReader.GetVisibilityToEnemies(c) - sightReader.GetAbsVisibilityToEnemies(c) / 4f;                    
                 }
                 if (avoidanceReader != null)
                 {
-                    __result += 3 - Mathf.Min(avoidanceReader.GetProximity(c), 10) - avoidanceReader.GetDanger(c) / 2f;
+                    __result += 5 - Mathf.Min(avoidanceReader.GetProximity(c) * 1.5f, 5) - avoidanceReader.GetDanger(c) / 2f;
                 }
                 if (range > 0)
                 {
-                    __result += 12 - Mathf.Abs((range * 0.8f - c.DistanceTo(targetPosition)) / range) * 12;
+                    __result += 10 - Mathf.Abs((range * 0.8f - c.DistanceTo(targetPosition)) / range) * 10;
+                }
+                if (__result < 0)
+                {
+                    __result = -1;
                 }
             }
         }

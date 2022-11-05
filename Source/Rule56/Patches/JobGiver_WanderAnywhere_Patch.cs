@@ -30,7 +30,7 @@ namespace CombatAI.Patches
                     }, (cell) =>
                     {                       
                         return (reader.GetVisibilityToEnemies(cell) - rootVisibility) * 1.3f;
-                    }, maxDist: 25);
+                    }, maxDist: 15);
                     if (minCell != root)
                     {
                         __result = minCell;

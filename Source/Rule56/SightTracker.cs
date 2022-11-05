@@ -130,9 +130,9 @@ namespace CombatAI
         public SightTracker(Map map) : base(map)
         {
             colonistsAndFriendlies =
-                new SightHandler(this, 20, 2);
+                new SightHandler(this, 15, 2);
             raidersAndHostiles =
-                new SightHandler(this, 20, 2);
+                new SightHandler(this, 15, 2);
             wildlifeAndMechs =
                 new SightHandler(this, 20, 4);
             settlementTurrets =

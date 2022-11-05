@@ -9,7 +9,7 @@ namespace CombatAI
     {
         public CombatAIMod(ModContentPack contentPack) : base(contentPack)
         {
-            Finder.Harmony = new Harmony("Krkr.CombatAI");
+            Finder.Harmony = new Harmony("Krkr.Rule56");
             Finder.Harmony.PatchAll();
             Finder.Mod = this;
             Finder.Settings = GetSettings<Settings>();
@@ -59,6 +59,8 @@ namespace CombatAI
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Debugging_Enable, ref Finder.Settings.Debug);
             collapsible.CheckboxLabeled("Draw sight grid", ref Finder.Settings.Debug_DrawShadowCasts);
             collapsible.CheckboxLabeled("Draw sight vector field", ref Finder.Settings.Debug_DrawShadowCastsVectors);
+            collapsible.CheckboxLabeled("Draw proximity grid", ref Finder.Settings.Debug_DrawAvoidanceGrid_Proximity);
+            collapsible.CheckboxLabeled("Draw danger grid", ref Finder.Settings.Debug_DrawAvoidanceGrid_Danger);
         }
 
         /*  -----------------------

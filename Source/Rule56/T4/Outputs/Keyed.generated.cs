@@ -26,7 +26,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI = null;
         /// <summary> Keyed string. key=<c>CombatAI</c>. inner text:
         ///
-        /// <code>CombatAI</code>
+        /// <code>Imperial Stormtrooper Marksmanship Academy</code>
         /// </summary>       
         public static TaggedString CombatAI {
             get => _CombatAI != null ? 

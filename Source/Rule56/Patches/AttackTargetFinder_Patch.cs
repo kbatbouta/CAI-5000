@@ -15,7 +15,7 @@ namespace CombatAI.Patches
         private static Map map;
         //private static List<CompProjectileInterceptor> interceptors;
         private static SightTracker.SightReader sightReader;
-        private static TurretTracker turretTracker;
+        //private static TurretTracker turretTracker;
         //private static CompTacticalManager manager;
         //private static CombatReservationManager combatReservationManager;
         //private static bool tpsLow;
@@ -57,10 +57,10 @@ namespace CombatAI.Patches
                     //manager = pawn.GetComp<CompTacticalManager>();
                     pawn.GetSightReader(out sightReader);
 
-                    if (pawn.Faction.HostileTo(map.ParentFaction))
-                    {
-                        turretTracker = map.GetComp_Fast<TurretTracker>();
-                    }
+                    //if (pawn.Faction.HostileTo(map.ParentFaction))
+                    //{
+                    //    turretTracker = map.GetComp_Fast<TurretTracker>();
+                    //}
                 }
             }
 
@@ -68,7 +68,7 @@ namespace CombatAI.Patches
             {
                 map = null;
                 sightReader = null;
-                turretTracker = null;
+                //turretTracker = null;
                 // interceptors.Clear();
                 // interceptors = null;
                 // combatReservationManager = null;
@@ -102,9 +102,8 @@ namespace CombatAI.Patches
 
             public static float GetShootingTargetBaseScore(IAttackTarget target, IAttackTargetSearcher searcher, Verb verb)
             {
-                float result = 60f;               
-                float distSqr = target.Thing.Position.DistanceToSquared(searcher.Thing.Position);
-
+                float result = 60f;
+                //float distSqr = target.Thing.Position.DistanceToSquared(searcher.Thing.Position);
                 //if (combatReservationManager != null && combatReservationManager.Reserved(target.Thing, out List<Pawn> attackers))
                 //{
                 //    for (int i = 0; i < attackers.Count; i++)
@@ -125,9 +124,8 @@ namespace CombatAI.Patches
                 {
                     if (sightReader != null)
                     {
-                        result += 10 - sightReader.GetVisibilityToEnemies(target.Thing.Position);
-                    }
-                    result += (16f * 16f - distSqr) / (16f * 16f) * 15;
+                        result += 10 - sightReader.GetAbsVisibilityToEnemies(target.Thing.Position) * 2.5f ;                        
+                    }                    
                 }                           
                 //else
                 //{

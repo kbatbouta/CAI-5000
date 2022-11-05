@@ -42,6 +42,8 @@ namespace CombatAI
         public bool Debug = false;
         public bool Debug_DrawShadowCasts = false;
         public bool Debug_DrawShadowCastsVectors = false;
+        public bool Debug_DrawAvoidanceGrid_Proximity = false;
+        public bool Debug_DrawAvoidanceGrid_Danger = false;
 
         /*                 
          * -- * -- * -- * -- * -- * -- * -- * -- * --

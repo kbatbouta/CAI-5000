@@ -2,21 +2,32 @@
 using Verse;
 using RimWorld;
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace CombatAI
 {
     public static class SightUtility
     {
+        private static readonly Dictionary<int, Pair<int, int>> rangeCache = new Dictionary<int, Pair<int, int>>(128);
+
         public static int GetSightRange(Thing thing)
         {
+            if(rangeCache.TryGetValue(thing.thingIDNumber, out Pair<int, int> store) && GenTicks.TicksGame - store.First <= 60)
+            {
+                return store.second;
+            }
             if (thing is Pawn pawn)
             {
-                return GetSightRange(pawn);
+                int range = GetSightRange(pawn);
+                rangeCache[thing.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);
+                return range;
             }
             else if (thing is Building_TurretGun turret)
             {
-                return GetSightRange(turret);
+                int range = GetSightRange(turret);
+                rangeCache[thing.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);
+                return range;
             }
             throw new NotImplementedException();
         }
@@ -25,7 +36,7 @@ namespace CombatAI
         {
             if (pawn.RaceProps.Animal && pawn.Faction == null)
             {
-                return Mathf.FloorToInt(Mathf.Clamp(pawn.BodySize * 2f, 2f, 8f));
+                return Mathf.FloorToInt(Mathf.Clamp(pawn.BodySize * 3f, 2f, 10f));
             }
             Verb verb = pawn.equipment?.PrimaryEq?.PrimaryVerb ?? null;
             if (verb == null || !verb.Available())
@@ -41,7 +52,7 @@ namespace CombatAI
             {
                 if (verb.IsMeleeAttack)
                 {
-                    return 15;
+                    return 10;
                 }
                 if ((range = verb.EffectiveRange) > 2.5f)
                 {
@@ -55,7 +66,7 @@ namespace CombatAI
                 if (melee != null)
                 {
                     float skill = melee.Level;
-                    return (int)Mathf.Clamp(skill, 4, 15) * 2;
+                    return (int)(Mathf.Clamp(skill, 4, 13) * ((pawn.equipment?.Primary?.def.IsMeleeWeapon ?? null) != null ? 1.5f : 0.85f));
                 }
                 return 5;
             }

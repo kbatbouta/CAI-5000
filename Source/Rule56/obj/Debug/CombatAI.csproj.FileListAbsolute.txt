@@ -1,0 +1,11 @@
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/CombatAI-Revived/1.4/Assemblies/CombatAI.dll
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/CombatAI-Revived/1.4/Assemblies/CombatAI.pdb
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/CombatAI-Revived/Source/CombatAI/obj/Debug/CombatAI.csproj.CoreCompileInputs.cache
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/CombatAI-Revived/Source/CombatAI/obj/Debug/CombatAI.dll
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/CombatAI-Revived/Source/CombatAI/obj/Debug/CombatAI.pdb
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/1.4/Assemblies/CombatAI.dll
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/1.4/Assemblies/CombatAI.pdb
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/Source/Rule56/obj/Debug/CombatAI.csproj.AssemblyReference.cache
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/Source/Rule56/obj/Debug/CombatAI.csproj.CoreCompileInputs.cache
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/Source/Rule56/obj/Debug/CombatAI.dll
+/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/Source/Rule56/obj/Debug/CombatAI.pdb

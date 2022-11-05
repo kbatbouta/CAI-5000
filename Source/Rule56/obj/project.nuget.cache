@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "cM+1r/aSU/wA+DfD7ZcOjpruHPQJGS0alyp0PIEL7/gyr9lDQZK/IpfK/YDCywZ9gF8vV3ZFST/NOGsM2pcn/g==",
+  "dgSpecHash": "G/Jp9xbJhAiOlhirMRRzwrm6k0y/wNl32yMM9YU/L/Ve7rHvSM4ysVPhLGZFXIHme9JgPFY1w4AJqi9LI04IAQ==",
   "success": true,
-  "projectFilePath": "/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/CombatAI-Revived/Source/CombatAI/CombatAI.csproj",
+  "projectFilePath": "/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/Source/Rule56/CombatAI.csproj",
   "expectedPackageFiles": [
     "/Users/karimbatbouta/.nuget/packages/krafs.rimworld.ref/1.4.3536/krafs.rimworld.ref.1.4.3536.nupkg.sha512",
     "/Users/karimbatbouta/.nuget/packages/lib.harmony/2.2.2/lib.harmony.2.2.2.nupkg.sha512",

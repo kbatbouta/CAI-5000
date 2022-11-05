@@ -32,7 +32,7 @@ namespace CombatAI.Patches
 
             internal static bool Prefix(PathFinder __instance, ref PawnPath __result, IntVec3 start, LocalTargetInfo dest, TraverseParms traverseParms, PathEndMode peMode, out bool __state)
             {
-                if (Finder.Settings.Pather_Enabled && traverseParms.pawn != null && traverseParms.pawn.Faction != null && (traverseParms.pawn.RaceProps.Humanlike || traverseParms.pawn.RaceProps.IsMechanoid || traverseParms.pawn.RaceProps.Insect))
+                if (Finder.Settings.Pather_Enabled && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
                 {
                     //Log.Message($"{traverseParms.pawn}");
                     // prepare the performance parameters.
@@ -45,11 +45,12 @@ namespace CombatAI.Patches
                     pawn = traverseParms.pawn;
 
                     // fix for player pawns and drafted pawns 
-                    factionMultiplier = pawn.Faction.IsPlayer ? (pawn.Drafted ? 0.45f : 0.75f) : 1.0f;
+                    factionMultiplier = pawn.Faction.IsPlayer ? (pawn.Drafted ? 0.25f : 0.75f) : 1.0f;
                     factionMultiplier = 1f;
-                    // retrive CE elements
+                    // retrive CE elements                    
                     pawn.GetSightReader(out sightReader);
                     pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
+                   
                     //pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out sightReader);
 
                     // get the visibility at the destination
@@ -106,7 +107,9 @@ namespace CombatAI.Patches
                 {
                     AvoidanceTracker tracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
                     if (tracker != null)
+                    {
                         tracker.Notify_PathFound(pawn, __result);
+                    }
                 }
                 Reset();
             }
@@ -171,7 +174,7 @@ namespace CombatAI.Patches
                     {
                         if (avoidanceReader != null)
                         {
-                            value += (int)(avoidanceReader.GetPathing(index) * 25 + avoidanceReader.GetDanger(index) * 10);
+                            value += (int)(avoidanceReader.GetProximity(index) * 20 + avoidanceReader.GetDanger(index) * 10);
                         }
                         //if (lightingTracker != null)
                         //    value += (int)(lightingTracker.CombatGlowAt(map.cellIndices.IndexToCell(index)) * 25f);
@@ -180,7 +183,7 @@ namespace CombatAI.Patches
                     {
                         if (avoidanceReader != null)
                         {
-                            value += (int)(avoidanceReader.GetPathing(index) * 15);
+                            value += (int)(avoidanceReader.GetProximity(index) * 15);
                         }
                     }
                     //Log.Message($"{value} {sightReader != null} {sightReader.hostile != null} {sightReader.GetVisibility(index)} {sightReader.hostile.GetSignalStrengthAt(index)}");
