@@ -6,6 +6,16 @@ namespace CombatAI
 {
     public static class CombatAI_Utility
     {
+        public static bool GetAvoidanceTracker(this Pawn pawn, out AvoidanceTracker.AvoidanceReader reader)
+        {            
+            return pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out reader);
+        }
+
+        public static bool HasWeaponVisible(this Pawn pawn)
+        {
+            return (pawn.CurJob?.def.alwaysShowWeapon ?? false) || (pawn.mindState?.duty?.def.alwaysShowWeapon ?? false);
+        }
+
         public static bool GetSightReader(this Pawn pawn, out SightTracker.SightReader reader)
         {
             SightTracker tracker = pawn.Map.GetComp_Fast<SightTracker>();

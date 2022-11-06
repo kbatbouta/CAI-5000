@@ -162,19 +162,28 @@ namespace CombatAI.Patches
                 if (map != null)
                 {
                     var value = 0;
+                    var visibility = 0f;
                     if (sightReader != null)
                     {
-                        var visibility = sightReader.GetVisibilityToEnemies(index);
+                        visibility = sightReader.GetVisibilityToEnemies(index);
                         if (visibility > visibilityAtDest)
-                        {
-                            value += (int)(visibility * 45);
+                        {                            
+                            value += (int)(visibility * 45f);
                         }
                     }
                     if (value > 0)
                     {
                         if (avoidanceReader != null)
                         {
-                            value += (int)(avoidanceReader.GetProximity(index) * 20 + avoidanceReader.GetDanger(index) * 10);
+                            var avoidance = (avoidanceReader.GetProximity(index) * 15f + avoidanceReader.GetDanger(index) * 10);
+                            if (visibility <= 0f)
+                            {
+                                value += (int)avoidance;
+                            }
+                            else
+                            {
+                                value += (int)Mathf.Min(avoidance, visibility * 22.5f);
+                            }                            
                         }
                         //if (lightingTracker != null)
                         //    value += (int)(lightingTracker.CombatGlowAt(map.cellIndices.IndexToCell(index)) * 25f);

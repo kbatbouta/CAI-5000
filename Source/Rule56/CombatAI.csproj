@@ -35,12 +35,14 @@
 	  <Folder Include="Patches\" />
 	  <Folder Include="Collections\" />
 	  <Folder Include="Comps\" />
+	  <Folder Include="Utilities\" />
 	</ItemGroup>	
 	<ItemGroup>
 	  <None Remove="Gui\Core\GUIUtility.ScrollViews" />
 	  <None Remove="Patches\" />
 	  <None Remove="Collections\" />
 	  <None Remove="Comps\" />
+	  <None Remove="Utilities\" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">
@@ -51,6 +53,9 @@
 		</None>
 		<None Update="..\..\1.4\Languages\English\Keyed\Translations.xml">
 			<Link>English.Lang</Link>
+		</None>
+		<None Update="..\..\1.4\Patches\Races_Animal_Base.xml">
+		  <Link>Xml\Patches\\Races_Animal_Base.xml</Link>
 		</None>
 	</ItemGroup>
 	<!-- ................ -->

@@ -20,7 +20,7 @@ namespace CombatAI.Patches
         //private static CombatReservationManager combatReservationManager;
         //private static bool tpsLow;
 
-        [HarmonyPatch(typeof(AttackTargetFinder), "BestAttackTarget")]
+        [HarmonyPatch(typeof(AttackTargetFinder), nameof(AttackTargetFinder.BestAttackTarget))]
         internal static class AttackTargetFinder_BestAttackTarget_Patch
         {
             //private static bool EMPOnlyTargetsMechanoids()

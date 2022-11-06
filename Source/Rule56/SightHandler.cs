@@ -10,6 +10,8 @@ using System.Threading;
 using System.Linq;
 using System.Net.NetworkInformation;
 using static UnityEngine.GraphicsBuffer;
+using CombatAI.Comps;
+using TMPro;
 
 namespace CombatAI
 {
@@ -35,7 +37,7 @@ namespace CombatAI
             /// The thing faction on registeration.
             /// </summary>
             public Faction faction; 
-        }
+        }        
 
         public readonly Map map;
         public readonly SightTracker sightTracker;
@@ -44,6 +46,7 @@ namespace CombatAI
         public readonly int updateInterval;
 
         private object locker = new object();
+        private object locker_Events = new object();
 
         private List<IThingSightRecord> tmpInvalidRecords = new List<IThingSightRecord>();
         private List<IThingSightRecord> tmpInconsistentRecords = new List<IThingSightRecord>();
@@ -55,7 +58,8 @@ namespace CombatAI
         private readonly Dictionary<Thing, IThingSightRecord> records = new Dictionary<Thing, IThingSightRecord>();
         private readonly List<IThingSightRecord>[] pool;
         private readonly List<Action> castingQueue = new List<Action>();
-        
+        private readonly List<Action> eventQueue = new List<Action>();
+
         private bool mapIsAlive = true;
         private bool wait = false;
 
@@ -82,10 +86,14 @@ namespace CombatAI
 
         public virtual void Tick()
         {
+            if (GenTicks.TicksGame % 15 == 0)
+            {
+                ProcessEvents();
+            }
             if (ticksUntilUpdate-- > 0 || wait)
             {
                 return;
-            }            
+            }
             tmpInvalidRecords.Clear();
             tmpInconsistentRecords.Clear();
             List<IThingSightRecord> curPool = pool[curIndex];
@@ -171,6 +179,10 @@ namespace CombatAI
         {
             try
             {
+                lock (locker_Events)
+                {
+                    eventQueue.Clear();
+                }
                 mapIsAlive = false;
                 thread.Join();
             }
@@ -229,6 +241,7 @@ namespace CombatAI
                 return false;
             }
             int range = SightUtility.GetSightRange(record.thing);
+            int ticks = GenTicks.TicksGame;
             if (range < 3)
             {
                 return false;
@@ -239,14 +252,27 @@ namespace CombatAI
                 Log.Error($"CE: SighGridUpdater {record.thing} position is outside the map's bounds!");
                 return false;
             }
+            ThingComp_CombatAI comp = record.thing.GetComp_Fast<ThingComp_CombatAI>(allowFallback: false);            
             Action action = () =>
             {
                 grid.Next(GetFlags(record));
                 grid.Set(pos, 1.0f, Vector2.zero);
                 float r = range * 1.23f;
                 float rSqr = range * range;
+                bool notified_ApprochingEnemies = comp == null || comp.sightReader == null;
                 ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
                 {
+                    if (!notified_ApprochingEnemies && comp.sightReader.GetAbsVisibilityToEnemies(cell) > 0)
+                    {
+                        notified_ApprochingEnemies = true;
+                        lock (locker_Events)
+                        {
+                            eventQueue.Add(() =>
+                            {
+                                comp.Notify_ApprochingEnemies();
+                            });
+                        }
+                    }
                     // NOTE: the carry is the number of cover things between the source and the current cell.                       
                     float visibility = (float)(r - dist) / r * (1 - coverRating);
                     // only set anything if visibility is ok
@@ -262,7 +288,7 @@ namespace CombatAI
             }
             record.lastCycle = grid.CycleNum;            
             return true;
-        }                
+        }        
 
         private void OffMainThreadLoop()
         {
@@ -290,6 +316,29 @@ namespace CombatAI
                 }
             }
             Log.Message("CE: SightGridManager thread stopped!");
+        }        
+
+        private void ProcessEvents()
+        {
+            while (mapIsAlive)
+            {
+                Action action = null;
+                lock (locker_Events)
+                {
+                    if (eventQueue.Count > 0)
+                    {
+                        action = eventQueue.Pop();
+                    }
+                }
+                if (action == null)
+                {
+                    break;
+                }
+                else
+                {
+                    action();
+                }
+            }
         }
 
         private IntVec3 GetShiftedPosition(IThingSightRecord record)

@@ -13,7 +13,7 @@ namespace CombatAI.Patches
         {
             public static bool Prefix(Pawn pawn, ref IntVec3 __result)
             {                
-                if (pawn.GetSightReader(out SightTracker.SightReader reader))                    
+                if (pawn.Faction == null && pawn.GetSightReader(out SightTracker.SightReader reader))                    
                 {
                     IntVec3 minCell = pawn.Position;
                     IntVec3 root = pawn.Position;
@@ -21,15 +21,16 @@ namespace CombatAI.Patches
                     float minCost = rootVisibility + 1;                    
                     pawn.Map.GetCellFlooder().Flood(pawn.Position, (cell, parent, dist) =>
                     {
-                        //pawn.Map.debugDrawer.FlashCell(cell, Mathf.Clamp(dist + 75f, 0, 150f) / 150f, $"{dist}");
-                        if((dist < minCost || (Mathf.Abs(dist - minCost) < 1e-1 && Rand.Chance(0.5f))) && pawn.CanReach(cell, PathEndMode.OnCell, Danger.Unspecified))
+                        //
+                        // pawn.Map.debugDrawer.FlashCell(cell, Mathf.Clamp(dist + 75f, 0, 150f) / 150f, $"{dist}");
+                        if((dist < minCost || Mathf.Abs(dist - minCost) < 1e-1 && Rand.Chance(0.5f)) && pawn.CanReach(cell, PathEndMode.OnCell, Danger.Unspecified))
                         {
                             minCost = dist;
                             minCell = cell;
                         }
                     }, (cell) =>
                     {                       
-                        return (reader.GetVisibilityToEnemies(cell) - rootVisibility) * 1.3f;
+                        return (reader.GetVisibilityToNeutrals(cell) - rootVisibility) * 1.3f;
                     }, maxDist: 15);
                     if (minCell != root)
                     {

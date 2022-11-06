@@ -111,7 +111,16 @@ namespace CombatAI
                     return value;
                 }
             }
-        }        
+        }
+
+        public static T GetComp_Fast<T>(this Thing thing, bool allowFallback = true) where T : ThingComp
+        {
+            if (thing is ThingWithComps thingWithComps)
+            {
+                return GetComp_Fast<T>(thingWithComps, allowFallback);
+            }
+            return null;
+        }
 
         public static T GetComp_Fast<T>(this ThingWithComps thing, bool allowFallback = true) where T : ThingComp
         {

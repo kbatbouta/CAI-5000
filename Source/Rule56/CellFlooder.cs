@@ -7,7 +7,7 @@ namespace CombatAI
 {
     public class CellFlooder
     {       
-        private struct Node : IComparable<Node>
+        public struct Node : IComparable<Node>
         {
             public IntVec3 cell;
             public IntVec3 parent;            
@@ -44,8 +44,10 @@ namespace CombatAI
             this.walls = map.GetComponent<WallGrid>();
             this.sigArray = new int[map.cellIndices.NumGridCells]; 
         }
-        
-        public void Flood(IntVec3 center, Action<IntVec3, IntVec3, float> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
+
+        public void Flood(IntVec3 center, Action<IntVec3, IntVec3, float> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25) => Flood(center, (node) => action(node.cell, node.parent, node.dist), costFunction, validator, maxDist);
+
+        public void Flood(IntVec3 center, Action<Node> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
         {
             sig++;
             Func<IntVec3, bool> blocked = GetBlockedTestFunc(validator);
@@ -65,7 +67,7 @@ namespace CombatAI
                 node = floodQueue.Dequeue();
                 //
                 // TODO optimize this some more
-                action(node.cell, node.parent, node.dist);
+                action(node);
 
                 // map.debugDrawer.FlashCell(node.cell, node.dist / 25f, $"{map.cellIndices.CellToIndex(node.cell)} {map.cellIndices.CellToIndex(node.parent)}", duration: 15);
                 //

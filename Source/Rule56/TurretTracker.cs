@@ -26,7 +26,7 @@ namespace CombatAI
         public void Register(Building_Turret t)
         {            
             if (!Turrets.Contains(t))
-            {                
+            {
                 Turrets.Add(t);                  
             }
         }        
@@ -43,7 +43,7 @@ namespace CombatAI
         public Thing ClosestTurret(IntVec3 position, PathEndMode pathEndMode, TraverseParms parms, float maxDist,
             Predicate<Thing> validator = null)
         {
-            return GenClosest.ClosestThingReachable(
+            return Verse.GenClosest.ClosestThingReachable(
                 position, map, ThingRequest.ForUndefined(), pathEndMode,
                 parms, maxDist, validator, Turrets);
         }                   

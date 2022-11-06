@@ -34,7 +34,7 @@ namespace CombatAI.Patches
                     member.Map.GetComp_Fast<AvoidanceTracker>().Notify_Death(member, member.Position);
                 }
             }
-        }       
+        }      
     }
 }
 
