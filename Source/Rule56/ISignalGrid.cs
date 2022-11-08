@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Text;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 
 namespace CombatAI
 {      
@@ -97,7 +98,7 @@ namespace CombatAI
         
         private short sig = 13;                        
         private short cycle = 19;
-        private UInt64 currentSignalFlags;
+        //private UInt64 currentSignalFlags;
 
         #endregion
 
@@ -151,11 +152,11 @@ namespace CombatAI
                     float t = record.expireAt - CycleNum;
                     if (t == 1)
                     {
-                        record.signalNum++;
-                        //float visibility = (range - dist) / range * num;
+                        record.signalNum++;                        
                         record.signalStrength += signalStrength;                        
                         record.extras.direction += dir;
-                        record.extras.flags |= currentSignalFlags;                        
+                        // TODO remake
+                        // record.extras.flags |= flags;
                     }
                     else
                     {
@@ -172,7 +173,47 @@ namespace CombatAI
                         record.signalNum = 1;
                         record.signalStrength = signalStrength;
                         record.extras.direction = dir;
-                        record.extras.flags = currentSignalFlags;                     
+                        record.extras.flags = 0;                     
+                    }
+                    record.sig = sig;
+                    signalArray[index] = record;
+                }
+            }
+        }
+
+        public void Set(IntVec3 cell, float signalStrength, Vector2 dir, UInt64 flags) => Set(cellIndices.CellToIndex(cell), signalStrength, dir, flags);
+        public void Set(int index, float signalStrength, Vector2 dir, UInt64 flags)
+        {
+            if (index >= 0 && index < mapCellNum)
+            {
+                ISightCell record = signalArray[index];
+                if (record.sig != sig)
+                {
+                    IntVec3 cell = cellIndices.IndexToCell(index);
+                    float t = record.expireAt - CycleNum;
+                    if (t == 1)
+                    {
+                        record.signalNum++;                        
+                        record.signalStrength += signalStrength;
+                        record.extras.direction += dir;
+                        record.extras.flags |= flags;
+                    }
+                    else
+                    {
+                        if (t == 0)
+                        {
+                            record.expireAt = (short)(CycleNum + 1);
+                            record.Next(expired: false);
+                        }
+                        else
+                        {
+                            record.expireAt = (short)(CycleNum + 1);
+                            record.Next(expired: true);
+                        }
+                        record.signalNum = 1;
+                        record.signalStrength = signalStrength;
+                        record.extras.direction = dir;
+                        record.extras.flags = flags;
                     }
                     record.sig = sig;
                     signalArray[index] = record;
@@ -258,11 +299,10 @@ namespace CombatAI
         /// <param name="center">Center of casting.</param>
         /// <param name="range">Expected range of casting.</param>
         /// <param name="casterFlags">caster's Flags</param>
-        public void Next(UInt64 casterFlags)
+        public void Next()
         {            
             if (sig++ == short.MaxValue)
-                sig = 19;            
-            this.currentSignalFlags = casterFlags;
+                sig = 19;    
         }
 
         public void NextCycle()
@@ -274,8 +314,7 @@ namespace CombatAI
             if (cycle++ == short.MaxValue)
             {
                 cycle = 13;
-            }
-            this.currentSignalFlags = 0;
+            }            
         }
 
         private static StringBuilder _builder = new StringBuilder();

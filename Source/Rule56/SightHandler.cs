@@ -43,11 +43,11 @@ namespace CombatAI
         public readonly SightTracker sightTracker;
         public readonly ISignalGrid grid;
         public readonly int bucketCount;
-        public readonly int updateInterval;
+        public readonly int updateInterval;        
 
         private object locker = new object();
         private object locker_Events = new object();
-
+        
         private List<IThingSightRecord> tmpInvalidRecords = new List<IThingSightRecord>();
         private List<IThingSightRecord> tmpInconsistentRecords = new List<IThingSightRecord>();
 
@@ -55,7 +55,7 @@ namespace CombatAI
         private int curIndex;
         private ThreadStart threadStart;
         private Thread thread;        
-        private readonly Dictionary<Thing, IThingSightRecord> records = new Dictionary<Thing, IThingSightRecord>();
+        private readonly Dictionary<Thing, IThingSightRecord> records = new Dictionary<Thing, IThingSightRecord>();        
         private readonly List<IThingSightRecord>[] pool;
         private readonly List<Action> castingQueue = new List<Action>();
         private readonly List<Action> eventQueue = new List<Action>();
@@ -71,7 +71,7 @@ namespace CombatAI
             this.bucketCount = bucketCount;            
             grid = new ISignalGrid(map);
             
-            ticksUntilUpdate = Rand.Int % updateInterval;
+            ticksUntilUpdate = Rand.Int % updateInterval;            
             
             pool = new List<IThingSightRecord>[this.bucketCount];
             for (int i = 0; i < this.bucketCount; i++)
@@ -231,7 +231,7 @@ namespace CombatAI
 
         private UInt64 GetFlags(IThingSightRecord record)
         {
-            return record.thing.GetCombatFlags();
+            return record.thing.GetThingFlags();
         }
 
         private bool TryCastSight(IThingSightRecord record)
@@ -241,36 +241,45 @@ namespace CombatAI
                 return false;
             }
             int range = SightUtility.GetSightRange(record.thing);
-            int ticks = GenTicks.TicksGame;
-            if (range < 3)
-            {
-                return false;
-            }
+            int ticks = GenTicks.TicksGame;            
             IntVec3 pos = GetShiftedPosition(record);
             if (!pos.InBounds(map))
             {
                 Log.Error($"CE: SighGridUpdater {record.thing} position is outside the map's bounds!");
                 return false;
             }
-            ThingComp_CombatAI comp = record.thing.GetComp_Fast<ThingComp_CombatAI>(allowFallback: false);            
+            ThingComp_CombatAI comp = record.thing.GetComp_Fast<ThingComp_CombatAI>(allowFallback: false);
+            bool scanForEnemies = comp?.sightReader != null && !(record.faction?.IsPlayerSafe() ?? false);           
             Action action = () =>
             {
-                grid.Next(GetFlags(record));
-                grid.Set(pos, 1.0f, Vector2.zero);
+                if (scanForEnemies)
+                {
+                    lock (locker_Events)
+                    {
+                        eventQueue.Add(() =>
+                        {
+                            comp.OnScanStarted();
+                        });
+                    }
+                }
+                grid.Next();
+                grid.Set(pos, 1.0f, Vector2.zero, GetFlags(record));                
                 float r = range * 1.23f;
-                float rSqr = range * range;
-                bool notified_ApprochingEnemies = comp == null || comp.sightReader == null;
+                float rSqr = range * range;                      
                 ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
                 {
-                    if (!notified_ApprochingEnemies && comp.sightReader.GetAbsVisibilityToEnemies(cell) > 0)
+                    if (scanForEnemies)
                     {
-                        notified_ApprochingEnemies = true;
-                        lock (locker_Events)
+                        UInt64 flag = comp.sightReader.GetEnemyFlags(cell);
+                        if (flag != 0)
                         {
-                            eventQueue.Add(() =>
+                            lock (locker_Events)
                             {
-                                comp.Notify_ApprochingEnemies();
-                            });
+                                eventQueue.Add(() =>
+                                {                                    
+                                    comp.Notify_EnemiesVisible(sightTracker.factionedIndices.GetThings(flag).Where(t => t.Spawned && !t.Destroyed && t.Position.DistanceToSquared(cell) < 25).ToList());                                                                        
+                                });
+                            }                            
                         }
                     }
                     // NOTE: the carry is the number of cover things between the source and the current cell.                       
@@ -278,9 +287,19 @@ namespace CombatAI
                     // only set anything if visibility is ok
                     if (visibility >= 0f && pos.DistanceToSquared(cell) < rSqr)
                     {
-                        grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z) * visibility);
+                        grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                     }
                 }, range, COVERCARRYLIMIT);
+                if (scanForEnemies)
+                {
+                    lock (locker_Events)
+                    {
+                        eventQueue.Add(() =>
+                        {
+                            comp.OnScanFinished();
+                        });
+                    }
+                }
             };
             lock (locker)
             {
@@ -307,7 +326,7 @@ namespace CombatAI
                     }
                 }                
                 if (castAction != null)
-                {
+                {                    
                     castAction.Invoke();
                 }                
                 if (castActionsLeft == 0)
@@ -315,7 +334,7 @@ namespace CombatAI
                     Thread.Sleep(Finder.Settings.Advanced_SightThreadIdleSleepTimeMS);
                 }
             }
-            Log.Message("CE: SightGridManager thread stopped!");
+            Log.Message("ISMA: SightGridManager thread stopped!");
         }        
 
         private void ProcessEvents()
@@ -327,7 +346,8 @@ namespace CombatAI
                 {
                     if (eventQueue.Count > 0)
                     {
-                        action = eventQueue.Pop();
+                        action = eventQueue[0];
+                        eventQueue.RemoveAt(0);
                     }
                 }
                 if (action == null)

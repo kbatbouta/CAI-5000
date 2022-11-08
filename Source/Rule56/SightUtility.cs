@@ -45,7 +45,7 @@ namespace CombatAI
             }
             if (verb == null)
             {
-                return -1;
+                return 4;
             }
             float range;
             if (pawn.RaceProps.Insect || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Animal)
@@ -58,30 +58,30 @@ namespace CombatAI
                 {
                     return (int)Mathf.Max(range * 0.75f, 5f);
                 }
-                return -1;
+                return 4;
             }
             if (verb.IsMeleeAttack)
             {
                 SkillRecord melee = pawn.skills?.GetSkill(SkillDefOf.Melee) ?? null;
                 if (melee != null)
                 {
-                    float skill = melee.Level;
-                    return (int)(Mathf.Clamp(skill, 4, 13) * ((pawn.equipment?.Primary?.def.IsMeleeWeapon ?? null) != null ? 1.5f : 0.85f));
+                    float meleeSkill = melee.Level;
+                    return (int)(Mathf.Clamp(meleeSkill, 5, 13) * ((pawn.equipment?.Primary?.def.IsMeleeWeapon ?? null) != null ? 1.5f : 0.85f));
                 }
-                return 5;
+                return 4;
             }
-            if ((range = verb.EffectiveRange * 0.75f) > 2.5f)
+            else
             {
+                range = verb.EffectiveRange * 0.75f;
                 SkillRecord shooting = pawn.skills?.GetSkill(SkillDefOf.Shooting) ?? null;
                 float skill = 5;
                 if (shooting != null)
                 {
                     skill = shooting.Level;
                 }
-                range = Mathf.Max(range * Mathf.Clamp(skill / 7.5f, 0.778f, 1.425f), 5);
+                range = Mathf.Max(range * Mathf.Clamp(skill / 7.5f, 0.778f, 1.425f), 4);
                 return Mathf.CeilToInt(range);
             }
-            return -1;
         }
 
         public static int GetSightRange(Building_TurretGun turret)

@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Security.Cryptography;
+using Mono.Unix.Native;
+using RimWorld;
 using UnityEngine;
 using Verse;
+using static CombatAI.AvoidanceTracker;
+using static CombatAI.SightTracker;
 
 namespace CombatAI
 {
@@ -9,6 +14,26 @@ namespace CombatAI
         public static bool GetAvoidanceTracker(this Pawn pawn, out AvoidanceTracker.AvoidanceReader reader)
         {            
             return pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out reader);
+        }
+
+        public static TGrid<float> GetTGrid(this Map map)
+        {
+            TGrid<float> grid = map.GetComp_Fast<MapComponent_CombatAI>().tempGrid;
+            grid.Reset();
+            return grid;
+        }
+
+        public static Verb TryGetAttackVerb(this Thing thing)
+        {
+            if (thing is Pawn pawn)
+            {
+                if (pawn.equipment != null && pawn.equipment.Primary != null && pawn.equipment.PrimaryEq.PrimaryVerb.Available())
+                {
+                    return pawn.equipment.PrimaryEq.PrimaryVerb;
+                }
+                return pawn.meleeVerbs?.curMeleeVerb ?? null;
+            }
+            return null;
         }
 
         public static bool HasWeaponVisible(this Pawn pawn)
@@ -22,9 +47,14 @@ namespace CombatAI
             return tracker.TryGetReader(pawn, out reader);
         }
 
-        public static UInt64 GetCombatFlags(this Thing thing)
+        public static UInt64 GetThingFlags(this Thing thing)
         {
-            return ((UInt64)1) << (thing.thingIDNumber % 64);
+            return ((UInt64)1) << (GetThingFlagsIndex(thing));
+        }
+
+        public static int GetThingFlagsIndex(this Thing thing)
+        {
+            return thing.thingIDNumber % 64;
         }
 
         public static float DistanceToSegmentSquared(this Vector3 point, Vector3 lineStart, Vector3 lineEnd, out Vector3 closest)
@@ -58,12 +88,12 @@ namespace CombatAI
                 dz = point.z - closest.z;
             }
             return dx * dx + dz * dz;
-        }
+        }        
 
         public static CellFlooder GetCellFlooder(this Map map)
         {
             return map.GetComp_Fast<MapComponent_CombatAI>().flooder;
-        }
+        }        
     }
 }
 
