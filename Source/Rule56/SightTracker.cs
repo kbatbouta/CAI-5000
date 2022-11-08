@@ -159,15 +159,15 @@ namespace CombatAI
         public SightTracker(Map map) : base(map)
         {
             colonistsAndFriendlies =
-                new SightHandler(this, 10, 3);
+                new SightHandler(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
             raidersAndHostiles =
-                new SightHandler(this, 10, 3);
+                new SightHandler(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
             insectsAndMechs =
-                new SightHandler(this, 20, 3);
+                new SightHandler(this, Finder.Settings.SightSettings_MechsAndInsects);
             wildlife =
-                new SightHandler(this, 10, 6);
+                new SightHandler(this, Finder.Settings.SightSettings_Wildlife);
             settlementTurrets =
-                new SightHandler(this, 10, 10);
+                new SightHandler(this, Finder.Settings.SightSettings_SettlementTurrets);
 
             factionedIndices = new FlagedBuckets();
             wildIndices = new FlagedBuckets();

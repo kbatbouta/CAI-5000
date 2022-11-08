@@ -13,7 +13,9 @@ namespace CombatAI.Comps
     public class ThingComp_CombatAI : ThingComp
     {
         private int lastInterupted;
-        private bool scanning;                
+
+        private bool scanning;
+
         private HashSet<Thing> visibleEnemies;
 
         public SightTracker.SightReader sightReader;      
@@ -30,24 +32,26 @@ namespace CombatAI.Comps
                 Log.Warning($"ISMA: OnScanFinished called while not scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
             }
             scanning = false;
-            if (parent == null || parent.Destroyed || !parent.Spawned || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastInterupted < 360 )
+            if (parent == null || parent.Destroyed || !parent.Spawned || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastInterupted < 120)
             {
                 return;
             }
             Verb verb = parent.TryGetAttackVerb();
+            //parent.Map.debugDrawer.FlashCell(parent.Position, 0.1f, $"_{visibleEnemies.Count}");
             if (verb == null || verb.IsMeleeAttack)
             {
                 //parent.Map.debugDrawer.FlashCell(parent.Position, 0.1f, $"L{visibleEnemies.Count}");
                 return;
             }
-            //parent.Map.debugDrawer.FlashCell(parent.Position, 0.5f, $"W{visibleEnemies.Count}");
+            parent.Map.debugDrawer.FlashCell(parent.Position, 0.5f, $"w{visibleEnemies.Count}");
             if (parent is Pawn pawn)
             {
-                if (!(pawn.pather?.moving ?? false))
-                {
-                    return;
-                }
+                //if (!(pawn.pather?.moving ?? false))
+                //{
+                //    return;
+                //}
                 Thing bestEnemy = null;
+                IntVec3 bestEnemyPositon = IntVec3.Invalid;
                 float bestEnemyScore = 1e8f;
                 bool bestEnemyVisibleNow = false;
                 foreach (Thing enemy in visibleEnemies)
@@ -58,9 +62,10 @@ namespace CombatAI.Comps
                         {
                             if (!bestEnemyVisibleNow)
                             {
-                                bestEnemy = enemy;
-                                bestEnemyScore = pawn.Position.DistanceToSquared(enemy.Position);
                                 bestEnemyVisibleNow = true;
+                                bestEnemy = enemy;
+                                bestEnemyScore = pawn.Position.DistanceToSquared(enemy.Position);                                
+                                bestEnemyPositon = enemy.Position;
                             }
                             else
                             {
@@ -69,6 +74,7 @@ namespace CombatAI.Comps
                                 {
                                     bestEnemy = enemy;
                                     bestEnemyScore = distSqr;
+                                    bestEnemyPositon = enemy.Position;
                                 }
                             }
                         }
@@ -82,6 +88,7 @@ namespace CombatAI.Comps
                                 {
                                     bestEnemy = enemy;
                                     bestEnemyScore = distSqr;
+                                    bestEnemyPositon = shiftedPos;
                                 }
                             }
                         }
@@ -91,27 +98,59 @@ namespace CombatAI.Comps
                 {
                     return;
                 }
-                //parent.Map.debugDrawer.FlashCell(pawn.Position, 0.9f, "s", duration: 100);
-                if (bestEnemyVisibleNow)
+                parent.Map.debugDrawer.FlashCell(pawn.Position, 0.9f, "s", duration: 100);
+                // ------------------------------------------------------------
+                if (bestEnemyPositon.DistanceToSquared(pawn.Position) > 100)
                 {
-                    pawn.mindState.enemyTarget = bestEnemy;
-                    CastPositionRequest request = new CastPositionRequest();
-                    request.caster = pawn;
-                    request.target = bestEnemy;
-                    request.verb = verb;
-                    request.maxRangeFromLocus = 5;
-                    request.wantCoverFromTarget = true;
-                    if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell))
+                    if (bestEnemyVisibleNow)
                     {
-                        Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-                        Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
-                        pawn.jobs.StopAll();
-                        pawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-                        pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
+                        pawn.mindState.enemyTarget = bestEnemy;
+                        CastPositionRequest request = new CastPositionRequest();
+                        request.caster = pawn;
+                        request.target = bestEnemy;
+                        request.verb = verb;
+                        request.maxRangeFromLocus = Mathf.Sqrt(bestEnemyScore) / 2;
+                        request.wantCoverFromTarget = true;
+                        if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell))
+                        {
+                            Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
+                            job_goto.locomotionUrgency = LocomotionUrgency.Sprint;                            
+                            Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
+                            job_waitCombat.checkOverrideOnExpire = true;
+                            pawn.jobs.StopAll();
+                            pawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
+                            pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
+                        }
+                    }
+                    else
+                    {
+                        pawn.mindState.enemyTarget = bestEnemy;
+                        CoverPositionRequest request = new CoverPositionRequest();
+                        request.caster = pawn;
+                        request.target = new LocalTargetInfo(bestEnemyPositon);
+                        request.verb = verb;
+                        request.maxRangeFromCaster = Mathf.Sqrt(bestEnemyScore) / 2;
+                        request.checkBlockChance = true;
+                        if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
+                        {
+                            Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
+                            job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
+                            Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
+                            pawn.jobs.StopAll();
+                            pawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
+                            pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);                            
+                        }
+                        else
+                        {
+                            Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
+                            pawn.jobs.StopAll();
+                            pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
+                        }
                     }
                 }
                 else
                 {
+                    pawn.mindState.enemyTarget = bestEnemy;
                     Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                     pawn.jobs.StopAll();
                     pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);

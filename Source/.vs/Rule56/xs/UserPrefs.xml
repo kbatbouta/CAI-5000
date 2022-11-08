@@ -1,31 +1,26 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Rule56/ISignalGrid.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Rule56/SightTracker.cs">
     <Files>
       <File FileName="Rule56/CombatReservationManager.cs" Line="1" Column="1" />
       <File FileName="../About/About.xml" Line="3" Column="62" />
       <File FileName="Rule56/T4/Sources/Keyed.tt" Line="1" Column="1" />
       <File FileName="../1.4/Languages/English/Keyed/Translations.xml" Line="3" Column="57" />
       <File FileName="Rule56/CombatAIMod.cs" Line="64" Column="93" />
-      <File FileName="Rule56/CombatAI_Utility.cs" Line="16" Column="1" />
+      <File FileName="Rule56/CombatAI_Utility.cs" Line="29" Column="14" />
       <File FileName="Rule56/AvoidanceTracker.cs" Line="100" Column="37" />
       <File FileName="Rule56/Patches/Projectile_Patch.cs" Line="1" Column="1" />
       <File FileName="Rule56/Patches/AttackTargetFinder_Patch.cs" Line="98" Column="22" />
-      <File FileName="Rule56/Patches/CastPositionFinder_Patch.cs" Line="108" Column="27" />
+      <File FileName="Rule56/Patches/CastPositionFinder_Patch.cs" Line="145" Column="21" />
       <File FileName="Rule56/Patches/Building_TurretGun_Patch.cs" Line="1" Column="1" />
       <File FileName="Rule56/CellFlooder.cs" Line="49" Column="1" />
       <File FileName="Rule56/Patches/PathFinder_Patch.cs" Line="139" Column="39" />
       <File FileName="Rule56/Patches/MapPawns_Patch.cs" Line="1" Column="1" />
-      <File FileName="Rule56/Comps/ThingComp_CombatAI.cs" Line="58" Column="37" />
+      <File FileName="Rule56/Comps/ThingComp_CombatAI.cs" Line="76" Column="62" />
       <File FileName="Rule56/Patches/ThingWithComps_Patch.cs" Line="1" Column="1" />
       <File FileName="Rule56/Patches/Faction_Patch.cs" Line="37" Column="10" />
-      <File FileName="Rule56/SightTracker.cs" Line="132" Column="18" />
-      <File FileName="Rule56/SightHandler.cs" Line="258" Column="26" />
+      <File FileName="Rule56/SightTracker.cs" Line="165" Column="29" />
+      <File FileName="Rule56/SightHandler.cs" Line="271" Column="39" />
       <File FileName="Rule56/ShadowCastingUtility.cs" Line="1" Column="1" />
       <File FileName="Rule56/CompsCache.cs" Line="124" Column="1" />
       <File FileName="Rule56/MapComponent_CombatAI.cs" Line="10" Column="1" />
@@ -51,14 +46,15 @@
       <File FileName="Rule56/Patches/JobGiver_WanderAnywhere_Patch.cs" Line="1" Column="1" />
       <File FileName="Rule56/Patches/Game_Patch.cs" Line="1" Column="1" />
       <File FileName="Rule56/SightUtility.cs" Line="45" Column="14" />
-      <File FileName="Rule56/CoverUtility.cs" Line="53" Column="26" />
-      <File FileName="Rule56/ISignalGrid.cs" Line="158" Column="48" />
+      <File FileName="Rule56/ISignalGrid.cs" Line="158" Column="39" />
       <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/SuppressionUtility.cs" Line="49" Column="27" />
       <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/Jobs/JobGiver_ReactToSuppression.cs" Line="19" Column="47" />
       <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/Comps/CompSuppressable.cs" Line="207" Column="51" />
       <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/AI/Comps/Old/CompTend.cs" Line="73" Column="43" />
       <File FileName="Rule56/IShortTermMemoryGrid.cs" Line="1" Column="1" />
       <File FileName="Rule56/IShortTermMemoryHandler.cs" Line="1" Column="1" />
+      <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/AI/Jobs/Old/JobGiver_AIAttackEnemyInstant.cs" Line="54" Column="49" />
+      <File FileName="Rule56/CoverPositionRequest.cs" Line="10" Column="24" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -66,13 +62,6 @@
           <Node name="Rule56" expanded="True">
             <Node name="CombatAI" expanded="True">
               <Node name="Comps" expanded="True" />
-              <Node name="Patches" expanded="True" />
-              <Node name="ISignalGrid.cs" selected="True" />
-            </Node>
-            <Node name="CombatExtended" expanded="True">
-              <Node name="Utilities" expanded="True">
-                <Node name="Tracking" expanded="True" />
-              </Node>
             </Node>
           </Node>
         </State>
@@ -82,4 +71,9 @@
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
 </Properties>

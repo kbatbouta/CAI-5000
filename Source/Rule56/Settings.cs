@@ -8,6 +8,38 @@ namespace CombatAI
 {
     public class Settings : ModSettings
     {
+        /*                 
+         * -- * -- * -- * -- * -- * -- * -- * -- * --
+         */
+
+        /*
+         * 
+         * -- Sub --
+         * 
+         */
+
+        public class SightPerformanceSettings : IExposable
+        {
+            public int interval;
+            public int buckets;
+
+            public SightPerformanceSettings()
+            {
+            }
+
+            public SightPerformanceSettings(int interval, int buckets)
+            {
+                this.interval = interval;
+                this.buckets = buckets;
+            }            
+
+            public void ExposeData()
+            {
+                Scribe_Values.Look(ref interval, $"frequency.{version}");
+                Scribe_Values.Look(ref buckets, $"buckets.{version}");
+            }
+        }
+
         private const int version = 0;
 
         /*                 
@@ -20,9 +52,15 @@ namespace CombatAI
          * 
          */
 
+        public bool LeanCE_Enabled = false;
         public bool Pather_Enabled = true;
         public bool Caster_Enabled = true;
         public bool Targeter_Enabled = true;
+
+        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new Settings.SightPerformanceSettings(2, 5);        
+        public SightPerformanceSettings SightSettings_MechsAndInsects = new Settings.SightPerformanceSettings(3, 10);
+        public SightPerformanceSettings SightSettings_Wildlife = new Settings.SightPerformanceSettings(6, 10);
+        public SightPerformanceSettings SightSettings_SettlementTurrets = new Settings.SightPerformanceSettings(8, 15);
 
         /*
          * 
@@ -51,8 +89,28 @@ namespace CombatAI
          */
 
         public override void ExposeData()
-        {            
-            base.ExposeData();                        
+        {
+            base.ExposeData();
+            Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders.{version}");
+            if (SightSettings_FriendliesAndRaiders == null)
+            {
+                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(2, 5);
+            }
+            Scribe_Deep.Look(ref SightSettings_MechsAndInsects, $"CombatAI.SightSettings_MechsAndInsects.{version}");
+            if (SightSettings_MechsAndInsects == null)
+            {
+                SightSettings_MechsAndInsects = new SightPerformanceSettings(3, 10);
+            }            
+            Scribe_Deep.Look(ref SightSettings_Wildlife, $"CombatAI.SightSettings_Wildlife.{version}");
+            if (SightSettings_Wildlife == null)
+            {
+                SightSettings_Wildlife = new SightPerformanceSettings(6, 10);
+            }
+            Scribe_Deep.Look(ref SightSettings_SettlementTurrets, $"CombatAI.SightSettings_SettlementTurrets.{version}");
+            if (SightSettings_SettlementTurrets == null)
+            {
+                SightSettings_SettlementTurrets = new SightPerformanceSettings(8, 15);
+            }
             ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
         }
 

@@ -42,8 +42,8 @@ namespace CombatAI
         public readonly Map map;
         public readonly SightTracker sightTracker;
         public readonly ISignalGrid grid;
-        public readonly int bucketCount;
-        public readonly int updateInterval;        
+        public readonly Settings.SightPerformanceSettings settings;
+        public readonly int bucketNum;
 
         private object locker = new object();
         private object locker_Events = new object();
@@ -58,23 +58,23 @@ namespace CombatAI
         private readonly Dictionary<Thing, IThingSightRecord> records = new Dictionary<Thing, IThingSightRecord>();        
         private readonly List<IThingSightRecord>[] pool;
         private readonly List<Action> castingQueue = new List<Action>();
-        private readonly List<Action> eventQueue = new List<Action>();
+        private readonly List<Action> eventQueue = new List<Action>();        
 
         private bool mapIsAlive = true;
-        private bool wait = false;
+        private bool wait = false;        
 
-        public SightHandler(SightTracker sightTracker, int bucketCount, int updateInterval)
+        public SightHandler(SightTracker sightTracker, Settings.SightPerformanceSettings settings)
         {
             this.sightTracker = sightTracker;
             this.map = sightTracker.map;
-            this.updateInterval = updateInterval;
-            this.bucketCount = bucketCount;            
-            grid = new ISignalGrid(map);
+            this.settings = settings;                    
+            this.grid = new ISignalGrid(map);
+
+            bucketNum = settings.buckets;
+            ticksUntilUpdate = Rand.Int % this.settings.interval;            
             
-            ticksUntilUpdate = Rand.Int % updateInterval;            
-            
-            pool = new List<IThingSightRecord>[this.bucketCount];
-            for (int i = 0; i < this.bucketCount; i++)
+            pool = new List<IThingSightRecord>[bucketNum];
+            for (int i = 0; i < bucketNum; i++)
             {
                 pool[i] = new List<IThingSightRecord>();
             }
@@ -129,9 +129,9 @@ namespace CombatAI
                 }
                 tmpInconsistentRecords.Clear();
             }
-            ticksUntilUpdate = (int) updateInterval;            
+            ticksUntilUpdate = (int)settings.interval;            
             curIndex++;
-            if (curIndex >= bucketCount)
+            if (curIndex >= bucketNum)
             {
                 wait = true;
                 lock (locker)
@@ -159,7 +159,7 @@ namespace CombatAI
             {
                 IThingSightRecord record = new IThingSightRecord();
                 record.thing = thing;
-                record.bucketIndex = (thing.thingIDNumber + 19) % bucketCount;
+                record.bucketIndex = (thing.thingIDNumber + 19) % bucketNum;
                 record.faction = thing.Faction;
                 records.Add(thing, record);
                 pool[record.bucketIndex].Add(record);
@@ -365,7 +365,7 @@ namespace CombatAI
         {
             if (record.thing is Pawn pawn)
             {
-                return GetMovingShiftedPosition(pawn, updateInterval, bucketCount);
+                return GetMovingShiftedPosition(pawn, settings.interval, bucketNum);
             }
             else
             {
@@ -373,7 +373,7 @@ namespace CombatAI
             }
         }
 
-        private static IntVec3 GetMovingShiftedPosition(Pawn pawn, float updateInterval, int bucketCount)
+        private static IntVec3 GetMovingShiftedPosition(Pawn pawn, float updateInterval, int bucketNum)
         {
             PawnPath path;
 
@@ -382,7 +382,7 @@ namespace CombatAI
                 return pawn.Position;
             }
 
-            float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * (updateInterval * bucketCount) / 60f, path.NodesLeftCount - 1);
+            float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * (updateInterval * bucketNum) / 60f, path.NodesLeftCount - 1);
             return path.Peek(Mathf.FloorToInt(distanceTraveled));
         }
     }

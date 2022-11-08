@@ -93,6 +93,16 @@ namespace CombatAI.R
                    _CombatAI_Settings_Basic : _CombatAI_Settings_Basic = "CombatAI.Settings.Basic".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_CELean = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.CELean</c>. inner text:
+        ///
+        /// <code>Enable Combat Extended lean profile</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_CELean {
+            get => _CombatAI_Settings_Basic_CELean != null ? 
+                   _CombatAI_Settings_Basic_CELean : _CombatAI_Settings_Basic_CELean = "CombatAI.Settings.Basic.CELean".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic_Caster = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Caster</c>. inner text:
         ///
@@ -171,6 +181,96 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Settings_Advance_Enable {
             get => _CombatAI_Settings_Advance_Enable != null ? 
                    _CombatAI_Settings_Advance_Enable : _CombatAI_Settings_Advance_Enable = "CombatAI.Settings.Advance.Enable".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance</c>. inner text:
+        ///
+        /// <code>Performance</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance {
+            get => _CombatAI_Settings_Advance_Sight_Performance != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance : _CombatAI_Settings_Advance_Sight_Performance = "CombatAI.Settings.Advance.Sight.Performance".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Description</c>. inner text:
+        ///
+        /// <code>You can adjust how many buckets pawns/turrets are divided into and how often they updates. Warning: DON'T USE THIS IF YOU DON'T KNOW WHAT YOU'RE DOING</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Description {
+            get => _CombatAI_Settings_Advance_Sight_Performance_Description != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_Description : _CombatAI_Settings_Advance_Sight_Performance_Description = "CombatAI.Settings.Advance.Sight.Performance.Description".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_FrienldiesAndEnemies = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies</c>. inner text:
+        ///
+        /// <code>Humanlike factions</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_FrienldiesAndEnemies {
+            get => _CombatAI_Settings_Advance_Sight_Performance_FrienldiesAndEnemies != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_FrienldiesAndEnemies : _CombatAI_Settings_Advance_Sight_Performance_FrienldiesAndEnemies = "CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_MechsAndInsect = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.MechsAndInsect</c>. inner text:
+        ///
+        /// <code>Mechs and insects</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_MechsAndInsect {
+            get => _CombatAI_Settings_Advance_Sight_Performance_MechsAndInsect != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_MechsAndInsect : _CombatAI_Settings_Advance_Sight_Performance_MechsAndInsect = "CombatAI.Settings.Advance.Sight.Performance.MechsAndInsect".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_WildLife = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.WildLife</c>. inner text:
+        ///
+        /// <code>Wildlife</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_WildLife {
+            get => _CombatAI_Settings_Advance_Sight_Performance_WildLife != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_WildLife : _CombatAI_Settings_Advance_Sight_Performance_WildLife = "CombatAI.Settings.Advance.Sight.Performance.WildLife".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Turrets = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Turrets</c>. inner text:
+        ///
+        /// <code>Map turrets</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Turrets {
+            get => _CombatAI_Settings_Advance_Sight_Performance_Turrets != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_Turrets : _CombatAI_Settings_Advance_Sight_Performance_Turrets = "CombatAI.Settings.Advance.Sight.Performance.Turrets".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Readouts_Frequency = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Readouts.Frequency</c>. inner text:
+        ///
+        /// <code>Update frequency {0}Hz (buckets * interval)</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Readouts_Frequency {
+            get => _CombatAI_Settings_Advance_Sight_Performance_Readouts_Frequency != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_Readouts_Frequency : _CombatAI_Settings_Advance_Sight_Performance_Readouts_Frequency = "CombatAI.Settings.Advance.Sight.Performance.Readouts.Frequency".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Readouts.Buckets</c>. inner text:
+        ///
+        /// <code>Bucket count {0}</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets {
+            get => _CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets : _CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets = "CombatAI.Settings.Advance.Sight.Performance.Readouts.Buckets".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval</c>. inner text:
+        ///
+        /// <code>Ticks between bucket updates {0} Ticks</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval {
+            get => _CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval : _CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval = "CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval".Translate();
         }             
     }
 }

@@ -6,6 +6,7 @@ using RimWorld.BaseGen;
 using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
+using Verse.Noise;
 
 namespace CombatAI
 {
@@ -31,9 +32,10 @@ namespace CombatAI
             public VisibleRow firstRow;
             public int carryLimit = 5;
             public IntVec3 source;                       
-            public Map map;            
+            public Map map;
+            public WallGrid grid;
             public Action<IntVec3, int, int, float> setAction;
-        }
+        }      
 
         static ShadowCastingUtility()
         {
@@ -129,6 +131,28 @@ namespace CombatAI
                 }
             }
 
+            public void DebugFlash(Map map, IntVec3 root)
+            {
+                float startSlope = this.startSlope;
+                float endSlope = this.endSlope;
+                int min = (int)Mathf.Floor(startSlope * this.depth + 0.5f);
+                int max = (int)Mathf.Ceil(endSlope * this.depth - 0.5f);
+                IntVec3 left = root + _transformationFuncs[quartor](new IntVec3(this.depth, 0, min));
+                IntVec3 right = root + _transformationFuncs[quartor](new IntVec3(this.depth, 0, max));
+                int depth = this.depth;
+                map.GetComponent<MapComponent_CombatAI>().EnqueueMainThreadAction(() =>
+                {
+                    if (left.InBounds(map))
+                    {
+                        map.debugDrawer.FlashCell(left, 0.99f, $"{Math.Round(startSlope, 3)}");
+                    }
+                    if (right.InBounds(map))
+                    {
+                        map.debugDrawer.FlashCell(right, 0.01f, $"{Math.Round(endSlope, 3)}");
+                    }
+                });
+            }
+
             public IntVec3 Transform(IntVec3 oldOffset)
             {
                 return _transformationFuncs[quartor](oldOffset);
@@ -181,12 +205,12 @@ namespace CombatAI
                 return 3;
             }
             return 1;
-        }
+        }        
 
         private static void TryWeightedScan(CastRequest request)
         {
             int cellsScanned = 0;
-            WallGrid grid = request.map.GetComponent<WallGrid>();
+            WallGrid grid = request.grid;
             if (grid == null)
             {
                 Log.Error($"Wall grid not found for {request.map} with cast center {request.source}");
@@ -204,6 +228,7 @@ namespace CombatAI
                 {
                     continue;
                 }
+                //row.DebugFlash(request.map, request.source);
                 var lastCell = InvalidOffset;                
                 var lastIsWall = false;
                 var lastIsCover = false;
@@ -213,7 +238,7 @@ namespace CombatAI
                 foreach (Vector3 offset in row.Tiles())
                 {
                     FillCategory fill = FillCategory.None;
-                    IntVec3 cell = request.source + row.Transform(offset.ToIntVec3());                    
+                    IntVec3 cell = request.source + row.Transform(offset.ToIntVec3());                
                     bool isWall = !cell.InBounds(request.map) || (fill = grid.GetFillCategory(cell)) == FillCategory.Full;
                     bool isCover = !isWall && fill == FillCategory.Partial;
                     
@@ -283,12 +308,12 @@ namespace CombatAI
                     rowQueue.Add(nextRow);
                 }
             }
-        }
+        }      
 
         private static void TryVisibilityScan(CastRequest request)
         {
             int cellsScanned = 0;
-            WallGrid grid = request.map.GetComponent<WallGrid>();
+            WallGrid grid = request.grid;
             if (grid == null)
             {
                 Log.Error($"Wall grid not found for {request.map} with cast center {request.source}");
@@ -349,20 +374,77 @@ namespace CombatAI
             if (endSlope > 1.0f || startSlope < -1 || startSlope > endSlope)
             {
                 throw new InvalidOperationException($"CE: Scan quartor {quartor} endSlope and start slop must be between (-1, 1) but got start:{startSlope}\tend:{endSlope}");
+            }            
+            WallGrid grid = map.GetComponent<WallGrid>();
+            if(grid == null)
+            {
+                Log.Error($"Wall grid not found for {map} with cast center {source}");
+                return;
+            }  
+            IntVec3 coverLoc = source + _transformationFuncs[quartor](new IntVec3(1, 0, 0));
+            if (coverLoc.InBounds(map) && grid.GetFillCategory(coverLoc) == FillCategory.Full)
+            {
+                IntVec3 rightUpper = source + _transformationFuncs[quartor](new IntVec3(1, 0, -1));
+                IntVec3 rightLower = source + _transformationFuncs[quartor](new IntVec3(0, 0, -1));
+                bool rightBlocked = !rightUpper.InBounds(map) || grid.GetFillCategory(rightUpper) == FillCategory.Full || !rightLower.InBounds(map) || grid.GetFillCategory(rightLower) == FillCategory.Full;
+                IntVec3 leftUpper = source + _transformationFuncs[quartor](new IntVec3(1, 0, 1));
+                IntVec3 leftLower = source + _transformationFuncs[quartor](new IntVec3(0, 0, 1));
+                bool leftBlocked = !leftUpper.InBounds(map) || grid.GetFillCategory(leftUpper) == FillCategory.Full || !leftLower.InBounds(map) || grid.GetFillCategory(leftLower) == FillCategory.Full;
+                if (rightBlocked != leftBlocked || (!leftBlocked && !rightBlocked))
+                {                    
+                    if (!leftBlocked)
+                    {
+                        CastRequest requestLeft = new CastRequest();
+                        VisibleRow arcLeft = VisibleRow.First;
+                        arcLeft.startSlope = !Finder.Settings.LeanCE_Enabled ? startSlope : (-1f / Mathf.Max(maxDepth, 64));
+                        arcLeft.endSlope = endSlope;                        
+                        arcLeft.visibilityCarry = 1;
+                        arcLeft.maxDepth = maxDepth - 1;
+                        arcLeft.quartor = quartor;
+                        requestLeft.firstRow = arcLeft;
+                        requestLeft.grid = grid;
+                        requestLeft.carryLimit = carryLimit;
+                        requestLeft.map = map;
+                        requestLeft.source = leftLower;
+                        requestLeft.setAction = setAction;
+                        castAction(requestLeft);
+                    }
+                    if (!rightBlocked)
+                    {
+                        CastRequest requestRight = new CastRequest();
+                        VisibleRow arcRight = VisibleRow.First;                        
+                        arcRight.startSlope = startSlope;
+                        arcRight.endSlope = !Finder.Settings.LeanCE_Enabled ? endSlope : (1f / Mathf.Max(maxDepth, 64));                        
+                        arcRight.visibilityCarry = 1;
+                        arcRight.maxDepth = maxDepth - 1;
+                        arcRight.quartor = quartor;
+                        requestRight.firstRow = arcRight;
+                        requestRight.grid = grid;
+                        requestRight.carryLimit = carryLimit;
+                        requestRight.map = map;
+                        requestRight.source = rightLower;
+                        requestRight.setAction = setAction;
+                        castAction(requestRight);
+                    }
+                }
             }
-            CastRequest request = new CastRequest();            
-            VisibleRow arc = VisibleRow.First;
-            arc.startSlope = startSlope;
-            arc.endSlope = endSlope;
-            arc.visibilityCarry = 1;
-            arc.maxDepth = maxDepth;
-            arc.quartor = quartor;
-            request.firstRow = arc;
-            request.carryLimit = carryLimit;
-            request.map = map;
-            request.source = source;
-            request.setAction = setAction;            
-            castAction(request);
+            else
+            {
+                CastRequest request = new CastRequest();
+                VisibleRow arc = VisibleRow.First;
+                arc.startSlope = startSlope;
+                arc.endSlope = endSlope;
+                arc.visibilityCarry = 1;
+                arc.maxDepth = maxDepth;
+                arc.quartor = quartor;
+                request.firstRow = arc;
+                request.grid = grid;
+                request.carryLimit = carryLimit;
+                request.map = map;
+                request.source = source;
+                request.setAction = setAction;
+                castAction(request);
+            }
         }                         
     }
 }
