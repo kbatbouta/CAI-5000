@@ -111,26 +111,26 @@ namespace CombatAI
             {
                 SightSettings_SettlementTurrets = new SightPerformanceSettings(8, 15);
             }
-            ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
+            //ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
         }
 
-        private void ScribeValues()
-        {
-            foreach (FieldInfo f in typeof(Settings).GetFields(BindingFlags.Public))
-            {
-                if (f.HasAttribute<UnsavedAttribute>() || f.IsInitOnly)
-                {
-                    continue;
-                }
-                if (f.FieldType == typeof(string) || f.FieldType == typeof(int) || f.FieldType == typeof(float) || f.FieldType == typeof(double) || f.FieldType == typeof(bool) || f.FieldType == typeof(byte))
-                {
-                    object[] args = new object[] { f.GetValue(this), $"CombatAI.{f.Name}.{version}", f.GetValue(this), false };
-                    AccessTools.Method(typeof(Scribe_Values), nameof(Scribe_Values.Look), generics: new Type[] { f.FieldType })
-                        .Invoke(null, args);
-                    f.SetValue(this, args[0]);
-                }
-            }
-        }
+        //private void ScribeValues()
+        //{
+        //    foreach (FieldInfo f in typeof(Settings).GetFields(BindingFlags.Public))
+        //    {
+        //        if (f.HasAttribute<UnsavedAttribute>() || f.IsInitOnly)
+        //        {
+        //            continue;
+        //        }
+        //        if (f.FieldType == typeof(string) || f.FieldType == typeof(int) || f.FieldType == typeof(float) || f.FieldType == typeof(double) || f.FieldType == typeof(bool) || f.FieldType == typeof(byte))
+        //        {
+        //            object[] args = new object[] { f.GetValue(this), $"CombatAI.{f.Name}.{version}", f.GetValue(this), false };
+        //            AccessTools.Method(typeof(Scribe_Values), nameof(Scribe_Values.Look), generics: new Type[] { f.FieldType })
+        //                .Invoke(null, args);
+        //            f.SetValue(this, args[0]);
+        //        }
+        //    }
+        //}
     }
 }
 
