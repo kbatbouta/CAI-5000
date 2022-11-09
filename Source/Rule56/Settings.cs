@@ -111,6 +111,12 @@ namespace CombatAI
             {
                 SightSettings_SettlementTurrets = new SightPerformanceSettings(8, 15);
             }
+            Scribe_Values.Look(ref LeanCE_Enabled, $"LeanCE_Enabled.{version}");
+            Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
+            Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);
+            Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
+            Scribe_Values.Look(ref AdvancedUser, $"AdvancedUser.{version}");
+            Scribe_Values.Look(ref Debug_DrawShadowCasts, $"Debug_DrawShadowCasts.{version}");
             //ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
         }
 

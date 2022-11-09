@@ -27,7 +27,11 @@ namespace CombatAI
         {            
             if (!Turrets.Contains(t))
             {
-                Turrets.Add(t);                  
+                Turrets.Add(t);                
+            }
+            if (t is Building_TurretGun turretGun)
+            {
+                t.Map.GetComp_Fast<SightTracker>().Register(turretGun);
             }
         }        
 
@@ -35,7 +39,11 @@ namespace CombatAI
         {
             if (Turrets.Contains(t))
             {
-                Turrets.Remove(t);                             
+                Turrets.Remove(t);                
+            }
+            if (t is Building_TurretGun turretGun)
+            {
+                t.Map.GetComp_Fast<SightTracker>().DeRegister(turretGun);
             }
         }      
 

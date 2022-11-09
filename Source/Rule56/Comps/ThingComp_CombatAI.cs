@@ -33,28 +33,25 @@ namespace CombatAI.Comps
             }
             scanning = false;
 
-            if (parent == null || parent.Destroyed || !parent.Spawned || GenTicks.TicksGame - lastInterupted < 120 || visibleEnemies.Count == 0)
+            if (parent == null || parent.Destroyed || !parent.Spawned || GenTicks.TicksGame - lastInterupted < 120 || visibleEnemies.Count == 0 || (parent as Pawn)?.stances?.curStance is Stance_Warmup)
             {
                 return;
             }            
             Verb verb = parent.TryGetAttackVerb();
-            //parent.Map.debugDrawer.FlashCell(parent.Position, 0.1f, $"_{visibleEnemies.Count}");
+            // parent.Map.debugDrawer.FlashCell(parent.Position, 0.1f, $"_{visibleEnemies.Count}");
             if (verb == null || verb.IsMeleeAttack)
             {
                 //parent.Map.debugDrawer.FlashCell(parent.Position, 0.1f, $"L{visibleEnemies.Count}");
                 return;
             }
-            parent.Map.debugDrawer.FlashCell(parent.Position, 0.5f, $"w{visibleEnemies.Count}");
+            // parent.Map.debugDrawer.FlashCell(parent.Position, 0.5f, $"w{visibleEnemies.Count}");
             if (parent is Pawn pawn)
-            {
-                //if (!(pawn.pather?.moving ?? false))
-                //{
-                //    return;
-                //}
+            {                
                 Thing bestEnemy = null;
                 IntVec3 bestEnemyPositon = IntVec3.Invalid;
                 float bestEnemyScore = 1e8f;
                 bool bestEnemyVisibleNow = false;
+                bool bestEnemyVisibleSoon = false;
                 foreach (Thing enemy in visibleEnemies)
                 {
                     if (enemy != null && enemy.Spawned && !enemy.Destroyed)
@@ -62,8 +59,8 @@ namespace CombatAI.Comps
                         if (verb.CanHitTarget(bestEnemy))
                         {
                             if (!bestEnemyVisibleNow)
-                            {
-                                bestEnemyVisibleNow = true;
+                            {                                
+                                bestEnemyVisibleNow = true;                                
                                 bestEnemy = enemy;
                                 bestEnemyScore = pawn.Position.DistanceToSquared(enemy.Position);                                
                                 bestEnemyPositon = enemy.Position;
@@ -93,10 +90,11 @@ namespace CombatAI.Comps
                                 {
                                     bestEnemy = enemy;
                                     bestEnemyScore = distSqr;
-                                    bestEnemyPositon = shiftedPos;                                        
+                                    bestEnemyPositon = shiftedPos;
+                                    bestEnemyVisibleSoon = true;
                                 }
                             }
-                            else
+                            else if(!bestEnemyVisibleSoon)
                             {
                                 float distSqr = pawn.Position.DistanceToSquared(shiftedPos) * 2f;
                                 if (bestEnemyScore > distSqr)
@@ -113,7 +111,7 @@ namespace CombatAI.Comps
                 {
                     return;
                 }
-                parent.Map.debugDrawer.FlashCell(pawn.Position, 0.9f, "s", duration: 100);
+                // parent.Map.debugDrawer.FlashCell(pawn.Position, 0.9f, "s", duration: 100);
                 // ------------------------------------------------------------
                 if (bestEnemyPositon.DistanceToSquared(pawn.Position) > 100)
                 {
@@ -124,7 +122,7 @@ namespace CombatAI.Comps
                         request.caster = pawn;
                         request.target = bestEnemy;
                         request.verb = verb;
-                        request.maxRangeFromLocus = pawn.Position.DistanceTo(bestEnemy.Position) / 2;
+                        request.maxRangeFromLocus = Mathf.Min(pawn.Position.DistanceTo(bestEnemy.Position) / 2, 10);
                         request.wantCoverFromTarget = true;
                         if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell))
                         {
@@ -136,6 +134,12 @@ namespace CombatAI.Comps
                             pawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
                             pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
                         }
+                        else
+                        {
+                            Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
+                            pawn.jobs.StopAll();
+                            pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
+                        }
                     }
                     else
                     {
@@ -144,7 +148,7 @@ namespace CombatAI.Comps
                         request.caster = pawn;
                         request.target = new LocalTargetInfo(bestEnemyPositon);
                         request.verb = verb;
-                        request.maxRangeFromCaster = pawn.Position.DistanceTo(bestEnemy.Position) / 2;
+                        request.maxRangeFromCaster = Mathf.Min(pawn.Position.DistanceTo(bestEnemy.Position) / 2, 10);
                         request.checkBlockChance = true;
                         if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
                         {
