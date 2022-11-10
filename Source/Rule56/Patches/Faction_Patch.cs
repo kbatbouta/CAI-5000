@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using CombatAI.Comps;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -20,6 +21,7 @@ namespace CombatAI.Patches
                 if (member?.Spawned ?? false)
                 {
                     member.Map.GetComp_Fast<AvoidanceTracker>().Notify_Injury(member, member.Position);
+                    member.GetComp_Fast<ThingComp_Statistics>().Notify_PawnTookDamage();
                 }
             }
         }

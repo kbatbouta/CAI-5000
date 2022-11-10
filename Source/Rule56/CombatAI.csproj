@@ -36,6 +36,7 @@
 	  <Folder Include="Collections\" />
 	  <Folder Include="Comps\" />
 	  <Folder Include="Utilities\" />
+	  <Folder Include="Statistics\" />
 	</ItemGroup>	
 	<ItemGroup>
 	  <None Remove="Gui\Core\GUIUtility.ScrollViews" />
@@ -43,6 +44,7 @@
 	  <None Remove="Collections\" />
 	  <None Remove="Comps\" />
 	  <None Remove="Utilities\" />
+	  <None Remove="Statistics\" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">

@@ -73,7 +73,7 @@ namespace CombatAI.Patches
                         }
                         if (sightReader.GetVisibilityToEnemies(target.Thing.Position) > 3)
                         {
-                            result -= 30f;
+                            result -= 15f;
                         }
                         result += sightReader.GetEnemyDirection(target.Thing.Position).sqrMagnitude - Mathf.Pow(sightReader.GetVisibilityToEnemies(target.Thing.Position), 2);                        
                     }

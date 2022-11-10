@@ -135,11 +135,6 @@ namespace CombatAI
             }
         }
 
-        public int dude()
-        {
-            return 0;
-        }
-
         public void Set(IntVec3 cell, float signalStrength, Vector2 dir) => Set(cellIndices.CellToIndex(cell), signalStrength, dir);
         public void Set(int index, float signalStrength, Vector2 dir)
         {

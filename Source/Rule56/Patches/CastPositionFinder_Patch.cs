@@ -12,7 +12,6 @@ using UnityEngine.UIElements;
 using static CombatAI.SightTracker;
 using static CombatAI.CellFlooder;
 using System.Reflection.Emit;
-using KTrie;
 using System.Reflection;
 
 namespace CombatAI.Patches

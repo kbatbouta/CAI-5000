@@ -33,7 +33,7 @@ namespace CombatAI
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public float GetProximity(IntVec3 cell) => GetProximity(indices.CellToIndex(cell));
-            public float GetProximity(int index) => proximity != null ? Mathf.Min(proximity[index] * 0.5f, 20f)   : 0f;                      
+            public float GetProximity(int index) => proximity != null ? Mathf.Min(proximity[index] * 0.5f, 16)   : 0f;                      
         }
 
         public IShortTermMemoryHandler danger;        

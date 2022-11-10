@@ -4,6 +4,7 @@
 		<xpath>Defs/ThingDef[@Name="BasePawn"]/comps</xpath>
 		<value>
 			<li Class="CombatAI.Comps.CompProperties_CombatAI" />
+			<li Class="CombatAI.Comps.CompProperties_Statistics" />
 		</value>
 	</Operation>
 </Patch>

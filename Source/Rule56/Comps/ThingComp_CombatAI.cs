@@ -5,7 +5,6 @@ using System.Linq;
 using Verse;
 using UnityEngine;
 using Verse.AI;
-using UnityEngine.UIElements;
 using System.Threading;
 
 namespace CombatAI.Comps
