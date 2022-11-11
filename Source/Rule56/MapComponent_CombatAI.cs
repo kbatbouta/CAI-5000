@@ -10,18 +10,14 @@ namespace CombatAI
          * ----- ----- ----- -----
          */
 
-        private object locker = new object();
-        private bool queueEmpty = false;
-
-        private List<Action> queuedActions = new List<Action>();
+        private AsyncActions asyncActions;
 
         /*   ISMA map elements
          * ----- ----- ----- -----
          */
 
         public CellFlooder flooder;
-
-        public TGrid<float> tempGrid;
+        public IReusableGrid<float> f_grid;
 
         /* 
          * ----- ----- ----- -----
@@ -30,53 +26,19 @@ namespace CombatAI
         public MapComponent_CombatAI(Map map) : base(map)
         {
             flooder = new CellFlooder(map);
-            tempGrid = new TGrid<float>(map);
+            f_grid = new IReusableGrid<float>(map);
+            asyncActions = new AsyncActions();
         }
 
         public override void MapComponentTick()
         {
             base.MapComponentTick();
-            if (queueEmpty && GenTicks.TicksGame % 5 != 0)
-            {
-                return;
-            }
-            while (true)
-            {
-                Action action = null;
-                lock (locker)
-                {
-                    if(queuedActions.Count > 0)
-                    {
-                        action = queuedActions[0];
-                        queuedActions.RemoveAt(0);
-                        queueEmpty = queuedActions.Count == 0;
-                    }
-                }
-                if (action != null)
-                {
-                    try
-                    {
-                        action();
-                    }
-                    catch(Exception er)
-                    {
-                        Log.Error(er.Message);
-                    }
-                }
-                else
-                {
-                    break;
-                }            
-            }
+            asyncActions.ExecuteMainThreadActions();
         }
 
         public void EnqueueMainThreadAction(Action action)
         {
-            lock (locker)
-            {
-                queuedActions.Add(action);
-                queueEmpty = true;
-            }
+            asyncActions.EnqueueMainThreadAction(action);            
         }
     }
 }

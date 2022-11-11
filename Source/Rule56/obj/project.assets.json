@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     ".NETFramework,Version=v4.7.2": {
-      "Krafs.Rimworld.Ref/1.4.3536": {
+      "Krafs.Rimworld.Ref/1.4.3542": {
         "type": "package",
         "compile": {
           "ref/net472/Assembly-CSharp-firstpass.dll": {},
@@ -226,17 +226,17 @@
     }
   },
   "libraries": {
-    "Krafs.Rimworld.Ref/1.4.3536": {
-      "sha512": "OmAOLldbyuQ8pSZCp1dtcwV3vMB3RWRQ5oJa/t/GkQbL9Y+Ik4E/gkZYA12cm7B9xQIgniHSFNcXgslvxY4FrQ==",
+    "Krafs.Rimworld.Ref/1.4.3542": {
+      "sha512": "JlNTcYJlb62tNpd0jCDUy+TRXC6H3V4JOgiJvRL4TmTQLSGdto0EKdB6vvCLDAkgBEGd+DRQIXYo1VeXV6tm/g==",
       "type": "package",
-      "path": "krafs.rimworld.ref/1.4.3536",
+      "path": "krafs.rimworld.ref/1.4.3542",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
         "README.md",
         "icon.png",
-        "krafs.rimworld.ref.1.4.3536.nupkg.sha512",
+        "krafs.rimworld.ref.1.4.3542.nupkg.sha512",
         "krafs.rimworld.ref.nuspec",
         "ref/net472/Assembly-CSharp-firstpass.dll",
         "ref/net472/Assembly-CSharp.dll",
@@ -1303,7 +1303,7 @@
   },
   "projectFileDependencyGroups": {
     ".NETFramework,Version=v4.7.2": [
-      "Krafs.Rimworld.Ref >= 1.4.3536",
+      "Krafs.Rimworld.Ref >= 1.4.3542",
       "Lib.Harmony >= 2.2.2",
       "Microsoft.NETCore.Platforms >= 5.0.3",
       "Microsoft.NETFramework.ReferenceAssemblies.net472 >= 1.0.2",
@@ -1351,7 +1351,7 @@
         "dependencies": {
           "Krafs.Rimworld.Ref": {
             "target": "Package",
-            "version": "[1.4.3536, )",
+            "version": "[1.4.3542, )",
             "generatePathProperty": true
           },
           "Lib.Harmony": {
@@ -1380,7 +1380,7 @@
             "version": "[1.0.3, )"
           }
         },
-        "runtimeIdentifierGraphPath": "/Users/karimbatbouta/Library/Caches/VisualStudio/17.0/MSBuild/82857_3/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/Users/karimbatbouta/Library/Caches/VisualStudio/17.0/MSBuild/14390_3/RuntimeIdentifierGraph.json"
       }
     }
   }

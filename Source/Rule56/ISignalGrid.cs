@@ -22,7 +22,7 @@ namespace CombatAI
     public class ISignalGrid
     {        
         [StructLayout(LayoutKind.Auto)]
-        private struct ISightCell
+        private struct ISignalCell
         {            
             public short expireAt;
             public short sig;            
@@ -107,7 +107,7 @@ namespace CombatAI
         #region ReadonlyFields
         
         private readonly CellIndices cellIndices;        
-        private readonly ISightCell[] signalArray;               
+        private readonly ISignalCell[] signalArray;               
         private readonly Map map;
         private readonly int mapCellNum;
 
@@ -122,11 +122,11 @@ namespace CombatAI
         {
             cellIndices = map.cellIndices;                        
             mapCellNum = cellIndices.NumGridCells;    
-            signalArray = new ISightCell[mapCellNum];            
+            signalArray = new ISignalCell[mapCellNum];            
             this.map = map;            
             for (int i = 0; i < signalArray.Length; i++)
             {
-                signalArray[i] = new ISightCell()
+                signalArray[i] = new ISignalCell()
                 {
                     sig = 0,
                     expireAt = 0,
@@ -140,7 +140,7 @@ namespace CombatAI
         {
             if (index >= 0 && index < mapCellNum)
             {
-                ISightCell record = signalArray[index];                
+                ISignalCell record = signalArray[index];                
                 if (record.sig != sig)
                 {
                     IntVec3 cell = cellIndices.IndexToCell(index);                    
@@ -181,7 +181,7 @@ namespace CombatAI
         {
             if (index >= 0 && index < mapCellNum)
             {
-                ISightCell record = signalArray[index];
+                ISignalCell record = signalArray[index];
                 if (record.sig != sig)
                 {
                     IntVec3 cell = cellIndices.IndexToCell(index);
@@ -221,7 +221,7 @@ namespace CombatAI
         {
             if (index >= 0 && index < mapCellNum)
             {
-                ISightCell record = signalArray[index];
+                ISignalCell record = signalArray[index];
                 if (record.expireAt - CycleNum == 1)                
                     return Mathf.Max(record.signalNumPrev, record.signalNum);                
                 else if (record.expireAt - CycleNum == 0)
@@ -238,7 +238,7 @@ namespace CombatAI
         {
             if (index >= 0 && index < mapCellNum)
             {
-                ISightCell record = signalArray[index];
+                ISignalCell record = signalArray[index];
                 if (record.expireAt - CycleNum == 1)
                 {
                     signalNum = Mathf.Max(record.signalNumPrev, record.signalNum);
@@ -259,7 +259,7 @@ namespace CombatAI
         {
             if (index >= 0 && index < mapCellNum)
             {
-                ISightCell record = signalArray[index];
+                ISignalCell record = signalArray[index];
                 if (record.expireAt - CycleNum == 1)                      
                     return record.extras.flags | record.extras.flagsPrev;                
                 else if (record.expireAt - CycleNum == 0)
@@ -273,7 +273,7 @@ namespace CombatAI
         {
             if (index >= 0 && index < mapCellNum)
             {
-                ISightCell record = signalArray[index];
+                ISignalCell record = signalArray[index];
                 if (record.expireAt - CycleNum == 1)
                 {
                     if (record.signalNum > record.signalNumPrev)
@@ -319,7 +319,7 @@ namespace CombatAI
         {
             if (index >= 0 && index < mapCellNum)
             {
-                ISightCell record = signalArray[index];
+                ISignalCell record = signalArray[index];
                 _builder.Clear();
                 _builder.AppendFormat("<color=grey>{0}</color> {1}\n", "Partially expired ", record.expireAt - CycleNum == 0);
                 _builder.AppendFormat("<color=grey>{0}</color> {1}", "Expired           ", record.expireAt - CycleNum < 0);

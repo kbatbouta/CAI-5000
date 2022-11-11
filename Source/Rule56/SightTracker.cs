@@ -147,45 +147,45 @@ namespace CombatAI
             }
         }
 
-        public readonly SightHandler colonistsAndFriendlies;
-        public readonly SightHandler raidersAndHostiles;
-        public readonly SightHandler insectsAndMechs;
-        public readonly SightHandler settlementTurrets;
-        public readonly SightHandler wildlife;
+        public readonly SightGrid colonistsAndFriendlies;
+        public readonly SightGrid raidersAndHostiles;
+        public readonly SightGrid insectsAndMechs;
+        public readonly SightGrid settlementTurrets;
+        public readonly SightGrid wildlife;
 
-        public readonly FlagedBuckets factionedIndices;
-        public readonly FlagedBuckets wildIndices;
+        public readonly IThingsUInt64Map factionedUInt64Map;
+        public readonly IThingsUInt64Map wildUInt64Map;
 
         public SightTracker(Map map) : base(map)
         {
             colonistsAndFriendlies =
-                new SightHandler(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
+                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
             raidersAndHostiles =
-                new SightHandler(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
+                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
             insectsAndMechs =
-                new SightHandler(this, Finder.Settings.SightSettings_MechsAndInsects);
+                new SightGrid(this, Finder.Settings.SightSettings_MechsAndInsects);
             wildlife =
-                new SightHandler(this, Finder.Settings.SightSettings_Wildlife);
+                new SightGrid(this, Finder.Settings.SightSettings_Wildlife);
             settlementTurrets =
-                new SightHandler(this, Finder.Settings.SightSettings_SettlementTurrets);
+                new SightGrid(this, Finder.Settings.SightSettings_SettlementTurrets);
 
-            factionedIndices = new FlagedBuckets();
-            wildIndices = new FlagedBuckets();
+            factionedUInt64Map = new IThingsUInt64Map();
+            wildUInt64Map = new IThingsUInt64Map();
         }        
 
         public override void MapComponentTick()
         {            
             base.MapComponentTick();
             // --------------
-            colonistsAndFriendlies.Tick();
+            colonistsAndFriendlies.SightGridTick();
             // --------------
-            raidersAndHostiles.Tick();
+            raidersAndHostiles.SightGridTick();
             // --------------
-            insectsAndMechs.Tick();
+            insectsAndMechs.SightGridTick();
             // --------------
-            settlementTurrets.Tick();
+            settlementTurrets.SightGridTick();
             // --------------
-            wildlife.Tick();
+            wildlife.SightGridTick();
             //
             // debugging stuff.
             if (GenTicks.TicksGame % 15 == 0 && Finder.Settings.Debug_DrawShadowCasts)
@@ -371,24 +371,24 @@ namespace CombatAI
         public void Register(Building_TurretGun turret)
         {
             Faction mapFaction = map.ParentFaction;
-            if (turret.Faction != null && mapFaction != null && !turret.Faction.HostileTo(mapFaction))
+            if (turret.Faction != null && mapFaction != null && !turret.HostileTo(mapFaction))
             {
                 raidersAndHostiles.TryDeRegister(turret);                
                 settlementTurrets.Register(turret);                                
             }
-            else if(map.ParentFaction != null && (turret.Faction?.HostileTo(map.ParentFaction) ?? false))
+            else if(map.ParentFaction != null && turret.HostileTo(map.ParentFaction))
             {
                 raidersAndHostiles.TryDeRegister(turret);
             }
-            factionedIndices.Add(turret);
+            factionedUInt64Map.Add(turret);
         }
 
         public void Register(Pawn pawn)
         {
             // make sure it's not already in.
-            factionedIndices.Remove(pawn);
+            factionedUInt64Map.Remove(pawn);
             // make sure it's not already in.
-            wildIndices.Remove(pawn);
+            wildUInt64Map.Remove(pawn);
             // make sure it's not already in.
             colonistsAndFriendlies.TryDeRegister(pawn);
             // make sure it's not already in.
@@ -403,22 +403,22 @@ namespace CombatAI
             if (faction == null)
             {
                 wildlife.Register(pawn);
-                wildIndices.Add(pawn);
+                wildUInt64Map.Add(pawn);
             }
             else if (faction.def == FactionDefOf.Insect || faction.def == FactionDefOf.Mechanoid)
             {
                 insectsAndMechs.Register(pawn);
-                factionedIndices.Add(pawn);
+                factionedUInt64Map.Add(pawn);
             }
-            else if ((mapFaction != null && !faction.HostileTo(mapFaction)) || (mapFaction == null && Faction.OfPlayerSilentFail != null && !faction.HostileTo(Faction.OfPlayerSilentFail)))
+            else if ((mapFaction != null && !pawn.HostileTo(mapFaction)) || (mapFaction == null && Faction.OfPlayerSilentFail != null && !pawn.HostileTo(Faction.OfPlayerSilentFail)))
             {
                 colonistsAndFriendlies.Register(pawn);
-                factionedIndices.Add(pawn);
+                factionedUInt64Map.Add(pawn);
             }
             else
             {
                 raidersAndHostiles.Register(pawn);
-                factionedIndices.Add(pawn);
+                factionedUInt64Map.Add(pawn);
             }
             ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
             if (comp != null)
@@ -432,15 +432,15 @@ namespace CombatAI
         {            
             settlementTurrets.TryDeRegister(turret);
             raidersAndHostiles.TryDeRegister(turret);
-            factionedIndices.Remove(turret);            
+            factionedUInt64Map.Remove(turret);            
         }
 
         public void DeRegister(Pawn pawn)
         {
             // cleanup factioned.
-            factionedIndices.Remove(pawn);
+            factionedUInt64Map.Remove(pawn);
             // cleanup wildlife.
-            wildIndices.Remove(pawn);
+            wildUInt64Map.Remove(pawn);
             // cleanup hostiltes incase pawn switched factions.
             raidersAndHostiles.TryDeRegister(pawn);
             // cleanup friendlies incase pawn switched factions.
@@ -460,9 +460,9 @@ namespace CombatAI
         public override void MapRemoved()
         {
             // TODO redo this
-            wildIndices.Clear();
+            wildUInt64Map.Clear();
             // TODO redo this
-            factionedIndices.Clear();
+            factionedUInt64Map.Clear();
 
             base.MapRemoved();
             // TODO redo this

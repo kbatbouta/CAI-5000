@@ -6,51 +6,47 @@ using System.Diagnostics;
 
 namespace CombatAI
 { 
-    public class FlagedBuckets
+    public class IThingsUInt64Map
     {
         private const UInt64 BOT = 0x00000000FFFFFFFF;
         private const UInt64 TOP = 0xFFFFFFFF00000000;
 
-        private List<Thing>[] buckets = new List<Thing>[64];
-
-        public FlagedBuckets()
+        private struct IBucketableThing : IBucketable
         {
-            for(int i =0;i < 64; i++)
+            public Thing thing;
+            public int BucketIndex => thing.GetThingFlagsIndex();
+            public int UniqueIdNumber => thing.thingIDNumber;
+
+            public IBucketableThing(Thing thing)
             {
-                buckets[i] = new List<Thing>();
+                this.thing = thing;
             }
         }
 
-        public void Clear()
+        private IBuckets<IBucketableThing> buckets;
+
+        public IThingsUInt64Map()
         {
-            for(int i = 0;i < 64; i++)
-            {
-                buckets[i].Clear();                
-            }
+            buckets = new IBuckets<IBucketableThing>(64);
         }
 
-        public void Add(Thing thing)
-        {
-            List<Thing> things = buckets[thing.GetThingFlagsIndex()];
-            if (!things.Contains(thing))
-            {
-                things.Add(thing);
-            }
-        }
+        public void Clear() =>
+            buckets.Clear();
 
-        public void Remove(Thing thing)
-        {
-            buckets[thing.GetThingFlagsIndex()].RemoveAll(t => t == thing);
-        }        
+        public void Add(Thing thing) =>
+            buckets.Add(new IBucketableThing(thing));
+
+        public void Remove(Thing thing) =>
+            buckets.RemoveId(thing.thingIDNumber);
 
         public IEnumerable<Thing> GetThings(UInt64 flag)
         {
             foreach(int index in GetBucketIndices(flag))
             {
-                List<Thing> things = buckets[index];
-                for(int i = 0;i < things.Count;i++)
+                List<IBucketableThing> items = buckets.GetBucket(index);
+                for(int i = 0;i < items.Count;i++)
                 {
-                    yield return things[i];
+                    yield return items[i].thing;
                 }
             }                    
         }

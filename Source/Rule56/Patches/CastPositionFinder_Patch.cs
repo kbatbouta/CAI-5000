@@ -25,7 +25,7 @@ namespace CombatAI.Patches
         private static IntVec3 targetPosition;
         private static float warmupTime;
         private static float range;        
-        private static TGrid<float> tGrid;
+        private static IReusableGrid<float> grid;
         private static AvoidanceTracker avoidanceTracker;
         private static AvoidanceTracker.AvoidanceReader avoidanceReader;
         private static SightTracker.SightReader sightReader;       
@@ -44,7 +44,7 @@ namespace CombatAI.Patches
                     verb = newReq.verb;
                     range = verb.EffectiveRange;
                     pawn = newReq.caster;
-                    tGrid = map.GetTGrid();
+                    grid = map.GetFloatGrid();
                     avoidanceTracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
                     avoidanceTracker.TryGetReader(pawn, out avoidanceReader);
                     newReq.caster.GetSightReader(out sightReader);
@@ -61,11 +61,11 @@ namespace CombatAI.Patches
                 {
                     avoidanceTracker.Notify_CoverPositionSelected(pawn, dest);
                 }
-                if (tGrid != null)
+                if (grid != null)
                 {
-                    tGrid.Reset();
+                    grid.Reset();
                 }
-                tGrid = null;
+                grid = null;
                 avoidanceTracker = null;
                 avoidanceReader = null;
                 sightReader = null;                
@@ -103,7 +103,7 @@ namespace CombatAI.Patches
                     map.GetCellFlooder().Flood(root,
                         (node) =>
                         {
-                            tGrid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f);                            
+                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f);                            
                         },
                         (cell) =>
                         {
@@ -137,13 +137,13 @@ namespace CombatAI.Patches
                 {
                     return;
                 }
-                if (sightReader != null && !tGrid.IsSet(c))
+                if (sightReader != null && !grid.IsSet(c))
                 {
                     __result = -1;
                 }
                 else
                 {
-                    __result -= tGrid[c];
+                    __result -= grid[c];
                 }
                 //bool pawnSelected = Find.Selector.SelectedPawns?.Contains(pawn) ?? false;
                 //if (pawnSelected)

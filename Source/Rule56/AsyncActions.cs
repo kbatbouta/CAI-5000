@@ -3,29 +3,31 @@ using System.Collections.Generic;
 using Verse;
 using RimWorld;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace CombatAI
 {
-    public class AsyncActionsHelper
+    public class AsyncActions
     {
         private bool alive = true;
         private bool mainThreadActionQueueEmpty = false;
 
-        private readonly int hashOffset;
-        private readonly object locker_Main = new object();
-        private readonly object locker_offMain = new object();        
+        private readonly int hashOffset;            
         private readonly Thread thread;
         
         private readonly List<Action> queuedMainThreadActions = new List<Action>();
         private readonly List<Action> queuedOffThreadActions = new List<Action>();
         private readonly int mainLoopTickInterval;
 
+        public readonly object locker_Main = new object();
+        public readonly object locker_offMain = new object();
+
         public bool Alive
         {
             get => alive;
         }
         
-        public AsyncActionsHelper(int mainLoopTickInterval = 5)
+        public AsyncActions(int mainLoopTickInterval = 5)
         {
             this.mainLoopTickInterval = mainLoopTickInterval;
             this.hashOffset = Rand.Int % 128;
@@ -33,17 +35,25 @@ namespace CombatAI
             this.thread.Start();
         }        
 
-        public virtual void ExecuteMainThreadActions()
+        public void ExecuteMainThreadActions()
         {
             MainThreadActionLoop();
         } 
 
-        public virtual void Kill()
+        public void Kill()
         {
             alive = false;
             try
             {
-                thread.Abort();
+                lock (locker_Main)
+                {
+                    queuedMainThreadActions.Clear();
+                }
+                lock (locker_offMain)
+                {
+                    queuedOffThreadActions.Clear();
+                }
+                thread.Join();         
             }
             catch(Exception)
             {

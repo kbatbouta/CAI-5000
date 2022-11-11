@@ -102,7 +102,7 @@ namespace CombatAI.Patches
                         //}
                     }
                     // get wether this is a raider
-                    raiders |= pawn.Faction?.HostileTo(Faction.OfPlayerSilentFail) ?? true;
+                    raiders |= pawn.HostileTo(Faction.OfPlayerSilentFail);
                     //if (raiders)
                     //{
                     //    //pawnBlockingCost = 1200;

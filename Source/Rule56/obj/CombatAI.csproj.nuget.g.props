@@ -17,6 +17,6 @@
   </ImportGroup>
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <PkgMono_TextTransform Condition=" '$(PkgMono_TextTransform)' == '' ">/Users/karimbatbouta/.nuget/packages/mono.texttransform/1.0.0</PkgMono_TextTransform>
-    <PkgKrafs_Rimworld_Ref Condition=" '$(PkgKrafs_Rimworld_Ref)' == '' ">/Users/karimbatbouta/.nuget/packages/krafs.rimworld.ref/1.4.3536</PkgKrafs_Rimworld_Ref>
+    <PkgKrafs_Rimworld_Ref Condition=" '$(PkgKrafs_Rimworld_Ref)' == '' ">/Users/karimbatbouta/.nuget/packages/krafs.rimworld.ref/1.4.3542</PkgKrafs_Rimworld_Ref>
   </PropertyGroup>
 </Project>

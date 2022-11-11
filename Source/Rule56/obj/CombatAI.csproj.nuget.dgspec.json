@@ -41,7 +41,7 @@
           "dependencies": {
             "Krafs.Rimworld.Ref": {
               "target": "Package",
-              "version": "[1.4.3536, )",
+              "version": "[1.4.3542, )",
               "generatePathProperty": true
             },
             "Lib.Harmony": {
@@ -70,7 +70,7 @@
               "version": "[1.0.3, )"
             }
           },
-          "runtimeIdentifierGraphPath": "/Users/karimbatbouta/Library/Caches/VisualStudio/17.0/MSBuild/82857_3/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/Users/karimbatbouta/Library/Caches/VisualStudio/17.0/MSBuild/14390_3/RuntimeIdentifierGraph.json"
         }
       }
     }

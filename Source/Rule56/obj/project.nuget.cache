@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "EJC1lR/PgzMRg5dxWLNX3AU7CmItesCbREZwpUGq4420dbuWsgpdCIPXiE8HJjUPJ5coRo09ME0vrwcE997JEg==",
+  "dgSpecHash": "UP3qcegr3ve8R6uaj5UpctjxjacumfoJ2bYDd6hikJ5oyN65s778ApUVLYtAdOJsq4N2/hS8C4LoCVz6SGEByg==",
   "success": true,
   "projectFilePath": "/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/Source/Rule56/CombatAI.csproj",
   "expectedPackageFiles": [
-    "/Users/karimbatbouta/.nuget/packages/krafs.rimworld.ref/1.4.3536/krafs.rimworld.ref.1.4.3536.nupkg.sha512",
+    "/Users/karimbatbouta/.nuget/packages/krafs.rimworld.ref/1.4.3542/krafs.rimworld.ref.1.4.3542.nupkg.sha512",
     "/Users/karimbatbouta/.nuget/packages/lib.harmony/2.2.2/lib.harmony.2.2.2.nupkg.sha512",
     "/Users/karimbatbouta/.nuget/packages/microsoft.build.framework/15.1.548/microsoft.build.framework.15.1.548.nupkg.sha512",
     "/Users/karimbatbouta/.nuget/packages/microsoft.build.utilities.core/15.1.548/microsoft.build.utilities.core.15.1.548.nupkg.sha512",
