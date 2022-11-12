@@ -17,9 +17,9 @@ namespace CombatAI
 
         public class SightReader
         {            
-            public ISignalGrid[] friendlies;
-            public ISignalGrid[] hostiles;
-            public ISignalGrid[] neutrals;
+            public ITSignalGrid[] friendlies;
+            public ITSignalGrid[] hostiles;
+            public ITSignalGrid[] neutrals;
 
             private readonly Map map;
             private readonly CellIndices indices;
@@ -34,7 +34,7 @@ namespace CombatAI
                 get => map;
             }
 
-            public SightReader(SightTracker tracker, ISignalGrid[] friendlies, ISignalGrid[] hostiles, ISignalGrid[] neutrals)
+            public SightReader(SightTracker tracker, ITSignalGrid[] friendlies, ITSignalGrid[] hostiles, ITSignalGrid[] neutrals)
             {
                 this.tacker = tracker;
                 this.map = tracker.map;
@@ -152,7 +152,7 @@ namespace CombatAI
         public readonly SightGrid insectsAndMechs;
         public readonly SightGrid settlementTurrets;
         public readonly SightGrid wildlife;
-
+        
         public readonly IThingsUInt64Map factionedUInt64Map;
         public readonly IThingsUInt64Map wildUInt64Map;
 
@@ -168,7 +168,7 @@ namespace CombatAI
                 new SightGrid(this, Finder.Settings.SightSettings_Wildlife);
             settlementTurrets =
                 new SightGrid(this, Finder.Settings.SightSettings_SettlementTurrets);
-
+            
             factionedUInt64Map = new IThingsUInt64Map();
             wildUInt64Map = new IThingsUInt64Map();
         }        
@@ -289,14 +289,14 @@ namespace CombatAI
             if (faction == null)
             {
                 reader = new SightReader(this,
-                    friendlies: new ISignalGrid[]
+                    friendlies: new ITSignalGrid[]
                     {
                     },
-                    hostiles: new ISignalGrid[]
+                    hostiles: new ITSignalGrid[]
                     {
                         insectsAndMechs.grid,
                     },
-                    neutrals: new ISignalGrid[]
+                    neutrals: new ITSignalGrid[]
                     {
                         wildlife.grid, colonistsAndFriendlies.grid, raidersAndHostiles.grid
                     });
@@ -305,15 +305,15 @@ namespace CombatAI
             if (faction.def == FactionDefOf.Mechanoid || faction.def == FactionDefOf.Insect)
             {
                 reader = new SightReader(this,
-                    friendlies: new ISignalGrid[]
+                    friendlies: new ITSignalGrid[]
                     {
                         insectsAndMechs.grid
                     },
-                    hostiles: new ISignalGrid[]
+                    hostiles: new ITSignalGrid[]
                     {
                         colonistsAndFriendlies.grid, raidersAndHostiles.grid, settlementTurrets.grid
                     },
-                    neutrals: new ISignalGrid[]
+                    neutrals: new ITSignalGrid[]
                     {
                         wildlife.grid
                     });
@@ -323,15 +323,15 @@ namespace CombatAI
             if ((mapFaction != null && !faction.HostileTo(map.ParentFaction)) || (mapFaction == null && Faction.OfPlayerSilentFail != null && !faction.HostileTo(Faction.OfPlayerSilentFail)))
             {
                 reader = new SightReader(this,
-                    friendlies: new ISignalGrid[]
+                    friendlies: new ITSignalGrid[]
                     {
                         colonistsAndFriendlies.grid, settlementTurrets.grid
                     },
-                    hostiles: new ISignalGrid[]
+                    hostiles: new ITSignalGrid[]
                     {
                         raidersAndHostiles.grid, insectsAndMechs.grid
                     },
-                    neutrals: new ISignalGrid[]
+                    neutrals: new ITSignalGrid[]
                     {
                         wildlife.grid
                     });
@@ -339,15 +339,15 @@ namespace CombatAI
             else
             {
                 reader = new SightReader(this,
-                    friendlies: new ISignalGrid[]
+                    friendlies: new ITSignalGrid[]
                     {
                         raidersAndHostiles.grid,
                     },
-                    hostiles: new ISignalGrid[]
+                    hostiles: new ITSignalGrid[]
                     {
                         colonistsAndFriendlies.grid, settlementTurrets.grid, insectsAndMechs.grid
                     },
-                    neutrals: new ISignalGrid[]
+                    neutrals: new ITSignalGrid[]
                     {
                         wildlife.grid
                     });
@@ -466,13 +466,13 @@ namespace CombatAI
 
             base.MapRemoved();
             // TODO redo this
-            raidersAndHostiles.Notify_MapRemoved();
+            raidersAndHostiles.Destroy();
             // TODO redo this
-            colonistsAndFriendlies.Notify_MapRemoved();
+            colonistsAndFriendlies.Destroy();
             // TODO redo this
-            insectsAndMechs.Notify_MapRemoved();
+            insectsAndMechs.Destroy();
             // TODO redo this
-            wildlife.Notify_MapRemoved();
+            wildlife.Destroy();
         }
     }
 }

@@ -25,7 +25,7 @@ namespace CombatAI.Patches
         private static IntVec3 targetPosition;
         private static float warmupTime;
         private static float range;        
-        private static IReusableGrid<float> grid;
+        private static ISGrid<float> grid;
         private static AvoidanceTracker avoidanceTracker;
         private static AvoidanceTracker.AvoidanceReader avoidanceReader;
         private static SightTracker.SightReader sightReader;       
@@ -103,10 +103,10 @@ namespace CombatAI.Patches
                     map.GetCellFlooder().Flood(root,
                         (node) =>
                         {
-                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f);                            
+                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + Mathf.Min(avoidanceReader.GetProximity(node.cell) / 2f, 2f);                            
                         },
                         (cell) =>
-                        {
+                        {                            
                             Vector2 dir = sightReader.GetEnemyDirection(cell);
                             IntVec3 adjustedLoc;
                             if (dir.sqrMagnitude < 4)
@@ -137,18 +137,21 @@ namespace CombatAI.Patches
                 {
                     return;
                 }
-                if (sightReader != null && !grid.IsSet(c))
+                if (sightReader != null)
                 {
-                    __result = -1;
-                }
-                else
-                {
-                    __result -= grid[c];
+                    if (!grid.IsSet(c))
+                    {
+                        __result = -1;
+                    }
+                    else
+                    {
+                        __result -= grid[c];
+                    }
                 }
                 //bool pawnSelected = Find.Selector.SelectedPawns?.Contains(pawn) ?? false;
                 //if (pawnSelected)
                 //{
-                //    map.debugDrawer.FlashCell(c, tGrid[c] / 10f, text: $"{Math.Round(tGrid[c], 2)} {Math.Round(__result, 2)}");
+                //    map.debugDrawer.FlashCell(c, grid[c] / 10f, text: $"{Math.Round(grid[c], 2)} {Math.Round(__result, 2)}");
                 //}
             }
         }

@@ -13,7 +13,7 @@ namespace CombatAI.Patches
             {
                 if (__instance.IsHashIntervalTick(6))
                 {
-                    __instance.Map.GetComp_Fast<AvoidanceTracker>().Notify_Bullet(__instance.Position);
+                    //__instance.Map.GetComp_Fast<AvoidanceTracker>().Notify_Bullet(__instance.Position);
                 }
             }
         }
@@ -25,7 +25,7 @@ namespace CombatAI.Patches
             {
                 if (__instance.Spawned)
                 {
-                    __instance.Map.GetComp_Fast<AvoidanceTracker>().Notify_Bullet(__instance.Position);
+                    //__instance.Map.GetComp_Fast<AvoidanceTracker>().Notify_Bullet(__instance.Position);
                 }                
             }
         }

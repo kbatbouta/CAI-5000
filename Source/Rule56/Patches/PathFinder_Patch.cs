@@ -244,28 +244,15 @@ namespace CombatAI.Patches
                             //}
                         }                        
                     }
-                    if (value > 0)
+                    if (avoidanceReader != null)
                     {
-                        if (avoidanceReader != null)
+                        if (value > 0)
                         {
-                            var avoidance = (avoidanceReader.GetProximity(index) * 15f + avoidanceReader.GetDanger(index) * 10);
-                            if (visibility <= 0f)
-                            {
-                                value += (int)avoidance;
-                            }
-                            else
-                            {
-                                value += (int)Mathf.Min(avoidance, visibility * 12.75f);
-                            }                            
+                            value += (int)(Mathf.Min(avoidanceReader.GetPath(index) * 94, value));
                         }
-                        //if (lightingTracker != null)
-                        //    value += (int)(lightingTracker.CombatGlowAt(map.cellIndices.IndexToCell(index)) * 25f);
-                    }
-                    else
-                    {
-                        if (avoidanceReader != null)
-                        {
-                            value += (int)(avoidanceReader.GetProximity(index) / 16 * 90);
+                        else
+                        {                            
+                            value += (int)(Mathf.Min(avoidanceReader.GetPath(index), 3) * 42);
                         }
                     }
                     //Log.Message($"{value} {sightReader != null} {sightReader.hostile != null} {sightReader.GetVisibility(index)} {sightReader.hostile.GetSignalStrengthAt(index)}");

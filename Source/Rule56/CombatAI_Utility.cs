@@ -16,9 +16,9 @@ namespace CombatAI
             return pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out reader);
         }
 
-        public static IReusableGrid<float> GetFloatGrid(this Map map)
+        public static ISGrid<float> GetFloatGrid(this Map map)
         {
-            IReusableGrid<float> grid = map.GetComp_Fast<MapComponent_CombatAI>().f_grid;
+            ISGrid<float> grid = map.GetComp_Fast<MapComponent_CombatAI>().f_grid;
             grid.Reset();
             return grid;
         }

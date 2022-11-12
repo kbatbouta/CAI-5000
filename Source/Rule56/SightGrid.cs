@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
+using CombatAI.Comps;
 using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Linq;
-using System.Net.NetworkInformation;
-using static UnityEngine.GraphicsBuffer;
-using CombatAI.Comps;
-using TMPro;
 
 namespace CombatAI
 {
@@ -53,9 +47,13 @@ namespace CombatAI
                 this.bucketIndex = bucketIndex;
             }
         }
-        
+
+        private int ticksUntilUpdate;
+        private bool wait = false;
         private AsyncActions asyncActions;
         private IBuckets<IBucketableThing> buckets;
+        private List<IBucketableThing> tmpInvalidRecords = new List<IBucketableThing>();
+        private List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>();
 
         /// <summary>
         /// Parent map.
@@ -64,7 +62,7 @@ namespace CombatAI
         /// <summary>
         /// Sight grid contains all sight data.
         /// </summary>
-        public readonly ISignalGrid grid;        
+        public readonly ITSignalGrid grid;                
         /// <summary>
         /// Performance settings.
         /// </summary>
@@ -72,20 +70,14 @@ namespace CombatAI
         /// <summary>
         /// Parent map sight tracker.
         /// </summary>
-        public readonly SightTracker sightTracker;
-
-        private List<IBucketableThing> tmpInvalidRecords = new List<IBucketableThing>();
-        private List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>();
-
-        private int ticksUntilUpdate;
-        private bool wait = false;        
+        public readonly SightTracker sightTracker;                     
 
         public SightGrid(SightTracker sightTracker, Settings.SightPerformanceSettings settings)
         {            
             this.sightTracker = sightTracker;
             this.map = sightTracker.map;
             this.settings = settings;                    
-            this.grid = new ISignalGrid(map);            
+            this.grid = new ITSignalGrid(map);            
             this.asyncActions = new AsyncActions();            
             this.ticksUntilUpdate = Rand.Int % this.settings.interval;
             this.buckets = new IBuckets<IBucketableThing>(settings.buckets);
@@ -104,7 +96,7 @@ namespace CombatAI
             for (int i = 0; i < bucket.Count; i++)
             {
                 IBucketableThing item = bucket[i];
-                if(!Valid(item))
+                if(!Valid(item.thing))
                 {
                     tmpInvalidRecords.Add(item);
                     continue;
@@ -160,7 +152,7 @@ namespace CombatAI
             buckets.RemoveId(thing.thingIDNumber);            
         }
 
-        public virtual void Notify_MapRemoved()
+        public virtual void Destroy()
         {
             try
             {
@@ -180,12 +172,7 @@ namespace CombatAI
                 return false;
             }
             return true;
-        }
-
-        private bool Valid(IBucketableThing item)
-        {
-            return Valid(item.thing);
-        }
+        }  
 
         private bool Valid(Thing thing)
         {

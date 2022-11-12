@@ -3,7 +3,7 @@ using Verse;
 using RimWorld;
 namespace CombatAI
 {
-    public class IReusableGrid<T> where T : struct, IComparable<T>
+    public class ISGrid<T> where T : struct, IComparable<T>
     {
         private struct Cell
         {
@@ -15,7 +15,7 @@ namespace CombatAI
         private readonly CellIndices indices;
         private readonly Cell[] cells;
 
-        public IReusableGrid(Map map)
+        public ISGrid(Map map)
         {
             this.indices = map.cellIndices;
             this.cells = new Cell[indices.NumGridCells];

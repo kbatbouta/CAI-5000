@@ -17,7 +17,7 @@ namespace CombatAI
          */
 
         public CellFlooder flooder;
-        public IReusableGrid<float> f_grid;
+        public ISGrid<float> f_grid;
 
         /* 
          * ----- ----- ----- -----
@@ -26,13 +26,13 @@ namespace CombatAI
         public MapComponent_CombatAI(Map map) : base(map)
         {
             flooder = new CellFlooder(map);
-            f_grid = new IReusableGrid<float>(map);
+            f_grid = new ISGrid<float>(map);
             asyncActions = new AsyncActions();
         }
 
         public override void MapComponentTick()
         {
-            base.MapComponentTick();
+            base.MapComponentTick();            
             asyncActions.ExecuteMainThreadActions();
         }
 
