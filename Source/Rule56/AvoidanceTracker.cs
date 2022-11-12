@@ -63,21 +63,23 @@ namespace CombatAI
                 return Math.Max(path.Get(index) - ((path.GetFlags(index) & iflags) != 0 ? 1 : 0), 0);
             }            
         }
-
+        
         private bool wait = false;
         private readonly AsyncActions asyncActions;
         private readonly IBuckets<IBucketablePawn> buckets;
-        private readonly List<Pawn> _removalList = new List<Pawn>();
+        private readonly List<Pawn> _removalList = new List<Pawn>();        
         private readonly CellFlooder flooder;
 
+        public ITByteGrid shootLine;
         public ITByteGrid proximity;
         public ITByteGrid path;
 
         public AvoidanceTracker(Map map) : base(map)
         {
             path = new ITByteGrid(map);
-            proximity = new ITByteGrid(map);              
-            buckets = new IBuckets<IBucketablePawn>(15);
+            proximity = new ITByteGrid(map);
+            shootLine = new ITByteGrid(map);
+            buckets = new IBuckets<IBucketablePawn>(30);
             asyncActions = new AsyncActions();
             flooder = new CellFlooder(map);
         }
@@ -86,7 +88,7 @@ namespace CombatAI
         {
             base.MapComponentTick();
             asyncActions.ExecuteMainThreadActions();
-            if(GenTicks.TicksGame % 2 != 0 || wait)
+            if(wait)
             {
                 return;
             }
@@ -118,10 +120,10 @@ namespace CombatAI
             {
                 wait = true;
                 asyncActions.EnqueueOffThreadAction(() =>
-                {
+                {                    
                     proximity.NextCycle();
                     path.NextCycle();
-                    wait = false;
+                    wait = false;                    
                 });
             }
             if (Finder.Settings.Debug_DrawAvoidanceGrid_Proximity)
@@ -201,7 +203,7 @@ namespace CombatAI
             {
                 buckets.RemoveId(pawn.thingIDNumber);
             }
-            if (Valid(pawn) && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid))
+            if (Valid(pawn))
             {
                 buckets.Add(new IBucketablePawn(pawn, pawn.thingIDNumber % buckets.count));
             }
@@ -220,13 +222,11 @@ namespace CombatAI
         }        
 
         public void Notify_PathFound(Pawn pawn, PawnPath path)
-        {
-            //TryCastPath(pawn, path);
+        {           
         }
 
         public void Notify_CoverPositionSelected(Pawn pawn, IntVec3 cell)
-        {
-            //TryCastProximity(pawn, cell);
+        {            
         }
 
         public void Notify_Injury(Pawn pawn, IntVec3 cell)
@@ -235,11 +235,11 @@ namespace CombatAI
 
         public void Notify_Death(Pawn pawn, IntVec3 cell)
         {
-        }        
+        }
 
         private void TryCastProximity(Pawn pawn, IntVec3 dest)
-        {
-            IntVec3 orig;            
+        {            
+            IntVec3 orig;
             orig = pawn.Position;
             UInt64 flags = pawn.GetThingFlags();
             if (pawn.pather?.MovingNow == true && (dest.IsValid || (dest = pawn.pather.Destination.Cell).IsValid))
@@ -268,21 +268,22 @@ namespace CombatAI
                     }, maxDist: 2);
                 });
             }
-        }        
+        }
 
         private void TryCastPath(Pawn pawn, PawnPath pawnPath = null)
-        {
+        {            
             pawnPath ??= pawn.pather?.curPath;
             if (pawnPath?.nodes == null || pawnPath.curNodeIndex <= 5)
             {
                 return;
             }
             UInt64 flags = pawn.GetThingFlags();
-            List<IntVec3> cells = new List<IntVec3>();
-            for(int i = 0; i < Math.Min(pawnPath.NodesLeftCount, 150); i++)
-            {
-                cells.Add(pawnPath.Peek(i));
-            }
+            List<IntVec3> cells = pawnPath.nodes.GetRange(Math.Max(pawnPath.curNodeIndex - 80, 0), Math.Min(pawnPath.curNodeIndex + 1, 80));
+            //int count = Math.Min(pawnPath.NodesLeftCount, 80);
+            //for (int i = 0; i < count; i++)
+            //{
+            //    cells.Add(pawnPath.Peek(i));
+            //}
             if (cells.Count == 0)
             {
                 return;
@@ -318,9 +319,14 @@ namespace CombatAI
             });
         }
 
+        private void TryCastShootLine(Pawn pawn)
+        {
+
+        }
+
         private bool Valid(Pawn pawn)
         {           
-            return !pawn.Destroyed && pawn.Spawned && !pawn.Dead;
+            return !pawn.Destroyed && pawn.Spawned && !pawn.Dead && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid);
         }
     }
 }

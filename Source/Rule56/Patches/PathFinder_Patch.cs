@@ -242,7 +242,7 @@ namespace CombatAI.Patches
                             //{
                             //    value += (int)(visibility * 90);
                             //}
-                        }                        
+                        }
                     }
                     if (avoidanceReader != null)
                     {

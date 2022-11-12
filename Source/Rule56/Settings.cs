@@ -78,6 +78,7 @@ namespace CombatAI
          */
 
         public bool Debug = false;
+        public bool Debug_ValidateSight = false;
         public bool Debug_DrawShadowCasts = false;
         public bool Debug_DrawShadowCastsVectors = false;
         public bool Debug_DrawAvoidanceGrid_Proximity = false;
@@ -115,8 +116,9 @@ namespace CombatAI
             Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
             Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);
             Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
-            Scribe_Values.Look(ref AdvancedUser, $"AdvancedUser.{version}");
+            Scribe_Values.Look(ref AdvancedUser, $"AdvancedUser.{version}");            
             Scribe_Values.Look(ref Debug, $"Debug.{version}");
+            Scribe_Values.Look(ref Debug_ValidateSight, $"Debug_ValidateSight.{version}");
             Scribe_Values.Look(ref Debug_DrawShadowCasts, $"Debug_DrawShadowCasts.{version}");
             //ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
         }
