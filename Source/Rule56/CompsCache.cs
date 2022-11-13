@@ -6,6 +6,7 @@ using HarmonyLib;
 using System.Reflection;
 using RimWorld.Planet;
 using static HarmonyLib.Code;
+using UnityEngine;
 
 namespace CombatAI
 {
@@ -25,6 +26,11 @@ namespace CombatAI
                 {
                     compsById.Remove(thing.thingIDNumber);
                 }
+            }
+
+            public static void Clear()
+            {
+                compsById.Clear();
             }
         }
 
@@ -59,6 +65,12 @@ namespace CombatAI
                 count--;
             }
 
+            public static void Clear()
+            {
+                count = 0;
+                comps = new T[16];
+            }
+
             private static void Expand(int targetSize = -1)
             {
                 if (targetSize == -1)
@@ -76,40 +88,46 @@ namespace CombatAI
         }
 
         static class WorldComponent_Cache<T> where T : WorldComponent
-        {
-            private static World world = null;
+        {            
             private static T value = null;
 
             public static T Comp
             {
                 get
                 {
-                    if (Find.World != world || value == null)
-                    {
-                        world = Find.World;
-                        value = world.GetComponent<T>();
+                    if (value == null)
+                    {                        
+                        value = Find.World.GetComponent<T>();
                     }                    
                     return value;
                 }
             }
+
+            public static void Clear()
+            {
+                value = null;
+            }
         }
 
         static class GameComponent_Cache<T> where T : GameComponent
-        {
-            private static Game game = null;
+        {            
             private static T value = null;
 
             public static T Comp
             {
                 get
                 {
-                    if (Current.Game != game || value == null)
-                    {
-                        game = Current.Game;
-                        value = game.GetComponent<T>();
+                    if (value == null)
+                    {                        
+                        value = Current.Game.GetComponent<T>();
                     }
                     return value;
                 }
+            }
+
+            public static void Clear()
+            {
+                value = null;
             }
         }
 
@@ -238,7 +256,31 @@ namespace CombatAI
             {
                 mapComponents_removeActions[i](map);
             }
-        }        
+        }
+
+        public static void ClearCaches()
+        {
+            foreach (Type compType in typeof(MapComponent).AllSubclassesNonAbstract())
+            {
+                MethodInfo info = AccessTools.Method(typeof(MapComponent_Cache<>).MakeGenericType(new Type[] { compType }), "Clear");
+                info.Invoke(null, new object[0]);
+            }
+            foreach (Type compType in typeof(ThingComp).AllSubclassesNonAbstract())
+            {
+                MethodInfo info = AccessTools.Method(typeof(ThingComp_Cache<>).MakeGenericType(new Type[] { compType }), "Clear");
+                info.Invoke(null, new object[0]);
+            }
+            foreach (Type compType in typeof(GameComponent).AllSubclassesNonAbstract())
+            {
+                MethodInfo info = AccessTools.Method(typeof(GameComponent_Cache<>).MakeGenericType(new Type[] { compType }), "Clear");
+                info.Invoke(null, new object[0]);
+            }
+            foreach (Type compType in typeof(WorldComponent).AllSubclassesNonAbstract())
+            {
+                MethodInfo info = AccessTools.Method(typeof(WorldComponent_Cache<>).MakeGenericType(new Type[] { compType }), "Clear");
+                info.Invoke(null, new object[0]);
+            }
+        }
     }
 }
 

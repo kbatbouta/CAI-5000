@@ -1,5 +1,6 @@
 ﻿using System;
 using Verse;
+using RimWorld;
 using System.Collections.Generic;
 
 namespace CombatAI
@@ -33,13 +34,13 @@ namespace CombatAI
         public override void MapComponentTick()
         {
             base.MapComponentTick();            
-            asyncActions.ExecuteMainThreadActions();
+            asyncActions.ExecuteMainThreadActions();            
         }
 
         public void EnqueueMainThreadAction(Action action)
         {
-            asyncActions.EnqueueMainThreadAction(action);            
-        }
+            asyncActions.EnqueueMainThreadAction(action);
+        }        
     }
 }
 

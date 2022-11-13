@@ -133,6 +133,36 @@ namespace CombatAI.R
                    _CombatAI_Settings_Basic_Pather : _CombatAI_Settings_Basic_Pather = "CombatAI.Settings.Basic.Pather".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_DestWeight = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.DestWeight</c>. inner text:
+        ///
+        /// <code>Pathfinding aggressiveness level</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_DestWeight {
+            get => _CombatAI_Settings_Basic_DestWeight != null ? 
+                   _CombatAI_Settings_Basic_DestWeight : _CombatAI_Settings_Basic_DestWeight = "CombatAI.Settings.Basic.DestWeight".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_DestWeight_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.DestWeight.Description</c>. inner text:
+        ///
+        /// <code>Lower numbers mean pathfinding will be more aggressive at avoiding enemies, flanking and minimizing risk to pawns.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_DestWeight_Description {
+            get => _CombatAI_Settings_Basic_DestWeight_Description != null ? 
+                   _CombatAI_Settings_Basic_DestWeight_Description : _CombatAI_Settings_Basic_DestWeight_Description = "CombatAI.Settings.Basic.DestWeight.Description".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_DestWeight_Warning = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.DestWeight.Warning</c>. inner text:
+        ///
+        /// <code>WARNING: Lower values will cause alot of performance issues.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_DestWeight_Warning {
+            get => _CombatAI_Settings_Basic_DestWeight_Warning != null ? 
+                   _CombatAI_Settings_Basic_DestWeight_Warning : _CombatAI_Settings_Basic_DestWeight_Warning = "CombatAI.Settings.Basic.DestWeight.Warning".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Debugging = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Debugging</c>. inner text:
         ///

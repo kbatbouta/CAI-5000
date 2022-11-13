@@ -21,7 +21,8 @@ namespace CombatAI.Patches
         private static Verb verb;
         private static Pawn pawn;
         private static Thing target;
-        private static Map map;        
+        private static Map map;
+        private static bool isHunting;
         private static IntVec3 targetPosition;
         private static float warmupTime;
         private static float range;        
@@ -37,22 +38,36 @@ namespace CombatAI.Patches
 
             public static void Prefix(CastPositionRequest newReq)
             {
+                isHunting = false;
                 if (newReq.caster != null)
                 {
-                    newReq.wantCoverFromTarget = true;
-                    map = newReq.caster?.Map;
-                    verb = newReq.verb;
-                    range = verb.EffectiveRange;
-                    pawn = newReq.caster;
-                    grid = map.GetFloatGrid();
-                    avoidanceTracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
-                    avoidanceTracker.TryGetReader(pawn, out avoidanceReader);
-                    newReq.caster.GetSightReader(out sightReader);
-                    warmupTime = verb?.verbProps.warmupTime ?? 1;
-                    warmupTime = Mathf.Clamp(warmupTime, 0.5f, 0.8f);                    
-                    target = newReq.target;
-                    targetPosition = target.Position;
+                    isHunting = (newReq.caster.Faction?.IsPlayerSafe() ?? false) && !newReq.caster.Drafted && newReq.caster.mindState?.duty == null;                    
+                    if (!isHunting)
+                    {
+                        pawn = newReq.caster;
+                        map = newReq.caster?.Map;
+                        verb = newReq.verb;
+                        range = verb.EffectiveRange;                    
+                        avoidanceTracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
+                        avoidanceTracker.TryGetReader(pawn, out avoidanceReader);
+                        grid = map.GetFloatGrid();                    
+                        newReq.caster.GetSightReader(out sightReader);
+                        warmupTime = verb?.verbProps.warmupTime ?? 1;
+                        warmupTime = Mathf.Clamp(warmupTime, 0.5f, 0.8f);                    
+                        target = newReq.target;
+                        targetPosition = target.Position;
+                        newReq.wantCoverFromTarget = true;
+                        return;
+                    }
                 }
+                pawn = null;
+                grid = null;
+                avoidanceTracker = null;
+                avoidanceReader = null;
+                sightReader = null;                
+                verb = null;
+                target = null;
+                map = null;                
             }
 
             public static void Postfix(IntVec3 dest, bool __result)
@@ -65,6 +80,7 @@ namespace CombatAI.Patches
                 {
                     grid.Reset();
                 }
+                isHunting = false;
                 grid = null;
                 avoidanceTracker = null;
                 avoidanceReader = null;
@@ -97,8 +113,7 @@ namespace CombatAI.Patches
             private static void FloodCellRect(CellRect rect)
             {
                 if (sightReader != null)
-                {
-                    //bool pawnSelected = Find.Selector.SelectedPawns?.Contains(pawn) ?? false;
+                {                    
                     IntVec3 root = pawn.Position;
                     map.GetCellFlooder().Flood(root,
                         (node) =>
@@ -140,8 +155,8 @@ namespace CombatAI.Patches
                 if (sightReader != null)
                 {
                     if (!grid.IsSet(c))
-                    {
-                        __result = -1;
+                    {                        
+                        __result = -1;                        
                     }
                     else
                     {

@@ -34,34 +34,34 @@ namespace CombatAI.Statistics
         public override void WorldComponentTick()
         {
             base.WorldComponentTick();
-            if(GenTicks.TicksGame % GenTicks.TickLongInterval == 0)
-            {
-                if (Finder.Settings.Debug)
-                {
-                    builder.Clear();
-                    builder.AppendLine("<color=red>REPORT:</color> Injury probability by the number of visible enemies");
-                    builder.AppendLine("EnemyNum(num),\tInjury/Time(j/t),\t\tTime(t),\t\tInjuries(j)");
-                    for (int i = 0; i < 10; i++)
-                    {
-                        builder.AppendLine($"{i}num,\t{Math.Round(visibleEnemiesInjuryProbability[i],6)}j/t,\t{visibleEnemiesTicks[i]}t,\t{visibleEnemiesInjuries[i]}j");
-                    }
-                    Log.Message(builder.ToString());
-                }
-            }
+            //if(GenTicks.TicksGame % GenTicks.TickLongInterval == 0)
+            //{
+            //    if (Finder.Settings.Debug)
+            //    {
+            //        builder.Clear();
+            //        builder.AppendLine("<color=red>REPORT:</color> Injury probability by the number of visible enemies");
+            //        builder.AppendLine("EnemyNum(num),\tInjury/Time(j/t),\t\tTime(t),\t\tInjuries(j)");
+            //        for (int i = 0; i < 10; i++)
+            //        {
+            //            builder.AppendLine($"{i}num,\t{Math.Round(visibleEnemiesInjuryProbability[i],6)}j/t,\t{visibleEnemiesTicks[i]}t,\t{visibleEnemiesInjuries[i]}j");
+            //        }
+            //        Log.Message(builder.ToString());
+            //    }
+            //}
         }      
 
         public void Proccess(ThingComp_Statistics comp)
         {
-            for(int i = 0;i < 10; i++)
-            {
-                visibleEnemiesTicks[i] += comp.visibleEnemiesTicks[i];
-                visibleEnemiesInjuries[i] += comp.visibleEnemiesInjuries[i];                
-                visibleEnemiesInjuryProbability[i] = (float)visibleEnemiesInjuries[i] / Mathf.Max((float)visibleEnemiesTicks[i], 1);                                
-            }
-            for (int j = 1; j < 10; j++)
-            {
-                visibleEnemiesInjuryProbability[j] += visibleEnemiesInjuryProbability[j - 1];
-            }
+            //for(int i = 0;i < 10; i++)
+            //{
+            //    visibleEnemiesTicks[i] += comp.visibleEnemiesTicks[i];
+            //    visibleEnemiesInjuries[i] += comp.visibleEnemiesInjuries[i];                
+            //    visibleEnemiesInjuryProbability[i] = (float)visibleEnemiesInjuries[i] / Mathf.Max((float)visibleEnemiesTicks[i], 1);                                
+            //}
+            //for (int j = 1; j < 10; j++)
+            //{
+            //    visibleEnemiesInjuryProbability[j] += visibleEnemiesInjuryProbability[j - 1];
+            //}
         }
     }
 }

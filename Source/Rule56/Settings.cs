@@ -56,6 +56,7 @@ namespace CombatAI
         public bool Pather_Enabled = true;
         public bool Caster_Enabled = true;
         public bool Targeter_Enabled = true;
+        public float Pathfinding_DestWeight = 0.85f;
 
         public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new Settings.SightPerformanceSettings(2, 5);        
         public SightPerformanceSettings SightSettings_MechsAndInsects = new Settings.SightPerformanceSettings(3, 10);
@@ -114,12 +115,13 @@ namespace CombatAI
             }
             Scribe_Values.Look(ref LeanCE_Enabled, $"LeanCE_Enabled.{version}");
             Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
-            Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);
+            Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);            
             Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
+            Scribe_Values.Look(ref Pathfinding_DestWeight, $"Pathfinding_DestWeight.{version}", 0.85f);
             Scribe_Values.Look(ref AdvancedUser, $"AdvancedUser.{version}");            
             Scribe_Values.Look(ref Debug, $"Debug.{version}");
             Scribe_Values.Look(ref Debug_ValidateSight, $"Debug_ValidateSight.{version}");
-            Scribe_Values.Look(ref Debug_DrawShadowCasts, $"Debug_DrawShadowCasts.{version}");
+            Scribe_Values.Look(ref Debug_DrawShadowCasts, $"Debug_DrawShadowCasts.{version}");                        
             //ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
         }
 

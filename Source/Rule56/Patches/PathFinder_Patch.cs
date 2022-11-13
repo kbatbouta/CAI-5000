@@ -29,6 +29,7 @@ namespace CombatAI.Patches
             // private static bool tpsLow;
             // private static float tpsLevel;
             //private static int pawnBlockingCost;
+            private static bool isPlayer;
             private static float visibilityAtDest;
             private static float factionMultiplier = 1.0f;
 
@@ -45,9 +46,10 @@ namespace CombatAI.Patches
                     // prepare the modifications
                     instance = __instance;
                     map = __instance.map;
-                    pawn = traverseParms.pawn;                    
-                    // fix for player pawns and drafted pawns 
-                    factionMultiplier = pawn.Faction.IsPlayer ? (pawn.Drafted ? 0.25f : 0.75f) : 1.0f;                    
+                    pawn = traverseParms.pawn;
+                    // fix for player pawns and drafted pawns
+                    isPlayer = pawn.Faction.IsPlayerSafe();
+                    factionMultiplier = isPlayer ? (pawn.Drafted ? 0.25f : 0.75f) : 1.0f;                    
                     // retrive CE elements                    
                     pawn.GetSightReader(out sightReader);
                     pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
@@ -79,7 +81,7 @@ namespace CombatAI.Patches
                     // get the visibility at the destination
                     if (sightReader != null)
                     {
-                        visibilityAtDest = Mathf.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * 0.85f, 5);
+                        visibilityAtDest = Mathf.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * Finder.Settings.Pathfinding_DestWeight, 5);
                         //Verb verb = pawn.GetWeaponVerbWithFallback();
                         //if (verb != null)
                         //{
@@ -244,7 +246,7 @@ namespace CombatAI.Patches
                             //}
                         }
                     }
-                    if (avoidanceReader != null)
+                    if (avoidanceReader != null && !isPlayer)
                     {
                         if (value > 0)
                         {

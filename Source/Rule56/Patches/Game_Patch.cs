@@ -14,6 +14,15 @@ namespace CombatAI.Patches
                 CompsCache.Notify_MapRemoved(map);
             }
         }
+
+        [HarmonyPatch(typeof(Game), nameof(Game.ClearCaches))]
+        static class Game_ClearCaches_Patch
+        {
+            public static void Prefix()
+            {
+                CompsCache.ClearCaches();
+            }
+        }
     }
 }
 

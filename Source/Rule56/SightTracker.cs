@@ -319,7 +319,7 @@ namespace CombatAI
                     });
                 return true;
             }
-            Faction mapFaction = map.ParentFaction;
+            Faction mapFaction = map.ParentFaction;            
             if ((mapFaction != null && !faction.HostileTo(map.ParentFaction)) || (mapFaction == null && Faction.OfPlayerSilentFail != null && !faction.HostileTo(Faction.OfPlayerSilentFail)))
             {
                 reader = new SightReader(this,

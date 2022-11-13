@@ -14,8 +14,11 @@ namespace CombatAI.Comps
     public class ThingComp_CombatAI : ThingComp
     {
         private HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
+        private List<IntVec3> _path = new List<IntVec3>();
+        private List<Color> _colors = new List<Color>();
 
         private int lastInterupted;
+        private int lastSawEnemies;
 
         private bool scanning;        
 
@@ -32,24 +35,32 @@ namespace CombatAI.Comps
         {
             base.DrawGUIOverlay();
             if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight && parent is Pawn pawn)
-            {                
+            {                           
                 var verb = pawn.CurrentEffectiveVerb;
                 var sightRange = Math.Min(SightUtility.GetSightRange(pawn), verb.EffectiveRange);
                 var sightRangeSqr = sightRange * sightRange;
                 if (sightRange != 0 && verb != null)
                 {
+                    Vector3 drawPos = pawn.DrawPos;                                        
                     IntVec3 shiftedPos = GetShiftedPosition(pawn);
                     List<Pawn> nearbyVisiblePawns = GenClosest.ThingsInRange(pawn.Position, pawn.Map, Utilities.TrackedThingsRequestCategory.Pawns, sightRange)
                         .Select(t => t as Pawn)
                         .Where(p => !p.Dead && !p.Downed && GetShiftedPosition(p).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, GetShiftedPosition(p)) && p.HostileTo(pawn))
                         .ToList();
+                    CombatAI.Gui.GUIUtility.ExecuteSafeGUIAction(() =>
+                    {
+                        Vector2 drawPosUI = UI.MapToUIPosition(drawPos);
+                        Text.Font = GameFont.Tiny;
+                        string state = GenTicks.TicksGame - lastInterupted > 120 ? "<color=blue>O</color>" : "<color=yellow>X</color>";                        
+                        Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}");
+                    });                    
                     bool bugged = nearbyVisiblePawns.Count != _visibleEnemies.Count;
                     if (bugged)
                     {
-                        Vector2 a = UI.MapToUIPosition(pawn.DrawPos);
+                        Rect rect; 
+                        Vector2 a = UI.MapToUIPosition(drawPos);
                         Vector2 b;
-                        Vector2 mid;
-                        Rect rect;                        
+                        Vector2 mid;                                             
                         foreach (var other in nearbyVisiblePawns.Where(p => !_visibleEnemies.Contains(p)))
                         {
                             b = UI.MapToUIPosition(other.DrawPos);
@@ -68,7 +79,18 @@ namespace CombatAI.Comps
                         GenDraw.DrawRadiusRing(pawn.Position, sightRange);
                     }
                     if (selected)
-                    {                        
+                    {
+                        for (int i = 1; i < _path.Count; i++)
+                        {
+                            Widgets.DrawBoxSolid(new Rect(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)) - new Vector2(5, 5), new Vector2(10, 10)), _colors[i]);
+                            Widgets.DrawLine(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), UI.MapToUIPosition(_path[i].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), Color.white, 1);
+                        }
+                        if(_path.Count > 0)
+                        {
+                            Vector2 v = UI.MapToUIPosition(pawn.DrawPos.Yto0());
+                            Widgets.DrawLine(UI.MapToUIPosition(_path.Last().ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), v, _colors.Last(), 1);
+                            Widgets.DrawBoxSolid(new Rect(v - new Vector2(5, 5), new Vector2(10, 10)), _colors.Last());
+                        }
                         if (!_visibleEnemies.EnumerableNullOrEmpty())
                         {
                             Vector2 a = UI.MapToUIPosition(pawn.DrawPos);
@@ -98,20 +120,54 @@ namespace CombatAI.Comps
             if (scanning == false)
             {
                 Log.Warning($"ISMA: OnScanFinished called while not scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
+                return;
             }
             scanning = false;
             if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
             {
                 _visibleEnemies.Clear();
                 _visibleEnemies.AddRange(visibleEnemies.Where(t => t is Pawn).Select(t => t as Pawn));
+                if (_path.Count == 0 || _path.Last() != parent.Position)
+                {
+                    _path.Add(parent.Position);
+                    if (GenTicks.TicksGame - lastInterupted < 120)
+                    {
+                        _colors.Add(Color.red);
+                    }
+                    else if (GenTicks.TicksGame - lastInterupted < 240)
+                    {
+                        _colors.Add(Color.yellow);
+                    }
+                    else
+                    {
+                        _colors.Add(Color.black);
+                    }
+                    if (_path.Count >= 30)
+                    {
+                        _path.RemoveAt(0);
+                        _colors.RemoveAt(0);
+                    }
+                }
             }
+            if (visibleEnemies.Count > 0)
+            {
+                if (GenTicks.TicksGame - lastInterupted < 120 && GenTicks.TicksGame - lastSawEnemies > 60)
+                {
+                    lastInterupted = -1;
+                    if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
+                    {
+                        parent.Map.debugDrawer.FlashCell(parent.Position, 1.0f, "X", duration: 60);
+                    }
+                }
+                lastSawEnemies = GenTicks.TicksGame;
+            } 
             if (parent == null || parent.Destroyed || !parent.Spawned || GenTicks.TicksGame - lastInterupted < 120 || visibleEnemies.Count == 0 || (parent as Pawn)?.stances?.curStance is Stance_Warmup)
             {
                 return;
-            }
+            }            
             Verb verb = parent.TryGetAttackVerb();            
             if (verb == null || verb.IsMeleeAttack)
-            {                
+            {
                 return;
             }                        
             if (parent is Pawn pawn)
@@ -252,6 +308,7 @@ namespace CombatAI.Comps
             if(scanning == true)
             {
                 Log.Warning($"ISMA: OnScanStarted called while scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
+                return;
             }
             scanning = true;
             visibleEnemies.Clear();
@@ -262,6 +319,7 @@ namespace CombatAI.Comps
             if (!scanning)
             {                
                 Log.Warning($"ISMA: Notify_EnemiesVisible called while not scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
+                return;
             }
             visibleEnemies.AddRange(things);            
         }

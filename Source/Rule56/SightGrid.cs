@@ -52,8 +52,9 @@ namespace CombatAI
         private bool wait = false;
         private AsyncActions asyncActions;
         private IBuckets<IBucketableThing> buckets;
-        private List<IBucketableThing> tmpInvalidRecords = new List<IBucketableThing>();
-        private List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>();
+        private readonly List<IBucketableThing> tmpDeRegisterList = new List<IBucketableThing>();
+        private readonly List<IBucketableThing> tmpInvalidRecords = new List<IBucketableThing>();
+        private readonly List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>();
 
         /// <summary>
         /// Parent map.
@@ -219,7 +220,8 @@ namespace CombatAI
                 Log.Error($"ISMA: SighGridUpdater {item.thing} position is outside the map's bounds!");
                 return false;
             }
-            ThingComp_CombatAI comp = item.thing.GetComp_Fast<ThingComp_CombatAI>(allowFallback: false);
+            Thing thing = item.thing;
+            ThingComp_CombatAI comp = thing.GetComp_Fast<ThingComp_CombatAI>(allowFallback: false);
             SightTracker.SightReader reader = comp?.sightReader ?? null;
             bool scanForEnemies = comp?.sightReader != null && reader != null && !(item.faction?.IsPlayerSafe() ?? false);           
             Action action = () =>
@@ -228,7 +230,10 @@ namespace CombatAI
                 {
                     asyncActions.EnqueueMainThreadAction(delegate
                     {
-                        comp.OnScanStarted();
+                        if (!thing.Destroyed && thing.Spawned)
+                        {
+                            comp.OnScanStarted();
+                        }
                     });                  
                 }
                 grid.Next();
@@ -245,7 +250,10 @@ namespace CombatAI
                             // on the main thread check for enemies on or near this cell.
                             asyncActions.EnqueueMainThreadAction(delegate
                             {
-                                comp.Notify_EnemiesVisible(sightTracker.factionedUInt64Map.GetThings(flag).Where(t => t.Spawned && !t.Destroyed && t.Position.DistanceToSquared(cell) < 25 && t.HostileTo(item.faction)).ToList());
+                                if (!thing.Destroyed && thing.Spawned)
+                                {
+                                    comp.Notify_EnemiesVisible(sightTracker.factionedUInt64Map.GetThings(flag).Where(t => t.Spawned && !t.Destroyed && t.Position.DistanceToSquared(cell) < 25 && t.HostileTo(thing)).ToList());
+                                }
                             });                                                     
                         }
                     }
@@ -263,7 +271,10 @@ namespace CombatAI
                     // notify the pawn so they can start processing targets.
                     asyncActions.EnqueueMainThreadAction(delegate
                     {
-                        comp.OnScanFinished();
+                        if (!thing.Destroyed && thing.Spawned)
+                        {
+                            comp.OnScanFinished();
+                        }
                     });
                 }
             };

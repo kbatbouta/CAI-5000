@@ -12,9 +12,9 @@ namespace CombatAI
     public static class CombatAI_Utility
     {
         public static bool GetAvoidanceTracker(this Pawn pawn, out AvoidanceTracker.AvoidanceReader reader)
-        {            
+        {
             return pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out reader);
-        }
+        }        
 
         public static ISGrid<float> GetFloatGrid(this Map map)
         {

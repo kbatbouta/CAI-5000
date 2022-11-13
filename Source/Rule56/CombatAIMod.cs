@@ -1,4 +1,6 @@
-﻿using CombatAI.Gui;
+﻿using System;
+using System.Collections.Generic;
+using CombatAI.Gui;
 using HarmonyLib;
 using UnityEngine;
 using Verse;
@@ -40,6 +42,19 @@ namespace CombatAI
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_Pather, ref Finder.Settings.Pather_Enabled);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_Caster, ref Finder.Settings.Caster_Enabled);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_Targeter, ref Finder.Settings.Targeter_Enabled);
+            collapsible.Line(1);
+            collapsible.Label(R.Keyed.CombatAI_Settings_Basic_DestWeight);
+            collapsible.Gap(1);
+            collapsible.Label(R.Keyed.CombatAI_Settings_Basic_DestWeight_Description);           
+            collapsible.Label(R.Keyed.CombatAI_Settings_Basic_DestWeight_Warning, fontStyle: FontStyle.Bold);
+            collapsible.Gap(1);
+            collapsible.Lambda(25, (rect) =>
+            {
+                string color = Finder.Settings.Pathfinding_DestWeight < 0.75f ? "red" : "while";
+                string extra = Finder.Settings.Pathfinding_DestWeight < 0.75f ? " <color=yellow>WILL IMPACT PERFORMANCE</color>" : "";
+                Text.CurFontStyle.fontStyle = FontStyle.Bold;
+                Finder.Settings.Pathfinding_DestWeight = Widgets.HorizontalSlider(rect, Finder.Settings.Pathfinding_DestWeight, 0.95f, Finder.Settings.AdvancedUser ? 0.3f : 0.65f, true, $"<color={color}>{Math.Round(Finder.Settings.Pathfinding_DestWeight * 100f, 1)}%</color>{extra}");
+            }, useMargins: true);
         }
 
         private void FillCollapsible_Performance(Listing_Collapsible collapsible)
