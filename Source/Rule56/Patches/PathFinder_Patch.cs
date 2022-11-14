@@ -53,27 +53,27 @@ namespace CombatAI.Patches
                     // retrive CE elements                    
                     pawn.GetSightReader(out sightReader);
                     pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
-
-                    if ((Finder.Settings.Debug && pawn.IsColonistPlayerControlled)|| pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual)
+                    float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
+                    if (Finder.Settings.Pather_KillboxKiller && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual))
                     {
                         raiders = true;
                         //factionMultiplier = 1;
-                        //TraverseParms parms = traverseParms;
-                        //parms.canBashDoors = true;
-                        //parms.canBashFences = true;
-                        //parms.mode = TraverseMode.PassAllDestroyableThings;
-                        //parms.maxDanger = Danger.Unspecified;
-                        //traverseParms = parms;
-                        //if (tuning == null)
-                        //{
-                        //    tuning = new PathFinderCostTuning();
-                        //    tuning.costBlockedDoor = 15;
-                        //    tuning.costBlockedDoorPerHitPoint = 0;
-                        //    tuning.costBlockedWallBase = 42;
-                        //    tuning.costBlockedWallExtraForNaturalWalls = 42;
-                        //    tuning.costBlockedWallExtraPerHitPoint = 0;
-                        //    tuning.costOffLordWalkGrid = 0;
-                        //}
+                        TraverseParms parms = traverseParms;
+                        parms.canBashDoors = true;
+                        parms.canBashFences = true;
+                        parms.mode = TraverseMode.PassAllDestroyableThings;
+                        parms.maxDanger = Danger.Unspecified;
+                        traverseParms = parms;
+                        if (tuning == null)
+                        {
+                            tuning = new PathFinderCostTuning();
+                            tuning.costBlockedDoor = 10;
+                            tuning.costBlockedDoorPerHitPoint = 0;
+                            tuning.costBlockedWallBase = (int)Math.Max(15 * Math.Max(10 - miningSkill, 0), 24);
+                            tuning.costBlockedWallExtraForNaturalWalls = (int)Math.Max(45 * Math.Max(15 - miningSkill, 0), 45);
+                            tuning.costBlockedWallExtraPerHitPoint = Math.Max(6 - miningSkill, 0);
+                            tuning.costOffLordWalkGrid = 0;
+                        }
                     }
                    
                     //pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out sightReader);
@@ -136,12 +136,31 @@ namespace CombatAI.Patches
                     IntVec3 cellBefore;
                     Thing thing = __result.FirstBlockingBuilding(out cellBefore, pawn);
                     if (thing != null)
-                    {
+                    {                       
                         Job job = DigUtility.PassBlockerJob(pawn, thing, cellBefore, true, true);
                         if (job != null)
-                        {
+                        {                                                    
                             pawn.jobs.StopAll();
                             pawn.jobs.StartJob(job, JobCondition.InterruptOptional);
+                            if (Rand.Chance(0.5f))
+                            {
+                                List<Pawn> allies = pawn.Position.ThingsInRange(map, Utilities.TrackedThingsRequestCategory.Pawns, 10f)
+                                    .Where(t => t.Faction == pawn.Faction && pawn.CanReach(t, PathEndMode.InteractionCell, Danger.Unspecified))
+                                    .Select(t => t as Pawn)
+                                    .Where(p => !p.Destroyed && p.mindState?.duty?.def != DutyDefOf.Escort && p.skills?.GetSkill(SkillDefOf.Mining).Level < 10 && GenTicks.TicksGame - p.LastAttackTargetTick > 60).ToList();
+                                if (allies != null && allies.Count > 0)
+                                {
+                                    foreach (Pawn ally in allies.TakeRandom(Rand.Int % 3 + 1))
+                                    {
+                                        Comps.ThingComp_CombatAI comp = ally.GetComp_Fast<Comps.ThingComp_CombatAI>();
+                                        if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false)
+                                        {
+                                            Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 25, 100, 7200, 0, true, DutyDefOf.AssaultColony);
+                                            comp.duties.StartDuty(custom, true);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     AvoidanceTracker tracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
@@ -248,9 +267,9 @@ namespace CombatAI.Patches
                     }
                     if (avoidanceReader != null && !isPlayer)
                     {
-                        if (value > 0)
+                        if(value > 3)
                         {
-                            value += (int)(Mathf.Min(avoidanceReader.GetPath(index) * 94, value));
+                            value += (int)(avoidanceReader.GetPath(index) * (value + 1f) * 21f);
                         }
                         else
                         {                            
@@ -264,12 +283,13 @@ namespace CombatAI.Patches
                         counter++;
                         //
                         // TODO make this into a maxcost -= something system
-                        var l1 = 450 * (1f - Mathf.Lerp(0f, 0.75f, counter / (openNum + 1f))) * (1f - Mathf.Min(openNum, 5000) / (7500));
-                        var l2 = 250 * (1f - Mathf.Clamp01(PathFinder.calcGrid[parentIndex].knownCost / 2500));
+                        var l1 = 550 * (1f - Mathf.Lerp(0f, 0.75f, counter / (openNum + 1f))) * (1f - Mathf.Min(openNum, 5000) / (7500));
+                        var l2 = 350 * (1f - Mathf.Clamp01(PathFinder.calcGrid[parentIndex].knownCost / 2500));
                         //we use this so the game doesn't die
                         var v = (Mathf.Min(value, l1 + l2) * factionMultiplier * 1);
-                        //map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), v, $" _{v}");
-                        return (int)(Mathf.Min(value, l1 + l2) * factionMultiplier * 1);                        
+                        //map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), v, $" {l1 + l2}");
+                        return (int)(Mathf.Min(value, l1 + l2) * factionMultiplier * 1);
+                        //return (int)(Mathf.Min(value, 1000f) * factionMultiplier * 1);
                     }
                 }
                 return 0;

@@ -93,6 +93,16 @@ namespace CombatAI.R
                    _CombatAI_Settings_Basic : _CombatAI_Settings_Basic = "CombatAI.Settings.Basic".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_KillBoxKiller = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.KillBoxKiller</c>. inner text:
+        ///
+        /// <code>Enable The Killbox killer 5000</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_KillBoxKiller {
+            get => _CombatAI_Settings_Basic_KillBoxKiller != null ? 
+                   _CombatAI_Settings_Basic_KillBoxKiller : _CombatAI_Settings_Basic_KillBoxKiller = "CombatAI.Settings.Basic.KillBoxKiller".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic_CELean = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.CELean</c>. inner text:
         ///
@@ -301,6 +311,26 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval {
             get => _CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval != null ? 
                    _CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval : _CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval = "CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit</c>. inner text:
+        ///
+        /// <code>{0} Things maximum can obstuct line of sight</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit {
+            get => _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit : _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit = "CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description</c>. inner text:
+        ///
+        /// <code>The maximum number of things along line of sight. This includes trees, buildings, etc. Higher values means more accurate sight model but higher performance impact.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description {
+            get => _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description : _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description = "CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description".Translate();
         }             
     }
 }

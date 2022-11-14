@@ -260,8 +260,8 @@ namespace CombatAI
                 {
                     foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, 24, true))
                     {
-                        float enemies = settlementTurrets.grid.GetSignalNum(cell) + colonistsAndFriendlies.grid.GetSignalNum(cell);
-                        Vector3 dir = colonistsAndFriendlies.grid.GetSignalDirectionAt(cell);
+                        float enemies = raidersAndHostiles.grid.GetSignalNum(cell) + colonistsAndFriendlies.grid.GetSignalNum(cell);
+                        Vector3 dir = (colonistsAndFriendlies.grid.GetSignalDirectionAt(cell) + raidersAndHostiles.grid.GetSignalDirectionAt(cell)).normalized * 3;
                         if (cell.InBounds(map) && enemies > 0)
                         {
                             Vector2 direction = dir * 0.25f;

@@ -21,6 +21,7 @@ namespace CombatAI.Patches
             public static void Prefix()
             {
                 CompsCache.ClearCaches();
+                SightUtility.ClearCache();
             }
         }
     }

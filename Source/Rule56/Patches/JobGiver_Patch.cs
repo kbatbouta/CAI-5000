@@ -29,7 +29,7 @@ namespace CombatAI.Patches
         //            }
         //        }                
         //    }
-
+        //
         //    public static void Postfix(ThinkNode_JobGiver __instance, Job __result, Pawn pawn)
         //    {
         //        if (Finder.Settings.Debug && __result != null)

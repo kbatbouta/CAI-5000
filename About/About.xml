@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Imperial Stormtrooper Marksmanship Academy - Open BETA</name>
+	<name>[BETA] ISMA - Better Combat AI</name>
 	<author>Krkr</author>
 	<supportedVersions>	
 		<li>1.4</li>
@@ -19,11 +19,17 @@
 	<loadAfter>
 		<li>Ludeon.RimWorld</li>
 		<li>Ludeon.RimWorld.Royalty</li>
-		<li>brrainz.harmony</li>		
+		<li>brrainz.harmony</li>	
 	</loadAfter>
 	<incompatibleWith>
+		<li>fed1sPlay.PawnTargetFix</li>
+		<li>brrainz.lineofsightfix</li>
+		<li>majorhoff.rimthreaded</li>
+		<li>rwmt.Multiplayer</li>
 	</incompatibleWith>
 	<description>
+Imperial Stormtrooper Marksmanship Academy
+
 "My Legions of Terror will be trained in basic marksmanship. Any [troops] who cannot learn to hit a man-sized target at 10 meters will be used for target practice."
 — Evil Overlord List, Rule #56
 

@@ -8,6 +8,7 @@
     <CombatAI.Expand>Hide</CombatAI.Expand>
 
     <CombatAI.Settings.Basic>Basic Settings</CombatAI.Settings.Basic>
+    <CombatAI.Settings.Basic.KillBoxKiller>Enable The Killbox killer 5000</CombatAI.Settings.Basic.KillBoxKiller>
     <CombatAI.Settings.Basic.CELean>Enable Combat Extended lean profile</CombatAI.Settings.Basic.CELean>
     <CombatAI.Settings.Basic.Caster>Enable fire position tweaks</CombatAI.Settings.Basic.Caster>
     <CombatAI.Settings.Basic.Targeter>Enable target selection tweaks</CombatAI.Settings.Basic.Targeter>
@@ -32,4 +33,6 @@
     <CombatAI.Settings.Advance.Sight.Performance.Readouts.Frequency>Update frequency {0}Hz (buckets * interval)</CombatAI.Settings.Advance.Sight.Performance.Readouts.Frequency>
     <CombatAI.Settings.Advance.Sight.Performance.Readouts.Buckets>Bucket count {0}</CombatAI.Settings.Advance.Sight.Performance.Readouts.Buckets>
     <CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval>Ticks between bucket updates {0} Ticks</CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval>
+    <CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit>{0} Things maximum can obstuct line of sight</CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit>
+    <CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description>The maximum number of things along line of sight. This includes trees, buildings, etc. Higher values means more accurate sight model but higher performance impact.</CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description>
 </LanguageData>

@@ -9,11 +9,11 @@ namespace CombatAI
 {
     public static class SightUtility
     {
-        private static readonly Dictionary<int, Pair<int, int>> rangeCache = new Dictionary<int, Pair<int, int>>(128);
+        private static readonly Dictionary<int, Pair<int, int>> rangeCache = new Dictionary<int, Pair<int, int>>(128);        
 
         public static int GetSightRange(Thing thing)
         {
-            if(rangeCache.TryGetValue(thing.thingIDNumber, out Pair<int, int> store) && GenTicks.TicksGame - store.First <= 60)
+            if (rangeCache.TryGetValue(thing.thingIDNumber, out Pair<int, int> store) && GenTicks.TicksGame - store.First <= 60)
             {
                 return store.second;
             }
@@ -21,13 +21,13 @@ namespace CombatAI
             {
                 int range = GetSightRange(pawn);
                 rangeCache[thing.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);
-                return range;
+                return range;                
             }
             else if (thing is Building_TurretGun turret)
             {
                 int range = GetSightRange(turret);
                 rangeCache[thing.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);
-                return range;
+                return range;                
             }
             throw new NotImplementedException();
         }
@@ -102,6 +102,11 @@ namespace CombatAI
                 }
             } 
             return Mathf.CeilToInt(range);
+        }
+
+        public static void ClearCache()
+        {
+            rangeCache.Clear();
         }
     }
 }

@@ -22,25 +22,28 @@ namespace CombatAI
         {
             public int interval;
             public int buckets;
+            public int carryLimit;
 
             public SightPerformanceSettings()
             {
             }
 
-            public SightPerformanceSettings(int interval, int buckets)
+            public SightPerformanceSettings(int interval, int buckets, int carryLimit)
             {
                 this.interval = interval;
                 this.buckets = buckets;
+                this.carryLimit = carryLimit;
             }            
 
             public void ExposeData()
             {
                 Scribe_Values.Look(ref interval, $"frequency.{version}");
                 Scribe_Values.Look(ref buckets, $"buckets.{version}");
+                Scribe_Values.Look(ref carryLimit, $"carryLimit.{version}");
             }
         }
 
-        private const int version = 0;
+        private const int version = 1;
 
         /*                 
          * -- * -- * -- * -- * -- * -- * -- * -- * --
@@ -56,12 +59,14 @@ namespace CombatAI
         public bool Pather_Enabled = true;
         public bool Caster_Enabled = true;
         public bool Targeter_Enabled = true;
+        public bool Pather_DisableL1L2 = false;
+        public bool Pather_KillboxKiller = true;
         public float Pathfinding_DestWeight = 0.85f;
 
-        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new Settings.SightPerformanceSettings(2, 5);        
-        public SightPerformanceSettings SightSettings_MechsAndInsects = new Settings.SightPerformanceSettings(3, 10);
-        public SightPerformanceSettings SightSettings_Wildlife = new Settings.SightPerformanceSettings(6, 10);
-        public SightPerformanceSettings SightSettings_SettlementTurrets = new Settings.SightPerformanceSettings(8, 15);
+        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new Settings.SightPerformanceSettings(2, 5, 12);        
+        public SightPerformanceSettings SightSettings_MechsAndInsects = new Settings.SightPerformanceSettings(3, 10, 6);
+        public SightPerformanceSettings SightSettings_Wildlife = new Settings.SightPerformanceSettings(6, 10, 4);
+        public SightPerformanceSettings SightSettings_SettlementTurrets = new Settings.SightPerformanceSettings(8, 15, 12);
 
         /*
          * 
@@ -96,32 +101,33 @@ namespace CombatAI
             Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders.{version}");
             if (SightSettings_FriendliesAndRaiders == null)
             {
-                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(2, 5);
+                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(2, 5, 12);
             }
             Scribe_Deep.Look(ref SightSettings_MechsAndInsects, $"CombatAI.SightSettings_MechsAndInsects.{version}");
             if (SightSettings_MechsAndInsects == null)
             {
-                SightSettings_MechsAndInsects = new SightPerformanceSettings(3, 10);
+                SightSettings_MechsAndInsects = new SightPerformanceSettings(3, 10, 6);
             }            
             Scribe_Deep.Look(ref SightSettings_Wildlife, $"CombatAI.SightSettings_Wildlife.{version}");
             if (SightSettings_Wildlife == null)
             {
-                SightSettings_Wildlife = new SightPerformanceSettings(6, 10);
+                SightSettings_Wildlife = new SightPerformanceSettings(6, 10, 4);
             }
             Scribe_Deep.Look(ref SightSettings_SettlementTurrets, $"CombatAI.SightSettings_SettlementTurrets.{version}");
             if (SightSettings_SettlementTurrets == null)
             {
-                SightSettings_SettlementTurrets = new SightPerformanceSettings(8, 15);
+                SightSettings_SettlementTurrets = new SightPerformanceSettings(8, 15, 12);
             }
             Scribe_Values.Look(ref LeanCE_Enabled, $"LeanCE_Enabled.{version}");
             Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
             Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);            
             Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
             Scribe_Values.Look(ref Pathfinding_DestWeight, $"Pathfinding_DestWeight.{version}", 0.85f);
-            Scribe_Values.Look(ref AdvancedUser, $"AdvancedUser.{version}");            
+            Scribe_Values.Look(ref AdvancedUser, $"AdvancedUser.{version}");
+            Scribe_Values.Look(ref Pather_KillboxKiller, $"Pather_KillboxKiller.{version}", true);
             Scribe_Values.Look(ref Debug, $"Debug.{version}");
             Scribe_Values.Look(ref Debug_ValidateSight, $"Debug_ValidateSight.{version}");
-            Scribe_Values.Look(ref Debug_DrawShadowCasts, $"Debug_DrawShadowCasts.{version}");                        
+            Scribe_Values.Look(ref Debug_DrawShadowCasts, $"Debug_DrawShadowCasts.{version}");            
             //ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
         }
 

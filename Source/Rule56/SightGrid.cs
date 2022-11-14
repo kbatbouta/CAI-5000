@@ -264,7 +264,7 @@ namespace CombatAI
                     {
                         grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                     }
-                }, range, COVERCARRYLIMIT);
+                }, range, settings.carryLimit);
                 // if we are scanning for enemies
                 if (scanForEnemies)
                 {
@@ -287,7 +287,7 @@ namespace CombatAI
         {
             if (thing is Pawn pawn)
             {
-                return GetMovingShiftedPosition(pawn, settings.interval, settings.buckets);
+                return GetMovingShiftedPosition(pawn, 60);
             }
             else
             {
@@ -295,7 +295,20 @@ namespace CombatAI
             }
         }
 
-        private static IntVec3 GetMovingShiftedPosition(Pawn pawn, float updateInterval, int bucketNum)
+        //private static IntVec3 GetMovingShiftedPosition(Pawn pawn, float updateInterval, int bucketNum)
+        //{
+        //    PawnPath path;
+
+        //    if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
+        //    {
+        //        return pawn.Position;
+        //    }
+
+        //    float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * (updateInterval * bucketNum) / 60f, path.NodesLeftCount - 1);
+        //    return path.Peek(Mathf.FloorToInt(distanceTraveled));
+        //}
+
+        private static IntVec3 GetMovingShiftedPosition(Pawn pawn, int ticksAhead)
         {
             PawnPath path;
 
@@ -304,7 +317,7 @@ namespace CombatAI
                 return pawn.Position;
             }
 
-            float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * (updateInterval * bucketNum) / 60f, path.NodesLeftCount - 1);
+            float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * ticksAhead / 60f, path.NodesLeftCount - 1);
             return path.Peek(Mathf.FloorToInt(distanceTraveled));
         }
     }

@@ -20,32 +20,42 @@ namespace CombatAI.Comps
         private int lastInterupted;
         private int lastSawEnemies;
 
-        private bool scanning;        
+        private bool scanning;
 
         private HashSet<Thing> visibleEnemies;
 
-        public SightTracker.SightReader sightReader;      
+        public Pawn_CustomDutyTracker duties;
+        public SightTracker.SightReader sightReader;
 
         public ThingComp_CombatAI()
         {
-            this.visibleEnemies = new HashSet<Thing>();
+            this.visibleEnemies = new HashSet<Thing>();            
+        }
+
+        public override void PostSpawnSetup(bool respawningAfterLoad)
+        {
+            base.PostSpawnSetup(respawningAfterLoad);
+            if (parent is Pawn pawn)
+            {
+                this.duties = new Pawn_CustomDutyTracker(pawn);
+            }
         }
 
         public override void DrawGUIOverlay()
         {
             base.DrawGUIOverlay();
             if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight && parent is Pawn pawn)
-            {                           
+            {
                 var verb = pawn.CurrentEffectiveVerb;
                 var sightRange = Math.Min(SightUtility.GetSightRange(pawn), verb.EffectiveRange);
                 var sightRangeSqr = sightRange * sightRange;
                 if (sightRange != 0 && verb != null)
                 {
-                    Vector3 drawPos = pawn.DrawPos;                                        
-                    IntVec3 shiftedPos = GetShiftedPosition(pawn);
+                    Vector3 drawPos = pawn.DrawPos;
+                    IntVec3 shiftedPos = GetMovingShiftedPosition(pawn, 30);
                     List<Pawn> nearbyVisiblePawns = GenClosest.ThingsInRange(pawn.Position, pawn.Map, Utilities.TrackedThingsRequestCategory.Pawns, sightRange)
                         .Select(t => t as Pawn)
-                        .Where(p => !p.Dead && !p.Downed && GetShiftedPosition(p).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, GetShiftedPosition(p)) && p.HostileTo(pawn))
+                        .Where(p => !p.Dead && !p.Downed && GetMovingShiftedPosition(p, 60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, GetMovingShiftedPosition(p, 60)) && p.HostileTo(pawn))
                         .ToList();
                     CombatAI.Gui.GUIUtility.ExecuteSafeGUIAction(() =>
                     {
@@ -115,8 +125,21 @@ namespace CombatAI.Comps
             }
         }
 
-        public void OnScanFinished()
+        public override void CompTickRare()
         {
+            base.CompTickRare();
+            if (!parent.Spawned)
+            {
+                return;
+            }
+            if (duties != null)
+            {
+                duties.TickRare();
+            }
+        }      
+
+        public void OnScanFinished()
+        {            
             if (scanning == false)
             {
                 Log.Warning($"ISMA: OnScanFinished called while not scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
@@ -238,7 +261,8 @@ namespace CombatAI.Comps
                 }
                 // parent.Map.debugDrawer.FlashCell(pawn.Position, 0.9f, "s", duration: 100);
                 // ------------------------------------------------------------
-                if (bestEnemyPositon.DistanceToSquared(pawn.Position) > 100)
+                float dist = bestEnemyPositon.DistanceToSquared(pawn.Position); ;
+                if (dist > 36)
                 {
                     if (bestEnemyVisibleNow)
                     {
@@ -324,6 +348,16 @@ namespace CombatAI.Comps
             visibleEnemies.AddRange(things);            
         }
 
+        public override void PostExposeData()
+        {
+            base.PostExposeData();
+            Scribe_Deep.Look(ref duties, "duties");
+            if(duties == null && parent is Pawn pawn)
+            {
+                duties = new Pawn_CustomDutyTracker(pawn);
+            }
+        }      
+
         public void Notify_SightReaderChanged(SightTracker.SightReader reader)
         {
             this.sightReader = reader;
@@ -338,25 +372,6 @@ namespace CombatAI.Comps
             }
 
             float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * ticksAhead / 60f, path.NodesLeftCount - 1);
-            return path.Peek(Mathf.FloorToInt(distanceTraveled));
-        }
-
-
-        private IntVec3 GetShiftedPosition(Pawn pawn)
-        {
-            return GetMovingShiftedPosition(pawn, Finder.Settings.SightSettings_FriendliesAndRaiders.interval, Finder.Settings.SightSettings_FriendliesAndRaiders.buckets);
-        }
-
-        private static IntVec3 GetMovingShiftedPosition(Pawn pawn, float updateInterval, int bucketNum)
-        {
-            PawnPath path;
-
-            if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
-            {
-                return pawn.Position;
-            }
-
-            float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * (updateInterval * bucketNum) / 60f, path.NodesLeftCount - 1);
             return path.Peek(Mathf.FloorToInt(distanceTraveled));
         }
     }

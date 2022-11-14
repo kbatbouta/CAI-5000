@@ -4,6 +4,7 @@ using CombatAI.Gui;
 using HarmonyLib;
 using UnityEngine;
 using Verse;
+using static Verse.GenThreading;
 
 namespace CombatAI
 {
@@ -39,6 +40,7 @@ namespace CombatAI
         {
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_CELean, ref Finder.Settings.LeanCE_Enabled);
             collapsible.Line(1);
+            collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_KillBoxKiller, ref Finder.Settings.Pather_KillboxKiller);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_Pather, ref Finder.Settings.Pather_Enabled);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_Caster, ref Finder.Settings.Caster_Enabled);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_Targeter, ref Finder.Settings.Targeter_Enabled);
@@ -78,6 +80,14 @@ namespace CombatAI
                     Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = (int)Widgets.HorizontalSlider(rect, Finder.Settings.SightSettings_FriendliesAndRaiders.buckets, 1, 20, false, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_FriendliesAndRaiders.buckets));
                 }, useMargins: true);
             }
+            collapsible.Lambda(25, (rect) =>
+            {
+                Finder.Settings.SightSettings_FriendliesAndRaiders.carryLimit = (int)Widgets.HorizontalSlider(rect, Finder.Settings.SightSettings_FriendliesAndRaiders.carryLimit, 4, 16, false, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_FriendliesAndRaiders.carryLimit));
+                if (Mouse.IsOver(rect))
+                {
+                    TooltipHandler.TipRegion(rect, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description);
+                }
+            }, useMargins: true);
             /*
              * ----------------------
              */
@@ -88,7 +98,7 @@ namespace CombatAI
             collapsible.Lambda(25, (rect) =>
             {
                 Finder.Settings.SightSettings_MechsAndInsects.interval = (int)Widgets.HorizontalSlider(rect, Finder.Settings.SightSettings_MechsAndInsects.interval, 1, 20, false, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_MechsAndInsects.interval));
-            }, useMargins: true);
+            }, useMargins: true);            
             if (Current.ProgramState != ProgramState.Playing)
             {
                 collapsible.Lambda(25, (rect) =>
@@ -96,6 +106,14 @@ namespace CombatAI
                     Finder.Settings.SightSettings_MechsAndInsects.buckets = (int)Widgets.HorizontalSlider(rect, Finder.Settings.SightSettings_MechsAndInsects.buckets, 1, 20, false, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_MechsAndInsects.buckets));
                 }, useMargins: true);
             }
+            collapsible.Lambda(25, (rect) =>
+            {
+                Finder.Settings.SightSettings_MechsAndInsects.carryLimit = (int)Widgets.HorizontalSlider(rect, Finder.Settings.SightSettings_MechsAndInsects.carryLimit, 4, 16, false, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_MechsAndInsects.carryLimit));
+                if (Mouse.IsOver(rect))
+                {
+                    TooltipHandler.TipRegion(rect, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description);
+                }
+            }, useMargins: true);
             /*
              * ----------------------
              */
@@ -114,6 +132,14 @@ namespace CombatAI
                     Finder.Settings.SightSettings_Wildlife.buckets = (int)Widgets.HorizontalSlider(rect, Finder.Settings.SightSettings_Wildlife.buckets, 1, 20, false, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_Wildlife.buckets));
                 }, useMargins: true);
             }
+            collapsible.Lambda(25, (rect) =>
+            {
+                Finder.Settings.SightSettings_Wildlife.carryLimit = (int)Widgets.HorizontalSlider(rect, Finder.Settings.SightSettings_Wildlife.carryLimit, 4, 16, false, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_Wildlife.carryLimit));
+                if (Mouse.IsOver(rect))
+                {
+                    TooltipHandler.TipRegion(rect, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description);
+                }
+            }, useMargins: true);
             /*
              * ----------------------
              */
@@ -132,6 +158,14 @@ namespace CombatAI
                     Finder.Settings.SightSettings_SettlementTurrets.buckets = (int)Widgets.HorizontalSlider(rect, Finder.Settings.SightSettings_SettlementTurrets.buckets, 1, 20, false, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_SettlementTurrets.buckets));
                 }, useMargins: true);
             }
+            collapsible.Lambda(25, (rect) =>
+            {
+                Finder.Settings.SightSettings_SettlementTurrets.carryLimit = (int)Widgets.HorizontalSlider(rect, Finder.Settings.SightSettings_SettlementTurrets.carryLimit, 4, 16, false, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_SettlementTurrets.carryLimit));
+                if (Mouse.IsOver(rect))
+                {
+                    TooltipHandler.TipRegion(rect, R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description);
+                }
+            }, useMargins: true);
         }
 
         private void FillCollapsible_Advance(Listing_Collapsible collapsible)
@@ -139,13 +173,13 @@ namespace CombatAI
             collapsible.Label(R.Keyed.CombatAI_Settings_Advance_Warning);
             collapsible.Line(1);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Advance_Enable, ref Finder.Settings.AdvancedUser);
-            if (Finder.Settings.AdvancedUser)
-            {
-                collapsible.Lambda(25, (rect) =>
-                {
-                    Finder.Settings.Advanced_SightThreadIdleSleepTimeMS = (int)Widgets.HorizontalSlider(rect, Finder.Settings.Advanced_SightThreadIdleSleepTimeMS, 1, 10, false, $"<color=red>Sight worker thread</color> idle sleep time MS {(int)(Finder.Settings.Advanced_SightThreadIdleSleepTimeMS)}");
-                }, useMargins: true);
-            }
+            //if (Finder.Settings.AdvancedUser)
+            //{
+            //    collapsible.Lambda(25, (rect) =>
+            //    {
+            //        Finder.Settings.Advanced_SightThreadIdleSleepTimeMS = (int)Widgets.HorizontalSlider(rect, Finder.Settings.Advanced_SightThreadIdleSleepTimeMS, 1, 10, false, $"<color=red>Sight worker thread</color> idle sleep time MS {(int)(Finder.Settings.Advanced_SightThreadIdleSleepTimeMS)}");
+            //    }, useMargins: true);
+            //}
         }
 
         private void FillCollapsible_Debugging(Listing_Collapsible collapsible)
