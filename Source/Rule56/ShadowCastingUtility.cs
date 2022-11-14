@@ -17,7 +17,7 @@ namespace CombatAI
     /// https://www.albertford.com/shadowcasting/
     /// </summary>
     public static partial class ShadowCastingUtility
-    {
+    {        
         private const int VISIBILITY_CARRY_MAX = 5;
         
         private static readonly Func<IntVec3, IntVec3>[] _transformationFuncs;        
@@ -35,6 +35,7 @@ namespace CombatAI
             public Map map;
             public WallGrid grid;
             public Action<IntVec3, int, int, float> setAction;
+            public List<Vector3> buffer;
         }      
 
         static ShadowCastingUtility()
@@ -120,14 +121,15 @@ namespace CombatAI
             public int maxDepth;
             public float blockChance;
 
-            public IEnumerable<Vector3> Tiles()
+            public void Tiles(List<Vector3> buffer)
             {
                 int min = (int)Mathf.Floor(this.startSlope * this.depth + 0.5f);
                 int max = (int)Mathf.Ceil(this.endSlope * this.depth - 0.5f);
-                
+
+                buffer.Clear();
                 for (int i = min; i <= max; i++)
-                {                    
-                    yield return new Vector3(depth, 0, i);
+                {
+                    buffer.Add(new Vector3(depth, 0, i));                    
                 }
             }
 
@@ -208,7 +210,7 @@ namespace CombatAI
         }        
 
         private static void TryWeightedScan(CastRequest request)
-        {
+        {            
             int cellsScanned = 0;
             WallGrid grid = request.grid;
             if (grid == null)
@@ -234,9 +236,10 @@ namespace CombatAI
                 var lastIsCover = false;
                 var lastFill = 0f;
                 var lastFillNum = 0;
-
-                foreach (Vector3 offset in row.Tiles())
+                row.Tiles(request.buffer);
+                for(int i = 0; i< request.buffer.Count;i++)                
                 {
+                    Vector3 offset = request.buffer[i];
                     FillCategory fill = FillCategory.None;
                     IntVec3 cell = request.source + row.Transform(offset.ToIntVec3());                
                     bool isWall = !cell.InBounds(request.map) || (fill = grid.GetFillCategory(cell)) == FillCategory.Full;
@@ -332,9 +335,11 @@ namespace CombatAI
                 }
                 var lastCell = InvalidOffset;
                 var lastIsWall = false;
-                
-                foreach (Vector3 offset in row.Tiles())
+
+                row.Tiles(request.buffer);
+                for (int i = 0; i < request.buffer.Count; i++)
                 {
+                    Vector3 offset = request.buffer[i];
                     var cell = request.source + row.Transform(offset.ToIntVec3());
                     var isWall = !cell.InBounds(request.map) || !grid.CanBeSeenOver(cell);                    
 
@@ -366,10 +371,10 @@ namespace CombatAI
             }
         }
 
-        private static void TryCastVisibility(float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction) => TryCast(TryVisibilityScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction);
-        private static void TryCastWeighted(float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction) => TryCast(TryWeightedScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction);
+        private static void TryCastVisibility(float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer) => TryCast(TryVisibilityScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction, buffer);
+        private static void TryCastWeighted(float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer) => TryCast(TryWeightedScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction, buffer);
 
-        private static void TryCast(Action<CastRequest> castAction, float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction)
+        private static void TryCast(Action<CastRequest> castAction, float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer)
         {            
             if (endSlope > 1.0f || startSlope < -1 || startSlope > endSlope)
             {
@@ -380,8 +385,9 @@ namespace CombatAI
             {
                 Log.Error($"Wall grid not found for {map} with cast center {source}");
                 return;
-            }  
-            IntVec3 coverLoc = source + _transformationFuncs[quartor](new IntVec3(1, 0, 0));
+            }
+            buffer.Clear();
+            IntVec3 coverLoc = source + _transformationFuncs[quartor](new IntVec3(1, 0, 0));            
             if (coverLoc.InBounds(map) && grid.GetFillCategory(coverLoc) == FillCategory.Full)
             {
                 IntVec3 rightUpper = source + _transformationFuncs[quartor](new IntVec3(1, 0, -1));
@@ -406,6 +412,7 @@ namespace CombatAI
                         requestLeft.carryLimit = carryLimit;
                         requestLeft.map = map;
                         requestLeft.source = leftLower;
+                        requestLeft.buffer = buffer;
                         requestLeft.setAction = setAction;
                         castAction(requestLeft);
                     }
@@ -424,6 +431,7 @@ namespace CombatAI
                         requestRight.map = map;
                         requestRight.source = rightLower;
                         requestRight.setAction = setAction;
+                        requestRight.buffer = buffer;
                         castAction(requestRight);
                     }
                 }
@@ -443,6 +451,7 @@ namespace CombatAI
                 request.map = map;
                 request.source = source;
                 request.setAction = setAction;
+                request.buffer = buffer;
                 castAction(request);
             }
         }                         

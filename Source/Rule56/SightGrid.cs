@@ -11,7 +11,8 @@ namespace CombatAI
 {
     public class SightGrid
     {
-        private const int COVERCARRYLIMIT = 6;      
+        private List<Vector3> buffer = new List<Vector3>(1024);
+        private const int COVERCARRYLIMIT = 6;        
 
         private class IBucketableThing : IBucketable
         {
@@ -264,7 +265,7 @@ namespace CombatAI
                     {
                         grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                     }
-                }, range, settings.carryLimit);
+                }, range, settings.carryLimit, buffer);
                 // if we are scanning for enemies
                 if (scanForEnemies)
                 {

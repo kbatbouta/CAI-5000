@@ -26,7 +26,7 @@ namespace CombatAI
         /// <param name="map">Map</param>
         /// <param name="source">Source cell</param>
         /// <param name="radius">Radius</param>        
-        public static void CastWeighted(Map map, IntVec3 source, Action<IntVec3, int, int, float> setAction, int radius) => Cast(map, TryCastWeighted, setAction, source, radius, VISIBILITY_CARRY_MAX);
+        public static void CastWeighted(Map map, IntVec3 source, Action<IntVec3, int, int, float> setAction, int radius, List<Vector3> buffer) => Cast(map, TryCastWeighted, setAction, source, radius, VISIBILITY_CARRY_MAX, buffer);
         /// <summary>
         /// Evaluate all cells around the source for visibility (float value).
         /// Note: this is a slower but more accurate version of CastVisibility.
@@ -35,7 +35,7 @@ namespace CombatAI
         /// <param name="source">Source cell</param>
         /// <param name="maxRadius">Radius</param>
         /// <param name="carryLimit">Cover limit</param>
-        public static void CastWeighted(Map map, IntVec3 source, Action<IntVec3, int, int, float> setAction, int radius, int carryLimit) => Cast(map, TryCastWeighted, setAction, source, radius, carryLimit);
+        public static void CastWeighted(Map map, IntVec3 source, Action<IntVec3, int, int, float> setAction, int radius, int carryLimit, List<Vector3> buffer) => Cast(map, TryCastWeighted, setAction, source, radius, carryLimit, buffer);
 
         /// <summary>
         /// Evaluate all cells around the source for visibility (on/off).
@@ -44,14 +44,14 @@ namespace CombatAI
         /// <param name="map">Map</param>
         /// <param name="source">Source cell</param>
         /// <param name="radius">Radius</param>        
-        public static void CastVisibility(Map map, IntVec3 source, Action<IntVec3, int> action, int radius) => Cast(map, TryCastVisibility, (cell, _, dist, ignore) => action(cell, dist), source, radius, VISIBILITY_CARRY_MAX);            
+        public static void CastVisibility(Map map, IntVec3 source, Action<IntVec3, int> action, int radius, List<Vector3> buffer) => Cast(map, TryCastVisibility, (cell, _, dist, ignore) => action(cell, dist), source, radius, VISIBILITY_CARRY_MAX, buffer);            
 
-        private static void Cast(Map map, Action<float, float, int, int, int, IntVec3, Map, Action<IntVec3, int, int, float>> castingAction, Action<IntVec3, int, int, float> action, IntVec3 source, int radius, int carryLimit)
+        private static void Cast(Map map, Action<float, float, int, int, int, IntVec3, Map, Action<IntVec3, int, int, float>, List<Vector3>> castingAction, Action<IntVec3, int, int, float> action, IntVec3 source, int radius, int carryLimit, List<Vector3> buffer)
         {                            
             int maxDepth = (int)(radius);
             for (int i = 0; i < 4; i++)
             {
-                castingAction(-1, 1, i, maxDepth, carryLimit, source, map, action);
+                castingAction(-1, 1, i, maxDepth, carryLimit, source, map, action, buffer);
             }            
         }
 
@@ -62,7 +62,7 @@ namespace CombatAI
         /// <param name="source">Source cell</param>
         /// <param name="direction">Direction</param>
         /// <param name="baseWidth">What is the maximum amount of cells (width) to be scanned</param>        
-        public static void CastVisibility(Map map, IntVec3 source, Vector3 direction, Action<IntVec3, int> action, float radius, float baseWidth) => Cast(map, TryCastVisibility, (cell, _, dist, ignore) => action(cell, dist), source, (source.ToVector3() + direction.normalized * radius).ToIntVec3(), baseWidth, VISIBILITY_CARRY_MAX);        
+        public static void CastVisibility(Map map, IntVec3 source, Vector3 direction, Action<IntVec3, int> action, float radius, float baseWidth, List<Vector3> buffer) => Cast(map, TryCastVisibility, (cell, _, dist, ignore) => action(cell, dist), source, (source.ToVector3() + direction.normalized * radius).ToIntVec3(), baseWidth, VISIBILITY_CARRY_MAX, buffer);        
 
         /// <summary>
         /// Evaluate visible cells from the source in the direction of target. Will result in storing the cover visiblity (float value) scoring for each each cell in the ShadowGrid
@@ -72,10 +72,10 @@ namespace CombatAI
         /// <param name="direction">Direction</param>
         /// <param name="action">Set action (x, z, current_ray_value)</param> 
         /// <param name="baseWidth">What is the maximum amount of cells (width) to be scanned</param>          
-        public static void CastWeighted(Map map, IntVec3 source, Vector3 direction, Action<IntVec3, int, int, float> action, float radius, float baseWidth, int carryLimit) => Cast(map, TryCastWeighted, action, source, (source.ToVector3() + direction.normalized * radius).ToIntVec3(), baseWidth, carryLimit);
+        public static void CastWeighted(Map map, IntVec3 source, Vector3 direction, Action<IntVec3, int, int, float> action, float radius, float baseWidth, int carryLimit, List<Vector3> buffer) => Cast(map, TryCastWeighted, action, source, (source.ToVector3() + direction.normalized * radius).ToIntVec3(), baseWidth, carryLimit, buffer);
                
 
-        private static void Cast(Map map, Action<float, float, int, int, int, IntVec3, Map, Action<IntVec3, int, int, float>> castingAction, Action<IntVec3, int, int, float> setAction, IntVec3 source, IntVec3 target, float baseWidth, int carryLimit)
+        private static void Cast(Map map, Action<float, float, int, int, int, IntVec3, Map, Action<IntVec3, int, int, float>, List<Vector3>> castingAction, Action<IntVec3, int, int, float> setAction, IntVec3 source, IntVec3 target, float baseWidth, int carryLimit, List<Vector3> buffer)
         {            
             if (target.DistanceTo(source) < 2)
             {
@@ -93,16 +93,16 @@ namespace CombatAI
             if (startSlope < -1)
             {
                 float slope = Mathf.Max(startSlope + 2, 0);
-                castingAction(slope, 1, GetNextQuartor(quartor), maxDepth, carryLimit, source, map, setAction);
+                castingAction(slope, 1, GetNextQuartor(quartor), maxDepth, carryLimit, source, map, setAction, buffer);
                 startSlope = -1;
             }
             if (endSlope > 1)
             {
                 float slope = Mathf.Min(endSlope - 2, 0);
-                castingAction(-1, slope, GetPreviousQuartor(quartor), maxDepth, carryLimit, source, map, setAction);
+                castingAction(-1, slope, GetPreviousQuartor(quartor), maxDepth, carryLimit, source, map, setAction, buffer);
                 endSlope = 1;
             }
-            castingAction(startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction);            
+            castingAction(startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction, buffer);            
         }             
     }
 }
