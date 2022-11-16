@@ -20,8 +20,8 @@ namespace CombatAI.Patches
             {
                 if (member?.Spawned ?? false)
                 {
-                    member.Map.GetComp_Fast<AvoidanceTracker>().Notify_Injury(member, member.Position);
-                    member.GetComp_Fast<ThingComp_Statistics>().Notify_PawnTookDamage();
+                    member.Map?.GetComp_Fast<AvoidanceTracker>()?.Notify_Injury(member, dinfo);
+                    member.GetComp_Fast<ThingComp_Statistics>()?.Notify_PawnTookDamage();
                 }
             }
         }
@@ -33,7 +33,7 @@ namespace CombatAI.Patches
             {
                 if (!wasWorldPawn && (member?.Spawned ?? false))
                 {                    
-                    member.Map.GetComp_Fast<AvoidanceTracker>().Notify_Death(member, member.Position);
+                    member.Map.GetComp_Fast<AvoidanceTracker>()?.Notify_Death(member, member.Position);
                 }
             }
         }      

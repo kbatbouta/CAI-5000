@@ -1,58 +1,64 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Rule56/ShadowCastingUtility.cs">
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workbench ActiveDocument="Rule56/Patches/PathFinder_Patch.cs">
     <Files>
-      <File FileName="Rule56/CombatAI_Utility.cs" Line="24" Column="10" />
-      <File FileName="Rule56/Patches/JobGiver_AIGotoNearestHostile_Patch.cs" Line="91" Column="31" />
-      <File FileName="Rule56/Patches/JobGiver_Patch.cs" Line="32" Column="11" />
-      <File FileName="Rule56/Patches/PathFinder_Patch.cs" Line="137" Column="41" />
-      <File FileName="Rule56/Comps/ThingComp_CombatAI.cs" Line="52" Column="53" />
-      <File FileName="Rule56/Settings.cs" Line="121" Column="50" />
-      <File FileName="../1.4/Languages/English/Keyed/Translations.xml" Line="10" Column="35" />
-      <File FileName="Rule56/CombatAIMod.cs" Line="43" Column="33" />
-      <File FileName="Rule56/Gui/Listings/IListing_Custom.cs" Line="130" Column="17" />
-      <File FileName="Rule56/SightGrid.cs" Line="231" Column="33" />
-      <File FileName="Rule56/ShadowCastingUtility.Extras.cs" Line="78" Column="249" />
-      <File FileName="Rule56/ShadowCastingUtility.cs" Line="318" Column="24" />
-      <File FileName="Rule56/CombatReservationManager.cs" Line="1" Column="1" />
-      <File FileName="Rule56/Comps/CompProperties_CombatAI.cs" Line="1" Column="1" />
-      <File FileName="Rule56/Collections/FlagArray.cs" Line="73" Column="51" />
-      <File FileName="../About/About.xml" Line="28" Column="28" />
-      <File FileName="Rule56/SightUtility.cs" Line="24" Column="30" />
-      <File FileName="Rule56/Patches/Game_Patch.cs" Line="24" Column="40" />
-      <File FileName="Rule56/Patches/AttackTargetFinder_Patch.cs" Line="1" Column="1" />
-      <File FileName="Rule56/Patches/CastPositionFinder_Patch.cs" Line="1" Column="1" />
-      <File FileName="Rule56/DutyHelper_Escort.cs" Line="142" Column="22" />
-      <File FileName="Rule56/CustomDutyUtility.cs" Line="11" Column="61" />
-      <File FileName="Rule56/AvoidanceTracker.cs" Line="1" Column="1" />
-      <File FileName="Rule56/CompsCache.cs" Line="1" Column="1" />
-      <File FileName="Rule56/ITSignalGrid.cs" Line="1" Column="1" />
-      <File FileName="Rule56/SightTracker.cs" Line="273" Column="45" />
-      <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/IShortTermMemoryGrid.cs" Line="1" Column="1" />
-      <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/IShortTermMemoryHandler.cs" Line="1" Column="1" />
-      <File FileName="Rule56/ShortTermMemory.cs" Line="16" Column="10" />
-      <File FileName="Rule56/Patches/MapPawns_Patch.cs" Line="1" Column="1" />
+      <File FileName="Rule56/CombatAI_Utility.cs" />
+      <File FileName="Rule56/Patches/JobGiver_AIGotoNearestHostile_Patch.cs" />
+      <File FileName="Rule56/Patches/JobGiver_Patch.cs" />
+      <File FileName="Rule56/Patches/PathFinder_Patch.cs" Line="311" Column="58" />
+      <File FileName="Rule56/Comps/ThingComp_CombatAI.cs" />
+      <File FileName="Rule56/Settings.cs" />
+      <File FileName="../1.4/Languages/English/Keyed/Translations.xml" />
+      <File FileName="Rule56/CombatAIMod.cs" />
+      <File FileName="Rule56/Gui/Listings/IListing_Custom.cs" />
+      <File FileName="Rule56/SightGrid.cs" />
+      <File FileName="Rule56/ShadowCastingUtility.Extras.cs" />
+      <File FileName="Rule56/ShadowCastingUtility.cs" />
+      <File FileName="Rule56/CombatReservationManager.cs" />
+      <File FileName="Rule56/Comps/CompProperties_CombatAI.cs" />
+      <File FileName="Rule56/Collections/FlagArray.cs" />
+      <File FileName="../About/About.xml" />
+      <File FileName="Rule56/SightUtility.cs" />
+      <File FileName="Rule56/Patches/Game_Patch.cs" />
+      <File FileName="Rule56/Patches/AttackTargetFinder_Patch.cs" />
+      <File FileName="Rule56/Patches/CastPositionFinder_Patch.cs" />
+      <File FileName="Rule56/CustomDutyUtility.cs" />
+      <File FileName="Rule56/AvoidanceTracker.cs" />
+      <File FileName="Rule56/CompsCache.cs" />
+      <File FileName="Rule56/ITSignalGrid.cs" />
+      <File FileName="Rule56/SightTracker.cs" />
+      <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/IShortTermMemoryGrid.cs" />
+      <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/IShortTermMemoryHandler.cs" />
+      <File FileName="Rule56/Patches/MapPawns_Patch.cs" />
       <File FileName="Rule56/Patches/Projectile_Patch.cs" Line="1" Column="1" />
+      <File FileName="Rule56/AssetBundleDatabase.cs" Line="47" Column="48" />
+      <File FileName="Rule56/Finder.cs" />
+      <File FileName="Rule56/T4/Sources/Keyed.tt" />
+      <File FileName="Rule56/T4/Sources/Tex.tt" />
+      <File FileName="Rule56/CombatAI.csproj" />
+      <File FileName="Rule56/T4/Outputs/Tex.generated.cs" />
+      <File FileName="Rule56/T4/Outputs/Keyed.generated.cs" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="Rule56" expanded="True">
-            <Node name="CombatAI" expanded="True" />
+            <Node name="CombatAI" expanded="True">
+              <Node name="Patches" expanded="True">
+                <Node name="PathFinder_Patch.cs" selected="True" />
+              </Node>
+            </Node>
             <Node name="CombatExtended" expanded="True">
               <Node name="CombatExtended" expanded="True" />
             </Node>
           </Node>
         </State>
       </Pad>
-      <Pad Id="MonoDevelop.Debugger.WatchPad">
-        <State />
-      </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
 </Properties>

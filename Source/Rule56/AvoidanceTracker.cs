@@ -38,6 +38,8 @@ namespace CombatAI
 
             public ITByteGrid path;
             public ITByteGrid proximity;
+            public IHeatGrid affliction_dmg;
+            public IHeatGrid affliction_pen;
 
             public AvoidanceReader(AvoidanceTracker tracker, UInt64 iflags)
             {                ;
@@ -47,7 +49,7 @@ namespace CombatAI
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public float GetDanger(IntVec3 cell) => GetDanger(indices.CellToIndex(cell));
-            public float GetDanger(int index) => 0;
+            public float GetDanger(int index) => affliction_dmg.Get(index) + affliction_pen.Get(index);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int GetProximity(IntVec3 cell) => GetProximity(indices.CellToIndex(cell));
@@ -69,7 +71,9 @@ namespace CombatAI
         private readonly IBuckets<IBucketablePawn> buckets;
         private readonly List<Pawn> _removalList = new List<Pawn>();        
         private readonly CellFlooder flooder;
-
+        
+        public IHeatGrid affliction_dmg;
+        public IHeatGrid affliction_pen;
         public ITByteGrid shootLine;
         public ITByteGrid proximity;
         public ITByteGrid path;
@@ -82,6 +86,8 @@ namespace CombatAI
             buckets = new IBuckets<IBucketablePawn>(30);
             asyncActions = new AsyncActions();
             flooder = new CellFlooder(map);
+            affliction_dmg = new IHeatGrid(map, 60, 64, 6);
+            affliction_pen = new IHeatGrid(map, 60, 64, 6);
         }
 
         public override void MapComponentTick()
@@ -182,6 +188,28 @@ namespace CombatAI
                     }
                 }
             }
+            if (Finder.Settings.Debug_DrawAvoidanceGrid_Danger)
+            {                
+                IntVec3 center = UI.MouseMapPosition().ToIntVec3();
+                if (center.InBounds(map))
+                {
+                    for (int i = center.x - 64; i < center.x + 64; i++)
+                    {
+                        for (int j = center.z - 64; j < center.z + 64; j++)
+                        {
+                            IntVec3 cell = new IntVec3(i, 0, j);
+                            if (cell.InBounds(map))
+                            {
+                                var value = affliction_pen.Get(cell) + affliction_dmg.Get(cell);
+                                if (value > 0)
+                                {
+                                    map.debugDrawer.FlashCell(cell, Mathf.Clamp(value / 32f, 0f, 0.99f), $"{Math.Round(affliction_pen.Get(cell), 1)} {Math.Round(affliction_dmg.Get(cell), 1)}", 15);
+                                }
+                            }
+                        }
+                    }
+                }                              
+            }
         }
 
         public bool TryGetReader(Pawn pawn, out AvoidanceReader reader)
@@ -192,6 +220,8 @@ namespace CombatAI
                 reader = new AvoidanceReader(this, pawn.GetThingFlags());
                 reader.proximity = proximity;
                 reader.path = path;
+                reader.affliction_dmg = affliction_dmg;
+                reader.affliction_pen = affliction_pen;
                 return true;
             }
             return false;
@@ -221,19 +251,29 @@ namespace CombatAI
             buckets.RemoveId(pawn.thingIDNumber);
         }        
 
-        public void Notify_PathFound(Pawn pawn, PawnPath path)
-        {           
-        }
-
-        public void Notify_CoverPositionSelected(Pawn pawn, IntVec3 cell)
-        {            
-        }
-
-        public void Notify_Injury(Pawn pawn, IntVec3 cell)
+        public void Notify_Injury(Pawn pawn, DamageInfo dinfo)
         {
+            IntVec3 loc = pawn.Position;
+            asyncActions.EnqueueOffThreadAction(() =>
+            {                
+                flooder.Flood(loc, (node) =>
+                {
+                    float f = Math.Max(1 - node.dist / 5.65685424949f, 0.25f);
+                    affliction_dmg.Push(node.cell, dinfo.Amount * f);
+                    affliction_pen.Push(node.cell, dinfo.ArmorPenetrationInt * f);
+                }, maxDist: 5);
+            });
         }
 
         public void Notify_Death(Pawn pawn, IntVec3 cell)
+        {            
+        }
+
+        public void Notify_PathFound(Pawn pawn, PawnPath path)
+        {
+        }
+
+        public void Notify_CoverPositionSelected(Pawn pawn, IntVec3 cell)
         {
         }
 
@@ -318,7 +358,7 @@ namespace CombatAI
                 cells.Clear();
             });
         }
-
+        
         private void TryCastShootLine(Pawn pawn)
         {
 

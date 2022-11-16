@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Security.Cryptography;
-using Mono.Unix.Native;
+using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 using static CombatAI.AvoidanceTracker;
 using static CombatAI.SightTracker;
 
@@ -11,6 +11,104 @@ namespace CombatAI
 {
     public static class CombatAI_Utility
     {
+        public static bool TryGetBlockedSubPath(this PawnPath path, Pawn pawn, List<IntVec3> store, ref IntVec3 cellBefore)
+        {            
+            if (path == null || !path.Found || pawn == null)
+            {
+                return false;
+            }            
+            Map map = pawn.Map;
+            int i = path.curNodeIndex - 1;
+            int num = 0;          
+            IntVec3 loc = path.nodes[path.curNodeIndex];
+            while(i >= 0)
+            {
+                IntVec3 next = path.nodes[i];
+                IntVec3 dLoc = next - loc;
+                bool blocked = false;                
+                if (dLoc.x != 0 && dLoc.z != 0)
+                {
+                    IntVec3 s1 = loc + new IntVec3(dLoc.x, 0, 0);
+                    IntVec3 s2 = loc + new IntVec3(0, 0, dLoc.z);                    
+                    if (!s1.IsCellWalkable(pawn) && !s2.IsCellWalkable(pawn))
+                    {
+                        map.debugDrawer.FlashCell(s1, 0.9f, "b", 200);
+                        map.debugDrawer.FlashCell(s2, 0.9f, "b", 200);
+                        if (num == 0)
+                        {                                                                                    
+                            store.Clear();
+                            cellBefore = loc;
+                            map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
+                        }
+                        num++;
+                        blocked = true;
+                        store.Add(Rand.Chance(0.5f) ? s1 : s2);                        
+                    }
+                    if (!blocked && num > 0)
+                    {
+                        return true;
+                    }
+                    if (!next.IsCellWalkable(pawn))
+                    {
+                        map.debugDrawer.FlashCell(next, 0.9f, "b", 200);
+                        if (num == 0)
+                        {                            
+                            store.Clear();
+                            if (!s1.IsCellWalkable(pawn))
+                            {
+                                cellBefore = s2;
+                            }
+                            else if(!s2.IsCellWalkable(pawn))
+                            {
+                                cellBefore = s1;
+                            }
+                            else
+                            {
+                                cellBefore = Rand.Chance(0.5f) ? s1 : s2; 
+                            }
+                            map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
+                        }   
+                        num++;
+                        blocked = true;
+                        store.Add(next);                        
+                    }
+                }
+                else if(!next.IsCellWalkable(pawn))
+                {
+                    map.debugDrawer.FlashCell(next, 0.9f, "b", 200);
+                    if (num == 0)
+                    {                        
+                        store.Clear();
+                        cellBefore = loc;
+                        map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
+                    }
+                    num++;
+                    blocked = true;
+                    store.Add(next);                    
+                }
+                if (!blocked && num > 0)
+                {
+                    return true;
+                }                           
+                loc = next;
+                i--;
+            }
+            return false;
+        }
+
+        public static bool IsCellWalkable(this IntVec3 cell, Pawn pawn)
+        {            
+            if (!cell.WalkableBy(pawn.Map, pawn))
+            {
+                return false;
+            }
+            if (pawn.pather.WillCollideWithPawnAt(cell))
+            {
+                return false;
+            }
+            return true;
+        }
+
         public static bool GetAvoidanceTracker(this Pawn pawn, out AvoidanceTracker.AvoidanceReader reader)
         {
             return pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out reader);

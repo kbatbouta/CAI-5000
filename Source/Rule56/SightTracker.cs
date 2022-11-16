@@ -99,6 +99,17 @@ namespace CombatAI
                 return value;
             }
 
+            public float GetVisibilityToFriendlies(IntVec3 cell) => GetVisibilityToFriendlies(indices.CellToIndex(cell));
+            public float GetVisibilityToFriendlies(int index)
+            {
+                float value = 0f;
+                for (int i = 0; i < friendlies.Length; i++)
+                {
+                    value += friendlies[i].GetSignalStrengthAt(index);
+                }
+                return value;
+            }
+
             public bool CheckFlags(IntVec3 cell, UInt64 flags) => CheckFlags(indices.CellToIndex(cell), flags);
             public bool CheckFlags(int index, UInt64 flags) => (flags & GetEnemyFlags(index)) == flags;
 

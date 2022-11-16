@@ -89,10 +89,14 @@
       "Lib.Harmony/2.2.2": {
         "type": "package",
         "compile": {
-          "lib/net472/0Harmony.dll": {}
+          "lib/net472/0Harmony.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/net472/_._": {}
+          "lib/net472/_._": {
+            "related": ".xml"
+          }
         }
       },
       "Microsoft.Build.Framework/15.1.548": {
@@ -107,10 +111,14 @@
           "System.Threading.Thread": "4.0.0"
         },
         "compile": {
-          "lib/net46/Microsoft.Build.Framework.dll": {}
+          "lib/net46/Microsoft.Build.Framework.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/net46/_._": {}
+          "lib/net46/_._": {
+            "related": ".xml"
+          }
         }
       },
       "Microsoft.Build.Utilities.Core/15.1.548": {
@@ -119,10 +127,14 @@
           "Microsoft.Build.Framework": "[15.1.548]"
         },
         "compile": {
-          "lib/net46/Microsoft.Build.Utilities.Core.dll": {}
+          "lib/net46/Microsoft.Build.Utilities.Core.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/net46/_._": {}
+          "lib/net46/_._": {
+            "related": ".xml"
+          }
         }
       },
       "Microsoft.NETCore.Platforms/5.0.3": {
@@ -132,6 +144,12 @@
         },
         "runtime": {
           "lib/netstandard1.0/_._": {}
+        }
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies/1.0.2": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.NETFramework.ReferenceAssemblies.net472": "1.0.2"
         }
       },
       "Microsoft.NETFramework.ReferenceAssemblies.net472/1.0.2": {
@@ -394,6 +412,17 @@
         "runtime.json",
         "useSharedDesignerContext.txt",
         "version.txt"
+      ]
+    },
+    "Microsoft.NETFramework.ReferenceAssemblies/1.0.2": {
+      "sha512": "5/cSEVld+px/CuRrbohO/djfg6++eR6zGpy88MgqloXvkj//WXWpFZyu/OpkXPN0u5m+dN/EVwLNYFUxD4h2+A==",
+      "type": "package",
+      "path": "microsoft.netframework.referenceassemblies/1.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "microsoft.netframework.referenceassemblies.1.0.2.nupkg.sha512",
+        "microsoft.netframework.referenceassemblies.nuspec"
       ]
     },
     "Microsoft.NETFramework.ReferenceAssemblies.net472/1.0.2": {
@@ -1306,6 +1335,7 @@
       "Krafs.Rimworld.Ref >= 1.4.3542",
       "Lib.Harmony >= 2.2.2",
       "Microsoft.NETCore.Platforms >= 5.0.3",
+      "Microsoft.NETFramework.ReferenceAssemblies >= 1.0.2",
       "Microsoft.NETFramework.ReferenceAssemblies.net472 >= 1.0.2",
       "Mono.TextTransform >= 1.0.0",
       "TaskPubliciser >= 1.0.3"
@@ -1324,7 +1354,7 @@
       "outputPath": "/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/Source/Rule56/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/karimbatbouta/.config/NuGet/NuGet.Config"
+        "/Users/karimbatbouta/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net472"
@@ -1363,6 +1393,12 @@
             "target": "Package",
             "version": "[5.0.3, )"
           },
+          "Microsoft.NETFramework.ReferenceAssemblies": {
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[1.0.2, )",
+            "autoReferenced": true
+          },
           "Microsoft.NETFramework.ReferenceAssemblies.net472": {
             "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
             "suppressParent": "All",
@@ -1380,7 +1416,7 @@
             "version": "[1.0.3, )"
           }
         },
-        "runtimeIdentifierGraphPath": "/Users/karimbatbouta/Library/Caches/VisualStudio/17.0/MSBuild/41292_3/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/7.0.100/RuntimeIdentifierGraph.json"
       }
     }
   }

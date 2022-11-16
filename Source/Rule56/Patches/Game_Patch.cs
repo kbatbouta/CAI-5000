@@ -22,6 +22,7 @@ namespace CombatAI.Patches
             {
                 CompsCache.ClearCaches();
                 SightUtility.ClearCache();
+                JobGiver_AITrashBuildingsDistant_Patch.ClearCache();
             }
         }
     }

@@ -55,7 +55,7 @@ namespace CombatAI.Patches
             [HarmonyPriority(Priority.First)]
             public static void Prefix(Thing __instance)
             {
-                __instance.Map.GetComp_Fast<ThingsTracker>()?.Notify_DeSpawned(__instance);
+                __instance.Map?.GetComp_Fast<ThingsTracker>()?.Notify_DeSpawned(__instance);
             }
         }
 
@@ -65,7 +65,7 @@ namespace CombatAI.Patches
             [HarmonyPriority(Priority.First)]
             public static void Postfix(Thing __instance)
             {                
-                __instance.Map.GetComp_Fast<ThingsTracker>()?.Notify_Spawned(__instance);                
+                __instance.Map?.GetComp_Fast<ThingsTracker>()?.Notify_Spawned(__instance);                
             }
         }
     }

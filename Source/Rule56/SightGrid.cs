@@ -282,44 +282,18 @@ namespace CombatAI
             asyncActions.EnqueueOffThreadAction(action);            
             item.lastCycle = grid.CycleNum;            
             return true;
-        }        
+        }
 
         private IntVec3 GetShiftedPosition(Thing thing)
         {
             if (thing is Pawn pawn)
             {
-                return GetMovingShiftedPosition(pawn, 60);
+                return pawn.GetMovingShiftedPosition(60);
             }
             else
             {
                 return thing.Position;
             }
-        }
-
-        //private static IntVec3 GetMovingShiftedPosition(Pawn pawn, float updateInterval, int bucketNum)
-        //{
-        //    PawnPath path;
-
-        //    if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
-        //    {
-        //        return pawn.Position;
-        //    }
-
-        //    float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * (updateInterval * bucketNum) / 60f, path.NodesLeftCount - 1);
-        //    return path.Peek(Mathf.FloorToInt(distanceTraveled));
-        //}
-
-        private static IntVec3 GetMovingShiftedPosition(Pawn pawn, int ticksAhead)
-        {
-            PawnPath path;
-
-            if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
-            {
-                return pawn.Position;
-            }
-
-            float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * ticksAhead / 60f, path.NodesLeftCount - 1);
-            return path.Peek(Mathf.FloorToInt(distanceTraveled));
         }
     }
 }

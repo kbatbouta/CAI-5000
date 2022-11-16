@@ -14,7 +14,7 @@
         "outputPath": "/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/Source/Rule56/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/karimbatbouta/.config/NuGet/NuGet.Config"
+          "/Users/karimbatbouta/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net472"
@@ -53,6 +53,12 @@
               "target": "Package",
               "version": "[5.0.3, )"
             },
+            "Microsoft.NETFramework.ReferenceAssemblies": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.0.2, )",
+              "autoReferenced": true
+            },
             "Microsoft.NETFramework.ReferenceAssemblies.net472": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
@@ -70,7 +76,7 @@
               "version": "[1.0.3, )"
             }
           },
-          "runtimeIdentifierGraphPath": "/Users/karimbatbouta/Library/Caches/VisualStudio/17.0/MSBuild/41292_3/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/7.0.100/RuntimeIdentifierGraph.json"
         }
       }
     }

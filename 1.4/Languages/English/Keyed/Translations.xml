@@ -24,7 +24,7 @@
     <CombatAI.Settings.Advance.Warning>WARNING: This is only for advanced users! Don't enable this if you don't know what you're doing!</CombatAI.Settings.Advance.Warning>   
     <CombatAI.Settings.Advance.Enable>I'm an advanced user!</CombatAI.Settings.Advance.Enable>
 
-    <CombatAI.Settings.Advance.Sight.Performance>Performance</CombatAI.Settings.Advance.Sight.Performance>
+    <CombatAI.Settings.Advance.Sight.Performance>Performance</CombatAI.Settings.Advance.Sight.Performance>    
     <CombatAI.Settings.Advance.Sight.Performance.Description>You can adjust how many buckets pawns/turrets are divided into and how often they updates. Warning: DON'T USE THIS IF YOU DON'T KNOW WHAT YOU'RE DOING</CombatAI.Settings.Advance.Sight.Performance.Description>
     <CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies>Humanlike factions</CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies>
     <CombatAI.Settings.Advance.Sight.Performance.MechsAndInsect>Mechs and insects</CombatAI.Settings.Advance.Sight.Performance.MechsAndInsect>

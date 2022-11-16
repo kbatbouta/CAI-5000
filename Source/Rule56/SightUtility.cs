@@ -4,12 +4,38 @@ using RimWorld;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using Verse.AI;
+using System.Collections.ObjectModel;
 
 namespace CombatAI
 {
     public static class SightUtility
     {
-        private static readonly Dictionary<int, Pair<int, int>> rangeCache = new Dictionary<int, Pair<int, int>>(128);        
+        private static readonly Dictionary<int, Pair<int, int>> rangeCache = new Dictionary<int, Pair<int, int>>(256);
+        private static readonly Dictionary<int, Pair<int, float>> moveSpeed = new Dictionary<int, Pair<int, float>>(256);
+
+        public static float GetMoveSpeed(this Pawn pawn)
+        {
+            if(moveSpeed.TryGetValue(pawn.thingIDNumber, out var store) && GenTicks.TicksGame - store.First <= 240)
+            {
+                return store.second;
+            }
+            float speed = pawn.GetStatValue(StatDefOf.MoveSpeed);
+            moveSpeed[pawn.thingIDNumber] = new Pair<int, float>(GenTicks.TicksGame, speed);
+            return speed;
+        }
+
+        public static IntVec3 GetMovingShiftedPosition(this Pawn pawn, float ticksAhead)
+        {
+            PawnPath path;
+            if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
+            {
+                return pawn.Position;
+            }
+
+            float distanceTraveled = Mathf.Min(pawn.GetMoveSpeed() * ticksAhead / 60f, path.NodesLeftCount - 1);
+            return path.Peek(Mathf.FloorToInt(distanceTraveled));
+        }
 
         public static int GetSightRange(Thing thing)
         {
@@ -106,6 +132,7 @@ namespace CombatAI
 
         public static void ClearCache()
         {
+            moveSpeed.Clear();
             rangeCache.Clear();
         }
     }

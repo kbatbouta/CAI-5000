@@ -17,9 +17,11 @@ namespace CombatAI
             public int startsAt = -1;
             public bool failOnFocusDeath;
             public bool failOnFocusDowned;
-            public bool failOnFocusDestroyed;            
+            public bool failOnFocusDestroyed;
+            public bool canFlee = true;
+            public bool canExitMap = true;
             public int failOnDistanceToFocus;
-            public DutyDef failOnFocusDutyNot;
+            public DutyDef failOnFocusDutyNot;            
 
             public void ExposeData()
             {
@@ -32,6 +34,8 @@ namespace CombatAI
                 Scribe_Values.Look(ref failOnFocusDeath, "failOnFocusDeath");
                 Scribe_Values.Look(ref failOnFocusDowned, "failOnFocusDowned");
                 Scribe_Values.Look(ref failOnFocusDestroyed, "failOnFocusDestroyed");
+                Scribe_Values.Look(ref canFlee, "canFlee", true);
+                Scribe_Values.Look(ref canExitMap, "canExitMap", true);
                 Scribe_Defs.Look(ref failOnFocusDutyNot, "failOnFocusDutyNot");
             }
         }        
@@ -43,6 +47,10 @@ namespace CombatAI
         public DutyDef CurDutyDef
         {
             get => curCustomDuty?.duty?.def ?? pawn.mindState?.duty?.def ?? null;
+        }        
+
+        public Pawn_CustomDutyTracker()
+        {
         }
 
         public Pawn_CustomDutyTracker(Pawn pawn)
@@ -115,7 +123,7 @@ namespace CombatAI
                     }
                 }
             }
-            if (curCustomDuty != null && pawn.mindState.duty != curCustomDuty.duty)
+            if (curCustomDuty != null && pawn.mindState.duty != curCustomDuty.duty && !(IsForcedDuty(pawn.mindState.duty?.def ?? null)))
             {
                 pawn.mindState.duty = curCustomDuty.duty;
             }
@@ -123,6 +131,10 @@ namespace CombatAI
 
         public void StartDuty(CustomPawnDuty duty, bool returnCurDutyToQueue = true)
         {            
+            if (IsForcedDuty(pawn.mindState.duty?.def ?? null) || (curCustomDuty != null && IsForcedDuty(curCustomDuty.duty.def)))
+            {
+                return;
+            }
             if (returnCurDutyToQueue)
             {
                 if (curCustomDuty != null)
@@ -179,7 +191,17 @@ namespace CombatAI
             Scribe_References.Look(ref pawn, "pawn");
             Scribe_Deep.Look(ref curCustomDuty, "curCustomDuty", LookMode.Deep);
             Scribe_Collections.Look(ref queue, "queue", LookMode.Deep);
-        }      
+        }
+
+        private bool IsExitDuty(DutyDef def)
+        {            
+            return def != null && ((def == DutyDefOf.ExitMapBest) || (def == DutyDefOf.ExitMapRandom) || (def == DutyDefOf.ExitMapNearDutyTarget) || (def == DutyDefOf.ExitMapBestAndDefendSelf) || (def == DutyDefOf.TravelOrLeave) || (def == DutyDefOf.TravelOrWait));
+        }
+
+        private bool IsForcedDuty(DutyDef def)
+        {
+            return def != null && (IsExitDuty(def) || (def == DutyDefOf.PrisonerEscape) || (def == DutyDefOf.PrisonerEscapeSapper) || (def == DutyDefOf.PrisonerAssaultColony) || (def == DutyDefOf.Kidnap) || (def == DutyDefOf.Steal));
+        }
     }
 }
 

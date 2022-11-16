@@ -8,6 +8,7 @@ using Verse.AI;
 using System.Threading;
 using System.Net.NetworkInformation;
 using UnityEngine.Analytics;
+using Unity.Baselib.LowLevel;
 
 namespace CombatAI.Comps
 {
@@ -16,6 +17,9 @@ namespace CombatAI.Comps
         private HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
         private List<IntVec3> _path = new List<IntVec3>();
         private List<Color> _colors = new List<Color>();
+
+        private IntVec3 cellBefore;
+        private List<IntVec3> miningCells = new List<IntVec3>(64);
 
         private int lastInterupted;
         private int lastSawEnemies;
@@ -52,10 +56,10 @@ namespace CombatAI.Comps
                 if (sightRange != 0 && verb != null)
                 {
                     Vector3 drawPos = pawn.DrawPos;
-                    IntVec3 shiftedPos = GetMovingShiftedPosition(pawn, 30);
+                    IntVec3 shiftedPos = pawn.GetMovingShiftedPosition(30);
                     List<Pawn> nearbyVisiblePawns = GenClosest.ThingsInRange(pawn.Position, pawn.Map, Utilities.TrackedThingsRequestCategory.Pawns, sightRange)
                         .Select(t => t as Pawn)
-                        .Where(p => !p.Dead && !p.Downed && GetMovingShiftedPosition(p, 60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, GetMovingShiftedPosition(p, 60)) && p.HostileTo(pawn))
+                        .Where(p => !p.Dead && !p.Downed && p.GetMovingShiftedPosition(60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, p.GetMovingShiftedPosition(60)) && p.HostileTo(pawn))
                         .ToList();
                     CombatAI.Gui.GUIUtility.ExecuteSafeGUIAction(() =>
                     {
@@ -136,6 +140,38 @@ namespace CombatAI.Comps
             {
                 duties.TickRare();
             }
+            //if (miningCells.Count != 0 && parent is Pawn pawn)
+            //{                
+            //    if (pawn.jobs.curJob == null || pawn.jobs.curJob.targetA.Cell != miningCells[0])
+            //    {
+            //        if (!cellBefore.IsCellWalkable(pawn))
+            //        {
+            //            miningCells.Clear();
+            //            cellBefore = IntVec3.Invalid;
+            //        }
+            //        else
+            //        {
+            //            while (miningCells.Count != 0 && miningCells[0].IsCellWalkable(pawn))
+            //            {
+            //                cellBefore = miningCells[0];
+            //                miningCells.RemoveAt(0);
+            //            }                        
+            //            if (miningCells.Count != 0)
+            //            {
+            //                Building building = miningCells[0].GetEdifice(pawn.Map);
+            //                if (building != null)
+            //                {
+            //                    Job job = DigUtility.PassBlockerJob(pawn, building, cellBefore, true, true);
+            //                    if (job != null)
+            //                    {
+            //                        pawn.jobs.StopAll();
+            //                        pawn.jobs.StartJob(job, JobCondition.InterruptForced);
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }   
+            //}
         }      
 
         public void OnScanFinished()
@@ -229,7 +265,7 @@ namespace CombatAI.Comps
                             IntVec3 shiftedPos = enemy.Position;
                             if (enemy is Pawn enemyPawn)
                             {
-                                shiftedPos = GetMovingShiftedPosition(enemyPawn, 60);
+                                shiftedPos = enemyPawn.GetMovingShiftedPosition(60);
                             }
                             if (shiftedPos != enemy.Position && verb.CanHitTargetFrom(pawn.Position, shiftedPos))
                             {
@@ -338,6 +374,35 @@ namespace CombatAI.Comps
             visibleEnemies.Clear();
         }
 
+        public bool TryStartMiningJobs(PawnPath path)
+        {
+            //if (miningCells.Count > 0 && (parent.Position == cellBefore || parent.Position == miningCells[0] || path.nodes[0] == cellBefore))
+            //{
+            //    return false;
+            //}
+            //if (parent is Pawn pawn && path.TryGetBlockedSubPath(pawn, miningCells, ref cellBefore))
+            //{
+            //    Pawn_CustomDutyTracker.CustomPawnDuty custom = new Pawn_CustomDutyTracker.CustomPawnDuty();
+            //    if (cellBefore.IsValid && miningCells.Count != 0)
+            //    {
+            //        Building building = miningCells[0].GetEdifice(pawn.Map);
+            //        if (building != null)
+            //        {
+            //            Job job = DigUtility.PassBlockerJob(pawn, building, cellBefore, true, true);
+            //            if (job != null)
+            //            {
+            //                pawn.jobs.StopAll();
+            //                pawn.jobs.StartJob(job, JobCondition.InterruptForced);
+            //                return true;
+            //            }
+            //        }
+            //    }
+            //}
+            //this.cellBefore = IntVec3.Invalid;
+            //miningCells.Clear();
+            return false;
+        }
+
         public void Notify_EnemiesVisible(IEnumerable<Thing> things)
         {
             if (!scanning)
@@ -352,28 +417,26 @@ namespace CombatAI.Comps
         {
             base.PostExposeData();
             Scribe_Deep.Look(ref duties, "duties");
-            if(duties == null && parent is Pawn pawn)
+            Scribe_Collections.Look(ref miningCells, "miningCells", LookMode.Value);
+            if (miningCells == null)
             {
-                duties = new Pawn_CustomDutyTracker(pawn);
+                miningCells = new List<IntVec3>();
             }
-        }      
+            Scribe_Values.Look(ref cellBefore, "cellBefore");
+            if (parent is Pawn pawn)
+            {
+                if (duties == null)
+                {
+                    duties = new Pawn_CustomDutyTracker(pawn);
+                }
+                duties.pawn = pawn;
+            }
+        }        
 
         public void Notify_SightReaderChanged(SightTracker.SightReader reader)
         {
             this.sightReader = reader;
-        }
-
-        private static IntVec3 GetMovingShiftedPosition(Pawn pawn, float ticksAhead)
-        {
-            PawnPath path;
-            if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
-            {
-                return pawn.Position;
-            }
-
-            float distanceTraveled = Mathf.Min(pawn.GetStatValue(StatDefOf.MoveSpeed) * ticksAhead / 60f, path.NodesLeftCount - 1);
-            return path.Peek(Mathf.FloorToInt(distanceTraveled));
-        }
+        }        
     }
 }
 

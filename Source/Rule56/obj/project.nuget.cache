@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "QbTFphkW0FgODW+hKUhLX+iKOM8aIjlscImXp3i7UngwMh9ikBmJSOMsvMmFqYBOMaqH59zQdbKZ27IDCQ5RBg==",
+  "dgSpecHash": "VM232BeWAq4yXOMIscG/HApqqfQYqOhU3NZVteksquixO4edzxhRoNybqr/qXlYX6YSdhFiodbZt3xn/zMK+Aw==",
   "success": true,
   "projectFilePath": "/Users/karimbatbouta/Library/Application Support/Steam/steamapps/common/RimWorld/RimWorldMac.app/Mods/ISMA/Source/Rule56/CombatAI.csproj",
   "expectedPackageFiles": [
@@ -9,6 +9,7 @@
     "/Users/karimbatbouta/.nuget/packages/microsoft.build.framework/15.1.548/microsoft.build.framework.15.1.548.nupkg.sha512",
     "/Users/karimbatbouta/.nuget/packages/microsoft.build.utilities.core/15.1.548/microsoft.build.utilities.core.15.1.548.nupkg.sha512",
     "/Users/karimbatbouta/.nuget/packages/microsoft.netcore.platforms/5.0.3/microsoft.netcore.platforms.5.0.3.nupkg.sha512",
+    "/Users/karimbatbouta/.nuget/packages/microsoft.netframework.referenceassemblies/1.0.2/microsoft.netframework.referenceassemblies.1.0.2.nupkg.sha512",
     "/Users/karimbatbouta/.nuget/packages/microsoft.netframework.referenceassemblies.net472/1.0.2/microsoft.netframework.referenceassemblies.net472.1.0.2.nupkg.sha512",
     "/Users/karimbatbouta/.nuget/packages/mono.texttransform/1.0.0/mono.texttransform.1.0.0.nupkg.sha512",
     "/Users/karimbatbouta/.nuget/packages/system.collections/4.0.11/system.collections.4.0.11.nupkg.sha512",

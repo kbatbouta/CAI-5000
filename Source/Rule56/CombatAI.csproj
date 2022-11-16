@@ -45,6 +45,8 @@
 	  <None Remove="Comps\" />
 	  <None Remove="Utilities\" />
 	  <None Remove="Statistics\" />
+	  <None Remove="Statistics\DataWriter_Path.config" />
+	  <None Remove="Statistics\DataWriter_Path.cs" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">
@@ -58,7 +60,7 @@
 		</None>
 		<None Update="..\..\1.4\Patches\Races_Animal_Base.xml">
 		  <Link>Xml\Patches\\Races_Animal_Base.xml</Link>
-		</None>
+		</None>		
 	</ItemGroup>
 	<!-- ................ -->
 	<!--     Packages     -->
@@ -77,7 +79,7 @@
 	<!-- Process T4 files -->
 	<ItemGroup>
 	  <Compile Remove="ShadowCastingUtility.old.cs" />
-	</ItemGroup>
+	</ItemGroup>	
 	<Target Name="ProcessTT" BeforeTargets="BeforeBuild">
 		<ItemGroup>
 			<TTFiles Include="T4\Sources\*.tt" CopyToOutputDirectory="Never" />		
@@ -86,7 +88,7 @@
 			<TextTransform>$(PkgMono_TextTransform)\tools\TextTransform.exe</TextTransform>
 		</PropertyGroup>
 		<Message Text="Processing T4 files: @(TTFiles-&gt;'%(Identity)')" />		
-		<Exec WorkingDirectory="$(ProjectDir)" Command="@(TTFiles-&gt;'mono $(TextTransform) --out=T4\Outputs\%(FileName).generated.cs T4\Sources\%(FileName).tt')" />
+		<Exec WorkingDirectory="$(ProjectDir)" Command="@(TTFiles-&gt;'pwd; mono $(TextTransform) --out=T4/Outputs/%(FileName).generated.cs T4/Sources/%(FileName).tt')" />
     </Target>		
 	<!-- ................ -->
 	<!--     Publisize    -->
