@@ -69,18 +69,18 @@ namespace CombatAI.Patches
                     {
                         if (sightReader.GetAbsVisibilityToEnemies(target.Thing.Position) > sightReader.GetAbsVisibilityToFriendlies(target.Thing.Position) + 1)
                         {
-                            result -= 30f;
+                            result -= 30f * Finder.P50;
                         }
                         if (sightReader.GetVisibilityToEnemies(target.Thing.Position) > 3)
                         {
-                            result -= 15f;
+                            result -= 15f * Finder.P50;
                         }
                         result += sightReader.GetEnemyDirection(target.Thing.Position).sqrMagnitude - Mathf.Pow(sightReader.GetVisibilityToEnemies(target.Thing.Position), 2);                        
                     }
-                    if (searcher.Thing is Pawn pawn && Find.Selector.SelectedPawns.Contains(pawn))
-                    {
-                        map.debugDrawer.FlashCell(target.Thing.Position, 1, $"{result}");
-                    }
+                    //if (searcher.Thing is Pawn pawn && Find.Selector.SelectedPawns.Contains(pawn))
+                    //{
+                    //    map.debugDrawer.FlashCell(target.Thing.Position, 1, $"{result}");
+                    //}
                 }               
                 return result;
             }

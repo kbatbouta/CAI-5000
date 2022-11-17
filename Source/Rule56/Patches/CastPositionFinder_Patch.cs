@@ -160,7 +160,7 @@ namespace CombatAI.Patches
                     }
                     else
                     {
-                        __result -= grid[c];
+                        __result -= grid[c] * Finder.P50;
                     }
                 }
                 //bool pawnSelected = Find.Selector.SelectedPawns?.Contains(pawn) ?? false;

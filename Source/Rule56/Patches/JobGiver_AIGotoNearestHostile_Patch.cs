@@ -8,7 +8,6 @@ using Verse;
 using Verse.AI;
 using System.Linq;
 using System.Reflection;
-using Mono.Unix.Native;
 
 namespace CombatAI.Patches
 {

@@ -26,7 +26,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI = null;
         /// <summary> Keyed string. key=<c>CombatAI</c>. inner text:
         ///
-        /// <code>Imperial Stormtrooper Marksmanship Academy</code>
+        /// <code>Combat AI 5000</code>
         /// </summary>       
         public static TaggedString CombatAI {
             get => _CombatAI != null ? 
@@ -111,6 +111,26 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Settings_Basic_CELean {
             get => _CombatAI_Settings_Basic_CELean != null ? 
                    _CombatAI_Settings_Basic_CELean : _CombatAI_Settings_Basic_CELean = "CombatAI.Settings.Basic.CELean".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_PerformanceOpt = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.PerformanceOpt</c>. inner text:
+        ///
+        /// <code>Enable dynamic performance settings</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_PerformanceOpt {
+            get => _CombatAI_Settings_Basic_PerformanceOpt != null ? 
+                   _CombatAI_Settings_Basic_PerformanceOpt : _CombatAI_Settings_Basic_PerformanceOpt = "CombatAI.Settings.Basic.PerformanceOpt".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_PerformanceOpt_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.PerformanceOpt.Description</c>. inner text:
+        ///
+        /// <code>Automatically adjust settings to maintain both a good level of TPS and a good AI.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_PerformanceOpt_Description {
+            get => _CombatAI_Settings_Basic_PerformanceOpt_Description != null ? 
+                   _CombatAI_Settings_Basic_PerformanceOpt_Description : _CombatAI_Settings_Basic_PerformanceOpt_Description = "CombatAI.Settings.Basic.PerformanceOpt.Description".Translate();
         }             
                       
         private static TaggedString _CombatAI_Settings_Basic_Caster = null;

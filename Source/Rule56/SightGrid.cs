@@ -127,7 +127,7 @@ namespace CombatAI
                 }
                 tmpInconsistentRecords.Clear();
             }
-            ticksUntilUpdate = (int)settings.interval;
+            ticksUntilUpdate = (int)settings.interval + Mathf.CeilToInt(settings.interval * (1.0f - Finder.P50));
             buckets.Next();            
             if (buckets.Index == 0)
             {
@@ -253,7 +253,7 @@ namespace CombatAI
                             {
                                 if (!thing.Destroyed && thing.Spawned)
                                 {
-                                    comp.Notify_EnemiesVisible(sightTracker.factionedUInt64Map.GetThings(flag).Where(t => t.Spawned && !t.Destroyed && t.Position.DistanceToSquared(cell) < 25 && t.HostileTo(thing)).ToList());
+                                    comp.Notify_EnemiesVisible(sightTracker.factionedUInt64Map.GetThings(flag).Where(t => t.Spawned && !t.Destroyed && t.Position.DistanceToSquared(cell) < 25 && t.HostileTo(thing)));
                                 }
                             });                                                     
                         }

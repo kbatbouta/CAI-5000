@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>        
-    <CombatAI>Imperial Stormtrooper Marksmanship Academy</CombatAI>
+    <CombatAI>Combat AI 5000</CombatAI>
     <CombatAI.Sym.Empty></CombatAI.Sym.Empty>
     <CombatAI.Close>Close</CombatAI.Close>
     <CombatAI.Open>Open</CombatAI.Open>
@@ -10,6 +10,8 @@
     <CombatAI.Settings.Basic>Basic Settings</CombatAI.Settings.Basic>
     <CombatAI.Settings.Basic.KillBoxKiller>Enable The Killbox killer 5000</CombatAI.Settings.Basic.KillBoxKiller>
     <CombatAI.Settings.Basic.CELean>Enable Combat Extended lean profile</CombatAI.Settings.Basic.CELean>
+    <CombatAI.Settings.Basic.PerformanceOpt>Enable dynamic performance settings</CombatAI.Settings.Basic.PerformanceOpt>
+    <CombatAI.Settings.Basic.PerformanceOpt.Description>Automatically adjust settings to maintain both a good level of TPS and a good AI.</CombatAI.Settings.Basic.PerformanceOpt.Description>
     <CombatAI.Settings.Basic.Caster>Enable fire position tweaks</CombatAI.Settings.Basic.Caster>
     <CombatAI.Settings.Basic.Targeter>Enable target selection tweaks</CombatAI.Settings.Basic.Targeter>
     <CombatAI.Settings.Basic.Pather>Enable pathfinding tweaks</CombatAI.Settings.Basic.Pather>

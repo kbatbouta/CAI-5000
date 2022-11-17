@@ -1,5 +1,6 @@
 ﻿using System;
 using HarmonyLib;
+using UnityEngine;
 
 namespace CombatAI
 {
@@ -9,7 +10,19 @@ namespace CombatAI
 
         public static CombatAIMod Mod;
 
-        public static Settings Settings;                
+        public static Settings Settings;
+
+        public static PerformanceTracker Performance;
+
+        public static float P75
+        {
+            get => Mathf.Max(Performance.Performance, 0.75f);
+        }
+
+        public static float P50
+        {
+            get => Mathf.Max(Performance.Performance, 0.50f);
+        }
     }
 }
 

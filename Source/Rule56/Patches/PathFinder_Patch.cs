@@ -85,7 +85,7 @@ namespace CombatAI.Patches
                     }                   
 
                     float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-                    if (Finder.Settings.Pather_KillboxKiller && !dump && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual))
+                    if (!Finder.Performance.TpsCriticallyLow && Finder.Settings.Pather_KillboxKiller && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual))
                     {
                         raiders = true;
                         //factionMultiplier = 1;
@@ -112,7 +112,14 @@ namespace CombatAI.Patches
                     // get the visibility at the destination
                     if (sightReader != null)
                     {
-                        visibilityAtDest = Mathf.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * Finder.Settings.Pathfinding_DestWeight, 5);
+                        if (!Finder.Performance.TpsCriticallyLow)
+                        {
+                            visibilityAtDest = Mathf.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * Finder.Settings.Pathfinding_DestWeight, 5);
+                        }
+                        else
+                        {
+                            visibilityAtDest = Mathf.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * 0.875f, 5);
+                        }
                         //Verb verb = pawn.GetWeaponVerbWithFallback();
                         //if (verb != null)
                         //{
@@ -175,7 +182,7 @@ namespace CombatAI.Patches
                 }
                 if (__state)
                 {
-                    if (Finder.Settings.Pather_KillboxKiller && __result != null && !__result.nodes.NullOrEmpty())
+                    if (Finder.Settings.Pather_KillboxKiller && __result != null && !__result.nodes.NullOrEmpty() && (pawn?.RaceProps.Humanlike ?? false) && !Finder.Performance.TpsCriticallyLow)
                     {
                         //ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
                         //if (comp != null && comp.TryStartMiningJobs(__result))
@@ -387,7 +394,7 @@ namespace CombatAI.Patches
                         //we use this so the game doesn't die
                         var v = (Mathf.Min(value, l1 + l2) * factionMultiplier * 1);
                         //map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), v, $" {l1 + l2}");                        
-                        return (int)(Mathf.Min(value, l1 + l2) * factionMultiplier * 1);
+                        return (int)(Mathf.Min(value, l1 + l2) * factionMultiplier * Finder.P50);
                         //return (int)(Mathf.Min(value, 1000f) * factionMultiplier * 1);
                     }
                 }
