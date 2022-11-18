@@ -38,7 +38,7 @@ namespace CombatAI
                 else
                 {
                     int ticks = GenTicks.TicksGame;
-                    grid[index] = Math.Min(Math.Max(grid[index], ticks) + Mathf.CeilToInt(amount * ticksPerUnit), ticks + maxTicks);
+                    grid[index] = Maths.Min(Maths.Max(grid[index], ticks) + Mathf.CeilToInt(amount * ticksPerUnit), ticks + maxTicks);
                 }
             }
         }
@@ -48,7 +48,7 @@ namespace CombatAI
         {
             if (index >= 0 && index < indices.NumGridCells)
             {
-                float value = Math.Max((float)(grid[index] - GenTicks.TicksGame) / ticksPerUnit, 0f);
+                float value = Maths.Max((float)(grid[index] - GenTicks.TicksGame) / ticksPerUnit, 0f);
                 if(value > f1)
                 {
                     return value - f1 + 1;

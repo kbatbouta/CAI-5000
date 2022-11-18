@@ -7,153 +7,153 @@ using System.Runtime.InteropServices;
 
 namespace CombatAI
 {
-    public class AsyncActions
-    {
-        private bool alive = true;
-        private bool mainThreadActionQueueEmpty = false;
+	public class AsyncActions
+	{
+		private bool alive = true;
+		private bool mainThreadActionQueueEmpty = false;
 
-        private readonly int hashOffset;            
-        private readonly Thread thread;
-        
-        private readonly List<Action> queuedMainThreadActions = new List<Action>();
-        private readonly List<Action> queuedOffThreadActions = new List<Action>();
-        private readonly int mainLoopTickInterval;
+		private readonly int hashOffset;
+		private readonly Thread thread;
 
-        public readonly object locker_Main = new object();
-        public readonly object locker_offMain = new object();
+		private readonly List<Action> queuedMainThreadActions = new List<Action>();
+		private readonly List<Action> queuedOffThreadActions = new List<Action>();
+		private readonly int mainLoopTickInterval;
 
-        public bool Alive
-        {
-            get => alive;
-        }
-        
-        public AsyncActions(int mainLoopTickInterval = 5)
-        {
-            this.mainLoopTickInterval = mainLoopTickInterval;
-            this.hashOffset = Rand.Int % 128;
-            this.thread = new Thread(OffMainThreadActionLoop);
-            this.thread.Start();
-        }        
+		public readonly object locker_Main = new object();
+		public readonly object locker_offMain = new object();
 
-        public void ExecuteMainThreadActions()
-        {
-            MainThreadActionLoop();
-        } 
+		public bool Alive
+		{
+			get => alive;
+		}
 
-        public void Kill()
-        {
-            alive = false;
-            try
-            {
-                lock (locker_Main)
-                {
-                    queuedMainThreadActions.Clear();
-                }
-                lock (locker_offMain)
-                {
-                    queuedOffThreadActions.Clear();
-                }
-                thread.Join();         
-            }
-            catch(Exception)
-            {
-            }
-        }
+		public AsyncActions(int mainLoopTickInterval = 5)
+		{
+			this.mainLoopTickInterval = mainLoopTickInterval;
+			this.hashOffset = Rand.Int % 128;
+			this.thread = new Thread(OffMainThreadActionLoop);
+			this.thread.Start();
+		}
 
-        public void EnqueueOffThreadAction(Action action)
-        {
-            lock (locker_offMain)
-            {
-                queuedOffThreadActions.Add(action);
-            }
-        }
+		public void ExecuteMainThreadActions()
+		{
+			MainThreadActionLoop();
+		}
 
-        public void EnqueueMainThreadAction(Action action)
-        {            
-            lock (locker_Main)
-            {                                    
-                queuedMainThreadActions.Add(action);
-                mainThreadActionQueueEmpty = false;
-            }            
-        }
+		public void Kill()
+		{
+			alive = false;
+			try
+			{
+				lock (locker_Main)
+				{
+					queuedMainThreadActions.Clear();
+				}
+				lock (locker_offMain)
+				{
+					queuedOffThreadActions.Clear();
+				}
+				thread.Join();
+			}
+			catch (Exception)
+			{
+			}
+		}
 
-        private Action DequeueOffThreadAction()
-        {
-            Action action = null;
-            lock (locker_offMain)
-            {
-                if (queuedOffThreadActions.Count > 0)
-                {
-                    action = queuedOffThreadActions[0];
-                    queuedOffThreadActions.RemoveAt(0);
-                }
-            }
-            return action;
-        }
+		public void EnqueueOffThreadAction(Action action)
+		{
+			lock (locker_offMain)
+			{
+				queuedOffThreadActions.Add(action);
+			}
+		}
 
-        private Action DequeueMainThreadAction()
-        {
-            Action action = null;
-            lock (locker_Main)
-            {
-                if (queuedMainThreadActions.Count > 0)
-                {
-                    action = queuedMainThreadActions[0];
-                    queuedMainThreadActions.RemoveAt(0);                    
-                }
-                mainThreadActionQueueEmpty = queuedMainThreadActions.Count == 0;
-            }
-            return action;
-        }
+		public void EnqueueMainThreadAction(Action action)
+		{
+			lock (locker_Main)
+			{
+				queuedMainThreadActions.Add(action);
+				mainThreadActionQueueEmpty = false;
+			}
+		}
 
-        private void MainThreadActionLoop()
-        {
-            if (!mainThreadActionQueueEmpty || (GenTicks.TicksGame + this.hashOffset) % mainLoopTickInterval == 0)
-            {
-                while (true)
-                {
-                    Action action = DequeueMainThreadAction();
-                    if (action != null)
-                    {
-                        try
-                        {
-                            action();
-                        }
-                        catch (Exception er)
-                        {
-                            Log.Error(er.ToString());
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-        }
+		private Action DequeueOffThreadAction()
+		{
+			Action action = null;
+			lock (locker_offMain)
+			{
+				if (queuedOffThreadActions.Count > 0)
+				{
+					action = queuedOffThreadActions[0];
+					queuedOffThreadActions.RemoveAt(0);
+				}
+			}
+			return action;
+		}
 
-        private void OffMainThreadActionLoop()
-        {
-            while (alive)
-            {
-                Action action = DequeueOffThreadAction();               
-                if (action != null)
-                {
-                    try
-                    {
-                        action();
-                    }
-                    catch (Exception er)
-                    {
-                        Log.Error(er.ToString());
-                    }
-                }
-                else
-                {
-                    Thread.Sleep(1);
-                }                
-            }
-        }
-    }
+		private Action DequeueMainThreadAction()
+		{
+			Action action = null;
+			lock (locker_Main)
+			{
+				if (queuedMainThreadActions.Count > 0)
+				{
+					action = queuedMainThreadActions[0];
+					queuedMainThreadActions.RemoveAt(0);
+				}
+				mainThreadActionQueueEmpty = queuedMainThreadActions.Count == 0;
+			}
+			return action;
+		}
+
+		private void MainThreadActionLoop()
+		{
+			if (!mainThreadActionQueueEmpty || (GenTicks.TicksGame + this.hashOffset) % mainLoopTickInterval == 0)
+			{
+				while (true)
+				{
+					Action action = DequeueMainThreadAction();
+					if (action != null)
+					{
+						try
+						{
+							action();
+						}
+						catch (Exception er)
+						{
+							Log.Error(er.ToString());
+						}
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+		}
+
+		private void OffMainThreadActionLoop()
+		{
+			while (alive)
+			{
+				Action action = DequeueOffThreadAction();
+				if (action != null)
+				{
+					try
+					{
+						action();
+					}
+					catch (Exception er)
+					{
+						Log.Error(er.ToString());
+					}
+				}
+				else
+				{
+					Thread.Sleep(1);
+				}
+			}
+		}
+	}
 }
 

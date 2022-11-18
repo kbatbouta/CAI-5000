@@ -55,14 +55,14 @@ namespace CombatAI
             public int GetProximity(IntVec3 cell) => GetProximity(indices.CellToIndex(cell));
             public int GetProximity(int index)
             {                                
-                return Math.Max(proximity.Get(index) - ((proximity.GetFlags(index) & iflags) != 0 ? 1: 0), 0);
+                return Maths.Max(proximity.Get(index) - ((proximity.GetFlags(index) & iflags) != 0 ? 1: 0), 0);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int GetPath(IntVec3 cell) => GetPath(indices.CellToIndex(cell));
             public int GetPath(int index)
             {
-                return Math.Max(path.Get(index) - ((path.GetFlags(index) & iflags) != 0 ? 1 : 0), 0);
+                return Maths.Max(path.Get(index) - ((path.GetFlags(index) & iflags) != 0 ? 1 : 0), 0);
             }            
         }
         
@@ -258,7 +258,7 @@ namespace CombatAI
             {                
                 flooder.Flood(loc, (node) =>
                 {
-                    float f = Math.Max(1 - node.dist / 5.65685424949f, 0.25f);
+                    float f = Maths.Max(1 - node.dist / 5.65685424949f, 0.25f);
                     affliction_dmg.Push(node.cell, dinfo.Amount * f);
                     affliction_pen.Push(node.cell, dinfo.ArmorPenetrationInt * f);
                 }, maxDist: 5);
@@ -318,8 +318,8 @@ namespace CombatAI
                 return;
             }
             UInt64 flags = pawn.GetThingFlags();
-            List<IntVec3> cells = pawnPath.nodes.GetRange(Math.Max(pawnPath.curNodeIndex - 80, 0), Math.Min(pawnPath.curNodeIndex + 1, 80));
-            //int count = Math.Min(pawnPath.NodesLeftCount, 80);
+            List<IntVec3> cells = pawnPath.nodes.GetRange(Maths.Max(pawnPath.curNodeIndex - 80, 0), Maths.Min(pawnPath.curNodeIndex + 1, 80));
+            //int count = Maths.Min(pawnPath.NodesLeftCount, 80);
             //for (int i = 0; i < count; i++)
             //{
             //    cells.Add(pawnPath.Peek(i));

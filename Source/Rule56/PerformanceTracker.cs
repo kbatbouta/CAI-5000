@@ -42,7 +42,7 @@ namespace CombatAI
         public float Tps
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Mathf.Min(1f / AvgTickTimeMs, TargetTps);
+            get => Maths.Min(1f / AvgTickTimeMs, TargetTps);
         }
         /// <summary>
         /// The expected tps deficit.
@@ -50,7 +50,7 @@ namespace CombatAI
         public float TpsDeficit
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Mathf.Max(TargetTps - Tps, 0f);
+            get => Maths.Max(TargetTps - Tps, 0f);
         }       
         /// <summary>
         /// The current target Tps.
@@ -58,7 +58,7 @@ namespace CombatAI
         public float TargetTps
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Mathf.Min(Find.TickManager.TickRateMultiplier * 60f, 90f);
+            get => Maths.Min(Find.TickManager.TickRateMultiplier * 60f, 90f);
         }
 
         public PerformanceTracker(Game game)

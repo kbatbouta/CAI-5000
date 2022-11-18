@@ -100,9 +100,9 @@ namespace CombatAI.Patches
                             tuning = new PathFinderCostTuning();                            
                             tuning.costBlockedDoor = 34;
                             tuning.costBlockedDoorPerHitPoint = 0;
-                            tuning.costBlockedWallBase = (int)Math.Max(15 * Math.Max(10 - miningSkill, 0), 24);
-                            tuning.costBlockedWallExtraForNaturalWalls = (int)Math.Max(45 * Math.Max(15 - miningSkill, 0), 45);
-                            tuning.costBlockedWallExtraPerHitPoint = Math.Max(6 - miningSkill, 0);
+                            tuning.costBlockedWallBase = (int)Maths.Max(15 * Maths.Max(10 - miningSkill, 0), 24);
+                            tuning.costBlockedWallExtraForNaturalWalls = (int)Maths.Max(45 * Maths.Max(15 - miningSkill, 0), 45);
+                            tuning.costBlockedWallExtraPerHitPoint = Maths.Max(6 - miningSkill, 0);
                             tuning.costOffLordWalkGrid = 0;
                         }
                     }
@@ -114,11 +114,11 @@ namespace CombatAI.Patches
                     {
                         if (!Finder.Performance.TpsCriticallyLow)
                         {
-                            visibilityAtDest = Mathf.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * Finder.Settings.Pathfinding_DestWeight, 5);
+                            visibilityAtDest = Maths.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * Finder.Settings.Pathfinding_DestWeight, 5);
                         }
                         else
                         {
-                            visibilityAtDest = Mathf.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * 0.875f, 5);
+                            visibilityAtDest = Maths.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * 0.875f, 5);
                         }
                         //Verb verb = pawn.GetWeaponVerbWithFallback();
                         //if (verb != null)
@@ -368,11 +368,11 @@ namespace CombatAI.Patches
                     {
                         if(value > 3)
                         {
-                            value += (int)(avoidanceReader.GetPath(index) * Math.Min(visibility, 5) * 21f);
+                            value += (int)(avoidanceReader.GetPath(index) * Maths.Min(visibility, 5) * 21f);
                         }
                         else
                         {                           
-                            value += (int)(Mathf.Min(avoidanceReader.GetPath(index), 4) * 42);
+                            value += (int)(Maths.Min(avoidanceReader.GetPath(index), 4) * 42);
                         }
                         float danger = avoidanceReader.GetDanger(index);
                         if(danger > 0)
@@ -419,13 +419,13 @@ namespace CombatAI.Patches
                         counter++;
                         //
                         // TODO make this into a maxcost -= something system
-                        var l1 = 350 * (1f - Mathf.Lerp(0f, 0.75f, counter / (openNum + 1f))) * (1f - Mathf.Min(openNum, 5000) / (7500));
+                        var l1 = 350 * (1f - Mathf.Lerp(0f, 0.75f, counter / (openNum + 1f))) * (1f - Maths.Min(openNum, 5000) / (7500));
                         var l2 = 250 * (1f - Mathf.Clamp01(PathFinder.calcGrid[parentIndex].knownCost / 2500));
                         //we use this so the game doesn't die
-                        var v = (Mathf.Min(value, l1 + l2) * factionMultiplier * 1);
+                        var v = (Maths.Min(value, l1 + l2) * factionMultiplier * 1);
                         //map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), v, $" {l1 + l2}");                        
-                        return (int)(Mathf.Min(value, l1 + l2) * factionMultiplier * Finder.P50);
-                        //return (int)(Mathf.Min(value, 1000f) * factionMultiplier * 1);
+                        return (int)(Maths.Min(value, l1 + l2) * factionMultiplier * Finder.P50);
+                        //return (int)(Maths.Min(value, 1000f) * factionMultiplier * 1);
                     }
                 }
                 return 0;

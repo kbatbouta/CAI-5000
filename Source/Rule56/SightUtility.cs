@@ -34,7 +34,7 @@ namespace CombatAI
                 return pawn.Position;
             }
 
-            float distanceTraveled = Mathf.Min(pawn.GetMoveSpeed() * ticksAhead / 60f, path.NodesLeftCount - 1);
+            float distanceTraveled = Maths.Min(pawn.GetMoveSpeed() * ticksAhead / 60f, path.NodesLeftCount - 1);
             return path.Peek(Mathf.FloorToInt(distanceTraveled));
         }       
 
@@ -67,15 +67,15 @@ namespace CombatAI
             //{
             float vision = !downed ? (pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Sight) ?? 1f) : 0.2f;
             float hearing = !downed ? (pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Hearing) ?? 1f) : 1.0f;
-            multiplier = Mathf.Max(vision * hearing, 0.3f);
+            multiplier = Maths.Max(vision * hearing, 0.3f);
             //}?
             if (downed)
             {
-                return (int)Mathf.Max(5 * multiplier, 3);
+                return (int)Maths.Max(5 * multiplier, 3);
             }
             if (GenTicks.TicksGame - pawn.needs?.rest?.lastRestTick < 30)
             {
-                return (int)Mathf.Max(10 * multiplier, 4);
+                return (int)Maths.Max(10 * multiplier, 4);
             }
             if (pawn.RaceProps.Animal || pawn.RaceProps.Insect)
             {
@@ -86,7 +86,7 @@ namespace CombatAI
                 Verb verb = pawn.CurrentEffectiveVerb;
                 if (verb == null)
                 {
-                    return (int)Mathf.Max(15 * multiplier, 12);
+                    return (int)Maths.Max(15 * multiplier, 12);
                 }
                 if (verb.IsMeleeAttack)
                 {
@@ -95,7 +95,7 @@ namespace CombatAI
                     {
                         multiplier += melee.Level / 20f;
                     }
-                    return (int)Mathf.Max(20 * multiplier, 12);
+                    return (int)Maths.Max(20 * multiplier, 12);
                 }
                 else
                 {
@@ -104,7 +104,7 @@ namespace CombatAI
                     {
                         multiplier += (ranged.Level - 5f) / 15f;
                     }
-                    return (int)Mathf.Max(verb.EffectiveRange * multiplier, 20f * multiplier, 10f);
+                    return (int)Maths.Max(verb.EffectiveRange * multiplier, 20f * multiplier, 10f);
                 }
             }
         }
@@ -133,7 +133,7 @@ namespace CombatAI
                 }
                 if ((range = verb.EffectiveRange) > 2.5f)
                 {
-                    return (int)Mathf.Max(range * 0.75f, 5f);
+                    return (int)Maths.Max(range * 0.75f, 5f);
                 }
                 return 4;
             }
@@ -156,7 +156,7 @@ namespace CombatAI
                 {
                     skill = shooting.Level;
                 }
-                range = Mathf.Max(range * Mathf.Clamp(skill / 7.5f, 0.778f, 1.425f), 4);
+                range = Maths.Max(range * Mathf.Clamp(skill / 7.5f, 0.778f, 1.425f), 4);
                 return Mathf.CeilToInt(range);
             }
         }
@@ -175,7 +175,7 @@ namespace CombatAI
                     {
                         skill = shooting.Level;
                     }
-                    range = Mathf.Max(range * Mathf.Clamp(skill / 7.5f, 0.778f, 1.225f), 5);
+                    range = Maths.Max(range * Mathf.Clamp(skill / 7.5f, 0.778f, 1.225f), 5);
                 }
             } 
             return Mathf.CeilToInt(range);

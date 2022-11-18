@@ -87,7 +87,7 @@ namespace CombatAI
                 switch (dc)
                 {
                     case 0:
-                        return Math.Max(cell.value, cell.valuePrev);
+                        return Maths.Max(cell.value, cell.valuePrev);
                     case 1:
                         return cell.value;
                     default:

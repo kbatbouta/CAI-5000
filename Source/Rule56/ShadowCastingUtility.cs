@@ -220,7 +220,7 @@ namespace CombatAI
             }
             List<VisibleRow> rowQueue = new List<VisibleRow>();            
             rowQueue.Add(request.firstRow);
-            float coverMinDist = Mathf.Max(request.firstRow.maxDepth / 3f, 10f);
+            float coverMinDist = Maths.Max(request.firstRow.maxDepth / 3f, 10f);
             while (rowQueue.Count > 0)
             {                
                 VisibleRow nextRow;                
@@ -272,7 +272,7 @@ namespace CombatAI
                                 nextRow.endSlope = GetSlope(offset);
                                 if (lastIsCover && row.depth > 6)
                                 {
-                                    nextRow.blockChance = Mathf.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
+                                    nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
                                     nextRow.visibilityCarry += 1;
                                 }
                                 rowQueue.Add(nextRow);
@@ -289,7 +289,7 @@ namespace CombatAI
                             nextRow.endSlope = GetSlope(offset);
                             if (lastIsCover && row.depth > 6)
                             {
-                                nextRow.blockChance = Mathf.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
+                                nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
                                 nextRow.visibilityCarry += 1;
                             }
                             rowQueue.Add(nextRow);
@@ -305,7 +305,7 @@ namespace CombatAI
                     nextRow = row.Next();
                     if (lastIsCover && row.depth > 6)
                     {                        
-                        nextRow.blockChance = Mathf.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
+                        nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
                         nextRow.visibilityCarry += 1;
                     }
                     rowQueue.Add(nextRow);
@@ -402,7 +402,7 @@ namespace CombatAI
                     {
                         CastRequest requestLeft = new CastRequest();
                         VisibleRow arcLeft = VisibleRow.First;
-                        arcLeft.startSlope = !Finder.Settings.LeanCE_Enabled ? startSlope : (-1f / Mathf.Max(maxDepth, 64));
+                        arcLeft.startSlope = !Finder.Settings.LeanCE_Enabled ? startSlope : (-1f / Maths.Max(maxDepth, 64));
                         arcLeft.endSlope = endSlope;                        
                         arcLeft.visibilityCarry = 1;
                         arcLeft.maxDepth = maxDepth - 1;
@@ -421,7 +421,7 @@ namespace CombatAI
                         CastRequest requestRight = new CastRequest();
                         VisibleRow arcRight = VisibleRow.First;                        
                         arcRight.startSlope = startSlope;
-                        arcRight.endSlope = !Finder.Settings.LeanCE_Enabled ? endSlope : (1f / Mathf.Max(maxDepth, 64));                        
+                        arcRight.endSlope = !Finder.Settings.LeanCE_Enabled ? endSlope : (1f / Maths.Max(maxDepth, 64));                        
                         arcRight.visibilityCarry = 1;
                         arcRight.maxDepth = maxDepth - 1;
                         arcRight.quartor = quartor;

@@ -56,7 +56,7 @@ namespace CombatAI
 							float val;
 							if (visibility > 0.1f)
 							{
-								val = Mathf.Max(cells[x * SECTION_SIZE + z] - 0.3f, 0f);
+								val = Maths.Max(cells[x * SECTION_SIZE + z] - 0.3f, 0f);
 								if (loc.InBounds(comp.map))
 								{
 									comp.grid[comp.cellIndices.CellToIndex(loc)] = false;
@@ -64,7 +64,7 @@ namespace CombatAI
 							}
 							else
 							{
-								val = Mathf.Min(cells[x * SECTION_SIZE + z] + 0.1f, 1.0f);
+								val = Maths.Min(cells[x * SECTION_SIZE + z] + 0.1f, 1.0f);
 								if (loc.InBounds(comp.map))
 								{
 									comp.grid[comp.cellIndices.CellToIndex(loc)] = true;
@@ -217,9 +217,9 @@ namespace CombatAI
 
 		private void DrawFog(int minU, int minV, int maxU, int maxV)
 		{
-			maxU = Mathf.Clamp(Mathf.Max(maxU, minU + 1), 0, grid2d.Length - 1);
+			maxU = Mathf.Clamp(Maths.Max(maxU, minU + 1), 0, grid2d.Length - 1);
 			minU = Mathf.Clamp(minU - 1, 0, grid2d.Length - 1);
-			maxV = Mathf.Clamp(Mathf.Max(maxV, minV + 1), 0, grid2d[0].Length - 1);
+			maxV = Mathf.Clamp(Maths.Max(maxV, minV + 1), 0, grid2d[0].Length - 1);
 			minV = Mathf.Clamp(minV - 1, 0, grid2d[0].Length - 1);
 			bool update = updateNum % 4 == 0;
 			bool updateForced = updateNum % 8 == 0;

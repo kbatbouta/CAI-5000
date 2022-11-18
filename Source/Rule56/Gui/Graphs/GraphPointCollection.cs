@@ -63,7 +63,7 @@ namespace CombatAI.Gui
 
         public float RangeT
         {
-            get => Mathf.Min(Last.t - First.t, timeWindow);
+            get => Maths.Min(Last.t - First.t, timeWindow);
         }
 
         public float RangeY
@@ -110,12 +110,12 @@ namespace CombatAI.Gui
                 point.y += Last.y;
                 if (point.y > _maxY)
                 {
-                    _maxAge = Mathf.Min(15, points.Count);
+                    _maxAge = Maths.Min(15, points.Count);
                     _maxY = point.y;
                 }
                 if (point.y < _minY)
                 {
-                    _minAge = Mathf.Min(15, points.Count);
+                    _minAge = Maths.Min(15, points.Count);
                     _minY = point.y;
                 }
                 points[points.Count - 1] = point;
@@ -183,8 +183,8 @@ namespace CombatAI.Gui
 
             if ((_maxAge > 0 && _minAge > 0))
             {
-                _maxAge = Math.Max(_maxAge - 1, 0);
-                _minAge = Math.Max(_minAge - 1, 0);
+                _maxAge = Maths.Max(_maxAge - 1, 0);
+                _minAge = Maths.Max(_minAge - 1, 0);
             }
             else
             {
@@ -197,12 +197,12 @@ namespace CombatAI.Gui
             points.Add(point);
             if (point.y > _maxY)
             {
-                _maxAge = Mathf.Min(15, points.Count);
+                _maxAge = Maths.Min(15, points.Count);
                 _maxY = point.y;
             }
             if (point.y < _minY)
             {
-                _minAge = Mathf.Min(15, points.Count);
+                _minAge = Maths.Min(15, points.Count);
                 _minY = point.y;
             }
         }
@@ -219,12 +219,12 @@ namespace CombatAI.Gui
                 GraphPoint point = points[i];
                 if (_minY > point.y)
                 {
-                    _minAge = Math.Min(i, 15);
+                    _minAge = Maths.Min(i, 15);
                     _minY = point.y;
                 }
                 if (_maxY < point.y)
                 {
-                    _maxAge = Math.Min(i, 15);
+                    _maxAge = Maths.Min(i, 15);
                     _maxY = point.y;
                 }
             }

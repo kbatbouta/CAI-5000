@@ -118,7 +118,7 @@ namespace CombatAI.Patches
                     map.GetCellFlooder().Flood(root,
                         (node) =>
                         {
-                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + Mathf.Min(avoidanceReader.GetProximity(node.cell) / 2f, 2f);                            
+                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + Maths.Min(avoidanceReader.GetProximity(node.cell) / 2f, 2f);                            
                         },
                         (cell) =>
                         {                            
@@ -138,7 +138,7 @@ namespace CombatAI.Patches
                         {
                             return rect.Contains(cell) && cell.WalkableBy(map, pawn) && map.reservationManager.CanReserve(pawn, cell);
                         }
-                    ,maxDist: Mathf.Max(rect.Height, rect.Width));
+                    ,maxDist: Maths.Max(rect.Height, rect.Width));
                 }
             }
         }

@@ -52,7 +52,7 @@ namespace CombatAI.Comps
         //    {
         //        base.DrawGUIOverlay();
         //        var verb = pawn.CurrentEffectiveVerb;
-        //        var sightRange = Math.Min(SightUtility.GetSightRange(pawn), verb.EffectiveRange);
+        //        var sightRange = Maths.Min(SightUtility.GetSightRange(pawn), verb.EffectiveRange);
         //        var sightRangeSqr = sightRange * sightRange;
         //        if (sightRange != 0 && verb != null)
         //        {
@@ -318,7 +318,7 @@ namespace CombatAI.Comps
                     request.caster = pawn;
                     request.target = new LocalTargetInfo(bestEnemyPositon);
                     request.verb = verb;
-                    request.maxRangeFromCaster = Mathf.Min(pawn.Position.DistanceTo(bestEnemy.Position) * 2, 10);
+                    request.maxRangeFromCaster = Maths.Min(pawn.Position.DistanceTo(bestEnemy.Position) * 2, 10);
                     request.checkBlockChance = true;
                     if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell))
                     {
@@ -351,7 +351,7 @@ namespace CombatAI.Comps
                             request.caster = pawn;
                             request.target = bestEnemy;
                             request.verb = verb;
-                            request.maxRangeFromLocus = Mathf.Min(pawn.Position.DistanceTo(bestEnemy.Position) / 2, 10);
+                            request.maxRangeFromLocus = Maths.Min(pawn.Position.DistanceTo(bestEnemy.Position) / 2, 10);
                             request.wantCoverFromTarget = true;                            
                             if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell))
                             {
@@ -377,7 +377,7 @@ namespace CombatAI.Comps
                             request.caster = pawn;
                             request.target = new LocalTargetInfo(bestEnemyPositon);
                             request.verb = verb;
-                            request.maxRangeFromCaster = Mathf.Min(pawn.Position.DistanceTo(bestEnemy.Position) / 2, 10);
+                            request.maxRangeFromCaster = Maths.Min(pawn.Position.DistanceTo(bestEnemy.Position) / 2, 10);
                             request.checkBlockChance = true;
                             if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
                             {

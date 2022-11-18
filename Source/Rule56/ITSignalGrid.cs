@@ -223,7 +223,7 @@ namespace CombatAI
             {
                 ITCell record = signalArray[index];
                 if (record.expireAt - CycleNum == 1)                
-                    return Mathf.Max(record.signalNumPrev, record.signalNum);                
+                    return Maths.Max(record.signalNumPrev, record.signalNum);                
                 else if (record.expireAt - CycleNum == 0)
                     return record.signalNum;
             }
@@ -241,13 +241,13 @@ namespace CombatAI
                 ITCell record = signalArray[index];
                 if (record.expireAt - CycleNum == 1)
                 {
-                    signalNum = Mathf.Max(record.signalNumPrev, record.signalNum);
-                    return Mathf.Max(0.75f * record.signalStrengthPrev + 0.25f * signalNum, 0.75f * record.signalStrength + 0.25f * signalNum, 0f);                   
+                    signalNum = Maths.Max(record.signalNumPrev, record.signalNum);
+                    return Maths.Max(0.75f * record.signalStrengthPrev + 0.25f * signalNum, 0.75f * record.signalStrength + 0.25f * signalNum, 0f);                   
                 }
                 else if(record.expireAt - CycleNum == 0)
                 {
                     signalNum = record.signalNum;
-                    return Mathf.Max(0.75f * record.signalStrength + 0.25f * signalNum, 0f);
+                    return Maths.Max(0.75f * record.signalStrength + 0.25f * signalNum, 0f);
                 }
             }
             signalNum = 0;

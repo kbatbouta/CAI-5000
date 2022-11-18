@@ -81,7 +81,7 @@ namespace CombatAI.Gui
                 {
                     h = heightLambda.Invoke(element);
                     _heights[j++] = h;
-                    contentRect.height += Math.Max(h, 0f);
+                    contentRect.height += Maths.Max(h, 0f);
                 }
                 j = 0;
                 Widgets.BeginScrollView(rect, ref scrollPosition, contentRect, showScrollbars: showScrollbars);
@@ -243,7 +243,7 @@ namespace CombatAI.Gui
             GUIFont.CurFontStyle.fontStyle = fontStyle;
             if (placeCheckboxNearText)
             {
-                rect.width = Mathf.Min(rect.width, GUIFont.CalcSize(label).x + 24f + 10f);
+                rect.width = Maths.Min(rect.width, GUIFont.CalcSize(label).x + 24f + 10f);
             }
             Widgets.Label(rect, label);
             if (!disabled && Widgets.ButtonInvisible(rect))

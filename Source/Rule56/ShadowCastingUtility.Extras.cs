@@ -92,13 +92,13 @@ namespace CombatAI
             float endSlope = GetSlope(relEnd);
             if (startSlope < -1)
             {
-                float slope = Mathf.Max(startSlope + 2, 0);
+                float slope = Maths.Max(startSlope + 2, 0);
                 castingAction(slope, 1, GetNextQuartor(quartor), maxDepth, carryLimit, source, map, setAction, buffer);
                 startSlope = -1;
             }
             if (endSlope > 1)
             {
-                float slope = Mathf.Min(endSlope - 2, 0);
+                float slope = Maths.Min(endSlope - 2, 0);
                 castingAction(-1, slope, GetPreviousQuartor(quartor), maxDepth, carryLimit, source, map, setAction, buffer);
                 endSlope = 1;
             }

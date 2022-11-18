@@ -233,7 +233,7 @@ namespace CombatAI.Gui
                     Widgets.DrawBox(new Rect(inRect.xMin, inRect.yMin, inRect.width - 25f, 1));
                     Widgets.DrawBox(new Rect(inRect.xMin, inRect.yMax - 1, inRect.width - 25f, 1));
                 }
-                inRect.yMin = Mathf.Min(curYMin + this.inRect.yMin, this.inRect.yMax);
+                inRect.yMin = Maths.Min(curYMin + this.inRect.yMin, this.inRect.yMax);
             }
             else
             {

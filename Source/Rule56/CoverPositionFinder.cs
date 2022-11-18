@@ -64,7 +64,7 @@ namespace CombatAI
                 {
                     return (request.validator == null || request.validator(cell)) && cell.WalkableBy(map, caster);
                 },
-                (int) Mathf.Min(request.maxRangeFromLocus, 30)
+                (int) Maths.Min(request.maxRangeFromLocus, 30)
             );
             coverCell = bestCell;
             return bestCell.IsValid;
@@ -124,7 +124,7 @@ namespace CombatAI
                 {
                     return (request.validator == null || request.validator(cell)) && cell.WalkableBy(map, caster);
                 },
-                (int)Mathf.Min(request.maxRangeFromLocus, 30)
+                (int)Maths.Min(request.maxRangeFromLocus, 30)
             );
             coverCell = bestCell;
             return bestCell.IsValid;
