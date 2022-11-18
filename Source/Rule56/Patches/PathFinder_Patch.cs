@@ -85,7 +85,7 @@ namespace CombatAI.Patches
                     }                   
 
                     float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-                    if (!Finder.Performance.TpsCriticallyLow && Finder.Settings.Pather_KillboxKiller && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual))
+                    if (Finder.Settings.Pather_KillboxKiller && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual))
                     {
                         raiders = true;
                         //factionMultiplier = 1;
@@ -182,7 +182,7 @@ namespace CombatAI.Patches
                 }
                 if (__state)
                 {
-                    if (Finder.Settings.Pather_KillboxKiller && __result != null && !__result.nodes.NullOrEmpty() && (pawn?.RaceProps.Humanlike ?? false) && !Finder.Performance.TpsCriticallyLow)
+                    if (Finder.Settings.Pather_KillboxKiller && __result != null && !__result.nodes.NullOrEmpty() && (pawn?.RaceProps.Humanlike ?? false))
                     {
                         //ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
                         //if (comp != null && comp.TryStartMiningJobs(__result))
@@ -207,15 +207,19 @@ namespace CombatAI.Patches
                                 //}
                                 pawn.jobs.StopAll();
                                 pawn.jobs.StartJob(job, JobCondition.InterruptForced);
-                                if (Rand.Chance(0.5f))
+                                if (Rand.Chance(0.8f))
                                 {
-                                    List<Pawn> allies = pawn.Position.ThingsInRange(map, Utilities.TrackedThingsRequestCategory.Pawns, 10f)
-                                        .Where(t => t.Faction == pawn.Faction && pawn.CanReach(t, PathEndMode.InteractionCell, Danger.Unspecified))
-                                        .Select(t => t as Pawn)
-                                        .Where(p => !p.Destroyed && p.mindState?.duty?.def != DutyDefOf.Escort && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(p.Position) == 0) && p.skills?.GetSkill(SkillDefOf.Mining).Level < 10 && GenTicks.TicksGame - p.LastAttackTargetTick > 60).ToList();
-                                    if (allies != null && allies.Count > 0)
+                                    //GenClosest.ClosestThingReachable(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), maxDistance:)
+                                    int count = 0;
+                                    int countTarget = Rand.Int % 3 + 1;
+                                    Faction faction = pawn.Faction;
+                                    Predicate<Thing> validator = (t) =>
                                     {
-                                        foreach (Pawn ally in allies.TakeRandom(Rand.Int % 3 + 1))
+                                        if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
+                                        && ally.mindState?.duty?.def != DutyDefOf.Escort
+                                        && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
+                                        && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10
+                                        && GenTicks.TicksGame - ally.LastAttackTargetTick > 60)
                                         {
                                             Comps.ThingComp_CombatAI comp = ally.GetComp_Fast<Comps.ThingComp_CombatAI>();
                                             if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false)
@@ -226,8 +230,34 @@ namespace CombatAI.Patches
                                                     comp.duties.StartDuty(custom, true);
                                                 }
                                             }
+                                            count++;
+                                            return count == countTarget; 
                                         }
-                                    }
+                                        return false;
+                                    };
+                                    GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 4, 25f, out int _);
+                                    //List<Pawn> allies = pawn.Position.(map, Utilities.TrackedThingsRequestCategory.Pawns, 10f)
+                                    //    .Where(t => t.Faction == pawn.Faction && pawn.CanReach(t, PathEndMode.InteractionCell, Danger.Unspecified))
+                                    //    .Select(t => t as Pawn)
+                                    //    .Where(p => !p.Destroyed && p.mindState?.duty?.def != DutyDefOf.Escort && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(p.Position) == 0) && p.skills?.GetSkill(SkillDefOf.Mining).Level < 10 && GenTicks.TicksGame - p.LastAttackTargetTick > 60).ToList();
+                                    //if (allies != null && allies.Count > 0)
+                                    //{
+                                    //    foreach (Pawn ally in allies.TakeRandom(Rand.Int % 3 + 1))
+                                    //    {
+                                    //if (ally != null)
+                                    //{
+                                    //    Comps.ThingComp_CombatAI comp = ally.GetComp_Fast<Comps.ThingComp_CombatAI>();
+                                    //    if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false)
+                                    //    {
+                                    //        Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 50, 100, Rand.Int % 500 + 1500, 0, true, DutyDefOf.AssaultColony);
+                                    //        if (custom != null)
+                                    //        {
+                                    //            comp.duties.StartDuty(custom, true);
+                                    //        }
+                                    //    }
+                                    //}
+                                    //    }
+                                    //}
                                 }
                             }
                         }
@@ -338,7 +368,7 @@ namespace CombatAI.Patches
                     {
                         if(value > 3)
                         {
-                            value += (int)(avoidanceReader.GetPath(index) * (value + 1f) * 21f);
+                            value += (int)(avoidanceReader.GetPath(index) * Math.Min(visibility, 5) * 21f);
                         }
                         else
                         {                           
@@ -389,8 +419,8 @@ namespace CombatAI.Patches
                         counter++;
                         //
                         // TODO make this into a maxcost -= something system
-                        var l1 = 550 * (1f - Mathf.Lerp(0f, 0.75f, counter / (openNum + 1f))) * (1f - Mathf.Min(openNum, 5000) / (7500));
-                        var l2 = 350 * (1f - Mathf.Clamp01(PathFinder.calcGrid[parentIndex].knownCost / 2500));
+                        var l1 = 350 * (1f - Mathf.Lerp(0f, 0.75f, counter / (openNum + 1f))) * (1f - Mathf.Min(openNum, 5000) / (7500));
+                        var l2 = 250 * (1f - Mathf.Clamp01(PathFinder.calcGrid[parentIndex].knownCost / 2500));
                         //we use this so the game doesn't die
                         var v = (Mathf.Min(value, l1 + l2) * factionMultiplier * 1);
                         //map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), v, $" {l1 + l2}");                        

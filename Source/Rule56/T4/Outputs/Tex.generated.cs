@@ -10,7 +10,7 @@ namespace CombatAI.R
     // Auto generated file!
     // -------------------------------------------------
     // This file is auto generated! Mod path is:
-    // $(SolutionDir)/../../../1.4/Textures/Commune
+    // $(SolutionDir)/../../../1.4/Textures/Isma
     // -------------------------------------------------
     /// <summary>
     /// <para>Texture database. This Class is generated automatically by a T4 template <c>Core/Assets/Tex.tt</c></para> 

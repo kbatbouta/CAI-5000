@@ -35,18 +35,22 @@
 	  <Folder Include="Patches\" />
 	  <Folder Include="Collections\" />
 	  <Folder Include="Comps\" />
-	  <Folder Include="Utilities\" />
 	  <Folder Include="Statistics\" />
+	  <Folder Include="Patches\Deprecated \" />
+	  <Folder Include="Deprecated\" />
+	  <Folder Include="Deprecated\Utilities\" />
 	</ItemGroup>	
 	<ItemGroup>
 	  <None Remove="Gui\Core\GUIUtility.ScrollViews" />
 	  <None Remove="Patches\" />
 	  <None Remove="Collections\" />
 	  <None Remove="Comps\" />
-	  <None Remove="Utilities\" />
 	  <None Remove="Statistics\" />
 	  <None Remove="Statistics\DataWriter_Path.config" />
 	  <None Remove="Statistics\DataWriter_Path.cs" />
+	  <None Remove="Patches\Deprecated \" />
+	  <None Remove="Deprecated\" />
+	  <None Remove="Deprecated\Utilities\" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">
@@ -61,6 +65,10 @@
 		<None Update="..\..\1.4\Patches\Races_Animal_Base.xml">
 		  <Link>Xml\Patches\\Races_Animal_Base.xml</Link>
 		</None>		
+		<None Include="Deprecated\Utilities\GenClosest.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
+		<None Include="Deprecated\Utilities\Tracking\ThingsTracker.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
+		<None Include="Deprecated\Utilities\Tracking\ThingsTrackingModel.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
+		<None Include="Deprecated\Utilities\Tracking\TrackedThingsRequestCategory.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
 	</ItemGroup>
 	<!-- ................ -->
 	<!--     Packages     -->
@@ -79,6 +87,10 @@
 	<!-- Process T4 files -->
 	<ItemGroup>
 	  <Compile Remove="ShadowCastingUtility.old.cs" />
+	  <Compile Remove="Deprecated\Utilities\GenClosest.cs" />
+	  <Compile Remove="Deprecated\Utilities\Tracking\ThingsTracker.cs" />
+	  <Compile Remove="Deprecated\Utilities\Tracking\ThingsTrackingModel.cs" />
+	  <Compile Remove="Deprecated\Utilities\Tracking\TrackedThingsRequestCategory.cs" />
 	</ItemGroup>	
 	<Target Name="ProcessTT" BeforeTargets="BeforeBuild">
 		<ItemGroup>

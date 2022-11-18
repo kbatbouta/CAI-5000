@@ -171,6 +171,7 @@ namespace CombatAI
         {
             colonistsAndFriendlies =
                 new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
+            colonistsAndFriendlies.playerAlliance = true;
             raidersAndHostiles =
                 new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
             insectsAndMechs =

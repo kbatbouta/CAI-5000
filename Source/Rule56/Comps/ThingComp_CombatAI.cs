@@ -46,94 +46,94 @@ namespace CombatAI.Comps
             }
         }
 
-        public override void DrawGUIOverlay()
-        {            
-            if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight && parent is Pawn pawn)
-            {
-                base.DrawGUIOverlay();
-                var verb = pawn.CurrentEffectiveVerb;
-                var sightRange = Math.Min(SightUtility.GetSightRange(pawn), verb.EffectiveRange);
-                var sightRangeSqr = sightRange * sightRange;
-                if (sightRange != 0 && verb != null)
-                {
-                    Vector3 drawPos = pawn.DrawPos;
-                    IntVec3 shiftedPos = pawn.GetMovingShiftedPosition(30);
-                    List<Pawn> nearbyVisiblePawns = GenClosest.ThingsInRange(pawn.Position, pawn.Map, Utilities.TrackedThingsRequestCategory.Pawns, sightRange)
-                        .Select(t => t as Pawn)
-                        .Where(p => !p.Dead && !p.Downed && p.GetMovingShiftedPosition(60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, p.GetMovingShiftedPosition(60)) && p.HostileTo(pawn))
-                        .ToList();
-                    CombatAI.Gui.GUIUtility.ExecuteSafeGUIAction(() =>
-                    {
-                        Vector2 drawPosUI = UI.MapToUIPosition(drawPos);
-                        Text.Font = GameFont.Tiny;
-                        string state = GenTicks.TicksGame - lastInterupted > 120 ? "<color=blue>O</color>" : "<color=yellow>X</color>";                        
-                        Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}");
-                    });                    
-                    bool bugged = nearbyVisiblePawns.Count != _visibleEnemies.Count;
-                    if (bugged)
-                    {
-                        Rect rect; 
-                        Vector2 a = UI.MapToUIPosition(drawPos);
-                        Vector2 b;
-                        Vector2 mid;                                             
-                        foreach (var other in nearbyVisiblePawns.Where(p => !_visibleEnemies.Contains(p)))
-                        {
-                            b = UI.MapToUIPosition(other.DrawPos);
-                            Widgets.DrawLine(a, b, Color.red, 1);
+        //public override void DrawGUIOverlay()
+        //{            
+        //    if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight && parent is Pawn pawn)
+        //    {
+        //        base.DrawGUIOverlay();
+        //        var verb = pawn.CurrentEffectiveVerb;
+        //        var sightRange = Math.Min(SightUtility.GetSightRange(pawn), verb.EffectiveRange);
+        //        var sightRangeSqr = sightRange * sightRange;
+        //        if (sightRange != 0 && verb != null)
+        //        {
+        //            Vector3 drawPos = pawn.DrawPos;
+        //            IntVec3 shiftedPos = pawn.GetMovingShiftedPosition(30);
+        //            List<Pawn> nearbyVisiblePawns = GenClosest.ThingsInRange(pawn.Position, pawn.Map, Utilities.TrackedThingsRequestCategory.Pawns, sightRange)
+        //                .Select(t => t as Pawn)
+        //                .Where(p => !p.Dead && !p.Downed && p.GetMovingShiftedPosition(60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, p.GetMovingShiftedPosition(60)) && p.HostileTo(pawn))
+        //                .ToList();
+        //            CombatAI.Gui.GUIUtility.ExecuteSafeGUIAction(() =>
+        //            {
+        //                Vector2 drawPosUI = UI.MapToUIPosition(drawPos);
+        //                Text.Font = GameFont.Tiny;
+        //                string state = GenTicks.TicksGame - lastInterupted > 120 ? "<color=blue>O</color>" : "<color=yellow>X</color>";                        
+        //                Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}");
+        //            });                    
+        //            bool bugged = nearbyVisiblePawns.Count != _visibleEnemies.Count;
+        //            if (bugged)
+        //            {
+        //                Rect rect; 
+        //                Vector2 a = UI.MapToUIPosition(drawPos);
+        //                Vector2 b;
+        //                Vector2 mid;                                             
+        //                foreach (var other in nearbyVisiblePawns.Where(p => !_visibleEnemies.Contains(p)))
+        //                {
+        //                    b = UI.MapToUIPosition(other.DrawPos);
+        //                    Widgets.DrawLine(a, b, Color.red, 1);
 
-                            mid = (a + b) / 2;
-                            rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
-                            Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
-                            Widgets.DrawBox(rect);
-                            Widgets.Label(rect, $"<color=red>Errored</color>.  {Math.Round(other.Position.DistanceTo(pawn.Position), 1)}");
-                        }
-                    }
-                    bool selected = Find.Selector.SelectedPawns.Contains(pawn);
-                    if (bugged || selected)
-                    {
-                        GenDraw.DrawRadiusRing(pawn.Position, sightRange);
-                    }
-                    if (selected)
-                    {
-                        for (int i = 1; i < _path.Count; i++)
-                        {
-                            Widgets.DrawBoxSolid(new Rect(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)) - new Vector2(5, 5), new Vector2(10, 10)), _colors[i]);
-                            Widgets.DrawLine(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), UI.MapToUIPosition(_path[i].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), Color.white, 1);
-                        }
-                        if(_path.Count > 0)
-                        {
-                            Vector2 v = UI.MapToUIPosition(pawn.DrawPos.Yto0());
-                            Widgets.DrawLine(UI.MapToUIPosition(_path.Last().ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), v, _colors.Last(), 1);
-                            Widgets.DrawBoxSolid(new Rect(v - new Vector2(5, 5), new Vector2(10, 10)), _colors.Last());
-                        }
-                        if (!_visibleEnemies.EnumerableNullOrEmpty())
-                        {
-                            Vector2 a = UI.MapToUIPosition(pawn.DrawPos);
-                            Vector2 b;
-                            Vector2 mid;
-                            Rect rect;
-                            int index = 0;
-                            foreach (var other in _visibleEnemies)
-                            {
-                                b = UI.MapToUIPosition(other.DrawPos);
-                                Widgets.DrawLine(a, b, Color.blue, 1);
+        //                    mid = (a + b) / 2;
+        //                    rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
+        //                    Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
+        //                    Widgets.DrawBox(rect);
+        //                    Widgets.Label(rect, $"<color=red>Errored</color>.  {Math.Round(other.Position.DistanceTo(pawn.Position), 1)}");
+        //                }
+        //            }
+        //            bool selected = Find.Selector.SelectedPawns.Contains(pawn);
+        //            if (bugged || selected)
+        //            {
+        //                GenDraw.DrawRadiusRing(pawn.Position, sightRange);
+        //            }
+        //            if (selected)
+        //            {
+        //                for (int i = 1; i < _path.Count; i++)
+        //                {
+        //                    Widgets.DrawBoxSolid(new Rect(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)) - new Vector2(5, 5), new Vector2(10, 10)), _colors[i]);
+        //                    Widgets.DrawLine(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), UI.MapToUIPosition(_path[i].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), Color.white, 1);
+        //                }
+        //                if(_path.Count > 0)
+        //                {
+        //                    Vector2 v = UI.MapToUIPosition(pawn.DrawPos.Yto0());
+        //                    Widgets.DrawLine(UI.MapToUIPosition(_path.Last().ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), v, _colors.Last(), 1);
+        //                    Widgets.DrawBoxSolid(new Rect(v - new Vector2(5, 5), new Vector2(10, 10)), _colors.Last());
+        //                }
+        //                if (!_visibleEnemies.EnumerableNullOrEmpty())
+        //                {
+        //                    Vector2 a = UI.MapToUIPosition(pawn.DrawPos);
+        //                    Vector2 b;
+        //                    Vector2 mid;
+        //                    Rect rect;
+        //                    int index = 0;
+        //                    foreach (var other in _visibleEnemies)
+        //                    {
+        //                        b = UI.MapToUIPosition(other.DrawPos);
+        //                        Widgets.DrawLine(a, b, Color.blue, 1);
 
-                                mid = (a + b) / 2;
-                                rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
-                                Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
-                                Widgets.DrawBox(rect);
-                                Widgets.Label(rect, $"<color=gray>({index++}).</color> {Math.Round(other.Position.DistanceTo(pawn.Position), 1)}");
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        //                        mid = (a + b) / 2;
+        //                        rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
+        //                        Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
+        //                        Widgets.DrawBox(rect);
+        //                        Widgets.Label(rect, $"<color=gray>({index++}).</color> {Math.Round(other.Position.DistanceTo(pawn.Position), 1)}");
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         public override void CompTickRare()
         {
             base.CompTickRare();
-            if (!parent.Spawned)
+            if (!parent.Spawned || Finder.Performance.TpsCriticallyLow)
             {
                 return;
             }

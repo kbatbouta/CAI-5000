@@ -72,7 +72,11 @@ namespace CombatAI
         /// <summary>
         /// Parent map sight tracker.
         /// </summary>
-        public readonly SightTracker sightTracker;                     
+        public readonly SightTracker sightTracker;
+        /// <summary>
+        /// Whether this is the player grid
+        /// </summary>
+        public bool playerAlliance = false;            
 
         public SightGrid(SightTracker sightTracker, Settings.SightPerformanceSettings settings)
         {            
@@ -191,7 +195,7 @@ namespace CombatAI
 
         private bool Skip(IBucketableThing item)
         {
-            if (item.thing is Pawn pawn)
+            if (!playerAlliance && item.thing is Pawn pawn)
             {                
                 return (GenTicks.TicksGame - pawn.needs?.rest?.lastRestTick <= 30) || pawn.Downed;
             }
@@ -213,7 +217,7 @@ namespace CombatAI
             {
                 return false;
             }
-            int range = SightUtility.GetSightRange(item.thing);
+            int range = SightUtility.GetSightRange(item.thing, playerAlliance);
             int ticks = GenTicks.TicksGame;            
             IntVec3 pos = GetShiftedPosition(item.thing);
             if (!pos.InBounds(map))
@@ -240,7 +244,8 @@ namespace CombatAI
                 grid.Next();
                 grid.Set(pos, 1.0f, Vector2.zero, GetFlags(item));                
                 float r = range * 1.23f;
-                float rSqr = range * range;                      
+                float rSqr = range * range;
+                float rHafledSqr = rSqr / 4f; 
                 ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
                 {
                     if (scanForEnemies)
@@ -260,9 +265,14 @@ namespace CombatAI
                     }
                     // NOTE: the carry is the number of cover things between the source and the current cell.                  
                     float visibility = (float)(r - dist) / r * (1 - coverRating);
+                    float d = pos.DistanceToSquared(cell);
                     // only set anything if visibility is ok
-                    if (visibility >= 0f && pos.DistanceToSquared(cell) < rSqr)
+                    if (visibility > 0f && d < rSqr)
                     {
+                        if (playerAlliance && d >= rHafledSqr)
+                        {
+                            visibility *= 0.05f; 
+                        }
                         grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                     }
                 }, range, settings.carryLimit, buffer);
@@ -288,7 +298,7 @@ namespace CombatAI
         {
             if (thing is Pawn pawn)
             {
-                return pawn.GetMovingShiftedPosition(60);
+                return pawn.GetMovingShiftedPosition(40);
             }
             else
             {

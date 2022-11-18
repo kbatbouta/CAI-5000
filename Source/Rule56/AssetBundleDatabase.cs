@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
+using UnityEngine.Assertions;
 using Verse;
 using static System.Net.WebRequestMethods;
 
@@ -59,15 +60,17 @@ namespace CombatAI
             foreach (string file in Directory.GetFiles(path))
             {
                 AssetBundle bundle = AssetBundle.LoadFromFile(file);
+                
                 if (bundle == null)
                 {
                     Log.Warning($"ISMA: Could not load AssetBundle at {file}");
                 }
                 else
                 {
-                    bundles.Add(bundle);
-                }
-            }
+                    bundles.Add(bundle);                        
+                    Log.Message($"ISMA: Loaded bundle {bundle.GetAllAssetNames().ToLineList()}");
+                }                
+            }            
         }
 
         private static class AssetCache<T> where T : UnityEngine.Object
