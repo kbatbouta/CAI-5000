@@ -97,7 +97,8 @@ namespace CombatAI
             return 0;
         }
 
-        public UInt64 GetFlags(IntVec3 cell) => GetFlags(cellIndices.CellToIndex(cell));
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public UInt64 GetFlags(IntVec3 cell) => GetFlags(cellIndices.CellToIndex(cell));
         public UInt64 GetFlags(int index)
         {
             if (index >= 0 && index < mapCellNum)
