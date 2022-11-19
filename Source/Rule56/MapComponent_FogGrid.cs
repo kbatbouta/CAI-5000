@@ -54,9 +54,9 @@ namespace CombatAI
 							float visibility = pawns.GetSignalStrengthAt(loc = pos + new IntVec3(x, 0, z)) + (turrets?.GetSignalStrengthAt(loc) ?? 0f);
 							float old = cells[x * SECTION_SIZE + z];
 							float val;
-							if (visibility > 0.1f)
+							if (visibility > 0)
 							{
-								val = Maths.Max(cells[x * SECTION_SIZE + z] - 0.3f, 0f);
+								val =  Maths.Max((0.05f - visibility) / 0.05f, 0f);
 								if (loc.InBounds(comp.map))
 								{
 									comp.grid[comp.cellIndices.CellToIndex(loc)] = false;
