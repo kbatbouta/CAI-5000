@@ -235,7 +235,7 @@ namespace CombatAI.Patches
                                         }
                                         return false;
                                     };
-                                    GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 4, 25f, out int _);
+                                    Verse.GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 4, 25f, out int _);
                                     //List<Pawn> allies = pawn.Position.(map, Utilities.TrackedThingsRequestCategory.Pawns, 10f)
                                     //    .Where(t => t.Faction == pawn.Faction && pawn.CanReach(t, PathEndMode.InteractionCell, Danger.Unspecified))
                                     //    .Select(t => t as Pawn)

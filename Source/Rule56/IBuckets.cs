@@ -26,7 +26,7 @@ namespace CombatAI
         {
             get
             {
-                return new List<T>(buckets[curIndex]);
+                return buckets[curIndex];
             }
         }
 
@@ -72,14 +72,14 @@ namespace CombatAI
 
         public List<T> GetBucket(int index)
         {
-            return new List<T>(buckets[index]);
+            return buckets[index];
         }
 
         public List<T> Next()
         {
             int index = curIndex;
             curIndex = (curIndex + 1) % count;
-            return new List<T>(buckets[index]);
+            return buckets[index];
         }
 
         public void Reset()

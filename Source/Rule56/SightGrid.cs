@@ -11,7 +11,8 @@ namespace CombatAI
 {
     public class SightGrid
     {
-        private List<Vector3> buffer = new List<Vector3>(1024);
+        private readonly List<Vector3> buffer = new List<Vector3>(1024);
+        private readonly List<Thing> thingBuffer = new List<Thing>(256);
         private const int COVERCARRYLIMIT = 6;        
 
         private class IBucketableThing : IBucketable
@@ -226,7 +227,8 @@ namespace CombatAI
                 return false;
             }
             Thing thing = item.thing;
-            ThingComp_CombatAI comp = thing.GetComp_Fast<ThingComp_CombatAI>(allowFallback: false);
+            Pawn pawn = item.thing as Pawn;
+			ThingComp_CombatAI comp = thing.GetComp_Fast<ThingComp_CombatAI>(allowFallback: false);
             SightTracker.SightReader reader = comp?.sightReader ?? null;
             bool scanForEnemies = comp?.sightReader != null && reader != null && !(item.faction?.IsPlayerSafe() ?? false);           
             Action action = () =>
@@ -242,7 +244,7 @@ namespace CombatAI
                     });                  
                 }
                 grid.Next();
-                grid.Set(pos, 1.0f, Vector2.zero, GetFlags(item));                
+                grid.Set(pos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);                
                 float r = range * 1.23f;
                 float rSqr = range * range;
                 float rHafledSqr = rSqr / 4f; 
@@ -258,7 +260,18 @@ namespace CombatAI
                             {
                                 if (!thing.Destroyed && thing.Spawned)
                                 {
-                                    comp.Notify_EnemiesVisible(sightTracker.factionedUInt64Map.GetThings(flag).Where(t => t.Spawned && !t.Destroyed && t.Position.DistanceToSquared(cell) < 25 && t.HostileTo(thing)));
+                                    thingBuffer.Clear();
+									sightTracker.factionedUInt64Map.GetThings(flag, thingBuffer);
+                                    for(int i = 0; i < thingBuffer.Count; i++)
+                                    {
+                                        Thing enemy = thingBuffer[i];
+                                        if (enemy.Spawned && !enemy.Destroyed && enemy.Position.DistanceToSquared(cell) < 25 && enemy.HostileTo(thing))
+                                        {
+                                            comp.Notify_EnemyVisible(enemy);
+										}
+                                    }
+                                    //
+									//comp.Notify_EnemiesVisible(.Where(t => t.Spawned && !t.Destroyed && t.Position.DistanceToSquared(cell) < 25 && t.HostileTo(thing)));
                                 }
                             });                                                     
                         }

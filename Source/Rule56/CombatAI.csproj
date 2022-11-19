@@ -65,10 +65,6 @@
 		<None Update="..\..\1.4\Patches\Races_Animal_Base.xml">
 		  <Link>Xml\Patches\\Races_Animal_Base.xml</Link>
 		</None>		
-		<None Include="Deprecated\Utilities\GenClosest.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-		<None Include="Deprecated\Utilities\Tracking\ThingsTracker.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-		<None Include="Deprecated\Utilities\Tracking\ThingsTrackingModel.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-		<None Include="Deprecated\Utilities\Tracking\TrackedThingsRequestCategory.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
 	</ItemGroup>
 	<!-- ................ -->
 	<!--     Packages     -->
@@ -87,10 +83,6 @@
 	<!-- Process T4 files -->
 	<ItemGroup>
 	  <Compile Remove="ShadowCastingUtility.old.cs" />
-	  <Compile Remove="Deprecated\Utilities\GenClosest.cs" />
-	  <Compile Remove="Deprecated\Utilities\Tracking\ThingsTracker.cs" />
-	  <Compile Remove="Deprecated\Utilities\Tracking\ThingsTrackingModel.cs" />
-	  <Compile Remove="Deprecated\Utilities\Tracking\TrackedThingsRequestCategory.cs" />
 	</ItemGroup>	
 	<Target Name="ProcessTT" BeforeTargets="BeforeBuild">
 		<ItemGroup>

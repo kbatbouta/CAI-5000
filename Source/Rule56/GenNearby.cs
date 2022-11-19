@@ -16,7 +16,7 @@ namespace CombatAI
                 }
 				return pawns.Count >= maxNum;
 			};
-			GenClosest.RegionwiseBFSWorker(root, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), Verse.AI.PathEndMode.InteractionCell, parms, func, null, 1, maxReigons, maxDist, out int _);
+			Verse.GenClosest.RegionwiseBFSWorker(root, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), Verse.AI.PathEndMode.InteractionCell, parms, func, null, 1, maxReigons, maxDist, out int _);
 		}
     }
 }
