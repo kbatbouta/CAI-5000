@@ -8,6 +8,7 @@
     <CombatAI.Expand>Hide</CombatAI.Expand>
 
     <CombatAI.Settings.Basic>Basic Settings</CombatAI.Settings.Basic>
+    <CombatAI.Settings.Basic.FogOfWar>[BETA] Enable fog of war</CombatAI.Settings.Basic.FogOfWar>
     <CombatAI.Settings.Basic.KillBoxKiller>Enable The Killbox killer 5000</CombatAI.Settings.Basic.KillBoxKiller>
     <CombatAI.Settings.Basic.CELean>Enable Combat Extended lean profile</CombatAI.Settings.Basic.CELean>
     <CombatAI.Settings.Basic.PerformanceOpt>Enable dynamic performance settings</CombatAI.Settings.Basic.PerformanceOpt>

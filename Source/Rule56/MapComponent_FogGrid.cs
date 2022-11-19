@@ -20,7 +20,7 @@ namespace CombatAI
 			public float[] cells;
 			public Rect rect;
 			public bool dirty = true;
-			public float zoom;
+			public float zoom;			
 			private readonly Material mat;
 			private readonly Mesh mesh;
 			private readonly Vector3 pos;
@@ -29,7 +29,7 @@ namespace CombatAI
 			public void ApplyZoom()
 			{
 				this.zoom = MapComponent_FogGrid.zoom;
-				mat.SetVector("_Color", new Vector4(0.1f, 0.1f, 0.1f, this.zoom / 120f));
+				mat.SetVector("_Color", new Vector4(0.1f, 0.1f, 0.1f, this.zoom / 90));
 			}
 
 			public void ApplyFogged()
@@ -40,8 +40,13 @@ namespace CombatAI
 
 			public void Update()
 			{
-				ITSignalGrid pawns = comp.sight.grid;
-				ITSignalGrid turrets = comp.sightTurrets?.grid ?? null;
+				CellIndices indices = comp.map?.cellIndices;
+				if (indices == null)
+				{
+					return;
+				}
+				int numGridCells = indices.NumGridCells;
+				ITSignalGrid pawns = comp.sight.grid;				
 				IntVec3 pos = this.pos.ToIntVec3();
 				IntVec3 loc;
 				bool changed = false;
@@ -51,23 +56,24 @@ namespace CombatAI
 					{
 						for (int z = 0; z < SECTION_SIZE; z++)
 						{
-							float visibility = pawns.GetSignalStrengthAt(loc = pos + new IntVec3(x, 0, z)) + (turrets?.GetSignalStrengthAt(loc) ?? 0f);
-							float old = cells[x * SECTION_SIZE + z];
+							float visibility = pawns.GetSignalStrengthAt(loc = pos + new IntVec3(x, 0, z));
+							float old = cells[x * SECTION_SIZE + z];							
 							float val;
+							int index = indices.CellToIndex(loc);
 							if (visibility > 0)
 							{
-								val =  Maths.Max(cells[x * SECTION_SIZE + z] - 0.2f, (0.05f - visibility) / 0.05f, 0f);
-								if (loc.InBounds(comp.map))
+								val =  Maths.Max(cells[x * SECTION_SIZE + z] - 0.3f, (0.03f - visibility) / 0.02f, 0f);
+								if (index >= 0 && index < numGridCells)
 								{
-									comp.grid[comp.cellIndices.CellToIndex(loc)] = false;
+									comp.grid[index] = false;
 								}
 							}
 							else
 							{
-								val = Maths.Min(cells[x * SECTION_SIZE + z] + 0.1f, 1.0f);
-								if (loc.InBounds(comp.map))
+								val = Maths.Min(cells[x * SECTION_SIZE + z] + 0.3f, 1.0f);
+								if (index >= 0 && index < numGridCells)
 								{
-									comp.grid[comp.cellIndices.CellToIndex(loc)] = true;
+									comp.grid[index] = true;
 								}
 							}
 							if (old != val)
@@ -116,8 +122,7 @@ namespace CombatAI
 		private readonly Rect mapRect;
 
 		public bool[] grid;
-		public SightGrid sight;
-		public SightGrid sightTurrets;
+		public SightGrid sight;		
 		public CellIndices cellIndices;
 
 		static MapComponent_FogGrid()
@@ -154,6 +159,10 @@ namespace CombatAI
 		public bool IsFogged(IntVec3 cell) => IsFogged(cellIndices.CellToIndex(cell));
 		public bool IsFogged(int index)
 		{
+			if (!Finder.Settings.FogOfWar_Enabled)
+			{
+				return false;
+			}
 			if (index >= 0 && index < cellIndices.NumGridCells)
 			{
 				return grid[index];
@@ -163,7 +172,7 @@ namespace CombatAI
 
 		public override void MapComponentUpdate()
 		{
-			if (!alive)
+			if (!alive || !Finder.Settings.FogOfWar_Enabled)
 			{
 				return;
 			}
@@ -175,19 +184,11 @@ namespace CombatAI
 			if (!ready)
 			{
 				sight = map.GetComp_Fast<SightTracker>().colonistsAndFriendlies;
-				if (map.ParentFaction.IsPlayerSafe())
-				{
-					sightTurrets = map.GetComp_Fast<SightTracker>().settlementTurrets;
-				}
 				ready = sight != null;
 			}
 			base.MapComponentUpdate();
 			if (ready)
-			{
-				if (updateNum % 10 == 0 && sightTurrets == null && map.ParentFaction.IsPlayerSafe())
-				{
-					sightTurrets = map.GetComp_Fast<SightTracker>().settlementTurrets;
-				}
+			{				
 				Rect rect = new Rect();
 				CellRect cellRect = Find.CameraDriver.CurrentViewRect;
 				rect.xMin = Mathf.Clamp(cellRect.minX - SECTION_SIZE, 0, cellIndices.mapSizeX);
@@ -197,7 +198,7 @@ namespace CombatAI
 				mapScreenRect = rect;
 				//mapScreenRect.ExpandedBy(32, 32);
 				asyncActions.ExecuteMainThreadActions();
-				zoom = Mathf.CeilToInt(Mathf.Clamp(Find.CameraDriver?.rootPos.y ?? 30, 15, 25f));
+				zoom = Mathf.CeilToInt(Mathf.Clamp(Find.CameraDriver?.rootPos.y ?? 30, 15, 30f));
 				DrawFog(Mathf.FloorToInt(mapScreenRect.xMin / SECTION_SIZE), Mathf.FloorToInt(mapScreenRect.yMin / SECTION_SIZE), Mathf.FloorToInt(mapScreenRect.xMax / SECTION_SIZE), Mathf.FloorToInt(mapScreenRect.yMax / SECTION_SIZE));
 			}
 		}
@@ -210,13 +211,13 @@ namespace CombatAI
 
 		public override void MapRemoved()
 		{
-			base.MapRemoved();
-			asyncActions.Kill();
 			alive = false;
+			asyncActions.Kill();
+			base.MapRemoved();						
 		}
 
 		private void DrawFog(int minU, int minV, int maxU, int maxV)
-		{
+		{			
 			maxU = Mathf.Clamp(Maths.Max(maxU, minU + 1), 0, grid2d.Length - 1);
 			minU = Mathf.Clamp(minU - 1, 0, grid2d.Length - 1);
 			maxV = Mathf.Clamp(Maths.Max(maxV, minV + 1), 0, grid2d[0].Length - 1);
@@ -247,8 +248,8 @@ namespace CombatAI
 			Stopwatch stopwatch = new Stopwatch();
 			while (alive)
 			{
-				stopwatch.Restart();
-				if (ready)
+				stopwatch.Restart();								
+				if (ready && Finder.Settings.FogOfWar_Enabled)
 				{
 					for (int u = minU; u < maxU; u++)
 					{
@@ -257,7 +258,7 @@ namespace CombatAI
 							grid2d[u][v].Update();
 						}
 					}
-				}
+				}				
 				stopwatch.Stop();
 				float t = 0.021f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
 				if (t > 0f)

@@ -3,6 +3,7 @@ using Verse;
 using System.Collections.Generic;
 using Verse.Noise;
 using System.Diagnostics;
+using System.Linq;
 
 namespace CombatAI
 { 
@@ -138,6 +139,11 @@ namespace CombatAI
 					c = c << 8;
 				}
 			}
+		}
+
+		public List<Thing> GetAllThings()
+		{
+			return buckets.GetAll().Select(t => t.thing).ToList();
 		}
 
 		private static IEnumerable<int> GetBucketIndices(UInt64 flag)

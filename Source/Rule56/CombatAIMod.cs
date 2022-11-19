@@ -41,7 +41,8 @@ namespace CombatAI
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_CELean, ref Finder.Settings.LeanCE_Enabled);
             collapsible.Line(1);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_PerformanceOpt, ref Finder.Settings.PerformanceOpt_Enabled, tooltip: R.Keyed.CombatAI_Settings_Basic_PerformanceOpt_Description);
-            collapsible.Line(1);
+			collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_FogOfWar, ref Finder.Settings.FogOfWar_Enabled);
+			collapsible.Line(1);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_KillBoxKiller, ref Finder.Settings.Pather_KillboxKiller);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_Pather, ref Finder.Settings.Pather_Enabled);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_Caster, ref Finder.Settings.Caster_Enabled);

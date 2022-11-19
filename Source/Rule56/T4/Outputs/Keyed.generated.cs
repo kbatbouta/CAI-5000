@@ -93,6 +93,16 @@ namespace CombatAI.R
                    _CombatAI_Settings_Basic : _CombatAI_Settings_Basic = "CombatAI.Settings.Basic".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar</c>. inner text:
+        ///
+        /// <code>[BETA] Enable fog of war</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar {
+            get => _CombatAI_Settings_Basic_FogOfWar != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar : _CombatAI_Settings_Basic_FogOfWar = "CombatAI.Settings.Basic.FogOfWar".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic_KillBoxKiller = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.KillBoxKiller</c>. inner text:
         ///

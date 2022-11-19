@@ -13,7 +13,22 @@ namespace CombatAI.Patches
 {
     public static class Faction_Patch
     {
-        [HarmonyPatch(typeof(Faction), nameof(Faction.Notify_MemberTookDamage))]
+		[HarmonyPatch(typeof(Faction), nameof(Faction.Notify_RelationKindChanged))]
+		static class Faction_Notify_Notify_RelationKindChanged_Patch
+		{
+			public static void Prefix(Faction __instance, Faction other)
+			{
+                if (other.IsPlayerSafe())
+                {                    
+                    foreach (Map map in Find.Maps)
+                    {
+                        map.GetComp_Fast<SightTracker>()?.Notify_PlayerRelationChanged(__instance);
+                    }
+                }
+			}
+		}
+
+		[HarmonyPatch(typeof(Faction), nameof(Faction.Notify_MemberTookDamage))]
         static class Faction_Notify_MemberTookDamage_Patch
         {
             public static void Prefix(Pawn member, DamageInfo dinfo)

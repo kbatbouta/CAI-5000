@@ -28,7 +28,7 @@ namespace CombatAI
             {
                 return buckets[curIndex];
             }
-        }
+        }        
 
         public IBuckets(int count)
         {
@@ -105,6 +105,24 @@ namespace CombatAI
             }
             bucketIndexByIds.Clear();
         }
-    }
+
+        public List<T> GetAll()
+        {
+            List<T> result = new List<T>();
+			for (int i = 0; i < buckets.Length; i++)
+			{
+                result.AddRange(buckets[i]);
+			}
+            return result;
+		}
+
+		public void GetAll(List<T> listBuffer)
+		{			
+			for (int i = 0; i < buckets.Length; i++)
+			{
+				listBuffer.AddRange(buckets[i]);
+			}			
+		}
+	}
 }
 

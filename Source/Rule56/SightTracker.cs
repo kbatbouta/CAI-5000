@@ -160,28 +160,25 @@ namespace CombatAI
 
         public readonly SightGrid colonistsAndFriendlies;
         public readonly SightGrid raidersAndHostiles;
-        public readonly SightGrid insectsAndMechs;
-        public readonly SightGrid settlementTurrets;
-        public readonly SightGrid wildlife;
+        public readonly SightGrid insectsAndMechs;        
+		public readonly SightGrid wildlife;
         
         public readonly IThingsUInt64Map factionedUInt64Map;
         public readonly IThingsUInt64Map wildUInt64Map;
 
         public SightTracker(Map map) : base(map)
-        {
+        {            
             colonistsAndFriendlies =
                 new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
             colonistsAndFriendlies.playerAlliance = true;
             raidersAndHostiles =
-                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
-            insectsAndMechs =
+                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);			
+			insectsAndMechs =
                 new SightGrid(this, Finder.Settings.SightSettings_MechsAndInsects);
             wildlife =
-                new SightGrid(this, Finder.Settings.SightSettings_Wildlife);
-            settlementTurrets =
-                new SightGrid(this, Finder.Settings.SightSettings_SettlementTurrets);
-            
-            factionedUInt64Map = new IThingsUInt64Map();
+                new SightGrid(this, Finder.Settings.SightSettings_Wildlife);			
+
+			factionedUInt64Map = new IThingsUInt64Map();
             wildUInt64Map = new IThingsUInt64Map();
         }        
 
@@ -193,9 +190,7 @@ namespace CombatAI
             // --------------
             raidersAndHostiles.SightGridTick();
             // --------------
-            insectsAndMechs.SightGridTick();
-            // --------------
-            settlementTurrets.SightGridTick();
+            insectsAndMechs.SightGridTick();            
             // --------------
             wildlife.SightGridTick();
             //
@@ -244,7 +239,7 @@ namespace CombatAI
                                 if (cell.InBounds(map) && !_drawnCells.Contains(cell))
                                 {
                                     _drawnCells.Add(cell);
-                                    var value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2) + settlementTurrets.grid.GetSignalStrengthAt(cell, out int enemies3) + insectsAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4);
+                                    var value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2)  + insectsAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4);
                                     if (value > 0)
                                     {
                                         map.debugDrawer.FlashCell(cell, Mathf.Clamp(value / 7f, 0.1f, 0.99f), $"{Math.Round(value, 3)} {enemies1 + enemies2}", 15);
@@ -295,7 +290,7 @@ namespace CombatAI
             }
         }        
 
-        public bool TryGetReader(Pawn pawn, out SightReader reader) => TryGetReader(pawn.Faction, out reader);
+        public bool TryGetReader(Thing thing, out SightReader reader) => TryGetReader(thing.Faction, out reader);
         public bool TryGetReader(Faction faction, out SightReader reader)
         {           
             if (faction == null)
@@ -313,8 +308,8 @@ namespace CombatAI
                         wildlife.grid, colonistsAndFriendlies.grid, raidersAndHostiles.grid
                     });
                 return true;
-            }
-            if (faction.def == FactionDefOf.Mechanoid || faction.def == FactionDefOf.Insect)
+            }			
+			if (faction.def == FactionDefOf.Mechanoid || faction.def == FactionDefOf.Insect)
             {
                 reader = new SightReader(this,
                     friendlies: new ITSignalGrid[]
@@ -323,7 +318,7 @@ namespace CombatAI
                     },
                     hostiles: new ITSignalGrid[]
                     {
-                        colonistsAndFriendlies.grid, raidersAndHostiles.grid, settlementTurrets.grid
+                        colonistsAndFriendlies.grid, raidersAndHostiles.grid
                     },
                     neutrals: new ITSignalGrid[]
                     {
@@ -331,13 +326,13 @@ namespace CombatAI
                     });
                 return true;
             }
-            Faction mapFaction = map.ParentFaction;            
-            if ((mapFaction != null && !faction.HostileTo(map.ParentFaction)) || (mapFaction == null && Faction.OfPlayerSilentFail != null && !faction.HostileTo(Faction.OfPlayerSilentFail)))
-            {
-                reader = new SightReader(this,
+            Faction playerFaction = Faction.OfPlayerSilentFail;
+			if (playerFaction != null && !faction.HostileTo(playerFaction))
+            {                
+				reader = new SightReader(this,
                     friendlies: new ITSignalGrid[]
                     {
-                        colonistsAndFriendlies.grid, settlementTurrets.grid
+                        colonistsAndFriendlies.grid,
                     },
                     hostiles: new ITSignalGrid[]
                     {
@@ -357,7 +352,7 @@ namespace CombatAI
                     },
                     hostiles: new ITSignalGrid[]
                     {
-                        colonistsAndFriendlies.grid, settlementTurrets.grid, insectsAndMechs.grid
+                        colonistsAndFriendlies.grid, insectsAndMechs.grid
                     },
                     neutrals: new ITSignalGrid[]
                     {
@@ -366,108 +361,93 @@ namespace CombatAI
             }              
             return true;
         }
-
+        
         public void Register(Thing thing)
         {
-            if (thing is Pawn pawn)
-            {
-                Register(pawn);
-            }
-            else if(thing is Building_TurretGun turret)
-            {
-                Register(turret);
-            }
-            throw new NotImplementedException();
-        }
+            // make sure it's not already in.
+            factionedUInt64Map.Remove(thing);
+            // make sure it's not already in.
+            wildUInt64Map.Remove(thing);
+            // make sure it's not already in.
+            colonistsAndFriendlies.TryDeRegister(thing);
+            // make sure it's not already in.
+            raidersAndHostiles.TryDeRegister(thing);
+            // make sure it's not already in.
+            insectsAndMechs.TryDeRegister(thing);
+            // make sure it's not already in.
+            wildlife.TryDeRegister(thing);
 
-        public void Register(Building_TurretGun turret)
-        {
-            Faction mapFaction = map.ParentFaction;
-            if (turret.Faction != null && mapFaction != null && !turret.HostileTo(mapFaction))
-            {
-                raidersAndHostiles.TryDeRegister(turret);                
-                settlementTurrets.Register(turret);                                
-            }
-            else if(map.ParentFaction != null && turret.HostileTo(map.ParentFaction))
-            {
-                raidersAndHostiles.TryDeRegister(turret);
-            }
-            factionedUInt64Map.Add(turret);
-        }
-
-        public void Register(Pawn pawn)
-        {
-            // make sure it's not already in.
-            factionedUInt64Map.Remove(pawn);
-            // make sure it's not already in.
-            wildUInt64Map.Remove(pawn);
-            // make sure it's not already in.
-            colonistsAndFriendlies.TryDeRegister(pawn);
-            // make sure it's not already in.
-            raidersAndHostiles.TryDeRegister(pawn);
-            // make sure it's not already in.
-            insectsAndMechs.TryDeRegister(pawn);
-            // make sure it's not already in.
-            wildlife.TryDeRegister(pawn);
-
-            Faction faction = pawn.Faction;
-            Faction mapFaction = map.ParentFaction;
+            Faction faction = thing.Faction;
+            Faction playerFaction;
             if (faction == null)
             {
-                wildlife.Register(pawn);
-                wildUInt64Map.Add(pawn);
+                wildlife.Register(thing);
+                wildUInt64Map.Add(thing);
             }
             else if (faction.def == FactionDefOf.Insect || faction.def == FactionDefOf.Mechanoid)
             {
-                insectsAndMechs.Register(pawn);
-                factionedUInt64Map.Add(pawn);
+                insectsAndMechs.Register(thing);
+                factionedUInt64Map.Add(thing);
             }
-            else if ((mapFaction != null && !pawn.HostileTo(mapFaction)) || (mapFaction == null && Faction.OfPlayerSilentFail != null && !pawn.HostileTo(Faction.OfPlayerSilentFail)))
+            else if ((playerFaction = Faction.OfPlayerSilentFail) != null && !thing.HostileTo(playerFaction))
             {
-                colonistsAndFriendlies.Register(pawn);
-                factionedUInt64Map.Add(pawn);
+                colonistsAndFriendlies.Register(thing);
+                factionedUInt64Map.Add(thing);
             }
             else
             {
-                raidersAndHostiles.Register(pawn);
-                factionedUInt64Map.Add(pawn);
+                raidersAndHostiles.Register(thing);
+                factionedUInt64Map.Add(thing);
             }
-            ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+            ThingComp_CombatAI comp = thing.GetComp_Fast<ThingComp_CombatAI>();
             if (comp != null)
             {
-                TryGetReader(pawn, out SightReader reader);
+                TryGetReader(thing, out SightReader reader);
                 comp.Notify_SightReaderChanged(reader);
             }
-        }
+        }        
 
-        public void DeRegister(Building_TurretGun turret)
-        {            
-            settlementTurrets.TryDeRegister(turret);
-            raidersAndHostiles.TryDeRegister(turret);
-            factionedUInt64Map.Remove(turret);            
-        }
-
-        public void DeRegister(Pawn pawn)
+        public void DeRegister(Thing thing)
         {
             // cleanup factioned.
-            factionedUInt64Map.Remove(pawn);
+            factionedUInt64Map.Remove(thing);
             // cleanup wildlife.
-            wildUInt64Map.Remove(pawn);
+            wildUInt64Map.Remove(thing);
             // cleanup hostiltes incase pawn switched factions.
-            raidersAndHostiles.TryDeRegister(pawn);
+            raidersAndHostiles.TryDeRegister(thing);
             // cleanup friendlies incase pawn switched factions.
-            colonistsAndFriendlies.TryDeRegister(pawn);
+            colonistsAndFriendlies.TryDeRegister(thing);
             // cleanup universals incase everything else fails.
-            insectsAndMechs.TryDeRegister(pawn);
+            insectsAndMechs.TryDeRegister(thing);
             // cleanup universals incase everything else fails.
-            wildlife.TryDeRegister(pawn);
+            wildlife.TryDeRegister(thing);
             // notify pawn comps.
-            ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+            ThingComp_CombatAI comp = thing.GetComp_Fast<ThingComp_CombatAI>();
             if (comp != null)
             {
                 comp.Notify_SightReaderChanged(null);
             }
         }
+
+        public void Notify_PlayerRelationChanged(Faction faction)
+        {
+            List<Thing> things = new List<Thing>();
+            things.AddRange(factionedUInt64Map.GetAllThings());
+			things.AddRange(wildUInt64Map.GetAllThings());
+            Faction player = Faction.OfPlayerSilentFail;
+            if(player != null)
+            {
+                for(int i = 0; i < things.Count; i++)
+                {
+                    Thing thing = things[i];
+                    if (thing.Faction == faction)
+                    {
+						this.DeRegister(thing);
+						this.Register(thing);
+					}
+                }
+            }			
+		}
 
         public override void MapRemoved()
         {
