@@ -185,9 +185,9 @@ namespace CombatAI
 					case 0:						
 						IField<float> strength = cells_strength[index];
 
-						return Maths.Max(strength.value, strength.valuePrev) * 0.90f + Maths.Max(cell.num, cell.numPrev) * 0.10f;
+						return Maths.Max(strength.value, strength.valuePrev);
 					case 1:
-						return cells_strength[index].value * 0.90f + cell.num * 0.10f;
+						return cells_strength[index].value;
 					default:
 						break;
 				}
@@ -206,10 +206,11 @@ namespace CombatAI
 				{
 					case 0:
 						IField<float> strength = cells_strength[index];
-
-						return Maths.Max(strength.value, strength.valuePrev) * 0.90f + (signalNum = Maths.Max(cell.num, cell.numPrev)) * 0.10f;
+						signalNum = Maths.Max(cell.num, cell.numPrev); 
+						return Maths.Max(strength.value, strength.valuePrev);
 					case 1:
-						return cells_strength[index].value * 0.90f + (signalNum = cell.num) * 0.10f;
+						signalNum = cell.num;
+						return cells_strength[index].value;
 					default:
 						break;
 				}

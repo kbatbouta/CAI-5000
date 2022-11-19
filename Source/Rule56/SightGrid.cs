@@ -12,8 +12,10 @@ namespace CombatAI
     public class SightGrid
     {
         private readonly List<Vector3> buffer = new List<Vector3>(1024);
-        private readonly List<Thing> thingBuffer = new List<Thing>(256);
-        private const int COVERCARRYLIMIT = 6;        
+        private readonly List<Thing> thingBuffer1 = new List<Thing>(256);
+		private readonly List<Thing> thingBuffer2 = new List<Thing>(256);
+
+		private const int COVERCARRYLIMIT = 6;        
 
         private class IBucketableThing : IBucketable
         {
@@ -260,11 +262,11 @@ namespace CombatAI
                             {
                                 if (!thing.Destroyed && thing.Spawned)
                                 {
-                                    thingBuffer.Clear();
-									sightTracker.factionedUInt64Map.GetThings(flag, thingBuffer);
-                                    for(int i = 0; i < thingBuffer.Count; i++)
+                                    thingBuffer1.Clear();
+									sightTracker.factionedUInt64Map.GetThings(flag, thingBuffer1);
+                                    for(int i = 0; i < thingBuffer1.Count; i++)
                                     {
-                                        Thing enemy = thingBuffer[i];
+                                        Thing enemy = thingBuffer1[i];
                                         if (enemy.Spawned && !enemy.Destroyed && enemy.Position.DistanceToSquared(cell) < 25 && enemy.HostileTo(thing))
                                         {
                                             comp.Notify_EnemyVisible(enemy);
