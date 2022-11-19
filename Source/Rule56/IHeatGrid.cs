@@ -4,6 +4,7 @@ using Verse;
 using Verse.AI;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Runtime.CompilerServices;
 
 namespace CombatAI
 {
@@ -13,6 +14,8 @@ namespace CombatAI
         private readonly int maxHeat;
         private readonly int maxTicks;
         private readonly int[] grid;
+		//private readonly Pair<int, int>[] grid_cache;
+        //private readonly int[] grid_ticks;
         private readonly float f1;
         private readonly CellIndices indices;
 
@@ -20,7 +23,8 @@ namespace CombatAI
         {
             this.indices = map.cellIndices;
             this.grid = new int[indices.NumGridCells];
-            this.ticksPerUnit = ticksPerUnit;
+			//this.grid_cache = new Pair<int, int>[indices.NumGridCells];
+			this.ticksPerUnit = ticksPerUnit;
             this.maxHeat = maxHeat;
             this.maxTicks = maxHeat * ticksPerUnit;
             this.f1 = f1;            
@@ -43,19 +47,24 @@ namespace CombatAI
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float Get(IntVec3 cell) => Get(indices.CellToIndex(cell));
         public float Get(int index)
         {
             if (index >= 0 && index < indices.NumGridCells)
             {
-                float value = Maths.Max((float)(grid[index] - GenTicks.TicksGame) / ticksPerUnit, 0f);
-                if(value > f1)
-                {
-                    return value - f1 + 1;
-                }
-                else
-                {
-                    return value / f1;
+                float dt = grid[index] - GenTicks.TicksGame;
+                if (dt > 0)
+                {                    
+                    float value = Maths.Max(dt / ticksPerUnit, 0f);
+                    if (value > f1)
+                    {
+                        return value - f1 + 1;
+                    }
+                    else
+                    {
+                        return value / f1;
+                    }
                 }
             }
             return 0f;

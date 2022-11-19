@@ -21,7 +21,7 @@ namespace CombatAI.Patches
         {
             public static bool Prefix(Pawn __instance, Vector3 drawLoc)
             {
-                return !fogThings.IsFogged(drawLoc.ToIntVec3());
+                return Finder.Settings.Debug || !fogThings.IsFogged(drawLoc.ToIntVec3());
             }
         }
 
