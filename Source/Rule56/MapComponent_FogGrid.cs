@@ -56,7 +56,7 @@ namespace CombatAI
 							float val;
 							if (visibility > 0)
 							{
-								val =  Maths.Max((0.05f - visibility) / 0.05f, 0f);
+								val =  Maths.Max(cells[x * SECTION_SIZE + z] - 0.2f, (0.05f - visibility) / 0.05f, 0f);
 								if (loc.InBounds(comp.map))
 								{
 									comp.grid[comp.cellIndices.CellToIndex(loc)] = false;
