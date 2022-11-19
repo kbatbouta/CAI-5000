@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading;
 using RimWorld;
 using UnityEngine;
@@ -20,16 +21,15 @@ namespace CombatAI
 			public float[] cells;
 			public Rect rect;
 			public bool dirty = true;
-			public float zoom;			
+			public float s_color;			
 			private readonly Material mat;
 			private readonly Mesh mesh;
 			private readonly Vector3 pos;
 			private readonly MapComponent_FogGrid comp;
 
-			public void ApplyZoom()
-			{
-				this.zoom = MapComponent_FogGrid.zoom;
-				mat.SetVector("_Color", new Vector4(0.1f, 0.1f, 0.1f, this.zoom / 90));
+			public void ApplyColor()
+			{				
+				mat.SetVector("_Color", new Vector4(0.1f, 0.1f, 0.1f, this.s_color = Finder.Settings.FogOfWar_FogColor));
 			}
 
 			public void ApplyFogged()
@@ -44,43 +44,65 @@ namespace CombatAI
 				if (indices == null)
 				{
 					return;
-				}
-				int numGridCells = indices.NumGridCells;
+				}				
+				int numGridCells = indices.NumGridCells;		
+				WallGrid walls = comp.walls;
 				ITSignalGrid pawns = comp.sight.grid;				
 				IntVec3 pos = this.pos.ToIntVec3();
 				IntVec3 loc;
+			
+				ColorInt[] glowGrid = comp.glow.glowGrid;
+				float glowCell;
+				float glowSky = comp.SkyGlow;
 				bool changed = false;
 				if (pawns != null)
 				{
 					for (int x = 0; x < SECTION_SIZE; x++)
 					{
 						for (int z = 0; z < SECTION_SIZE; z++)
-						{
-							float visibility = pawns.GetSignalStrengthAt(loc = pos + new IntVec3(x, 0, z));
-							float old = cells[x * SECTION_SIZE + z];							
-							float val;
-							int index = indices.CellToIndex(loc);
-							if (visibility > 0)
+						{																					
+							int index = indices.CellToIndex(loc = pos + new IntVec3(x, 0, z));
+							if (index >= 0 && index < numGridCells)
 							{
-								val =  Maths.Max(cells[x * SECTION_SIZE + z] - 0.3f, (0.03f - visibility) / 0.02f, 0f);
-								if (index >= 0 && index < numGridCells)
+								float val;
+								float old = cells[x * SECTION_SIZE + z];								
+								if (!walls.CanBeSeenOver(index))
 								{
+									val = 0.5f;
 									comp.grid[index] = false;
 								}
+								else
+								{
+									float visibility = pawns.GetSignalStrengthAt(index);
+									float visRLimit = 0.03f;
+									if (glowSky < 1)
+									{
+										ColorInt glow = glowGrid[index];
+										glowCell = Maths.Min(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f, 0.5f);
+										visibility = visibility - (1 - Maths.Max(glowCell, glowSky)) * 0.015f;
+										visRLimit = Mathf.Lerp(0.01f, 0.03f, glowSky);
+									}
+									if (visibility > 0)
+									{
+										val = Maths.Max(cells[x * SECTION_SIZE + z] - 0.3f, (visRLimit - visibility) / visRLimit, 0f);
+										comp.grid[index] = false;
+									}
+									else
+									{
+										val = Maths.Min(cells[x * SECTION_SIZE + z] + 0.3f, 1.0f);
+										comp.grid[index] = true;
+									}
+								}
+								if (old != val)
+								{
+									changed = true;
+								}
+								cells[x * SECTION_SIZE + z] = val;
 							}
 							else
 							{
-								val = Maths.Min(cells[x * SECTION_SIZE + z] + 0.3f, 1.0f);
-								if (index >= 0 && index < numGridCells)
-								{
-									comp.grid[index] = true;
-								}
+								cells[x * SECTION_SIZE + z] = 0f;
 							}
-							if (old != val)
-							{
-								changed = true;
-							}
-							cells[x * SECTION_SIZE + z] = val;
 						}
 					}
 				}
@@ -109,12 +131,13 @@ namespace CombatAI
 
 		private static float zoom;
 		private static readonly Texture2D fogTex;
-		private static readonly Mesh mesh;
+		private static readonly Mesh mesh;		
 
 		private Rect mapScreenRect;
 		private bool alive;
 		private bool ready;
 		private int updateNum;
+		private float glowSky;
 
 		private AsyncActions asyncActions;
 		private ISection[][] grid2d;
@@ -122,8 +145,16 @@ namespace CombatAI
 		private readonly Rect mapRect;
 
 		public bool[] grid;
-		public SightGrid sight;		
+		public SightGrid sight;
+		public GlowGrid glow;
+		public WallGrid walls;
 		public CellIndices cellIndices;
+
+		public float SkyGlow
+		{
+			get => glowSky;
+		}
+		
 
 		static MapComponent_FogGrid()
 		{
@@ -184,11 +215,14 @@ namespace CombatAI
 			if (!ready)
 			{
 				sight = map.GetComp_Fast<SightTracker>().colonistsAndFriendlies;
-				ready = sight != null;
+				walls = map.GetComp_Fast<WallGrid>();
+				glow = map.glowGrid;
+				ready = sight != null;				
 			}
 			base.MapComponentUpdate();
 			if (ready)
-			{				
+			{
+				glowSky = map.skyManager.CurSkyGlow;
 				Rect rect = new Rect();
 				CellRect cellRect = Find.CameraDriver.CurrentViewRect;
 				rect.xMin = Mathf.Clamp(cellRect.minX - SECTION_SIZE, 0, cellIndices.mapSizeX);
@@ -206,7 +240,8 @@ namespace CombatAI
 		public override void MapComponentOnGUI()
 		{
 			base.MapComponentOnGUI();
-			Widgets.Label(new Rect(0, 0, 100, 25), $"{zoom} {Find.CameraDriver.rootPos}");
+			//
+			//Widgets.Label(new Rect(0, 0, 100, 25), $"{zoom} {Find.CameraDriver.rootPos}");
 		}
 
 		public override void MapRemoved()
@@ -224,14 +259,15 @@ namespace CombatAI
 			minV = Mathf.Clamp(minV - 1, 0, grid2d[0].Length - 1);
 			bool update = updateNum % 4 == 0;
 			bool updateForced = updateNum % 8 == 0;
+			float color = Finder.Settings.FogOfWar_FogColor;
 			for (int u = minU; u <= maxU; u++)
 			{
 				for (int v = minV; v <= maxV; v++)
 				{
 					ISection section = grid2d[u][v];
-					if (zoom != section.zoom)
+					if (section.s_color != color)
 					{
-						section.ApplyZoom();
+						section.ApplyColor();
 					}
 					if (updateForced || (update && section.dirty))
 					{

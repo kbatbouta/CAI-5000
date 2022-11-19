@@ -7,6 +7,7 @@ using UnityEngine;
 using Verse.AI;
 using System.Collections.ObjectModel;
 using NAudio.Utils;
+using UnityEngine.UI;
 
 namespace CombatAI
 {
@@ -27,18 +28,27 @@ namespace CombatAI
         }
 
         public static IntVec3 GetMovingShiftedPosition(this Pawn pawn, float ticksAhead)
-        {
-            PawnPath path;
-            if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
+		{            
+            if (TryGetCellIndexAhead(pawn, ticksAhead, out int index))
             {
-                return pawn.Position;
+                return pawn.pather.curPath.Peek(index);
             }
+            return pawn.Position;
+        }
 
-            float distanceTraveled = Maths.Min(pawn.GetMoveSpeed() * ticksAhead / 60f, path.NodesLeftCount - 1);
-            return path.Peek(Mathf.FloorToInt(distanceTraveled));
-        }       
+		public static bool TryGetCellIndexAhead(this Pawn pawn, float ticksAhead, out int index)
+		{
+			PawnPath path;
+			if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
+			{
+                index = -1;
+				return false;
+			}			
+			index = Mathf.FloorToInt(Maths.Min(pawn.GetMoveSpeed() * ticksAhead / 60f, path.NodesLeftCount - 1));
+            return true;
+		}
 
-        public static int GetSightRange(Thing thing, bool isPlayer = true)
+		public static int GetSightRange(Thing thing, bool isPlayer = true)
         {
             if (rangeCache.TryGetValue(thing.thingIDNumber, out Pair<int, int> store) && GenTicks.TicksGame - store.First <= 600)
             {
@@ -46,13 +56,17 @@ namespace CombatAI
             }
             if (thing is Pawn pawn)
             {
-                int range = isPlayer ? GetSightRangePlayer(pawn) : GetSightRange(pawn);
+                int range = isPlayer ? Mathf.CeilToInt(GetSightRangePlayer(pawn) * (Finder.Settings.FogOfWar_Enabled ? Finder.Settings.FogOfWar_RangeMultiplier : 1.0f)) : GetSightRange(pawn);
                 rangeCache[thing.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);
                 return range;                
             }
             else if (thing is Building_TurretGun turret)
             {
                 int range = GetSightRange(turret);
+                if (isPlayer && Finder.Settings.FogOfWar_Enabled)
+                {
+                    range = Mathf.CeilToInt(range * Finder.Settings.FogOfWar_RangeMultiplier);
+                }
                 rangeCache[thing.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);
                 return range;                
             }

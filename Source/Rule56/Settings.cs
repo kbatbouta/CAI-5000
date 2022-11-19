@@ -64,8 +64,11 @@ namespace CombatAI
         public bool Pather_DisableL1L2 = false;
         public bool Pather_KillboxKiller = true;
         public float Pathfinding_DestWeight = 0.85f;
+        public float FogOfWar_FogColor = 0.35f;
+		public float FogOfWar_RangeMultiplier = 1.0f;
+		public float FogOfWar_RangeFadeMultiplier = 0.5f;
 
-        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new Settings.SightPerformanceSettings(2, 5, 12);        
+		public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new Settings.SightPerformanceSettings(2, 5, 12);        
         public SightPerformanceSettings SightSettings_MechsAndInsects = new Settings.SightPerformanceSettings(3, 10, 6);
         public SightPerformanceSettings SightSettings_Wildlife = new Settings.SightPerformanceSettings(6, 10, 4);
         public SightPerformanceSettings SightSettings_SettlementTurrets = new Settings.SightPerformanceSettings(8, 15, 12);
@@ -127,7 +130,10 @@ namespace CombatAI
             Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
             Scribe_Values.Look(ref Pathfinding_DestWeight, $"Pathfinding_DestWeight.{version}", 0.85f);
             Scribe_Values.Look(ref AdvancedUser, $"AdvancedUser.{version}");
-            Scribe_Values.Look(ref Pather_KillboxKiller, $"Pather_KillboxKiller.{version}", true);
+			Scribe_Values.Look(ref FogOfWar_FogColor, $"FogOfWar_FogColor.{version}", 0.35f);
+			Scribe_Values.Look(ref FogOfWar_RangeFadeMultiplier, $"FogOfWar_RangeFadeMultiplier.{version}", 0.5f);
+			Scribe_Values.Look(ref FogOfWar_RangeMultiplier, $"FogOfWar_RangeMultiplier.{version}", 1.0f);
+			Scribe_Values.Look(ref Pather_KillboxKiller, $"Pather_KillboxKiller.{version}", true);
             Scribe_Values.Look(ref PerformanceOpt_Enabled, $"PerformanceOpt_Enabled.{version}", true);
 			Scribe_Values.Look(ref FogOfWar_Enabled, $"FogOfWar_Enabled.{version}", false);
 			Scribe_Values.Look(ref Debug, $"Debug.{version}");

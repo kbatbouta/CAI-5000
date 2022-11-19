@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using Verse;
+using RimWorld;
 
 namespace CombatAI
 {
@@ -48,8 +49,12 @@ namespace CombatAI
         public void RecalculateCell(int index, Thing t)
         {            
             if (t != null)
-            {                
-                if (t is Building ed && ed.def.Fillage == FillCategory.Full)
+            {
+                if (t is Building_Door door)
+                {
+                    grid[index] = 1 - door.OpenPct;
+				}
+                else if (t is Building ed && ed.def.Fillage == FillCategory.Full)
                 {
                     grid[index] = 1.0f;
                 }

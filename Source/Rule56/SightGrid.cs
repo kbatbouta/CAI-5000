@@ -13,7 +13,7 @@ namespace CombatAI
     {
         private readonly List<Vector3> buffer = new List<Vector3>(1024);
         private readonly List<Thing> thingBuffer1 = new List<Thing>(256);
-		private readonly List<Thing> thingBuffer2 = new List<Thing>(256);
+		private readonly List<Thing> thingBuffer2 = new List<Thing>(256);        
 
 		private const int COVERCARRYLIMIT = 6;        
 
@@ -52,9 +52,10 @@ namespace CombatAI
             }
         }
 
+        private WallGrid _walls;
         private int ticksUntilUpdate;
-        private bool wait = false;
-        private AsyncActions asyncActions;
+        private bool wait = false;        
+		private AsyncActions asyncActions;
         private IBuckets<IBucketableThing> buckets;
         private readonly List<IBucketableThing> tmpDeRegisterList = new List<IBucketableThing>();
         private readonly List<IBucketableThing> tmpInvalidRecords = new List<IBucketableThing>();
@@ -79,7 +80,17 @@ namespace CombatAI
         /// <summary>
         /// Whether this is the player grid
         /// </summary>
-        public bool playerAlliance = false;            
+        public bool playerAlliance = false;
+        /// <summary>
+        /// The map's wallgrid.
+        /// </summary>
+        public WallGrid Walls
+        {
+            get
+            {
+                return _walls != null ? _walls : _walls = sightTracker.map.GetComp_Fast<WallGrid>();
+			}
+        }
 
         public SightGrid(SightTracker sightTracker, Settings.SightPerformanceSettings settings)
         {            
@@ -220,9 +231,10 @@ namespace CombatAI
             {
                 return false;
             }
-            int range = SightUtility.GetSightRange(item.thing, playerAlliance);
-            int ticks = GenTicks.TicksGame;            
-            IntVec3 pos = GetShiftedPosition(item.thing);
+            int range = SightUtility.GetSightRange(item.thing, playerAlliance);            
+            int ticks = GenTicks.TicksGame;
+            //IntVec3 posOriginal = item.thing.Position;
+			IntVec3 pos = GetShiftedPosition(item.thing);
             if (!pos.InBounds(map))
             {
                 Log.Error($"ISMA: SighGridUpdater {item.thing} position is outside the map's bounds!");
@@ -246,10 +258,11 @@ namespace CombatAI
                     });                  
                 }
                 grid.Next();
-                grid.Set(pos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);                
-                float r = range * 1.23f;
+				grid.Set(pos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);
+				//grid.Set(posOriginal, 1.0f, new Vector2(posOriginal.x - pos.x, posOriginal.z - pos.z));
+				float r = range * 1.23f;
                 float rSqr = range * range;
-                float rHafledSqr = rSqr / 4f; 
+                float rHafledSqr = rSqr * Finder.Settings.FogOfWar_RangeFadeMultiplier * Finder.Settings.FogOfWar_RangeFadeMultiplier; 
                 ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
                 {
                     if (scanForEnemies)
@@ -284,9 +297,16 @@ namespace CombatAI
                     // only set anything if visibility is ok
                     if (visibility > 0f && d < rSqr)
                     {
-                        if (playerAlliance && d >= rHafledSqr)
+                        if (playerAlliance)
                         {
-                            visibility *= 0.05f; 
+                            if (d >= rHafledSqr)
+                            {
+                                visibility *= Maths.Min(0.05f, 0.02499f);
+                            }
+                            else
+                            {
+                                visibility = Maths.Max(visibility, 0.02500f);
+                            }
                         }
                         grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                     }
@@ -310,10 +330,26 @@ namespace CombatAI
         }
 
         private IntVec3 GetShiftedPosition(Thing thing)
-        {
+        {            
             if (thing is Pawn pawn)
             {
-                return pawn.GetMovingShiftedPosition(40);
+                WallGrid walls = Walls;
+				if (walls != null && pawn.TryGetCellIndexAhead(40, out int index))
+                {
+                    PawnPath path = pawn.pather.curPath;
+                    IntVec3 cell = pawn.Position;
+					IntVec3 temp;
+					for (int i = 0; i < index; i++)
+                    {                        
+                        if (!walls.CanBeSeenOver(temp = path.Peek(i)))
+                        {
+                            return cell;
+                        }
+                        cell = temp;
+                    }
+                    return cell;
+				}
+                return thing.Position;
             }
             else
             {
