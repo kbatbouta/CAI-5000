@@ -11,7 +11,53 @@ namespace CombatAI
 {
     public static class CombatAI_Utility
     {
-        public static bool TryGetBlockedSubPath(this PawnPath path, Pawn pawn, List<IntVec3> store, ref IntVec3 cellBefore)
+		private static readonly Dictionary<int, Pair<int, float>> speedCache = new Dictionary<int, Pair<int, float>>(256);
+        private static readonly Dictionary<int, Pair<int, float>> aggroCache = new Dictionary<int, Pair<int, float>>(256);
+
+        public static float GetAggroMul(this Pawn pawn)
+        {
+			if (speedCache.TryGetValue(pawn.thingIDNumber, out var store) && GenTicks.TicksGame - store.First <= 600)
+			{
+				return store.second;
+			}
+			float aggro = pawn.GetStatValue(CombatAI_StatDefOf.CombatAI_AggroMul);
+			speedCache[pawn.thingIDNumber] = new Pair<int, float>(GenTicks.TicksGame, aggro);
+			return aggro;
+		}
+
+		public static float GetMoveSpeed(this Pawn pawn)
+		{
+			if (speedCache.TryGetValue(pawn.thingIDNumber, out var store) && GenTicks.TicksGame - store.First <= 600)
+			{
+				return store.second;
+			}
+			float speed = pawn.GetStatValue(StatDefOf.MoveSpeed);
+			speedCache[pawn.thingIDNumber] = new Pair<int, float>(GenTicks.TicksGame, speed);
+			return speed;
+		}
+
+		public static IntVec3 GetMovingShiftedPosition(this Pawn pawn, float ticksAhead)
+		{
+			if (TryGetCellIndexAhead(pawn, ticksAhead, out int index))
+			{
+				return pawn.pather.curPath.Peek(index);
+			}
+			return pawn.Position;
+		}
+
+		public static bool TryGetCellIndexAhead(this Pawn pawn, float ticksAhead, out int index)
+		{
+			PawnPath path;
+			if (!(pawn.pather?.moving ?? false) || (path = pawn.pather.curPath) == null || path.NodesLeftCount <= 1)
+			{
+				index = -1;
+				return false;
+			}
+			index = Mathf.FloorToInt(Maths.Min(pawn.GetMoveSpeed() * ticksAhead / 60f, path.NodesLeftCount - 1));
+			return true;
+		}
+
+		public static bool TryGetBlockedSubPath(this PawnPath path, Pawn pawn, List<IntVec3> store, ref IntVec3 cellBefore)
         {            
             if (path == null || !path.Found || pawn == null)
             {
@@ -191,7 +237,12 @@ namespace CombatAI
         public static CellFlooder GetCellFlooder(this Map map)
         {
             return map.GetComp_Fast<MapComponent_CombatAI>().flooder;
-        }        
-    }
+        }
+
+		public static void ClearCache()
+		{
+			speedCache.Clear();
+		}
+	}
 }
 

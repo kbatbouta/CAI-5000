@@ -20,7 +20,8 @@ namespace CombatAI.Patches
         {
             public static void Prefix()
             {
-                CompsCache.ClearCaches();
+                CombatAI_Utility.ClearCache();
+				CompsCache.ClearCaches();
                 SightUtility.ClearCache();
                 JobGiver_AITrashBuildingsDistant_Patch.ClearCache();
             }

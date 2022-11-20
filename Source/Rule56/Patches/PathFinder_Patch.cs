@@ -36,7 +36,7 @@ namespace CombatAI.Patches
             //private static int pawnBlockingCost;
             private static bool isPlayer;
             private static float visibilityAtDest;
-            private static float factionMultiplier = 1.0f;
+            private static float multiplier = 1.0f;
 
             internal static bool Prefix(PathFinder __instance, ref PawnPath __result, IntVec3 start, LocalTargetInfo dest, ref TraverseParms traverseParms, PathEndMode peMode, ref PathFinderCostTuning tuning, out bool __state)
             {
@@ -56,7 +56,7 @@ namespace CombatAI.Patches
                     // fix for player pawns and drafted pawns
                     isPlayer = pawn.Faction.IsPlayerSafe();
 
-                    factionMultiplier = isPlayer ? (pawn.Drafted ? 0.25f : 0.75f) : 1.0f;                    
+                    multiplier = (isPlayer ? (pawn.Drafted ? 0.25f : 0.75f) : 1.0f);                    
                     // retrive CE elements                    
                     pawn.GetSightReader(out sightReader);
                     pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
@@ -422,9 +422,9 @@ namespace CombatAI.Patches
                         var l1 = 350 * (1f - Mathf.Lerp(0f, 0.75f, counter / (openNum + 1f))) * (1f - Maths.Min(openNum, 5000) / (7500));
                         var l2 = 250 * (1f - Mathf.Clamp01(PathFinder.calcGrid[parentIndex].knownCost / 2500));
                         //we use this so the game doesn't die
-                        var v = (Maths.Min(value, l1 + l2) * factionMultiplier * 1);
+                        var v = (Maths.Min(value, l1 + l2) * multiplier * 1);
                         //map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), v, $" {l1 + l2}");                        
-                        return (int)(Maths.Min(value, l1 + l2) * factionMultiplier * Finder.P50);
+                        return (int)(Maths.Min(value, l1 + l2) * multiplier * Finder.P50);
                         //return (int)(Maths.Min(value, 1000f) * factionMultiplier * 1);
                     }
                 }

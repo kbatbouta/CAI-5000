@@ -185,6 +185,7 @@ namespace CombatAI.Comps
                 return;
             }
             scanning = false;
+			#if DEBUG_REACTION
             if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
             {
                 _visibleEnemies.Clear();
@@ -211,6 +212,7 @@ namespace CombatAI.Comps
                     }
                 }
             }
+            #endif
             if (visibleEnemies.Count > 0 && !Finder.Performance.TpsCriticallyLow)
             {
                 if (GenTicks.TicksGame - lastInterupted < 150 && GenTicks.TicksGame - lastSawEnemies > 90)
@@ -226,15 +228,19 @@ namespace CombatAI.Comps
             if (parent == null || parent.Destroyed || !parent.Spawned || GenTicks.TicksGame - lastInterupted < 150 || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastRetreated < 200)
             {
                 return;
-            }            
-            Verb verb = parent.TryGetAttackVerb();            
-            if (verb == null || verb.IsMeleeAttack)
-            {
-                return;
-            }
+            }                        
             if (parent is Pawn pawn)
             {
-                Thing bestEnemy = null;
+                if (pawn.stances.curStance is Stance_Warmup warmup && ((warmup.ticksLeft + GenTicks.TicksGame - warmup.startedTick) > 60 || warmup.ticksLeft < 30))
+                {
+                    return;
+                }
+				Verb verb = parent.TryGetAttackVerb();
+				if (verb == null || verb.IsMeleeAttack)
+				{
+					return;
+				}
+				Thing bestEnemy = null;
                 IntVec3 bestEnemyPositon = IntVec3.Invalid;
                 float bestEnemyScore = 1e8f;               
                 bool bestEnemyVisibleNow = false;
