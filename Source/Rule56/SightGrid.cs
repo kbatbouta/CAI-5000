@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using CombatAI.Comps;
 using RimWorld;
@@ -51,15 +52,16 @@ namespace CombatAI
                 this.bucketIndex = bucketIndex;
             }
         }
-
+        
         private WallGrid _walls;
         private int ticksUntilUpdate;
         private bool wait = false;        
 		private AsyncActions asyncActions;
         private IBuckets<IBucketableThing> buckets;
-        private readonly List<IBucketableThing> tmpDeRegisterList = new List<IBucketableThing>();
-        private readonly List<IBucketableThing> tmpInvalidRecords = new List<IBucketableThing>();
-        private readonly List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>();
+		private readonly Dictionary<Faction, int> numsByFaction = new Dictionary<Faction, int>();
+		private readonly List<IBucketableThing> tmpDeRegisterList = new List<IBucketableThing>(64);
+        private readonly List<IBucketableThing> tmpInvalidRecords = new List<IBucketableThing>(64);
+        private readonly List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>(64);
 
         /// <summary>
         /// Parent map.
@@ -81,10 +83,24 @@ namespace CombatAI
         /// Whether this is the player grid
         /// </summary>
         public bool playerAlliance = false;
+		/// <summary>
+		/// Whether this is the player grid
+		/// </summary>
+		public bool trackFactions = false;
         /// <summary>
-        /// The map's wallgrid.
+        /// Tracks the number of factions tracked.
         /// </summary>
-        public WallGrid Walls
+        public int FactionNum
+        {
+            get
+            {
+                return numsByFaction.Count;
+            }
+        }
+		/// <summary>
+		/// The map's wallgrid.
+		/// </summary>                
+		public WallGrid Walls
         {
             get
             {
@@ -163,13 +179,33 @@ namespace CombatAI
             buckets.RemoveId(thing.thingIDNumber);
             if (Valid(thing))
             {
-                buckets.Add(new IBucketableThing(thing, (thing.thingIDNumber + 19) % settings.buckets));
+				buckets.Add(new IBucketableThing(thing, (thing.thingIDNumber + 19) % settings.buckets));                
+                if (trackFactions)
+                {
+                    numsByFaction.TryGetValue(thing.Faction, out int num);
+                    numsByFaction[thing.Faction] = num + 1;
+				}
             }
         }
 
         public virtual void TryDeRegister(Thing thing)
         {
-            buckets.RemoveId(thing.thingIDNumber);            
+            if (trackFactions)
+            {
+                IBucketableThing bucketable = buckets.GetById(thing.thingIDNumber);
+                if (bucketable != null && numsByFaction.TryGetValue(bucketable.faction, out int num))
+                {
+                    if(num > 1)
+                    {
+                        numsByFaction[bucketable.faction] = num - 1;
+					}
+                    else
+                    {
+                        numsByFaction.Remove(bucketable.faction);
+					}
+				}
+            }
+			buckets.RemoveId(thing.thingIDNumber);            
         }
 
         public virtual void Destroy()

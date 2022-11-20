@@ -80,7 +80,7 @@ namespace CombatAI
 										ColorInt glow = glowGrid[index];
 										glowCell = Maths.Min(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f, 0.5f);
 										visibility = visibility - (1 - Maths.Max(glowCell, glowSky)) * 0.015f;
-										visRLimit = Mathf.Lerp(0.01f, 0.03f, glowSky);
+										visRLimit = Mathf.Lerp(0.02f, 0.03f, glowSky);
 									}
 									if (visibility > 0)
 									{
@@ -237,12 +237,12 @@ namespace CombatAI
 			}
 		}
 
-		public override void MapComponentOnGUI()
-		{
-			base.MapComponentOnGUI();
-			//
-			//Widgets.Label(new Rect(0, 0, 100, 25), $"{zoom} {Find.CameraDriver.rootPos}");
-		}
+		//public override void MapComponentOnGUI()
+		//{
+		//	base.MapComponentOnGUI();
+		//	//
+		//	//Widgets.Label(new Rect(0, 0, 100, 25), $"{zoom} {Find.CameraDriver.rootPos}");
+		//}
 
 		public override void MapRemoved()
 		{

@@ -43,7 +43,7 @@ namespace CombatAI
             }
         }
 
-        private const int version = 1;
+        private const int version = 2;
 
         /*                 
          * -- * -- * -- * -- * -- * -- * -- * -- * --
@@ -68,9 +68,9 @@ namespace CombatAI
 		public float FogOfWar_RangeMultiplier = 1.0f;
 		public float FogOfWar_RangeFadeMultiplier = 0.5f;
 
-		public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new Settings.SightPerformanceSettings(2, 5, 12);        
+		public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new Settings.SightPerformanceSettings(3, 5, 12);        
         public SightPerformanceSettings SightSettings_MechsAndInsects = new Settings.SightPerformanceSettings(3, 10, 6);
-        public SightPerformanceSettings SightSettings_Wildlife = new Settings.SightPerformanceSettings(6, 10, 4);
+        public SightPerformanceSettings SightSettings_Wildlife = new Settings.SightPerformanceSettings(6, 5, 4);
         public SightPerformanceSettings SightSettings_SettlementTurrets = new Settings.SightPerformanceSettings(8, 15, 12);
 
         /*
@@ -107,7 +107,7 @@ namespace CombatAI
             Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders.{version}");
             if (SightSettings_FriendliesAndRaiders == null)
             {
-                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(2, 5, 12);
+                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(3, 5, 12);
             }
             Scribe_Deep.Look(ref SightSettings_MechsAndInsects, $"CombatAI.SightSettings_MechsAndInsects.{version}");
             if (SightSettings_MechsAndInsects == null)

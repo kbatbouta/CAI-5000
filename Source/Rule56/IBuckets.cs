@@ -75,6 +75,23 @@ namespace CombatAI
             return buckets[index];
         }
 
+        public T GetById(int id)
+        {
+            if (bucketIndexByIds.TryGetValue(id, out int index))
+            {
+                List<T> bucket = buckets[index];
+				T val;
+				for (int i = 0; i < bucket.Count; i++)
+                {
+                    if ((val = bucket[i]).UniqueIdNumber == id)
+                    {
+                        return val;
+                    }
+                }                
+			}
+            return default(T);
+        }
+
         public List<T> Next()
         {
             int index = curIndex;

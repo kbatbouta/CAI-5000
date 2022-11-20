@@ -171,12 +171,19 @@ namespace CombatAI
             colonistsAndFriendlies =
                 new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
             colonistsAndFriendlies.playerAlliance = true;
-            raidersAndHostiles =
-                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);			
+            colonistsAndFriendlies.trackFactions = true;
+
+			raidersAndHostiles =
+                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
+            raidersAndHostiles.trackFactions = true;
+
 			insectsAndMechs =
                 new SightGrid(this, Finder.Settings.SightSettings_MechsAndInsects);
-            wildlife =
-                new SightGrid(this, Finder.Settings.SightSettings_Wildlife);			
+			insectsAndMechs.trackFactions = false;
+
+			wildlife =
+                new SightGrid(this, Finder.Settings.SightSettings_Wildlife);
+            wildlife.trackFactions = false;
 
 			factionedUInt64Map = new IThingsUInt64Map();
             wildUInt64Map = new IThingsUInt64Map();
@@ -185,17 +192,27 @@ namespace CombatAI
         public override void MapComponentTick()
         {            
             base.MapComponentTick();
+            int ticks = GenTicks.TicksGame;
+            // --------------            
+            colonistsAndFriendlies.SightGridTick();            
             // --------------
-            colonistsAndFriendlies.SightGridTick();
+            if ((colonistsAndFriendlies.FactionNum > 1 && !Finder.Performance.TpsCriticallyLow) || ticks % 2 == 0)
+            {
+                raidersAndHostiles.SightGridTick();
+            }
             // --------------
-            raidersAndHostiles.SightGridTick();
+            if (!Finder.Performance.TpsCriticallyLow || ticks % 3 == 1)
+            {
+                insectsAndMechs.SightGridTick();
+            }
             // --------------
-            insectsAndMechs.SightGridTick();            
-            // --------------
-            wildlife.SightGridTick();
+            if (!Finder.Performance.TpsCriticallyLow || ticks % 3 == 2)
+            {
+                wildlife.SightGridTick();
+            }
             //
             // debugging stuff.
-            if (GenTicks.TicksGame % 15 == 0 && Finder.Settings.Debug_DrawShadowCasts)
+            if (Finder.Settings.Debug_DrawShadowCasts && GenTicks.TicksGame % 15 == 0)
             {
                 _drawnCells.Clear();
                 if (!Find.Selector.SelectedPawns.NullOrEmpty())
@@ -259,6 +276,7 @@ namespace CombatAI
         public override void MapComponentOnGUI()
         {
             base.MapComponentOnGUI();
+            Widgets.DrawBoxSolid(new Rect(0, 0, 3, 3), colonistsAndFriendlies.FactionNum == 1 ? Color.blue : (colonistsAndFriendlies.FactionNum > 1 ? Color.green : Color.yellow));
             if (Finder.Settings.Debug_DrawShadowCastsVectors)
             {
                 TurretTracker turretTracker = map.GetComponent<TurretTracker>();
