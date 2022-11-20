@@ -201,7 +201,7 @@ namespace CombatAI
                 raidersAndHostiles.SightGridTick();
             }
             // --------------
-            if (!Finder.Performance.TpsCriticallyLow || ticks % 3 == 1)
+            if (!Finder.Performance.TpsCriticallyLow || ticks % 2 == 1)
             {
                 insectsAndMechs.SightGridTick();
             }
