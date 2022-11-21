@@ -35,6 +35,14 @@ namespace CombatAI
 		private readonly IBuckets<IBucketableInterceptor> buckets;
 		private readonly CellFlooder flooder;
 		private bool wait = false;
+
+		public int Count
+		{
+			get
+			{
+				return buckets.Count;
+			}
+		}
 		
 		public InterceptorTracker(MapComponent_CombatAI combatAI)
 		{
