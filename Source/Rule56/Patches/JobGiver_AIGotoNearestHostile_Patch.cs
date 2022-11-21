@@ -46,24 +46,24 @@ namespace CombatAI.Patches
             //    //}
             //}
 
-            public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                List<CodeInstruction> codes = instructions.ToList();
-                bool finished = false;
-                for(int i= 0;i < codes.Count; i++)
-                {
-                    if (!finished)
-                    {
-                        if (codes[i + 1].opcode == OpCodes.Call && codes[i + 1].OperandIs(mCanReach))
-                        {
-                            finished = true;
-                            yield return new CodeInstruction(OpCodes.Ldc_I4_3);
-                            continue;
-                        }
-                    }
-                    yield return codes[i];
-                }                
-            }
+            //public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            //{
+            //    List<CodeInstruction> codes = instructions.ToList();
+            //    bool finished = false;
+            //    for (int i = 0; i < codes.Count; i++)
+            //    {
+            //        if (!finished)
+            //        {
+            //            if (codes[i + 1].opcode == OpCodes.Call && codes[i + 1].OperandIs(mCanReach))
+            //            {
+            //                finished = true;
+            //                yield return new CodeInstruction(OpCodes.Ldc_I4_3);
+            //                continue;
+            //            }
+            //        }
+            //        yield return codes[i];
+            //    }
+            //}
 
             //public static void Postfix(Pawn pawn, ref Job __result)
             //{

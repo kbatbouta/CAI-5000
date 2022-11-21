@@ -21,9 +21,9 @@ namespace CombatAI.Comps
         private IntVec3 cellBefore;
         private List<IntVec3> miningCells = new List<IntVec3>(64);
 
-        private int lastInterupted;
-        private int lastRetreated;
-        private int lastSawEnemies;
+		public int lastInterupted;
+		public int lastRetreated;
+        public int lastSawEnemies;
 
         private bool scanning;
 
@@ -225,11 +225,11 @@ namespace CombatAI.Comps
                 }
                 lastSawEnemies = GenTicks.TicksGame;
             } 
-            if (parent == null || parent.Destroyed || !parent.Spawned || GenTicks.TicksGame - lastInterupted < 150 || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastRetreated < 200)
+            if (GenTicks.TicksGame - lastInterupted < 150 || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastRetreated < 200)
             {
                 return;
             }                        
-            if (parent is Pawn pawn)
+            if (parent is Pawn pawn && !(pawn.RaceProps?.Animal ?? true))
             {
                 if (pawn.stances.curStance is Stance_Warmup warmup && ((warmup.ticksLeft + GenTicks.TicksGame - warmup.startedTick) > 60 || warmup.ticksLeft < 30))
                 {

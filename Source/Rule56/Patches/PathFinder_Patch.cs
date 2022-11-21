@@ -23,13 +23,14 @@ namespace CombatAI.Patches
             //private static IGridBufferedWriter gridWriter;
             private static DataWriter_Path pathWriter;
             private static bool dump;
+            private static bool dig;
             private static Pawn pawn;
-            private static Map map;
+            private static Map map;            
             private static PathFinder instance;
             private static SightTracker.SightReader sightReader;
             private static AvoidanceTracker.AvoidanceReader avoidanceReader;            
             private static bool raiders;            
-            private static int counter;
+            private static int counter;           
             // private static bool crouching;
             // private static bool tpsLow;
             // private static float tpsLevel;
@@ -64,7 +65,7 @@ namespace CombatAI.Patches
                     /*  
                      * dump pathfinding data
                      */
-                    if (dump = !isPlayer && sightReader != null && avoidanceReader != null && Finder.Settings.Debug && Finder.Settings.Debug_DebugDumpData && Prefs.DevMode)
+                    if (dump = Finder.Settings.Debug_DebugDumpData && !isPlayer && sightReader != null && avoidanceReader != null && Finder.Settings.Debug && Prefs.DevMode)
                     {
                         //if (gridWriter == null)
                         //{
@@ -82,10 +83,10 @@ namespace CombatAI.Patches
                             pathWriter = new DataWriter_Path("pathing_csv", "pather_1");
                         }
                         pathWriter.Clear();
-                    }                   
+                    }
 
                     float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-                    if (Finder.Settings.Pather_KillboxKiller && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual))
+                    if (dig = (Finder.Settings.Pather_KillboxKiller && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual)))
                     {
                         raiders = true;
                         //factionMultiplier = 1;
@@ -182,7 +183,7 @@ namespace CombatAI.Patches
                 }
                 if (__state)
                 {
-                    if (Finder.Settings.Pather_KillboxKiller && __result != null && !__result.nodes.NullOrEmpty() && (pawn?.RaceProps.Humanlike ?? false))
+                    if (Finder.Settings.Pather_KillboxKiller && dig &&  __result != null && !__result.nodes.NullOrEmpty() && (pawn?.RaceProps.Humanlike ?? false))
                     {
                         //ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
                         //if (comp != null && comp.TryStartMiningJobs(__result))

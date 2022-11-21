@@ -31,9 +31,21 @@ namespace CombatAI
             /// </summary>
             public Faction faction;
             /// <summary>
-            /// Last cycle.
+            /// Dormant comp.
             /// </summary>
-            public int lastCycle;
+            public CompCanBeDormant dormant;
+			/// <summary>
+			/// Dormant comp.
+			/// </summary>
+			public ThingComp_CombatAI ai;
+			/// <summary>
+			/// Last cycle.
+			/// </summary>
+			public int lastCycle;
+            /// <summary>
+            /// Last tick this pawn scanned for enemies
+            /// </summary>
+            public int lastScannedForEnemies;
             /// <summary>
             /// Bucket index.
             /// </summary>
@@ -47,6 +59,8 @@ namespace CombatAI
 
             public IBucketableThing(Thing thing, int bucketIndex)
             {
+                this.dormant = thing.GetComp_Fast<CompCanBeDormant>();
+                this.ai = thing.GetComp_Fast<ThingComp_CombatAI>();
                 this.thing = thing;
                 this.faction = thing.Faction;
                 this.bucketIndex = bucketIndex;
@@ -239,7 +253,7 @@ namespace CombatAI
             if (!thing.Spawned || thing.Destroyed)
             {
                 return false;
-            }            
+            }
             return (thing is Pawn pawn && !pawn.Dead) || thing is Building_TurretGun;
         }
 
@@ -278,10 +292,27 @@ namespace CombatAI
             }
             Thing thing = item.thing;
             Pawn pawn = item.thing as Pawn;
-			ThingComp_CombatAI comp = thing.GetComp_Fast<ThingComp_CombatAI>(allowFallback: false);
+			ThingComp_CombatAI comp = item.ai ?? (item.ai = thing.GetComp_Fast<ThingComp_CombatAI>());
             SightTracker.SightReader reader = comp?.sightReader ?? null;
-            bool scanForEnemies = comp?.sightReader != null && reader != null && !(item.faction?.IsPlayerSafe() ?? false);           
-            Action action = () =>
+            bool scanForEnemies;
+            if ((scanForEnemies = comp != null && ticks - comp.lastInterupted >= 45 && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15) && comp?.sightReader != null && reader != null && !(item.faction?.IsPlayerSafe() ?? false)))
+            {
+                if (item.dormant != null && !item.dormant.Awake)
+                {
+                    scanForEnemies = false;
+                }
+                else if(pawn != null && pawn.mindState?.duty?.def == DutyDefOf.SleepForever)
+                {
+                    scanForEnemies = false;
+				}                
+			}
+			if (scanForEnemies)
+			{
+				item.lastScannedForEnemies = ticks;
+                //
+                //map.debugDrawer.FlashCell(pos, 1);
+            }
+			Action action = () =>
             {
                 if (scanForEnemies)
                 {
@@ -353,7 +384,7 @@ namespace CombatAI
                     // notify the pawn so they can start processing targets.
                     asyncActions.EnqueueMainThreadAction(delegate
                     {
-                        if (!thing.Destroyed && thing.Spawned)
+                        if (comp.parent != null && !comp.parent.Destroyed && comp.parent.Spawned)
                         {
                             comp.OnScanFinished();
                         }

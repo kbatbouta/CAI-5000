@@ -308,7 +308,78 @@ namespace CombatAI
             }
         }        
 
-        public bool TryGetReader(Thing thing, out SightReader reader) => TryGetReader(thing.Faction, out reader);
+        public bool TryGetReader(Thing thing, out SightReader reader)
+        {
+            Faction faction = thing.Faction;
+			if (faction == null)
+			{
+				reader = new SightReader(this,
+					friendlies: new ITSignalGrid[]
+					{
+					},
+					hostiles: new ITSignalGrid[]
+					{
+						insectsAndMechs.grid,
+					},
+					neutrals: new ITSignalGrid[]
+					{
+						wildlife.grid, colonistsAndFriendlies.grid, raidersAndHostiles.grid
+					});
+				return true;
+			}
+			if (faction.def == FactionDefOf.Mechanoid || faction.def == FactionDefOf.Insect)
+			{
+				reader = new SightReader(this,
+					friendlies: new ITSignalGrid[]
+					{
+						insectsAndMechs.grid
+					},
+					hostiles: new ITSignalGrid[]
+					{
+						colonistsAndFriendlies.grid, raidersAndHostiles.grid
+					},
+					neutrals: new ITSignalGrid[]
+					{
+						wildlife.grid
+					});
+				return true;
+			}
+			Faction playerFaction = Faction.OfPlayerSilentFail;
+			if (playerFaction != null && !thing.HostileTo(playerFaction))
+			{
+				reader = new SightReader(this,
+					friendlies: new ITSignalGrid[]
+					{
+						colonistsAndFriendlies.grid,
+					},
+					hostiles: new ITSignalGrid[]
+					{
+						raidersAndHostiles.grid, insectsAndMechs.grid
+					},
+					neutrals: new ITSignalGrid[]
+					{
+						wildlife.grid
+					});
+			}
+			else
+			{
+				reader = new SightReader(this,
+					friendlies: new ITSignalGrid[]
+					{
+						raidersAndHostiles.grid,
+					},
+					hostiles: new ITSignalGrid[]
+					{
+						colonistsAndFriendlies.grid, insectsAndMechs.grid
+					},
+					neutrals: new ITSignalGrid[]
+					{
+						wildlife.grid
+					});
+			}
+			return true;
+		}
+
         public bool TryGetReader(Faction faction, out SightReader reader)
         {           
             if (faction == null)

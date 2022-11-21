@@ -8,7 +8,7 @@ using static CombatAI.SightTracker;
 namespace CombatAI
 {
     public static class CoverPositionFinder
-    {       
+    {      
         public static bool TryFindCoverPosition(CoverPositionRequest request, out IntVec3 coverCell)
         {
             request.caster.GetSightReader(out SightReader sightReader);            
@@ -29,6 +29,7 @@ namespace CombatAI
             {
                 request.maxRangeFromLocus = float.MaxValue;
             }
+            InterceptorTracker interceptors = map.GetComp_Fast<MapComponent_CombatAI>().interceptors;
             float maxDistSqr = request.maxRangeFromLocus * request.maxRangeFromLocus;
             CellFlooder flooder = map.GetCellFlooder();
             IntVec3 enemyLoc = request.target.Cell;
@@ -43,7 +44,7 @@ namespace CombatAI
                     {
                         return;
                     }
-                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - CoverUtility.TotalSurroundingCoverScore(node.cell, map);
+                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - CoverUtility.TotalSurroundingCoverScore(node.cell, map) - interceptors.grid.Get(node.cell) * 2;
                     if (c < bestCellScore)
                     {
                         float v = sightReader.GetVisibilityToEnemies(node.cell);
@@ -58,7 +59,7 @@ namespace CombatAI
                 },
                 (cell) =>
                 {
-                    return sightReader.GetVisibilityToEnemies(cell) - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0);
+                    return sightReader.GetVisibilityToEnemies(cell) - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell);
                 },
                 (cell) =>
                 {
@@ -90,7 +91,8 @@ namespace CombatAI
             {
                 request.maxRangeFromLocus = float.MaxValue;
             }
-            float maxDistSqr = request.maxRangeFromLocus * request.maxRangeFromLocus;
+			InterceptorTracker interceptors = map.GetComp_Fast<MapComponent_CombatAI>().interceptors;
+			float maxDistSqr = request.maxRangeFromLocus * request.maxRangeFromLocus;
             CellFlooder flooder = map.GetCellFlooder();
             IntVec3 enemyLoc = request.target.Cell;
             IntVec3 bestCell = IntVec3.Invalid;
@@ -103,7 +105,7 @@ namespace CombatAI
                     {
                         return;
                     }
-                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - CoverUtility.TotalSurroundingCoverScore(node.cell, map) * 0.5f;
+                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - CoverUtility.TotalSurroundingCoverScore(node.cell, map) * 0.5f - interceptors.grid.Get(node.cell);
                     if (c < bestCellScore)
                     {
                         float d = node.cell.DistanceToSquared(enemyLoc);
@@ -118,7 +120,7 @@ namespace CombatAI
                 },
                 (cell) =>
                 {
-                    return sightReader.GetVisibilityToEnemies(cell) - sightReader.GetVisibilityToFriendlies(cell) * 2 - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0);
+                    return sightReader.GetVisibilityToEnemies(cell) - sightReader.GetVisibilityToFriendlies(cell) * 2 - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell);
                 },
                 (cell) =>
                 {

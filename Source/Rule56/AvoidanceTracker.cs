@@ -235,7 +235,7 @@ namespace CombatAI
             }
             if (Valid(pawn))
             {
-                buckets.Add(new IBucketablePawn(pawn, pawn.thingIDNumber % buckets.count));
+                buckets.Add(new IBucketablePawn(pawn, pawn.thingIDNumber % buckets.numBuckets));
             }
         }
 

@@ -1,5 +1,11 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workbench ActiveDocument="Rule56/Patches/Building_Door_Patch.cs">
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Rule56/SightTracker.cs">
     <Files>
       <File FileName="Rule56/Patches/JobGiver_AIGotoNearestHostile_Patch.cs" />
       <File FileName="Rule56/Patches/JobGiver_Patch.cs" />
@@ -19,12 +25,12 @@
       <File FileName="Rule56/SightUtility.cs" />
       <File FileName="Rule56/Patches/Game_Patch.cs" />
       <File FileName="Rule56/Patches/AttackTargetFinder_Patch.cs" />
-      <File FileName="Rule56/Patches/CastPositionFinder_Patch.cs" Line="1" Column="1" />
+      <File FileName="Rule56/Patches/CastPositionFinder_Patch.cs" />
       <File FileName="Rule56/CustomDutyUtility.cs" />
       <File FileName="Rule56/AvoidanceTracker.cs" />
       <File FileName="Rule56/CompsCache.cs" />
       <File FileName="Rule56/ITSignalGrid.cs" />
-      <File FileName="Rule56/SightTracker.cs" />
+      <File FileName="Rule56/SightTracker.cs" Line="315" Column="5" />
       <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/IShortTermMemoryGrid.cs" />
       <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/IShortTermMemoryHandler.cs" />
       <File FileName="Rule56/Patches/MapPawns_Patch.cs" />
@@ -48,11 +54,11 @@
       <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/CE_DebugTooltip.cs" />
       <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/PerformanceTracker.cs" />
       <File FileName="Rule56/PerformanceTracker.cs" />
-      <File FileName="Rule56/WallGrid.cs" Line="36" Column="14" />
+      <File FileName="Rule56/WallGrid.cs" />
       <File FileName="Rule56/Comps/CompProperties_Statistics.cs" />
       <File FileName="Rule56/Patches/Pawn_Patch.cs" />
-      <File FileName="Rule56/Patches/CoverGrid_Patch.cs" Line="51" Column="13" />
-      <File FileName="Rule56/Patches/Building_TurretGun_Patch.cs" Line="1" Column="1" />
+      <File FileName="Rule56/Patches/CoverGrid_Patch.cs" />
+      <File FileName="Rule56/Patches/Building_TurretGun_Patch.cs" />
       <File FileName="Rule56/Pawn_CustomDutyTracker.cs" />
       <File FileName="Rule56/CombatAI_MeshMaker.cs" />
       <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/CE_MeshMaker.cs" />
@@ -81,22 +87,24 @@
       <File FileName="Rule56/IHeatGrid.cs" />
       <File FileName="Rule56/Patches/Deprecated /LordJob_AssaultColony_Patch.cs" />
       <File FileName="Rule56/Patches/Deprecated /Projectile_Patch.cs" />
-      <File FileName="Rule56/Patches/Building_Door_Patch.cs" Line="23" Column="39" />
+      <File FileName="Rule56/Patches/Building_Door_Patch.cs" />
+      <File FileName="Rule56/Patches/Selector_Patch.cs" />
+      <File FileName="Rule56/Patches/TooltipGiverList_Patch.cs" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="Rule56" expanded="True" selected="True">
+          <Node name="Rule56" expanded="True">
+            <Node name="CombatAI" expanded="True">
+              <Node name="Collections" expanded="True" />
+              <Node name="Comps" expanded="True" />
+              <Node name="Patches" expanded="True" />
+              <Node name="SightTracker.cs" selected="True" />
+            </Node>
             <Node name="CombatExtended" expanded="True" />
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
 </Properties>

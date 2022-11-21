@@ -22,7 +22,7 @@ namespace CombatAI.Patches
 			public static bool Prefix(Pawn pawn)
 			{				
                 if (lastGaveById.TryGetValue(pawn.thingIDNumber, out int ticks) && GenTicks.TicksGame - ticks < 30)
-				{					
+				{	
 					return false;
 				}
 				return true;

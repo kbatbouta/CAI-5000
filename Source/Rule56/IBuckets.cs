@@ -12,7 +12,7 @@ namespace CombatAI
 
         private readonly Dictionary<int, int> bucketIndexByIds = new Dictionary<int, int>();
 
-        public readonly int count;        
+        public readonly int numBuckets;        
 
         public int Index
         {
@@ -20,6 +20,14 @@ namespace CombatAI
             {
                 return curIndex;
             }
+        }
+
+        public int Count
+        {
+            get
+            {
+                return bucketIndexByIds.Count;
+			}
         }
 
         public List<T> Current
@@ -30,10 +38,10 @@ namespace CombatAI
             }
         }        
 
-        public IBuckets(int count)
+        public IBuckets(int numBuckets)
         {
-            this.count = count;
-            buckets = new List<T>[count];
+            this.numBuckets = numBuckets;
+            buckets = new List<T>[numBuckets];
             for(int i = 0;i < buckets.Length; i++)
             {
                 buckets[i] = new List<T>();
@@ -95,7 +103,7 @@ namespace CombatAI
         public List<T> Next()
         {
             int index = curIndex;
-            curIndex = (curIndex + 1) % count;
+            curIndex = (curIndex + 1) % numBuckets;
             return buckets[index];
         }
 
