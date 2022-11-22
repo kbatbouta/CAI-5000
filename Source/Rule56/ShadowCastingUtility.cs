@@ -19,8 +19,9 @@ namespace CombatAI
     public static partial class ShadowCastingUtility
     {        
         private const int VISIBILITY_CARRY_MAX = 5;
-        
-        private static readonly Func<IntVec3, IntVec3>[] _transformationFuncs;        
+        private static readonly IntVec3 Back = new IntVec3(-1, 0, 0);		
+
+		private static readonly Func<IntVec3, IntVec3>[] _transformationFuncs;
         private static readonly Func<IntVec3, IntVec3>[] _transformationInverseFuncs;
         private static readonly Func<Vector3, Vector3>[] _transformationFuncsV3;
         private static readonly Func<Vector3, Vector3>[] _transformationInverseFuncsV3;
@@ -118,7 +119,7 @@ namespace CombatAI
             public int visibilityCarry;            
             public int depth;
             public int quartor;
-            public int maxDepth;
+            public int maxDepth;            
             public float blockChance;
 
             public void Tiles(List<Vector3> buffer)
@@ -236,19 +237,46 @@ namespace CombatAI
                 var lastIsCover = false;
                 var lastFill = 0f;
                 var lastFillNum = 0;
-                row.Tiles(request.buffer);
-                for(int i = 0; i< request.buffer.Count;i++)                
+                var lastNextIndex = 0;
+                row.Tiles(request.buffer);                
+                //row.DebugFlash(request.map, request.source);                
+                for (int i = 0; i < request.buffer.Count;i++)                
                 {
                     Vector3 offset = request.buffer[i];
                     FillCategory fill = FillCategory.None;
                     IntVec3 cell = request.source + row.Transform(offset.ToIntVec3());                
                     bool isWall = !cell.InBounds(request.map) || (fill = grid.GetFillCategory(cell)) == FillCategory.Full;
+                    bool process = true;
+                    if (!isWall && (i == 0 || i - lastNextIndex == 1))
+                    {
+                        IntVec3 temp = request.source + row.Transform(offset.ToIntVec3() + Back);
+                        if (temp.InBounds(request.map) && grid.GetFillCategory(temp) == FillCategory.Full)
+                        {
+                            temp = request.source + row.Transform(offset.ToIntVec3() + new IntVec3(0, 0, offset.z < 0 ? 1 : -1));
+                            if (temp.InBounds(request.map) && grid.GetFillCategory(temp) == FillCategory.Full)
+                            {
+                                isWall = true;
+                                process = false;
+                                fill = FillCategory.Full;
+								//int t_count = request.buffer.Count;
+								//int t_lastNextIndex = lastNextIndex;
+								//int t_i = i;
+								//request.map.GetComponent<MapComponent_CombatAI>().EnqueueMainThreadAction(() =>
+								//{
+								//	if (row.quartor == 0)
+								//	{
+								//		request.map.debugDrawer.FlashCell(cell, 1, $"{t_i} {t_count} {t_lastNextIndex}");
+								//	}
+								//});
+							}
+                        }
+                    }                    
                     bool isCover = !isWall && fill == FillCategory.Partial;
                     
-                    if (isWall || (offset.z >= row.depth * row.startSlope && offset.z <= row.depth * row.endSlope))
-                    {
+                    if (process && (isWall || (offset.z >= row.depth * row.startSlope && offset.z <= row.depth * row.endSlope)))
+                    {                        
                         request.setAction(cell, row.visibilityCarry, row.depth, row.blockChance);
-                    }            
+                    }      
                     if (isCover)
                     { 
                         if (row.visibilityCarry >= request.carryLimit)                        
@@ -266,7 +294,7 @@ namespace CombatAI
                     {
                         if (lastIsWall == isWall)
                         {
-                            if (isCover != lastIsCover && lastIsWall == isWall) // first handle cover 
+                            if (isCover != lastIsCover) // first handle cover 
                             {
                                 nextRow = row.Next();
                                 nextRow.endSlope = GetSlope(offset);
@@ -276,8 +304,9 @@ namespace CombatAI
                                     nextRow.visibilityCarry += 1;
                                 }
                                 rowQueue.Add(nextRow);
-                                row.startSlope = GetSlope(offset);
-                            }
+                                lastNextIndex = i;
+								row.startSlope = GetSlope(offset);								
+							}
                         }
                         else if (!isWall && lastIsWall)
                         {
@@ -292,8 +321,9 @@ namespace CombatAI
                                 nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
                                 nextRow.visibilityCarry += 1;
                             }
-                            rowQueue.Add(nextRow);
-                        }                        
+							lastNextIndex = i;
+							rowQueue.Add(nextRow);							
+						}                        
                     }
                     cellsScanned++;
                     lastCell = offset;
@@ -307,9 +337,9 @@ namespace CombatAI
                     {                        
                         nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
                         nextRow.visibilityCarry += 1;
-                    }
-                    rowQueue.Add(nextRow);
-                }
+                    }					
+					rowQueue.Add(nextRow);					
+				}
             }
         }      
 
@@ -335,15 +365,29 @@ namespace CombatAI
                 }
                 var lastCell = InvalidOffset;
                 var lastIsWall = false;
-
-                row.Tiles(request.buffer);
+                var lastNextIndex = 0;
+				row.Tiles(request.buffer);
                 for (int i = 0; i < request.buffer.Count; i++)
                 {
                     Vector3 offset = request.buffer[i];
                     var cell = request.source + row.Transform(offset.ToIntVec3());
-                    var isWall = !cell.InBounds(request.map) || !grid.CanBeSeenOver(cell);                    
+                    var isWall = !cell.InBounds(request.map) || !grid.CanBeSeenOver(cell);
+					var process = true;
+					if (!isWall && (i == 0 || i - lastNextIndex == 1))
+					{
+						IntVec3 temp = request.source + row.Transform(offset.ToIntVec3() + Back);
+						if (temp.InBounds(request.map) && grid.GetFillCategory(temp) == FillCategory.Full)
+						{
+							temp = request.source + row.Transform(offset.ToIntVec3() + new IntVec3(0, 0, offset.z < 0 ? 1 : -1));
+							if (temp.InBounds(request.map) && grid.GetFillCategory(temp) == FillCategory.Full)
+							{
+                                process = false;
+								isWall = true;								
+							}
+						}
+					}
 
-                    if (isWall || (offset.z >= row.depth * row.startSlope && offset.z <= row.depth * row.endSlope))
+					if (process && (isWall || (offset.z >= row.depth * row.startSlope && offset.z <= row.depth * row.endSlope)))
                     {
                         request.setAction(cell, 1, row.depth, row.blockChance);
                     }
@@ -358,7 +402,8 @@ namespace CombatAI
                             nextRow = row.Next();
                             nextRow.endSlope = GetSlope(offset);                               
                             rowQueue.Add(nextRow);
-                        }                        
+                            lastNextIndex = i;
+						}                        
                     }
                     cellsScanned++;                    
                     lastCell = offset;
@@ -375,11 +420,11 @@ namespace CombatAI
         private static void TryCastWeighted(float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer) => TryCast(TryWeightedScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction, buffer);
 
         private static void TryCast(Action<CastRequest> castAction, float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer)
-        {            
+        {
             if (endSlope > 1.0f || startSlope < -1 || startSlope > endSlope)
             {
                 throw new InvalidOperationException($"CE: Scan quartor {quartor} endSlope and start slop must be between (-1, 1) but got start:{startSlope}\tend:{endSlope}");
-            }            
+            }
             WallGrid grid = map.GetComponent<WallGrid>();
             if(grid == null)
             {

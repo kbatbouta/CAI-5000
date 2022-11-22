@@ -9,13 +9,15 @@ namespace CombatAI
     public class WallGrid : MapComponent
     {        
         private readonly CellIndices cellIndices;
-        private readonly float[] grid;                                               
+        private readonly float[] grid;
+        private readonly FlagArray gridCorners;
 
         public WallGrid(Map map) : base(map)
         {
             cellIndices = map.cellIndices;
-            grid = new float[cellIndices.NumGridCells];                                  
-        }        
+            grid = new float[cellIndices.NumGridCells];
+            gridCorners = new FlagArray(map.cellIndices.NumGridCells);
+		}        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public FillCategory GetFillCategory(IntVec3 cell) => GetFillCategory(cellIndices.CellToIndex(cell));

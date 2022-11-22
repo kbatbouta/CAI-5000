@@ -15,10 +15,10 @@ namespace CombatAI.Patches
         private static Map map;
         private static Pawn searcherPawn;
         private static SightTracker.SightReader sightReader;
-       
+
         [HarmonyPatch(typeof(AttackTargetFinder), nameof(AttackTargetFinder.BestAttackTarget))]
         internal static class AttackTargetFinder_BestAttackTarget_Patch
-        {           
+        {
             internal static void Prefix(IAttackTargetSearcher searcher)
             {                
                 map = searcher.Thing?.Map;
@@ -70,7 +70,6 @@ namespace CombatAI.Patches
                 {                    
                     if ((verb.IsMeleeAttack || verb.EffectiveRange <= 15))
                     {
-
                         if (sightReader.GetAbsVisibilityToEnemies(target.Thing.Position) > sightReader.GetAbsVisibilityToFriendlies(target.Thing.Position) + 1)
                         {
                             result -= 30f * Finder.P50;

@@ -51,7 +51,7 @@ namespace CombatAI
             int maxDepth = (int)(radius);
             for (int i = 0; i < 4; i++)
             {
-                castingAction(-1, 1, i, maxDepth, carryLimit, source, map, action, buffer);
+                castingAction(-1f, 1f, i, maxDepth, carryLimit, source, map, action, buffer);
             }            
         }
 

@@ -276,6 +276,11 @@ namespace CombatAI
         public override void MapComponentOnGUI()
         {
             base.MapComponentOnGUI();
+            if (Finder.Settings.Debug_DrawShadowCasts)
+            {
+				Vector3 mousePos = UI.MouseMapPosition();
+                Widgets.Label(new Rect(0, 0, 25, 200), $"{mousePos}");
+			}
             Widgets.DrawBoxSolid(new Rect(0, 0, 3, 3), colonistsAndFriendlies.FactionNum == 1 ? Color.blue : (colonistsAndFriendlies.FactionNum > 1 ? Color.green : Color.yellow));
             if (Finder.Settings.Debug_DrawShadowCastsVectors)
             {
