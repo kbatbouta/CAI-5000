@@ -20,7 +20,8 @@ namespace CombatAI
             {
                 Finder.Settings = new Settings();
             }
-        }
+			LongEventHandler.QueueLongEvent(CompatibilityManager.Initialize, "CombatAI.Preparing", false, null);
+		}
 
         public override string SettingsCategory() => R.Keyed.CombatAI;
 

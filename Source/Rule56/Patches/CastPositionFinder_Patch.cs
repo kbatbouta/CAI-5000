@@ -26,7 +26,8 @@ namespace CombatAI.Patches
         private static IntVec3 targetPosition;
         private static float warmupTime;
         private static float range;
-        private static ISGrid<float> grid;
+        private static CastPositionRequest request;		
+		private static ISGrid<float> grid;
         private static InterceptorTracker interceptors;
         private static AvoidanceTracker avoidanceTracker;
         private static AvoidanceTracker.AvoidanceReader avoidanceReader;
@@ -40,42 +41,47 @@ namespace CombatAI.Patches
             public static void Prefix(CastPositionRequest newReq)
             {                
                 skipped = true;
-                if ((pawn = newReq.caster) != null && !(pawn.RaceProps?.Animal ?? true) && !((pawn.Faction?.IsPlayerSafe() ?? false) && !pawn.Drafted && pawn.mindState?.duty == null) && !(pawn.mindState != null && (pawn.mindState.duty?.def == DutyDefOf.Sapper || pawn.mindState.duty?.def == DutyDefOf.Breaching)))
-                {                    
-                    map = newReq.caster?.Map;
-                    verb = newReq.verb;
-                    range = verb.EffectiveRange;
-                    map = pawn.Map;
-                    avoidanceTracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
-                    avoidanceTracker.TryGetReader(pawn, out avoidanceReader);
-                    if (avoidanceReader != null)
+                if (newReq.caster != null && newReq.target != null && (newReq.maxRangeFromTarget == 0 || newReq.maxRangeFromTarget * newReq.maxRangeFromTarget > newReq.caster.Position.DistanceToSquared(newReq.target.Position)) && newReq.maxRangeFromLocus == 0)
+                {
+                    if ((pawn = newReq.caster) != null && !(pawn.RaceProps?.Animal ?? true) && !((pawn.Faction?.IsPlayerSafe() ?? false) && !pawn.Drafted && pawn.mindState?.duty == null) && !(pawn.mindState != null && (pawn.mindState.duty?.def == DutyDefOf.Sapper || pawn.mindState.duty?.def == DutyDefOf.Breaching)))
                     {
-                        grid = map.GetFloatGrid();
-                        newReq.caster.GetSightReader(out sightReader);
-                        if (sightReader != null)
+                        map = newReq.caster?.Map;
+                        verb = newReq.verb;
+                        range = verb.EffectiveRange;
+                        map = pawn.Map;
+                        avoidanceTracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
+                        avoidanceTracker.TryGetReader(pawn, out avoidanceReader);
+                        if (avoidanceReader != null)
                         {
-                            interceptors = map.GetComp_Fast<MapComponent_CombatAI>().interceptors;
-							warmupTime = verb?.verbProps.warmupTime ?? 1;
-                            warmupTime = Mathf.Clamp(warmupTime, 0.5f, 0.8f);
-                            target = newReq.target;
-                            targetPosition = target.Position;
-                            newReq.wantCoverFromTarget = true;
-                            skipped = false;
-                            //
-                            // map.debugDrawer.FlashCell(pawn.Position, 1, "dude", 100);
-                            return;
+                            grid = map.GetFloatGrid();
+                            grid.Reset();
+                            newReq.caster.GetSightReader(out sightReader);
+                            if (sightReader != null)
+                            {
+                                request = newReq;
+                                interceptors = map.GetComp_Fast<MapComponent_CombatAI>().interceptors;
+                                warmupTime = verb?.verbProps.warmupTime ?? 1;
+                                warmupTime = Mathf.Clamp(warmupTime, 0.5f, 0.8f);
+                                target = newReq.target;
+                                targetPosition = target.Position;
+                                newReq.wantCoverFromTarget = true;
+                                skipped = false;
+                                //
+                                // map.debugDrawer.FlashCell(pawn.Position, 1, "dude", 100);
+                                return;
+                            }
                         }
-                    }
-                }                
-                pawn = null;
-                grid = null;
-                avoidanceTracker = null;
-                avoidanceReader = null;
-                sightReader = null;                
-                verb = null;
-                target = null;
-                map = null;
-                skipped = true;
+                    }                
+                }
+				pawn = null;
+				grid = null;
+				avoidanceTracker = null;
+				avoidanceReader = null;
+				sightReader = null;
+				verb = null;
+				target = null;
+				map = null;
+				skipped = true;
 			}
 
             public static void Postfix(IntVec3 dest, bool __result)
@@ -127,10 +133,10 @@ namespace CombatAI.Patches
                     map.GetCellFlooder().Flood(root,
                         (node) =>
                         {
-                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + Maths.Min(avoidanceReader.GetProximity(node.cell) / 2f, 2f) - interceptors.grid.Get(node.cell) * 4;                            
+                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + sightReader.GetVisibilityToEnemies(node.cell) * 2 + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4;                            
                         },
                         (cell) =>
-                        {                            
+                        {
                             Vector2 dir = sightReader.GetEnemyDirection(cell);
                             IntVec3 adjustedLoc;
                             if (dir.sqrMagnitude < 4)
@@ -141,13 +147,13 @@ namespace CombatAI.Patches
                             {
                                 adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);                                
                             }                            
-                            return sightReader.GetVisibilityToEnemies(cell) - Verse.CoverUtility.CalculateOverallBlockChance(cell, adjustedLoc, map) - interceptors.grid.Get(cell);
+                            return sightReader.GetVisibilityToEnemies(cell) - Verse.CoverUtility.CalculateOverallBlockChance(adjustedLoc, cell, map) - interceptors.grid.Get(cell);
                         },
                         (cell) =>
                         {
                             return rect.Contains(cell) && cell.WalkableBy(map, pawn) && map.reservationManager.CanReserve(pawn, cell);
                         }
-                    ,maxDist: Maths.Max(rect.Height, rect.Width));
+                    ,maxDist: Maths.Max(rect.Height, rect.Width) * 2);
                 }
             }
         }
@@ -165,16 +171,21 @@ namespace CombatAI.Patches
                     }
                     if (sightReader != null)
                     {
-                        if (!grid.IsSet(c))
+						float before = __result;
+						if (!grid.IsSet(c))
                         {
                             __result = -1;
                         }
                         else
                         {
                             __result -= grid[c] * Finder.P50;
-                        }
-                    }
-                }               
+							//if (Find.Selector.SelectedPawns.Contains(pawn))
+							//{
+							//	map.debugDrawer.FlashCell(c, (grid[c] + 5f) / 10f, $"{Math.Round(grid[c], 2)}");
+							//}
+						}						
+					}				
+				}               
             }
         }
     }

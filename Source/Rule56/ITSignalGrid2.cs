@@ -174,6 +174,28 @@ namespace CombatAI
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public float GetRawSignalStrengthAt(IntVec3 cell) => GetRawSignalStrengthAt(indices.CellToIndex(cell));
+		public float GetRawSignalStrengthAt(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];
+				switch (r_cycle - cell.cycle)
+				{
+					case 0:
+						IField<float> strength = cells_strength[index];
+
+						return Maths.Max(strength.value, strength.valuePrev);
+					case 1:
+						return cells_strength[index].value;
+					default:
+						break;
+				}
+			}
+			return 0;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public float GetSignalStrengthAt(IntVec3 cell) => GetSignalStrengthAt(indices.CellToIndex(cell));
 		public float GetSignalStrengthAt(int index)
 		{
@@ -185,9 +207,9 @@ namespace CombatAI
 					case 0:						
 						IField<float> strength = cells_strength[index];
 
-						return Maths.Max(strength.value, strength.valuePrev);
+						return Maths.Max(strength.value, strength.valuePrev) * 0.9f + Maths.Max(cell.num, cell.numPrev) * 0.1f;
 					case 1:
-						return cells_strength[index].value;
+						return cells_strength[index].value * 0.9f + cell.num * 0.1f;
 					default:
 						break;
 				}
@@ -207,10 +229,10 @@ namespace CombatAI
 					case 0:
 						IField<float> strength = cells_strength[index];
 						signalNum = Maths.Max(cell.num, cell.numPrev); 
-						return Maths.Max(strength.value, strength.valuePrev);
+						return Maths.Max(strength.value, strength.valuePrev) * 0.9f + signalNum * 0.1f;
 					case 1:
 						signalNum = cell.num;
-						return cells_strength[index].value;
+						return cells_strength[index].value * 0.9f + signalNum * 0.1f;
 					default:
 						break;
 				}

@@ -47,12 +47,13 @@ namespace CombatAI
 
 		public void Flood(IntVec3 center, Action<IntVec3, IntVec3, float> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25) => Flood(center, (node) => action(node.cell, node.parent, node.dist), costFunction, validator, maxDist);
 
-		public void Flood(IntVec3 center, Action<Node> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
+		public void  Flood(IntVec3 center, Action<Node> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
 		{
 			sig++;
 			Func<IntVec3, bool> blocked = GetBlockedTestFunc(validator);
 			this.walls = map.GetComponent<WallGrid>();
 			Node node = GetIntialFloodedCell(center);
+			node.dist = costFunction != null ? costFunction(node.cell) : 0;			
 			Node nextNode;
 			int cellIndex;
 			IntVec3 nextCell;
@@ -61,7 +62,7 @@ namespace CombatAI
 			// floodedCells.Clear();
 			// floodedCells.Add(node);
 			floodQueue.Clear();
-			floodQueue.Enqueue(GetIntialFloodedCell(center));
+			floodQueue.Enqueue(node);
 			while (floodQueue.Count > 0)
 			{
 				node = floodQueue.Dequeue();

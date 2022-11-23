@@ -73,7 +73,7 @@ namespace CombatAI
 								}
 								else
 								{
-									float visibility = pawns.GetSignalStrengthAt(index);
+									float visibility = pawns.GetRawSignalStrengthAt(index);
 									float visRLimit = 0.03f;
 									if (glowSky < 1)
 									{

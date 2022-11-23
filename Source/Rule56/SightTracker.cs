@@ -219,7 +219,8 @@ namespace CombatAI
                 {
                     foreach (Pawn pawn in Find.Selector.SelectedPawns)
                     {
-                        TryGetReader(pawn, out SightReader reader);
+						ArmorUtility.GetAvgBodyArmor(pawn);
+						TryGetReader(pawn, out SightReader reader);                        
                         if (reader != null)
                         {
                             IntVec3 center = pawn.Position;

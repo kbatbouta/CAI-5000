@@ -14,6 +14,7 @@ namespace CombatAI.Patches
     {
         private static Map map;
         private static Pawn searcherPawn;
+        private static Faction searcherFaction;
         private static SightTracker.SightReader sightReader;
 
         [HarmonyPatch(typeof(AttackTargetFinder), nameof(AttackTargetFinder.BestAttackTarget))]
@@ -28,6 +29,7 @@ namespace CombatAI.Patches
 					searcherPawn = pawn;
 					pawn.GetSightReader(out sightReader);
                 }
+                searcherFaction = searcher.Thing?.Faction ?? null;
             }
 
             internal static void Postfix()
@@ -66,7 +68,7 @@ namespace CombatAI.Patches
             public static float GetTargetBaseScore(IAttackTarget target, IAttackTargetSearcher searcher, Verb verb)
             {
                 float result = 60f;
-                if (sightReader != null)
+                if (sightReader != null && searcherPawn != null)
                 {                    
                     if ((verb.IsMeleeAttack || verb.EffectiveRange <= 15))
                     {
@@ -87,7 +89,7 @@ namespace CombatAI.Patches
                         {
                             if ((enemy.CurrentEffectiveVerb?.IsMeleeAttack ?? false))
                             {
-                                if ((targeted = enemy.jobs?.curJob?.targetA.Thing)?.Faction == searcherPawn.Faction)
+                                if (searcherFaction != null && (targeted = enemy.jobs?.curJob?.targetA.Thing)?.Faction == searcherFaction)
                                 {
                                     result += 8 + enemy.Position.DistanceToSquared(targeted.Position) < 150 ? 16 : 0;
                                 }

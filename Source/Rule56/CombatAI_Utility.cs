@@ -13,8 +13,13 @@ namespace CombatAI
     {
 		private static readonly Dictionary<int, Pair<int, float>> speedCache = new Dictionary<int, Pair<int, float>>(256);
         private static readonly Dictionary<int, Pair<int, float>> aggroCache = new Dictionary<int, Pair<int, float>>(256);
+      
+		public static bool Is<T>(this T def, T other) where T : Def
+		{
+			return def != null && other != null && def == other;
+		}
 
-        public static float GetAggroMul(this Pawn pawn)
+		public static float GetAggroMul(this Pawn pawn)
         {
 			if (speedCache.TryGetValue(pawn.thingIDNumber, out var store) && GenTicks.TicksGame - store.First <= 600)
 			{
@@ -57,19 +62,27 @@ namespace CombatAI
 			return true;
 		}
 
-		public static bool TryGetBlockedSubPath(this PawnPath path, Pawn pawn, List<IntVec3> store, ref IntVec3 cellBefore)
-        {            
-            if (path == null || !path.Found || pawn == null)
-            {
-                return false;
-            }            
+		public static bool TryGetSapperSubPath(this PawnPath path, Pawn pawn, List<IntVec3> store, int sightAhead, int sightStep, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore)
+        {
+			cellBefore = IntVec3.Invalid;
+			enemiesAhead = false;
+            enemiesBefore = false;
+			if (path == null || !path.Found || pawn == null || !pawn.GetSightReader(out SightReader reader))
+            {                
+				return false;
+            }
             Map map = pawn.Map;
-            int i = path.curNodeIndex - 1;
+			Area_Home home = map.areaManager.Get<Area_Home>();
+			int i = path.curNodeIndex - 1;
             int num = 0;          
             IntVec3 loc = path.nodes[path.curNodeIndex];
             while(i >= 0)
             {
                 IntVec3 next = path.nodes[i];
+                if (store.Count == 0 && reader.GetAbsVisibilityToEnemies(next) > 0)
+                {
+                    enemiesBefore = true;
+				}
                 IntVec3 dLoc = next - loc;
                 bool blocked = false;                
                 if (dLoc.x != 0 && dLoc.z != 0)
@@ -78,13 +91,13 @@ namespace CombatAI
                     IntVec3 s2 = loc + new IntVec3(0, 0, dLoc.z);                    
                     if (!s1.IsCellWalkable(pawn) && !s2.IsCellWalkable(pawn))
                     {
-                        map.debugDrawer.FlashCell(s1, 0.9f, "b", 200);
-                        map.debugDrawer.FlashCell(s2, 0.9f, "b", 200);
+                        //map.debugDrawer.FlashCell(s1, 0.9f, "b", 200);
+                        //map.debugDrawer.FlashCell(s2, 0.9f, "b", 200);
                         if (num == 0)
                         {                                                                                    
                             store.Clear();
                             cellBefore = loc;
-                            map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
+                            //map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
                         }
                         num++;
                         blocked = true;
@@ -92,11 +105,11 @@ namespace CombatAI
                     }
                     if (!blocked && num > 0)
                     {
-                        return true;
+                        break;
                     }
                     if (!next.IsCellWalkable(pawn))
                     {
-                        map.debugDrawer.FlashCell(next, 0.9f, "b", 200);
+                        //map.debugDrawer.FlashCell(next, 0.9f, "b", 200);
                         if (num == 0)
                         {                            
                             store.Clear();
@@ -112,7 +125,7 @@ namespace CombatAI
                             {
                                 cellBefore = Rand.Chance(0.5f) ? s1 : s2; 
                             }
-                            map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
+                            //map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
                         }   
                         num++;
                         blocked = true;
@@ -121,12 +134,12 @@ namespace CombatAI
                 }
                 else if(!next.IsCellWalkable(pawn))
                 {
-                    map.debugDrawer.FlashCell(next, 0.9f, "b", 200);
+                    //map.debugDrawer.FlashCell(next, 0.9f, "b", 200);
                     if (num == 0)
                     {                        
                         store.Clear();
                         cellBefore = loc;
-                        map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
+                        //map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
                     }
                     num++;
                     blocked = true;
@@ -134,12 +147,53 @@ namespace CombatAI
                 }
                 if (!blocked && num > 0)
                 {
-                    return true;
+                     break;
                 }                           
                 loc = next;
                 i--;
             }
-            return false;
+            if (store.Count > 0)
+            {
+                int i0 = i;
+                int limit = Maths.Max(i - sightAhead, 0);
+				while (i >= limit)
+                {
+					IntVec3 next = path.nodes[i];
+                    if (reader.GetAbsVisibilityToEnemies(next) > 0 || (home != null && home.innerGrid[next]))
+                    {
+                        enemiesAhead = true;
+						//map.debugDrawer.FlashCell(next, 0.2f, "X", 200);
+						break;
+                    }
+                    //else
+                    //{
+                    //	map.debugDrawer.FlashCell(next, 0.4f, "_", 200);
+                    //}
+                    i -= sightStep;
+				}
+                if (!enemiesAhead && home != null)
+                {
+                    i = i0;
+					while (i >= limit)
+					{
+						IntVec3 next = path.nodes[i];
+						if (home.innerGrid[next])
+						{
+							map.debugDrawer.FlashCell(next, 0.9f, "X", 200);
+							enemiesAhead = true;
+							break;
+                        }
+                        //else
+                        //{
+                        //	map.debugDrawer.FlashCell(next, 0.4f, "_", 200);
+                        //}
+                        i -= sightStep;
+					}
+
+				}
+                return true;
+            }
+            return store.Count > 0;
         }
 
         public static bool IsCellWalkable(this IntVec3 cell, Pawn pawn)
@@ -147,11 +201,7 @@ namespace CombatAI
             if (!cell.WalkableBy(pawn.Map, pawn))
             {
                 return false;
-            }
-            if (pawn.pather.WillCollideWithPawnAt(cell))
-            {
-                return false;
-            }
+            }         
             return true;
         }
 
