@@ -51,7 +51,7 @@ namespace CombatAI
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
+        }       
 
         public void Expand(int targetLength)
         {
@@ -106,7 +106,7 @@ namespace CombatAI
 
             public void Reset()
             {
-                position = -1;
+                position = -1;                
             }
 
             public void Dispose()

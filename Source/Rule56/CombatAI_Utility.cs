@@ -14,10 +14,10 @@ namespace CombatAI
 		private static readonly Dictionary<int, Pair<int, float>> speedCache = new Dictionary<int, Pair<int, float>>(256);
         private static readonly Dictionary<int, Pair<int, float>> aggroCache = new Dictionary<int, Pair<int, float>>(256);
       
-		public static bool Is<T>(this T def, T other) where T : Def
-		{
-			return def != null && other != null && def == other;
-		}
+        public static bool Is<T>(this T def, T other) where T : Def
+        {
+	        return def != null && other != null && def == other;
+        }
 
 		public static float GetAggroMul(this Pawn pawn)
         {

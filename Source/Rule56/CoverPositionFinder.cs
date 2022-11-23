@@ -116,7 +116,7 @@ namespace CombatAI
                             bestCell = node.cell;
                         }
                     }
-                    //map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
+                    map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
                 },
                 (cell) =>
                 {

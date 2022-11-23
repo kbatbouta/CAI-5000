@@ -52,18 +52,28 @@ namespace CombatAI
         {            
             if (t != null)
             {
-                if (t is Building_Door door)
+				if (t.def.plant != null)
+				{
+                    if (t.def.plant.IsTree)
+                    {
+                        if (t is Plant plant)
+                        {
+                            grid[index] = plant.Growth * t.def.fillPercent / 4f;
+                        }
+                        else
+                        {
+                            grid[index] = t.def.fillPercent / 4f;
+                        }
+                    }
+				}
+				else if (t is Building_Door door)
                 {
                     grid[index] = 1 - door.OpenPct;
 				}
                 else if (t is Building ed && ed.def.Fillage == FillCategory.Full)
                 {
                     grid[index] = 1.0f;
-                }
-                else if (t.def.category == ThingCategory.Plant)
-                {
-                    grid[index] = t.def.fillPercent / 3f;
-                }
+                }                
                 else
                 {
                     grid[index] = t.def.fillPercent;

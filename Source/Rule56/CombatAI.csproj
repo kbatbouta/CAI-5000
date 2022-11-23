@@ -27,7 +27,7 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<OutputPath>..\..\1.4\Assemblies</OutputPath>
-		<DefineConstants>TRACE;DEBUG;NETFRAMEWORK;NET472;</DefineConstants>
+		<DefineConstants>TRACE;DEBUG;NETFRAMEWORK;NET472;DEBUG_REACTION</DefineConstants>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 	<ItemGroup>	  
@@ -37,7 +37,6 @@
 	  <Folder Include="Collections\" />
 	  <Folder Include="Comps\" />
 	  <Folder Include="Statistics\" />
-	  <Folder Include="Patches\Deprecated \" />
 	  <Folder Include="Deprecated\" />
 	  <Folder Include="Deprecated\Utilities\" />
 	  <Folder Include="Defs\" />
@@ -52,7 +51,6 @@
 	  <None Remove="Statistics\" />
 	  <None Remove="Statistics\DataWriter_Path.config" />
 	  <None Remove="Statistics\DataWriter_Path.cs" />
-	  <None Remove="Patches\Deprecated \" />
 	  <None Remove="Deprecated\" />
 	  <None Remove="Deprecated\Utilities\" />
 	  <None Remove="Defs\" />

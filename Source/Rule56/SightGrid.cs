@@ -292,6 +292,11 @@ namespace CombatAI
             }
             Thing thing = item.thing;
             Pawn pawn = item.thing as Pawn;
+            IntVec3 flagPos = pos;
+            if(pawn != null)
+            {
+                flagPos = pawn.GetMovingShiftedPosition(240);
+			}
 			ThingComp_CombatAI comp = item.ai ?? (item.ai = thing.GetComp_Fast<ThingComp_CombatAI>());
             SightTracker.SightReader reader = comp?.sightReader ?? null;
             bool scanForEnemies;
@@ -325,7 +330,8 @@ namespace CombatAI
                     });                  
                 }
                 grid.Next();
-				grid.Set(pos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);
+
+				grid.Set(flagPos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);
 				//grid.Set(posOriginal, 1.0f, new Vector2(posOriginal.x - pos.x, posOriginal.z - pos.z));
 				float r = range * 1.23f;
                 float rSqr = range * range;
@@ -346,10 +352,18 @@ namespace CombatAI
 									sightTracker.factionedUInt64Map.GetThings(flag, thingBuffer1);
                                     for(int i = 0; i < thingBuffer1.Count; i++)
                                     {
-                                        Thing enemy = thingBuffer1[i];
-                                        if (enemy.Spawned && !enemy.Destroyed && enemy.Position.DistanceToSquared(cell) < 25 && enemy.HostileTo(thing))
+                                        Thing enemy = thingBuffer1[i];                                        
+                                        if (enemy.Spawned && !enemy.Destroyed && enemy.HostileTo(thing))
                                         {
-                                            comp.Notify_EnemyVisible(enemy);
+                                            IntVec3 enemyPos = enemy.Position;
+                                            if (enemy is Pawn enemyPawn)
+                                            {
+												enemyPos = enemyPawn.GetMovingShiftedPosition(240);
+											}
+                                            if (enemyPos.DistanceToSquared(cell) < 36)
+                                            {
+                                                comp.Notify_EnemyVisible(enemy);
+                                            }
 										}
                                     }
                                     //
