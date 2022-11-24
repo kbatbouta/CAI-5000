@@ -11,8 +11,8 @@ using Verse.AI;
 namespace CombatAI
 {
     public class SightGrid
-    {
-        private readonly List<Vector3> buffer = new List<Vector3>(1024);
+    {		
+		private readonly List<Vector3> buffer = new List<Vector3>(1024);
         private readonly List<Thing> thingBuffer1 = new List<Thing>(256);
 		private readonly List<Thing> thingBuffer2 = new List<Thing>(256);        
 
@@ -42,6 +42,10 @@ namespace CombatAI
 			/// Last cycle.
 			/// </summary>
 			public int lastCycle;
+            /// <summary>
+            /// Pawn pawn
+            /// </summary>
+            public List<IntVec3> path = new List<IntVec3>(16);
             /// <summary>
             /// Last tick this pawn scanned for enemies
             /// </summary>
@@ -128,7 +132,7 @@ namespace CombatAI
             this.map = sightTracker.map;
             this.settings = settings;                    
             this.grid = new ITSignalGrid(map);            
-            this.asyncActions = new AsyncActions();            
+            this.asyncActions = new AsyncActions(1);            
             this.ticksUntilUpdate = Rand.Int % this.settings.interval;
             this.buckets = new IBuckets<IBucketableThing>(settings.buckets);
         }
@@ -282,20 +286,20 @@ namespace CombatAI
                 return false;
             }
             int range = SightUtility.GetSightRange(item.thing, playerAlliance);            
-            int ticks = GenTicks.TicksGame;
-            //IntVec3 posOriginal = item.thing.Position;
-			IntVec3 pos = GetShiftedPosition(item.thing);
+            int ticks = GenTicks.TicksGame;            
+            IntVec3 origin = item.thing.Position;
+            IntVec3 pos = GetShiftedPosition(item.thing, 40, item.path);            
             if (!pos.InBounds(map))
             {
                 Log.Error($"ISMA: SighGridUpdater {item.thing} position is outside the map's bounds!");
                 return false;
             }
             Thing thing = item.thing;
-            Pawn pawn = item.thing as Pawn;
+            Pawn pawn = item.thing as Pawn;            
             IntVec3 flagPos = pos;
             if(pawn != null)
             {
-                flagPos = pawn.GetMovingShiftedPosition(240);
+                flagPos = GetShiftedPosition(thing, 240, null);
 			}
 			ThingComp_CombatAI comp = item.ai ?? (item.ai = thing.GetComp_Fast<ThingComp_CombatAI>());
             SightTracker.SightReader reader = comp?.sightReader ?? null;
@@ -330,13 +334,18 @@ namespace CombatAI
                     });                  
                 }
                 grid.Next();
-
-				grid.Set(flagPos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);
-				//grid.Set(posOriginal, 1.0f, new Vector2(posOriginal.x - pos.x, posOriginal.z - pos.z));
+				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
+				for (int i = 0; i < item.path.Count; i++)
+                {
+                    IntVec3 cell = item.path[i];
+					grid.Set(cell, 1.0f, new Vector2(cell.x - pos.x, cell.z - pos.z));
+				}
+				grid.Set(flagPos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);				               
+				//grid.Set(posOriginal, 1.0f, Vector2.zero);
 				float r = range * 1.23f;
                 float rSqr = range * range;
-                float rHafledSqr = rSqr * Finder.Settings.FogOfWar_RangeFadeMultiplier * Finder.Settings.FogOfWar_RangeFadeMultiplier; 
-                ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
+                float rHafledSqr = rSqr * Finder.Settings.FogOfWar_RangeFadeMultiplier * Finder.Settings.FogOfWar_RangeFadeMultiplier;               
+				ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
                 {
                     if (scanForEnemies)
                     {
@@ -410,14 +419,18 @@ namespace CombatAI
             return true;
         }
 
-        private IntVec3 GetShiftedPosition(Thing thing)
+        private IntVec3 GetShiftedPosition(Thing thing, int ticksAhead, List<IntVec3> subPath)
         {            
             if (thing is Pawn pawn)
             {
                 WallGrid walls = Walls;
-				if (walls != null && pawn.TryGetCellIndexAhead(40, out int index))
+                if (subPath != null)
                 {
-                    PawnPath path = pawn.pather.curPath;
+                    subPath.Clear();
+                }
+				if (walls != null && pawn.TryGetCellIndexAhead(ticksAhead, out int index))
+                {                    
+					PawnPath path = pawn.pather.curPath;
                     IntVec3 cell = pawn.Position;
 					IntVec3 temp;
 					for (int i = 0; i < index; i++)
@@ -427,7 +440,11 @@ namespace CombatAI
                             return cell;
                         }
                         cell = temp;
-                    }
+                        if (subPath != null)
+                        {
+                            subPath.Add(cell);
+                        }
+					}
                     return cell;
 				}
                 return thing.Position;
