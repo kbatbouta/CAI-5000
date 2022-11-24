@@ -236,7 +236,7 @@ namespace CombatAI
                                             _drawnCells.Add(cell);
                                             var value = reader.GetVisibilityToEnemies(cell);
                                             if (value > 0)
-                                                map.debugDrawer.FlashCell(cell, Mathf.Clamp((float)reader.GetVisibilityToEnemies(cell) / 10f, 0f, 0.99f), $"{Math.Round(value, 3)} {value}", 15);
+                                                map.debugDrawer.FlashCell(cell, Mathf.Clamp((float)reader.GetVisibilityToEnemies(cell) / 10f, 0f, 0.99f), $"{Math.Round(value, 3)}", 15);
                                         }
                                     }
                                 }

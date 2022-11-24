@@ -333,16 +333,17 @@ namespace CombatAI
                         }
                     });                  
                 }
-                grid.Next();
+				grid.Next();
+				grid.Set(flagPos, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);
+				grid.Next();
+				//grid.Set(posOriginal, 1.0f, Vector2.zero);
 				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
 				for (int i = 0; i < item.path.Count; i++)
                 {
                     IntVec3 cell = item.path[i];
 					grid.Set(cell, 1.0f, new Vector2(cell.x - pos.x, cell.z - pos.z));
-				}
-				grid.Set(flagPos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);				               
-				//grid.Set(posOriginal, 1.0f, Vector2.zero);
-				float r = range * 1.23f;
+				}								
+                float r = range * 1.23f;
                 float rSqr = range * range;
                 float rHafledSqr = rSqr * Finder.Settings.FogOfWar_RangeFadeMultiplier * Finder.Settings.FogOfWar_RangeFadeMultiplier;               
 				ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
@@ -400,7 +401,11 @@ namespace CombatAI
                         }
                         grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                     }
-                }, range, settings.carryLimit, buffer);
+                }, range, settings.carryLimit, buffer);				
+				//if (grid.GetSignalNum(flagPos) == 0)
+    //            {
+				//	grid.Set(flagPos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);
+				//}
                 // if we are scanning for enemies
                 if (scanForEnemies)
                 {

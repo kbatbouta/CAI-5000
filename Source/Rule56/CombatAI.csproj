@@ -27,7 +27,7 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<OutputPath>..\..\1.4\Assemblies</OutputPath>
-		<DefineConstants>TRACE;DEBUG;NETFRAMEWORK;NET472;</DefineConstants>
+		<DefineConstants>TRACE;DEBUG_REACTION;DEBUG;NETFRAMEWORK;NET472;</DefineConstants>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 	<ItemGroup>	  

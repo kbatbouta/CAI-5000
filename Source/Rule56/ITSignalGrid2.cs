@@ -114,6 +114,42 @@ namespace CombatAI
 			}
 		}
 
+		public void Set(IntVec3 cell, UInt64 flags) => Set(indices.CellToIndex(cell), flags);
+		public void Set(int index, UInt64 flags)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo info = cells[index];
+				if (info.sig != r_sig)
+				{
+					int dc = r_cycle - info.cycle;
+					if (dc == 0)
+					{
+						cells_flags[index].value |= flags;
+					}
+					else
+					{
+						bool expired = dc > 1;
+						if (expired)
+						{
+							info.numPrev = 0;
+						}
+						else
+						{
+							info.numPrev = info.num;
+						}
+						info.num = 0;
+						cells_strength[index].ReSet(0, expired);
+						cells_dir[index].ReSet(Vector2.zero, expired);
+						cells_flags[index].ReSet(flags, expired);
+						info.cycle = r_cycle;
+					}
+					info.sig = r_sig;
+					cells[index] = info;
+				}
+			}
+		}
+
 		public void Set(IntVec3 cell, float signalStrength, Vector2 dir, UInt64 flags) => Set(indices.CellToIndex(cell), signalStrength, dir, flags);
 		public void Set(int index, float signalStrength, Vector2 dir, UInt64 flags)
 		{
