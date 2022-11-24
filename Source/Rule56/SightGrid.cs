@@ -319,7 +319,7 @@ namespace CombatAI
 			{
 				item.lastScannedForEnemies = ticks;
                 //
-                //map.debugDrawer.FlashCell(pos, 1);
+                //map.debugDrawer.FlashCell(pos, 1);                
             }
 			Action action = () =>
             {

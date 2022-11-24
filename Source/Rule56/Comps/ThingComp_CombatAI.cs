@@ -213,6 +213,12 @@ namespace CombatAI.Comps
                 {					
 					return;
                 }
+                PawnDuty duty;
+                if ((duty = pawn.mindState.duty) != null && !duty.def.Is(DutyDefOf.Build) && !duty.def.Is(DutyDefOf.SleepForever) && !duty.def.Is(DutyDefOf.TravelOrLeave))
+                {
+                    lastInterupted = GenTicks.TicksGame + Rand.Int % 240;
+                    return;
+                }
                 Stance_Warmup warmup = null;
                 bool fastCheck = false;
 				if ((warmup = (pawn.stances?.curStance ?? null) as Stance_Warmup) != null && ((warmup.ticksLeft + GenTicks.TicksGame - warmup.startedTick) > 120 || warmup.ticksLeft < 30))
@@ -238,7 +244,7 @@ namespace CombatAI.Comps
                 bool bestEnemyVisibleNow = warmup != null;
                 bool bestEnemyVisibleSoon = false;
                 bool retreat = false;
-                float retreatDistSqr = Maths.Max(verb.EffectiveRange * verb.EffectiveRange / 9, 100);
+                float retreatDistSqr = Maths.Max(verb.EffectiveRange * verb.EffectiveRange / 9, 25);
                 //bool fastCheck = warmup != null && GenTicks.TicksGame - lastMoved > 420;
                 //bool fastCheck = false;
 				foreach (Thing enemy in visibleEnemies)
