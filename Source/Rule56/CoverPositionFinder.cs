@@ -4,6 +4,7 @@ using Verse;
 using UnityEngine;
 using Verse.AI;
 using static CombatAI.SightTracker;
+using static CombatAI.CellFlooder;
 
 namespace CombatAI
 {
@@ -33,8 +34,9 @@ namespace CombatAI
             float maxDistSqr = request.maxRangeFromLocus * request.maxRangeFromLocus;
             CellFlooder flooder = map.GetCellFlooder();
             IntVec3 enemyLoc = request.target.Cell;
-            IntVec3 bestCell = IntVec3.Invalid;            
-            float bestCellVisibility = 1e8f;
+            IntVec3 bestCell = IntVec3.Invalid;
+            float rootVis = sightReader.GetVisibilityToEnemies(request.locus);
+			float bestCellVisibility = 1e8f;
             float bestCellScore = 1e8f;
             bool tpsLow = Finder.Performance.TpsCriticallyLow;
             flooder.Flood(request.locus,
@@ -59,7 +61,7 @@ namespace CombatAI
                 },
                 (cell) =>
                 {
-                    return sightReader.GetVisibilityToEnemies(cell) - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell);
+                    return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell);
                 },
                 (cell) =>
                 {
@@ -96,7 +98,9 @@ namespace CombatAI
             CellFlooder flooder = map.GetCellFlooder();
             IntVec3 enemyLoc = request.target.Cell;
             IntVec3 bestCell = IntVec3.Invalid;
-            float bestCellDist = request.locus.DistanceToSquared(enemyLoc);
+			float rootVis = sightReader.GetVisibilityToEnemies(request.locus);
+			float rootVisFriendlies = sightReader.GetVisibilityToFriendlies(request.locus);
+			float bestCellDist = request.locus.DistanceToSquared(enemyLoc);
             float bestCellScore = 1e8f;
             flooder.Flood(request.locus,
                 (node) =>
@@ -116,11 +120,11 @@ namespace CombatAI
                             bestCell = node.cell;
                         }
                     }
-                    map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
+                    //map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
                 },
                 (cell) =>
                 {
-                    return sightReader.GetVisibilityToEnemies(cell) - sightReader.GetVisibilityToFriendlies(cell) * 2 - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell);
+                    return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (rootVisFriendlies - sightReader.GetVisibilityToFriendlies(cell)) * - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell);
                 },
                 (cell) =>
                 {

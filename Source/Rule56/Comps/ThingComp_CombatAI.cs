@@ -188,7 +188,7 @@ namespace CombatAI.Comps
             #endif
             if (visibleEnemies.Count > 0 && !Finder.Performance.TpsCriticallyLow)
             {
-                if (GenTicks.TicksGame - lastInterupted < 200 && GenTicks.TicksGame - lastSawEnemies > 90)
+                if (GenTicks.TicksGame - lastInterupted < 100 && GenTicks.TicksGame - lastSawEnemies > 90)
                 {
                     lastInterupted = -1;
                     if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
@@ -198,7 +198,7 @@ namespace CombatAI.Comps
                 }
                 lastSawEnemies = GenTicks.TicksGame;
             } 
-            if (GenTicks.TicksGame - lastInterupted < 150 || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastRetreated < 240)
+            if (GenTicks.TicksGame - lastInterupted < 60 || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastRetreated < 65)
             {
                 return;
             }   
@@ -213,11 +213,12 @@ namespace CombatAI.Comps
                 {					
 					return;
                 }
-                Stance_Warmup warmup = null;				
-                if ((warmup = (pawn.stances?.curStance ?? null) as Stance_Warmup) != null && ((warmup.ticksLeft + GenTicks.TicksGame - warmup.startedTick) > 120 || warmup.ticksLeft < 30))
-                {                   
-					return;
-                }
+                Stance_Warmup warmup = null;
+                bool fastCheck = false;
+				if ((warmup = (pawn.stances?.curStance ?? null) as Stance_Warmup) != null && ((warmup.ticksLeft + GenTicks.TicksGame - warmup.startedTick) > 120 || warmup.ticksLeft < 30))
+                {
+                    fastCheck = true;
+				}
 				Verb verb = parent.TryGetAttackVerb();
 				if (verb == null || verb.IsMeleeAttack || !verb.Available() || (Mod_CE.active && Mod_CE.IsAimingCE(verb)))
 				{
@@ -232,7 +233,7 @@ namespace CombatAI.Comps
                 bool retreat = false;
                 float retreatDistSqr = Maths.Max(verb.EffectiveRange * verb.EffectiveRange / 9, 100);
                 //bool fastCheck = warmup != null && GenTicks.TicksGame - lastMoved > 420;
-                bool fastCheck = false;
+                //bool fastCheck = false;
 				foreach (Thing enemy in visibleEnemies)
                 {
                     if (enemy != null && enemy.Spawned && !enemy.Destroyed)
@@ -244,7 +245,7 @@ namespace CombatAI.Comps
 							shiftedPos = enemyPawn.GetMovingShiftedPosition(120);
 						}
 						float distSqr = pawnPosition.DistanceToSquared(shiftedPos);
-                        if (retreatDistSqr < 100)
+                        if (distSqr < retreatDistSqr)
                         {
                             if (enemyPawn != null && distSqr < 49)
                             {
@@ -347,7 +348,7 @@ namespace CombatAI.Comps
                         moveSpeed = pawn.stances.stagger.StaggerMoveSpeedFactor;
 					}
 					float dist = bestEnemyScore;
-                    if (dist > 36)
+                    if (dist > 25)
                     {
                         if (bestEnemyVisibleNow)
                         {

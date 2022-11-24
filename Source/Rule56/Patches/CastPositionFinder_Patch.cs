@@ -18,6 +18,7 @@ namespace CombatAI.Patches
 {
     public static class Harmony_CastPositionFinder
     {
+        private static bool ai_fightEnemies;
         private static Verb verb;
         private static Pawn pawn;
         private static Thing target;
@@ -31,15 +32,29 @@ namespace CombatAI.Patches
         private static InterceptorTracker interceptors;
         private static AvoidanceTracker avoidanceTracker;
         private static AvoidanceTracker.AvoidanceReader avoidanceReader;
-        private static SightTracker.SightReader sightReader;       
+        private static SightTracker.SightReader sightReader;
 
-        [HarmonyPatch(typeof(CastPositionFinder), nameof(CastPositionFinder.TryFindCastPosition))]
+		[HarmonyPatch(typeof(JobGiver_AIFightEnemies), nameof(JobGiver_AIFightEnemies.TryFindShootingPosition))]
+        public static class JobGiver_AIFightEnemies_TryFindShootingPosition_Patch
+		{
+            public static void Prefix()
+            {
+                ai_fightEnemies = true;
+			}			
+		}
+
+		[HarmonyPatch(typeof(CastPositionFinder), nameof(CastPositionFinder.TryFindCastPosition))]
         public static class CastPositionFinder_TryFindCastPosition_Patch
         {
             private static FieldInfo fBestSpotPref = AccessTools.Field(typeof(CastPositionFinder), nameof(CastPositionFinder.bestSpotPref));
 
-            public static void Prefix(CastPositionRequest newReq)
-            {                
+            public static void Prefix(ref CastPositionRequest newReq)
+            {
+                if (ai_fightEnemies)
+                {
+                    ai_fightEnemies = false;
+                    newReq.maxRangeFromTarget = 0;
+				}
                 skipped = true;
                 if (newReq.caster != null && newReq.target != null && (newReq.maxRangeFromTarget == 0 || newReq.maxRangeFromTarget * newReq.maxRangeFromTarget > newReq.caster.Position.DistanceToSquared(newReq.target.Position)) && newReq.maxRangeFromLocus == 0)
                 {
@@ -130,7 +145,8 @@ namespace CombatAI.Patches
                 if (!skipped && sightReader != null)
                 {                    
                     IntVec3 root = pawn.Position;
-                    map.GetCellFlooder().Flood(root,
+                    float rootVis = sightReader.GetVisibilityToEnemies(root);
+					map.GetCellFlooder().Flood(root,
                         (node) =>
                         {
                             grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + sightReader.GetVisibilityToEnemies(node.cell) * 2 + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4;                            
@@ -147,7 +163,7 @@ namespace CombatAI.Patches
                             {
                                 adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);                                
                             }                            
-                            return sightReader.GetVisibilityToEnemies(cell) - Verse.CoverUtility.CalculateOverallBlockChance(adjustedLoc, cell, map) - interceptors.grid.Get(cell);
+                            return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - Verse.CoverUtility.CalculateOverallBlockChance(adjustedLoc, cell, map) - interceptors.grid.Get(cell);
                         },
                         (cell) =>
                         {
