@@ -27,7 +27,7 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<OutputPath>..\..\1.4\Assemblies</OutputPath>
-		<DefineConstants>TRACE;DEBUG;NETFRAMEWORK;NET472;DEBUG_REACTION</DefineConstants>
+		<DefineConstants>TRACE;DEBUG;NETFRAMEWORK;NET472;</DefineConstants>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 	<ItemGroup>	  
@@ -41,7 +41,6 @@
 	  <Folder Include="Deprecated\Utilities\" />
 	  <Folder Include="Defs\" />
 	  <Folder Include="DefOfs\" />
-	  <Folder Include="Compatibility\" />
 	</ItemGroup>	
 	<ItemGroup>
 	  <None Remove="Gui\Core\GUIUtility.ScrollViews" />
@@ -55,7 +54,6 @@
 	  <None Remove="Deprecated\Utilities\" />
 	  <None Remove="Defs\" />
 	  <None Remove="DefOfs\" />
-	  <None Remove="Compatibility\" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">

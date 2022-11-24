@@ -16,12 +16,17 @@ namespace CombatAI
 		[LoadNamed("CombatExtended.Verb_ShootCE:_isAiming")]
 		public static FieldInfo _isAiming;
 		[LoadNamed("CombatExtended.Verb_ShootCE")]
-		public static Type Verb_ShootCE;
+		public static Type Verb_ShootCE;		
 
 		public static bool IsAimingCE(Verb verb)
 		{			
 			return _isAiming != null && Verb_ShootCE.IsInstanceOfType(verb) && (bool) _isAiming.GetValue(verb);
-		}		
+		}
+
+		[RunIf(loaded: true)]
+		private static void OnActive() => Finder.Settings.LeanCE_Enabled = true;
+		[RunIf(loaded: false)]
+		private static void OnInActive() => Finder.Settings.LeanCE_Enabled = false;
 	}
 }
 

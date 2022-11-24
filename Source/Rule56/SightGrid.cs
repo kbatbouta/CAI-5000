@@ -358,9 +358,9 @@ namespace CombatAI
                                             IntVec3 enemyPos = enemy.Position;
                                             if (enemy is Pawn enemyPawn)
                                             {
-												enemyPos = enemyPawn.GetMovingShiftedPosition(240);
-											}
-                                            if (enemyPos.DistanceToSquared(cell) < 36)
+                                                enemyPos = enemyPawn.GetMovingShiftedPosition(240);
+                                            }
+                                            if (enemyPos.DistanceToSquared(cell) < 225)
                                             {
                                                 comp.Notify_EnemyVisible(enemy);
                                             }

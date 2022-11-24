@@ -39,7 +39,21 @@ namespace CombatAI
 
         private void FillCollapsible_Basic(Listing_Collapsible collapsible)
         {
-            collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_CELean, ref Finder.Settings.LeanCE_Enabled);
+            if (Mod_CE.active)
+            {                
+                collapsible.Lambda(20, (rect) =>
+                {
+                    Widgets.DrawBoxSolid(rect, Color.white);
+                    rect = rect.ContractedBy(1);
+					Widgets.DrawBoxSolid(rect, !Finder.Settings.LeanCE_Enabled ? Color.yellow : Color.green);
+                    rect.xMin += 5;
+                    GUI.color = Color.black;
+                    Text.CurFontStyle.fontStyle = FontStyle.Bold;
+                    Widgets.Label(rect, !Finder.Settings.LeanCE_Enabled ? "Combat Extended Detected! PLEASE ENABLE CE PROFILE!" : "Combat Extended Detected!");
+				}, useMargins: false);
+				collapsible.Line(1);
+			}
+            collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_CELean, ref Finder.Settings.LeanCE_Enabled);            
             collapsible.Line(1);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_PerformanceOpt, ref Finder.Settings.PerformanceOpt_Enabled, tooltip: R.Keyed.CombatAI_Settings_Basic_PerformanceOpt_Description);			
 			collapsible.Line(1);
@@ -263,6 +277,7 @@ namespace CombatAI
 
 				collapsible_basic.Group = collapsible_groupLeft;
 				collapsible_groupLeft.Register(collapsible_basic);
+                collapsible_basic.Expanded = true;				
 			}
             Rect rectLeft = inRect.LeftHalf();
             // -------------
@@ -270,7 +285,10 @@ namespace CombatAI
             //
             // general settings
             // collapsible_basic.Expanded = true;
-
+            if (!collapsible_groupLeft.AnyExpanded)
+            {
+                collapsible_basic.Expanded = true;
+			}
             collapsible_basic.Begin(rectLeft, R.Keyed.CombatAI_Settings_Basic);
             FillCollapsible_Basic(collapsible_basic);
             collapsible_basic.End(ref rectLeft);
@@ -286,9 +304,8 @@ namespace CombatAI
 			// Right section
 			Rect rectRight = inRect.RightHalf();
             rectRight.xMin += 5;
-            collapsible_advance.Expanded = true;
-
-            collapsible_advance.Begin(rectRight, R.Keyed.CombatAI_Settings_Advance);
+            collapsible_advance.Expanded = true;			
+			collapsible_advance.Begin(rectRight, R.Keyed.CombatAI_Settings_Advance);
             FillCollapsible_Advance(collapsible_advance);
             collapsible_advance.End(ref rectRight);
             rectRight.yMin += 5;

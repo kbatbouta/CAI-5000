@@ -2,7 +2,6 @@
 using HarmonyLib;
 using UnityEngine;
 using Verse;
-using static Verse.ThreadLocalDeepProfiler;
 
 namespace CombatAI.Gui
 {

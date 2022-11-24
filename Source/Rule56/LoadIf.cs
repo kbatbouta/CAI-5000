@@ -1,8 +1,7 @@
 ﻿using System;
-namespace CombatAI
-{
+namespace CombatAI {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Field)]
-	public class LoadIf : Attribute
+	public partial class LoadIf : Attribute
 	{
 		public string packageId;
 

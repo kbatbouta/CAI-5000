@@ -125,6 +125,14 @@ namespace CombatAI
                 SightSettings_SettlementTurrets = new SightPerformanceSettings(8, 15, 12);
             }
             Scribe_Values.Look(ref LeanCE_Enabled, $"LeanCE_Enabled.{version}");
+            //if (!LeanCE_Enabled && Mod_CE.active)
+            //{
+            //    LeanCE_Enabled = true;
+            //}
+            //else if (LeanCE_Enabled && !Mod_CE.active)
+			//{
+			//	LeanCE_Enabled = false;
+			//}
             Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
             Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);            
             Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);

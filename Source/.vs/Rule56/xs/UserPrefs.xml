@@ -1,24 +1,24 @@
 ﻿<Properties>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.Workbench ActiveDocument="Rule56/Comps/ThingComp_CombatAI.cs">
     <Files>
       <File FileName="Rule56/Patches/PathFinder_Patch.cs" />
-      <File FileName="Rule56/Comps/ThingComp_CombatAI.cs" Line="52" Column="19" />
+      <File FileName="Rule56/Comps/ThingComp_CombatAI.cs" Line="211" Column="20" />
       <File FileName="Rule56/Settings.cs" />
       <File FileName="../1.4/Languages/English/Keyed/Translations.xml" />
       <File FileName="Rule56/CombatAIMod.cs" />
       <File FileName="Rule56/Gui/Listings/IListing_Custom.cs" />
-      <File FileName="Rule56/SightGrid.cs" />
+      <File FileName="Rule56/SightGrid.cs" Line="359" Column="73" />
       <File FileName="Rule56/ShadowCastingUtility.Extras.cs" />
-      <File FileName="Rule56/ShadowCastingUtility.cs" />
+      <File FileName="Rule56/ShadowCastingUtility.cs" Line="238" Column="21" />
       <File FileName="Rule56/CombatReservationManager.cs" />
       <File FileName="Rule56/Comps/CompProperties_CombatAI.cs" />
-      <File FileName="Rule56/Collections/FlagArray.cs" Line="1" Column="1" />
+      <File FileName="Rule56/Collections/FlagArray.cs" />
       <File FileName="../About/About.xml" />
       <File FileName="Rule56/SightUtility.cs" />
       <File FileName="Rule56/Patches/Game_Patch.cs" />
@@ -57,7 +57,7 @@
       <File FileName="Rule56/Patches/Pawn_Patch.cs" />
       <File FileName="Rule56/Patches/CoverGrid_Patch.cs" />
       <File FileName="Rule56/Patches/Building_TurretGun_Patch.cs" />
-      <File FileName="Rule56/Pawn_CustomDutyTracker.cs" Line="1" Column="1" />
+      <File FileName="Rule56/Pawn_CustomDutyTracker.cs" />
       <File FileName="Rule56/CombatAI_MeshMaker.cs" />
       <File FileName="../../CombatRealism/Source/CombatExtended/CombatExtended/CE_MeshMaker.cs" />
       <File FileName="Rule56/MapComponent_FogGrid.cs" />
@@ -81,19 +81,16 @@
       <File FileName="Rule56/Deprecated/Utilities/Tracking/ThingsTrackingModel.cs" />
       <File FileName="Rule56/Deprecated/Utilities/Tracking/TrackedThingsRequestCategory.cs" />
       <File FileName="Rule56/Deprecated/Utilities/GenClosest.cs" />
-      <File FileName="Rule56/Patches/Deprecated /Thing_Patch.cs" />
       <File FileName="Rule56/IHeatGrid.cs" />
-      <File FileName="Rule56/Patches/Deprecated /LordJob_AssaultColony_Patch.cs" />
-      <File FileName="Rule56/Patches/Deprecated /Projectile_Patch.cs" />
       <File FileName="Rule56/Patches/Building_Door_Patch.cs" />
       <File FileName="Rule56/Patches/Selector_Patch.cs" />
       <File FileName="Rule56/Patches/TooltipGiverList_Patch.cs" />
       <File FileName="Rule56/ArmorUtility.cs" />
       <File FileName="Rule56/PawnBodyModel.cs" />
       <File FileName="Rule56/IBucketable.cs" />
-      <File FileName="Rule56/Collections/ResizableArray.cs" Line="54" Column="10" />
-      <File FileName="Rule56/Collections/FastQueue.cs" Line="85" Column="10" />
-      <File FileName="Rule56/Pawn_CustomThreatTracker.cs" Line="18" Column="1" />
+      <File FileName="Rule56/Collections/ResizableArray.cs" />
+      <File FileName="Rule56/Collections/FastQueue.cs" />
+      <File FileName="Rule56/Pawn_CustomThreatTracker.cs" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">

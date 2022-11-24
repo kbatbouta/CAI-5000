@@ -1,6 +1,6 @@
 ﻿using System;
 namespace CombatAI
-{
+{	
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Field)]
 	public class LoadNamed : Attribute
 	{
@@ -12,6 +12,6 @@ namespace CombatAI
 			this.name = name;
 			this.prams = prams;
 		}
-	}
+	}	
 }
 
