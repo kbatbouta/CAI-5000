@@ -217,8 +217,15 @@ namespace CombatAI.Comps
                 bool fastCheck = false;
 				if ((warmup = (pawn.stances?.curStance ?? null) as Stance_Warmup) != null && ((warmup.ticksLeft + GenTicks.TicksGame - warmup.startedTick) > 120 || warmup.ticksLeft < 30))
                 {
-                    fastCheck = true;
-				}
+                    if (pawn.RaceProps.IsMechanoid)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        fastCheck = true;
+                    }
+				}                
 				Verb verb = parent.TryGetAttackVerb();
 				if (verb == null || verb.IsMeleeAttack || !verb.Available() || (Mod_CE.active && Mod_CE.IsAimingCE(verb)))
 				{
