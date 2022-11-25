@@ -22,19 +22,35 @@ namespace CombatAI {
             /// <summary>
             /// Thing.
             /// </summary>
-            public Thing thing;
+            public readonly Thing thing;
+			/// <summary>
+			/// Thing.
+			/// </summary>
+			public readonly Pawn pawn;
+			/// <summary>
+			/// Thing.
+			/// </summary>
+			public readonly Building_TurretGun turretGun;
+			/// <summary>
+			/// Thing.
+			/// </summary>
+			public readonly bool isPlayer;
+			/// <summary>
+			/// Thing's faction on IBucketableThing instance creation.
+			/// </summary>
+			public readonly Faction faction;
             /// <summary>
-            /// Thing's faction on IBucketableThing instance creation.
+            /// Sighting component.
             /// </summary>
-            public Faction faction;
+            public readonly ThingComp_Sighter sighter;
             /// <summary>
             /// Dormant comp.
             /// </summary>
-            public CompCanBeDormant dormant;
+            public readonly CompCanBeDormant dormant;
 			/// <summary>
 			/// Dormant comp.
 			/// </summary>
-			public ThingComp_CombatAI ai;
+			public readonly ThingComp_CombatAI ai;
 			/// <summary>
 			/// Last cycle.
 			/// </summary>
@@ -42,7 +58,7 @@ namespace CombatAI {
             /// <summary>
             /// Pawn pawn
             /// </summary>
-            public List<IntVec3> path = new List<IntVec3>(16);
+            public readonly List<IntVec3> path = new List<IntVec3>(16);
             /// <summary>
             /// Last tick this pawn scanned for enemies
             /// </summary>
@@ -60,9 +76,13 @@ namespace CombatAI {
 
             public IBucketableThing(Thing thing, int bucketIndex)
             {
-                this.dormant = thing.GetComp_Fast<CompCanBeDormant>();
+				this.thing = thing;
+				this.pawn = thing as Pawn;
+                this.turretGun = thing as Building_TurretGun;
+				this.isPlayer = thing.Faction.IsPlayerSafe();
+				this.dormant = thing.GetComp_Fast<CompCanBeDormant>();
                 this.ai = thing.GetComp_Fast<ThingComp_CombatAI>();
-                this.thing = thing;
+                this.sighter = thing.GetComp_Fast<ThingComp_Sighter>();                
                 this.faction = thing.Faction;
                 this.bucketIndex = bucketIndex;
             }
@@ -147,7 +167,7 @@ namespace CombatAI {
             for (int i = 0; i < bucket.Count; i++)
             {
                 IBucketableThing item = bucket[i];
-                if(!Valid(item.thing))
+                if(!Valid(item))
                 {
                     tmpInvalidRecords.Add(item);
                     continue;
@@ -234,7 +254,7 @@ namespace CombatAI {
             {
                 Log.Error($"CAI: SightGridManager Notify_MapRemoved failed to stop thread with {er}");
             }
-        }       
+        }
 
         private bool Consistent(IBucketableThing item)
         {
@@ -251,26 +271,31 @@ namespace CombatAI {
             {
                 return false;
             }
-            if (!thing.Spawned || thing.Destroyed)
+            if (thing.Destroyed || !thing.Spawned)
             {
                 return false;
             }
-            return (thing is Pawn pawn && !pawn.Dead) || thing is Building_Turret;
+			return (thing is Pawn pawn && !pawn.Dead) || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter));
         }
 
-        private bool Skip(IBucketableThing item)
+		private bool Valid(IBucketableThing item)
+		{
+            return !item.thing.Destroyed && item.thing.Spawned && (item.pawn == null || !item.pawn.Dead);			
+		}
+
+		private bool Skip(IBucketableThing item)
         {
-            if (!playerAlliance && item.thing is Pawn pawn)
-            {                
-                return (GenTicks.TicksGame - pawn.needs?.rest?.lastRestTick <= 30) || pawn.Downed;
-            }            
-            if (item.thing is Building_CCTVBase cctv)
+            if (item.pawn != null)
             {
-                return !cctv.Active;
+                return !playerAlliance && ((GenTicks.TicksGame - item.pawn.needs?.rest?.lastRestTick <= 30) || item.pawn.Downed);
             }
-            if (item.thing is Building_TurretGun turretGun)
+            if (item.sighter != null)
             {
-                return !turretGun.Active || (turretGun.IsMannable && !(turretGun.mannableComp?.MannedNow ?? false));
+                return playerAlliance && !item.sighter.Active;
+            }
+            if (item.turretGun != null)
+            {
+                return playerAlliance && (!item.turretGun.Active || (item.turretGun.IsMannable && !(item.turretGun.mannableComp?.MannedNow ?? false)));
             }
             if (Mod_CE.active && item.thing is Building_Turret turret)
             {                
@@ -290,7 +315,15 @@ namespace CombatAI {
             {
                 return false;
             }
-            int range = SightUtility.GetSightRange(item.thing, playerAlliance);
+            int range;
+            if (item.sighter != null)
+            {
+				range = SightUtility.GetSightRange(item.sighter, playerAlliance);
+			}
+            else
+            {
+				range = SightUtility.GetSightRange(item.thing, playerAlliance);
+            }
             if (range == 0)
             {
                 return false;
@@ -303,32 +336,27 @@ namespace CombatAI {
                 Log.Error($"ISMA: SighGridUpdater {item.thing} position is outside the map's bounds!");
                 return false;
             }
-            Thing thing = item.thing;
-            Pawn pawn = item.thing as Pawn;            
             IntVec3 flagPos = pos;
-            if(pawn != null)
+            if(item.pawn != null)
             {
-                flagPos = GetShiftedPosition(thing, 240, null);
+                flagPos = GetShiftedPosition(item.pawn, 240, null);
 			}
-			ThingComp_CombatAI comp = item.ai ?? (item.ai = thing.GetComp_Fast<ThingComp_CombatAI>());
-            SightTracker.SightReader reader = comp?.sightReader ?? null;
+            SightTracker.SightReader reader = item.ai?.sightReader ?? null;
             bool scanForEnemies;
-            if ((scanForEnemies = comp != null && ticks - comp.lastInterupted >= 45 && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15) && comp?.sightReader != null && reader != null && !(item.faction?.IsPlayerSafe() ?? false)))
+            if (scanForEnemies = (!item.isPlayer && item.sighter == null && reader != null && item.ai != null && ticks - item.ai.lastInterupted >= 45 && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15)))
             {
                 if (item.dormant != null && !item.dormant.Awake)
                 {
                     scanForEnemies = false;
                 }
-                else if(pawn != null && pawn.mindState?.duty?.def == DutyDefOf.SleepForever)
+                else if(item.pawn != null && item.pawn.mindState?.duty?.def == DutyDefOf.SleepForever)
                 {
                     scanForEnemies = false;
 				}                
 			}
 			if (scanForEnemies)
 			{
-				item.lastScannedForEnemies = ticks;
-                //
-                //map.debugDrawer.FlashCell(pos, 1);                
+				item.lastScannedForEnemies = ticks;                              
             }
 			Action action = () =>
             {
@@ -336,16 +364,15 @@ namespace CombatAI {
                 {
                     asyncActions.EnqueueMainThreadAction(delegate
                     {
-                        if (!thing.Destroyed && thing.Spawned)
+                        if (!item.thing.Destroyed && item.thing.Spawned)
                         {
-                            comp.OnScanStarted();
+                            item.ai.OnScanStarted();
                         }
                     });                  
                 }
 				grid.Next();
-				grid.Set(flagPos, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);
-				grid.Next();
-				//grid.Set(posOriginal, 1.0f, Vector2.zero);
+				grid.Set(flagPos, (item.pawn == null || !item.pawn.Downed) ? GetFlags(item) : 0);
+				grid.Next();				
 				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
 				for (int i = 0; i < item.path.Count; i++)
                 {
@@ -365,14 +392,14 @@ namespace CombatAI {
                             // on the main thread check for enemies on or near this cell.
                             asyncActions.EnqueueMainThreadAction(delegate
                             {
-                                if (!thing.Destroyed && thing.Spawned)
+                                if (!item.thing.Destroyed && item.thing.Spawned)
                                 {
                                     thingBuffer1.Clear();
 									sightTracker.factionedUInt64Map.GetThings(flag, thingBuffer1);
                                     for(int i = 0; i < thingBuffer1.Count; i++)
                                     {
                                         Thing enemy = thingBuffer1[i];                                        
-                                        if (enemy.Spawned && !enemy.Destroyed && enemy.HostileTo(thing))
+                                        if (enemy.Spawned && !enemy.Destroyed && enemy.HostileTo(item.thing))
                                         {
                                             IntVec3 enemyPos = enemy.Position;
                                             if (enemy is Pawn enemyPawn)
@@ -381,7 +408,7 @@ namespace CombatAI {
                                             }
                                             if (enemyPos.DistanceToSquared(cell) < 225)
                                             {
-                                                comp.Notify_EnemyVisible(enemy);
+                                                item.ai.Notify_EnemyVisible(enemy);
                                             }
 										}
                                     }
@@ -410,20 +437,20 @@ namespace CombatAI {
                         }
                         grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                     }
-                }, range, settings.carryLimit, buffer);				
-				//if (grid.GetSignalNum(flagPos) == 0)
-    //            {
-				//	grid.Set(flagPos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);
-				//}
+                }, range, settings.carryLimit, buffer);
+                //if (grid.GetSignalNum(flagPos) == 0)
+                //{
+                //	grid.Set(flagPos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);
+                //}
                 // if we are scanning for enemies
                 if (scanForEnemies)
                 {
                     // notify the pawn so they can start processing targets.
                     asyncActions.EnqueueMainThreadAction(delegate
                     {
-                        if (comp.parent != null && !comp.parent.Destroyed && comp.parent.Spawned)
+                        if (item.thing != null && !item.thing.Destroyed && item.thing.Spawned)
                         {
-                            comp.OnScanFinished();
+							item.ai.OnScanFinished();
                         }
                     });
                 }

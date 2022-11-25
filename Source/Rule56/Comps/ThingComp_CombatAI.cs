@@ -14,9 +14,11 @@ namespace CombatAI.Comps
 {
     public class ThingComp_CombatAI : ThingComp
     {
-        private HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
+#if DEBUG_REACTION
+		private HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
         private List<IntVec3> _path = new List<IntVec3>();
         private List<Color> _colors = new List<Color>();
+#endif
 
         private IntVec3 cellBefore;
         private List<IntVec3> miningCells = new List<IntVec3>(64);

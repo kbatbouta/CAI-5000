@@ -41,7 +41,6 @@
 	  <Folder Include="Deprecated\Utilities\" />
 	  <Folder Include="Defs\" />
 	  <Folder Include="DefOfs\" />
-	  <Folder Include="Buildings\" />
 	</ItemGroup>	
 	<ItemGroup>
 	  <None Remove="Gui\Core\GUIUtility.ScrollViews" />
@@ -55,7 +54,6 @@
 	  <None Remove="Deprecated\Utilities\" />
 	  <None Remove="Defs\" />
 	  <None Remove="DefOfs\" />
-	  <None Remove="Buildings\" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">

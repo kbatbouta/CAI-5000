@@ -8,6 +8,9 @@ using Verse.AI;
 using System.Collections.ObjectModel;
 using NAudio.Utils;
 using UnityEngine.UI;
+using CombatAI.Comps;
+using System.Net.NetworkInformation;
+using UnityEngine.SocialPlatforms;
 
 namespace CombatAI
 {
@@ -20,6 +23,21 @@ namespace CombatAI
 			return GetSightRange(thing, !(Faction.OfPlayerSilentFail?.HostileTo(thing.Faction) ?? true));
 		}
 
+		public static int GetSightRange(ThingComp_Sighter sighter, bool isPlayer)
+		{
+			if (!isPlayer || !Finder.Settings.FogOfWar_Enabled)
+			{
+				return 0;
+			}
+			if (rangeCache.TryGetValue(sighter.parent.thingIDNumber, out Pair<int, int> store) && GenTicks.TicksGame - store.First <= 600)
+			{
+				return store.Second;
+			}
+			int range = Mathf.CeilToInt(sighter.SightRadius * Finder.Settings.FogOfWar_RangeMultiplier);
+			rangeCache[sighter.parent.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);			
+			return range;
+		}
+
 		public static int GetSightRange(Thing thing, bool isPlayer)
 		{
 			if (rangeCache.TryGetValue(thing.thingIDNumber, out Pair<int, int> store) && GenTicks.TicksGame - store.First <= 600)
@@ -28,7 +46,7 @@ namespace CombatAI
 			}
 			int range = 0;
 			if (thing is Pawn pawn)
-			{				
+			{
 				if (Finder.Settings.FogOfWar_Enabled && isPlayer)
 				{
 					range = Mathf.CeilToInt(GetSightRangePlayer(pawn, true) * pawn.GetStatValue(CombatAI.CombatAI_StatDefOf.CombatAI_SightMul));
@@ -36,20 +54,20 @@ namespace CombatAI
 				else
 				{
 					range = GetSightRange(pawn);
-				}							
+				}
 			}
 			else if (thing is Building_TurretGun turretGun)
 			{
 				range = GetSightRange(turretGun);
 			}
-			else if(Mod_CE.active && thing is Building_Turret turret)
-			{	
+			else if (Mod_CE.active && thing is Building_Turret turret)
+			{
 				range = Mathf.CeilToInt(turret.AttackVerb?.EffectiveRange ?? 0f);
-			}			
+			}
 			if (Finder.Settings.FogOfWar_Enabled && isPlayer)
 			{
 				range = Mathf.CeilToInt(range * Finder.Settings.FogOfWar_RangeMultiplier);
-			}	
+			}
 			rangeCache[thing.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);
 			return range;
 		}		

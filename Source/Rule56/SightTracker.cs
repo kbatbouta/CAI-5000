@@ -456,8 +456,8 @@ namespace CombatAI
             }              
             return true;
         }
-        
-        public void Register(Thing thing)
+
+	    public void Register(Thing thing)
         {
             // make sure it's not already in.
             factionedUInt64Map.Remove(thing);

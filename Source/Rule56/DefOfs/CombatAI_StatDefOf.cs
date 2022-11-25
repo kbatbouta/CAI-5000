@@ -8,7 +8,7 @@ namespace CombatAI
 	public class CombatAI_StatDefOf
 	{
 		public static StatDef CombatAI_SightMul;
-		public static StatDef CombatAI_AggroMul;
+		public static StatDef CombatAI_AggroMul;		
 	}
 }
 
