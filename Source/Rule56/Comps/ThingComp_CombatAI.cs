@@ -24,8 +24,8 @@ namespace CombatAI.Comps
         private List<IntVec3> miningCells = new List<IntVec3>(64);
 
         private Job moveJob;        
-		private int reactionBlockedUntil;
-		private int lastReactionBlocked;
+		//private int reactionBlockedUntil;
+		//private int lastReactionBlocked;
 		private int lastMoved;        				
 
 		public int lastInterupted;
@@ -202,7 +202,7 @@ namespace CombatAI.Comps
                 }
                 lastSawEnemies = GenTicks.TicksGame;
             } 
-            if (GenTicks.TicksGame < reactionBlockedUntil || GenTicks.TicksGame - lastInterupted < 60 || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastRetreated < 65)
+            if (GenTicks.TicksGame - lastInterupted < 60 || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastRetreated < 65)
             {
                 return;
             }            
@@ -328,16 +328,10 @@ namespace CombatAI.Comps
 				{
                     return;
                 }
-                if(warmup != null && effectiveRange >= 35 && verb.currentTarget.IsValid && GenTicks.TicksGame - lastReactionBlocked > 180)
+				if (Mod_CE.active && warmup != null && GenTicks.TicksGame - 180 < lastInterupted && Mathf.Lerp(400, 1600, warmup.ticksLeft / 60) < bestEnemyScore)
                 {
-                    // try to not change target if the new best enemy and current enemy are far enough
-                    float l1 = effectiveRange * effectiveRange * 0.49f;
-                    if(verb.currentTarget.Cell.DistanceToSquared(pawnPosition) > l1 && bestEnemyPositon.DistanceToSquared(pawnPosition) > l1)
-                    {                        
-						reactionBlockedUntil = (lastReactionBlocked = GenTicks.TicksGame) + warmup.ticksLeft + 30;
-						return;
-                    }
-				}
+                    return;                   
+                }
                 if (retreat)
                 {
                     //pawn.Map.debugDrawer.FlashCell(pawn.Position, 1f, "FLEE", 200);
