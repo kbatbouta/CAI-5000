@@ -208,24 +208,19 @@ namespace CombatAI.Comps
 				if (GenTicks.TicksGame - lastInterupted < 60 * bodySize || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastRetreated < 65 * bodySize)
 				{
 					return;
-				}
-				//if (pawn.CurJob == moveJob && GenTicks.TicksGame - lastInterupted < 300)
-				//{
-				//    lastMoved = GenTicks.TicksGame + 50;
-				//    return;
-				//}
+				}		
 				if (Mod_CE.active && (pawn.CurJobDef.Is(Mod_CE.ReloadWeapon) || pawn.CurJobDef.Is(Mod_CE.HunkerDown)))
                 {					
 					return;
                 }
-                PawnDuty duty;
-                if ((duty = pawn.mindState.duty) != null && (duty.def.Is(DutyDefOf.Build) || duty.def.Is(DutyDefOf.SleepForever) || duty.def.Is(DutyDefOf.TravelOrLeave)))
+                PawnDuty duty = pawn.mindState.duty;
+				if (duty != null && (duty.def.Is(DutyDefOf.Build) || duty.def.Is(DutyDefOf.SleepForever) || duty.def.Is(DutyDefOf.TravelOrLeave)))
                 {
                     lastInterupted = GenTicks.TicksGame + Rand.Int % 240;
                     return;
                 }
                 Stance_Warmup warmup = (pawn.stances?.curStance ?? null) as Stance_Warmup;
-				if (warmup != null && bodySize > 2.0f)
+				if (warmup != null && bodySize > 2.5f)
 				{
 					return;
 				}
@@ -246,7 +241,7 @@ namespace CombatAI.Comps
                 bool bestEnemyVisibleNow = warmup != null;
                 bool bestEnemyVisibleSoon = false;
                 bool retreat = false;
-                bool canRetreat = pawn.RaceProps.baseBodySize <= 1.5f;
+                bool canRetreat = pawn.RaceProps.baseHealthScale <= 2.0f && pawn.RaceProps.baseBodySize <= 2.2f;
                 float effectiveRange = verb.EffectiveRange;
 				float retreatDistSqr = Maths.Max(effectiveRange * effectiveRange / 9, 25);               
 				foreach (Thing enemy in visibleEnemies)
@@ -344,7 +339,7 @@ namespace CombatAI.Comps
                         pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
                         pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);                        
                     }
-                    else if(warmup != null)
+                    else if(warmup == null)
                     {
                         Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                         pawn.jobs.StopAll();
@@ -386,7 +381,7 @@ namespace CombatAI.Comps
                                 pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);                                
                                 changedPos = true;
                             }
-                            else if(warmup != null)
+                            else if(warmup == null)
                             {
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                                 pawn.jobs.StopAll();
@@ -413,7 +408,7 @@ namespace CombatAI.Comps
 								//pawn.Map.debugDrawer.FlashCell(pawn.Position, 1, "3", 200);
 								changedPos = true;
 							}
-                            else if(warmup != null)
+                            else if(warmup == null)
                             {
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                                 pawn.jobs.StopAll();
