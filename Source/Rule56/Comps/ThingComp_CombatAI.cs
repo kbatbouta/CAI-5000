@@ -370,7 +370,7 @@ namespace CombatAI.Comps
                             request.maxRangeFromTarget = 9999;
 							request.maxRangeFromCaster = Rand.Chance(0.5f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 2, 10) : 2;
                             request.wantCoverFromTarget = true;
-                            if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && cell != pawnPosition)
+                            if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && (cell != pawnPosition || warmup == null))
                             {                                   
                                 Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
                                 job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
@@ -381,8 +381,8 @@ namespace CombatAI.Comps
                                 pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);                                
                                 changedPos = true;
                             }
-                            else if(warmup == null)
-                            {
+							else if (warmup != null)
+							{
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                                 pawn.jobs.StopAll();
                                 pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);                                
@@ -397,7 +397,7 @@ namespace CombatAI.Comps
                             request.verb = verb;
                             request.maxRangeFromCaster = Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 2, 10);
 							request.checkBlockChance = true;
-                            if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && cell != pawnPosition)
+                            if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && (cell != pawnPosition || warmup == null))
                             {
                                 Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
                                 job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
@@ -408,7 +408,7 @@ namespace CombatAI.Comps
 								//pawn.Map.debugDrawer.FlashCell(pawn.Position, 1, "3", 200);
 								changedPos = true;
 							}
-                            else if(warmup == null)
+                            else if(warmup != null)
                             {
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                                 pawn.jobs.StopAll();
