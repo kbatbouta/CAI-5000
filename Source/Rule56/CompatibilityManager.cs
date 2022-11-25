@@ -45,22 +45,51 @@ namespace CombatAI
 									success = true;
 								}
 								else if (field.HasAttribute<LoadNamed>() && (named = field.TryGetAttribute<LoadNamed>())?.name != null)
-								{
-									if (typeof(Type).IsAssignableFrom(fieldType))
+								{									
+									switch (named.type)
 									{
-										field.SetValue(null, AccessTools.TypeByName(named.name));
-										success = true;
-									}
-									else if (typeof(FieldInfo).IsAssignableFrom(fieldType))
-									{
-										field.SetValue(null, AccessTools.Field(named.name));
-										success = true;
-									}
-									else if (typeof(MethodInfo).IsAssignableFrom(fieldType))
-									{
-										field.SetValue(null, AccessTools.Method(named.name, parameters: named.prams));
-										success = true;
-									}
+										case LoadableType.Unspecified:
+											if (typeof(Type).IsAssignableFrom(fieldType))
+											{
+												field.SetValue(null, AccessTools.TypeByName(named.name));
+												success = true;
+											}
+											else if (typeof(FieldInfo).IsAssignableFrom(fieldType))
+											{
+												field.SetValue(null, AccessTools.Field(named.name));
+												success = true;
+											}
+											else if (typeof(MethodInfo).IsAssignableFrom(fieldType))
+											{
+												field.SetValue(null, AccessTools.Method(named.name, parameters: named.prams));
+												success = true;
+											}
+											break;
+										case LoadableType.Field:
+											field.SetValue(null, AccessTools.Field(named.name));
+											success = true;
+											break;
+										case LoadableType.Type:
+											field.SetValue(null, AccessTools.TypeByName(named.name));
+											success = true;
+											break;
+										case LoadableType.Constructor:
+											field.SetValue(null, AccessTools.Constructor(AccessTools.TypeByName(named.name), parameters: named.prams));
+											success = true;
+											break;
+										case LoadableType.Setter:
+											field.SetValue(null, AccessTools.PropertySetter(named.name));
+											success = true;
+											break;
+										case LoadableType.Getter:
+											field.SetValue(null, AccessTools.PropertyGetter(named.name));
+											success = true;
+											break;
+										case LoadableType.Method:
+											field.SetValue(null, AccessTools.Method(named.name, parameters: named.prams));
+											success = true;
+											break;
+									}									
 								}
 								else if (typeof(Boolean).IsAssignableFrom(fieldType) && field.Name == "active")
 								{
@@ -69,7 +98,7 @@ namespace CombatAI
 								}
 								if (!success || field.GetValue(null) == null)
 								{
-									Log.Error($"CAI: Failed to load '{field.Name}'({field.FieldType}) from '{attr.packageId}'");
+									Log.Error($"CAI: Failed to find '{field.Name}'({field.FieldType}) from '{attr.packageId}'");
 								}
 								else
 								{

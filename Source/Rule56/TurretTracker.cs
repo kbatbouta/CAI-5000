@@ -29,11 +29,12 @@ namespace CombatAI
             {
                 Turrets.Add(t);                
             }
-            if (t is Building_TurretGun turretGun)
-            {
-                t.Map.GetComp_Fast<SightTracker>().Register(turretGun);
-            }
-        }        
+			t.Map.GetComp_Fast<SightTracker>().Register(t);
+			//if (t is Building_TurretGun turretGun)
+			//{
+			//    t.Map.GetComp_Fast<SightTracker>().Register(turretGun);
+			//}
+		}        
 
         public void DeRegister(Building_Turret t)
         {
@@ -41,10 +42,12 @@ namespace CombatAI
             {
                 Turrets.Remove(t);                
             }
-            if (t is Building_TurretGun turretGun)
-            {
-                t.Map.GetComp_Fast<SightTracker>().DeRegister(turretGun);
-            }
+            t.Map.GetComp_Fast<SightTracker>().DeRegister(t);
+            //Log.Message($"{t}");
+            //if (t is Building_TurretGun turretGun)
+            //{
+            //    t.Map.GetComp_Fast<SightTracker>().DeRegister(turretGun);
+            //}
         }      
 
         // Returns the closest turret to `position` on the which matches the criteria set in `validator`

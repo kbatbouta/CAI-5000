@@ -30,12 +30,13 @@ namespace CombatAI.Gui
             //patcher("Text", "CurTextAreaReadOnlyStyle", true);
             //patcher("Text", "CurTextAreaStyle", true);
             //patcher("Text", "CurTextFieldStyle", true);
-        }      
-        
-        private static class Text_Anchor_Setter_Patch
+        }
+
+		[HarmonyPatch(typeof(Text))]
+		private static class Text_Anchor_Setter_Patch
         {
-            [HarmonyPatch(typeof(Text), nameof(Text.Anchor), MethodType.Getter)]
-            [HarmonyPrefix]
+			[HarmonyPrefix]
+			[HarmonyPatch(nameof(Text.Anchor), MethodType.Getter)]            
             public static bool Getter(ref TextAnchor __result)
             {
                 if (GUIFont.UseCustomFonts)
@@ -46,8 +47,8 @@ namespace CombatAI.Gui
                 return true;
             }
 
-            [HarmonyPatch(typeof(Text), nameof(Text.Anchor), MethodType.Setter)]
-            [HarmonyPrefix]
+			[HarmonyPrefix]
+			[HarmonyPatch(nameof(Text.Anchor), MethodType.Setter)]            
             public static bool Setter(TextAnchor value)
             {
                 if (GUIFont.UseCustomFonts)
@@ -59,10 +60,11 @@ namespace CombatAI.Gui
             }
         }
 
-        private static class Text_WordWrap_Patch
+		[HarmonyPatch(typeof(Text))]
+		private static class Text_WordWrap_Patch
         {
-            [HarmonyPatch(typeof(Text), nameof(Text.WordWrap), MethodType.Getter)]
-            [HarmonyPrefix]
+			[HarmonyPrefix]
+			[HarmonyPatch(nameof(Text.WordWrap), MethodType.Getter)]            
             public static bool Getter(ref bool __result)
             {
                 if (GUIFont.UseCustomFonts)
@@ -73,8 +75,8 @@ namespace CombatAI.Gui
                 return true;
             }
 
-            [HarmonyPatch(typeof(Text), nameof(Text.WordWrap), MethodType.Setter)]
-            [HarmonyPrefix]
+			[HarmonyPrefix]
+			[HarmonyPatch(nameof(Text.WordWrap), MethodType.Setter)]            
             public static bool Setter(bool value)
             {
                 if (GUIFont.UseCustomFonts)
@@ -86,10 +88,11 @@ namespace CombatAI.Gui
             }
         }
 
-        private static class Text_Font_Patch
+		[HarmonyPatch(typeof(Text))]
+		private static class Text_Font_Patch
         {
-            [HarmonyPatch(typeof(Text), nameof(Text.Font), MethodType.Getter)]
-            [HarmonyPrefix]
+			[HarmonyPrefix]
+			[HarmonyPatch(nameof(Text.Font), MethodType.Getter)]            
             public static bool Getter(ref GameFont __result)
             {
                 if (GUIFont.UseCustomFonts)
@@ -112,8 +115,8 @@ namespace CombatAI.Gui
                 return true;
             }
 
-            [HarmonyPatch(typeof(Text), nameof(Text.Font), MethodType.Setter)]
-            [HarmonyPrefix]
+			[HarmonyPrefix]
+			[HarmonyPatch(nameof(Text.Font), MethodType.Setter)]            
             public static bool Setter(ref GameFont value)
             {
                 if (GUIFont.UseCustomFonts)
@@ -136,11 +139,12 @@ namespace CombatAI.Gui
             }
         }
 
+
+        [HarmonyPatch]
         private static class Text_CurFontStyle_Patch
         {
-            [HarmonyPatch(typeof(Text), nameof(Text.CurFontStyle), MethodType.Getter)]
-            [HarmonyPrefix]
-            public static bool Getter(ref GUIStyle __result)
+            [HarmonyPatch(typeof(Text), nameof(Text.CurFontStyle), MethodType.Getter)]            
+            public static bool Prefix(ref GUIStyle __result)
             {
                 if (GUIFont.UseCustomFonts)
                 {
@@ -152,11 +156,11 @@ namespace CombatAI.Gui
             }
         }
 
-        private static class Text_CurTextAreaReadOnlyStyle_Patch
+		[HarmonyPatch]
+		private static class Text_CurTextAreaReadOnlyStyle_Patch
         {
-            [HarmonyPatch(typeof(Text), nameof(Text.CurTextAreaReadOnlyStyle), MethodType.Getter)]
-            [HarmonyPrefix]
-            public static bool Getter(ref GUIStyle __result)
+            [HarmonyPatch(typeof(Text), nameof(Text.CurTextAreaReadOnlyStyle), MethodType.Getter)]            
+            public static bool Prefix(ref GUIStyle __result)
             {
                 if (GUIFont.UseCustomFonts)
                 {
@@ -168,11 +172,11 @@ namespace CombatAI.Gui
             }
         }
 
-        private static class Text_CurTextAreaStyle_Patch
+		[HarmonyPatch]
+		private static class Text_CurTextAreaStyle_Patch
         {
-            [HarmonyPatch(typeof(Text), nameof(Text.CurTextAreaStyle), MethodType.Getter)]
-            [HarmonyPrefix]
-            public static bool Getter(ref GUIStyle __result)
+            [HarmonyPatch(typeof(Text), nameof(Text.CurTextAreaStyle), MethodType.Getter)]            
+            public static bool Prefix(ref GUIStyle __result)
             {
                 if (GUIFont.UseCustomFonts)
                 {
@@ -184,11 +188,11 @@ namespace CombatAI.Gui
             }
         }
 
-        private static class Text_CurTextFieldStyle_Patch
+		[HarmonyPatch]
+		private static class Text_CurTextFieldStyle_Patch
         {
-            [HarmonyPatch(typeof(Text), nameof(Text.CurTextFieldStyle), MethodType.Getter)]
-            [HarmonyPrefix]
-            public static bool Getter(ref GUIStyle __result)
+            [HarmonyPatch(typeof(Text), nameof(Text.CurTextFieldStyle), MethodType.Getter)]            
+            public static bool Prefix(ref GUIStyle __result)
             {
                 if (GUIFont.UseCustomFonts)
                 {

@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using CombatAI.Comps;
 using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
 
-namespace CombatAI
-{
-    public class SightGrid
+namespace CombatAI {
+	public class SightGrid
     {		
 		private readonly List<Vector3> buffer = new List<Vector3>(1024);
         private readonly List<Thing> thingBuffer1 = new List<Thing>(256);
@@ -258,7 +255,7 @@ namespace CombatAI
             {
                 return false;
             }
-            return (thing is Pawn pawn && !pawn.Dead) || thing is Building_TurretGun;
+            return (thing is Pawn pawn && !pawn.Dead) || thing is Building_Turret;
         }
 
         private bool Skip(IBucketableThing item)
@@ -266,10 +263,18 @@ namespace CombatAI
             if (!playerAlliance && item.thing is Pawn pawn)
             {                
                 return (GenTicks.TicksGame - pawn.needs?.rest?.lastRestTick <= 30) || pawn.Downed;
-            }
-            if (item.thing is Building_TurretGun turret)
+            }            
+            if (item.thing is Building_CCTVBase cctv)
             {
-                return !turret.Active || (turret.IsMannable && !(turret.mannableComp?.MannedNow ?? false));
+                return !cctv.Active;
+            }
+            if (item.thing is Building_TurretGun turretGun)
+            {
+                return !turretGun.Active || (turretGun.IsMannable && !(turretGun.mannableComp?.MannedNow ?? false));
+            }
+            if (Mod_CE.active && item.thing is Building_Turret turret)
+            {                
+                return !Mod_CE.IsTurretActiveCE(turret);
             }
             return false;
         }
@@ -285,7 +290,11 @@ namespace CombatAI
             {
                 return false;
             }
-            int range = SightUtility.GetSightRange(item.thing, playerAlliance);            
+            int range = SightUtility.GetSightRange(item.thing, playerAlliance);
+            if (range == 0)
+            {
+                return false;
+            }
             int ticks = GenTicks.TicksGame;            
             IntVec3 origin = item.thing.Position;
             IntVec3 pos = GetShiftedPosition(item.thing, 40, item.path);            

@@ -38,14 +38,18 @@ namespace CombatAI
 					range = GetSightRange(pawn);
 				}							
 			}
-			else if (thing is Building_TurretGun turret)
+			else if (thing is Building_TurretGun turretGun)
 			{
-				range = GetSightRange(turret);
+				range = GetSightRange(turretGun);
+			}
+			else if(Mod_CE.active && thing is Building_Turret turret)
+			{	
+				range = Mathf.CeilToInt(turret.AttackVerb?.EffectiveRange ?? 0f);
 			}			
 			if (Finder.Settings.FogOfWar_Enabled && isPlayer)
 			{
 				range = Mathf.CeilToInt(range * Finder.Settings.FogOfWar_RangeMultiplier);
-			}			
+			}	
 			rangeCache[thing.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);
 			return range;
 		}		
