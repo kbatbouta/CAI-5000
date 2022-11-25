@@ -62,7 +62,7 @@ namespace CombatAI.Patches
                     // retrive CE elements                    
                     pawn.GetSightReader(out sightReader);
                     pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
-
+                    
                     /*  
                      * dump pathfinding data
                      */
@@ -87,7 +87,7 @@ namespace CombatAI.Patches
                     }
 
                     float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-                    if (dig = (Finder.Settings.Pather_KillboxKiller && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual)))
+                    if (dig = (Finder.Settings.Pather_KillboxKiller && sightReader != null && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual)))
                     {
                         raiders = true;
                         //factionMultiplier = 1;

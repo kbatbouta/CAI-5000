@@ -216,7 +216,7 @@ namespace CombatAI.Comps
 					return;
                 }
                 PawnDuty duty;
-                if ((duty = pawn.mindState.duty) != null && !duty.def.Is(DutyDefOf.Build) && !duty.def.Is(DutyDefOf.SleepForever) && !duty.def.Is(DutyDefOf.TravelOrLeave))
+                if ((duty = pawn.mindState.duty) != null && (duty.def.Is(DutyDefOf.Build) || duty.def.Is(DutyDefOf.SleepForever) || duty.def.Is(DutyDefOf.TravelOrLeave)))
                 {
                     lastInterupted = GenTicks.TicksGame + Rand.Int % 240;
                     return;
