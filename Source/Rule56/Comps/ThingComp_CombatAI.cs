@@ -327,11 +327,7 @@ namespace CombatAI.Comps
                 if (bestEnemy == null)
 				{
                     return;
-                }
-				if (Mod_CE.active && warmup != null && GenTicks.TicksGame - 180 < lastInterupted && Mathf.Lerp(400, 1600, warmup.ticksLeft / 60) < bestEnemyScore)
-                {
-                    return;                   
-                }
+                }			
                 if (retreat)
                 {
                     //pawn.Map.debugDrawer.FlashCell(pawn.Position, 1f, "FLEE", 200);
