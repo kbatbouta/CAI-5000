@@ -23,9 +23,7 @@ namespace CombatAI.Comps
         private IntVec3 cellBefore;
         private List<IntVec3> miningCells = new List<IntVec3>(64);
 
-        private Job moveJob;        
-		//private int reactionBlockedUntil;
-		//private int lastReactionBlocked;
+        private Job moveJob;		
 		private int lastMoved;        				
 
 		public int lastInterupted;
@@ -446,9 +444,13 @@ namespace CombatAI.Comps
             scanning = true;
             visibleEnemies.Clear();            
         }
-  
 
-        public void Notify_EnemiesVisible(IEnumerable<Thing> things)
+		public void Notify_TookDamage(DamageInfo dInfo)
+		{
+		}
+
+
+		public void Notify_EnemiesVisible(IEnumerable<Thing> things)
         {
             if (!scanning)
             {                
@@ -466,7 +468,7 @@ namespace CombatAI.Comps
 				return;
 			}
 			visibleEnemies.Add(thing);
-		}
+		}        
 
 		public override void PostExposeData()
         {

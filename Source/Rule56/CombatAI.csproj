@@ -74,6 +74,9 @@
 		<None Update="..\..\1.4\Defs\Stats\Stats_AI.xml">
 		  <Link>Xml\Defs\Stats\\Stats_AI.xml</Link>
 		</None>
+		<None Update="..\..\1.4\Defs\ThingDef_Buildings\Buildings_Security.xml">
+		  <Link>Xml\Defs\ThingDef_Buildings\\Buildings_Security.xml</Link>
+		</None>
 	</ItemGroup>
 	<!-- ................ -->
 	<!--     Packages     -->
