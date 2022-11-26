@@ -381,7 +381,7 @@ namespace CombatAI.Comps
                                 pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);                                
                                 changedPos = true;
                             }
-							else if (warmup != null)
+							else if (warmup == null)
 							{
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                                 pawn.jobs.StopAll();
@@ -408,7 +408,7 @@ namespace CombatAI.Comps
 								//pawn.Map.debugDrawer.FlashCell(pawn.Position, 1, "3", 200);
 								changedPos = true;
 							}
-                            else if(warmup != null)
+                            else if(warmup == null)
                             {
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                                 pawn.jobs.StopAll();

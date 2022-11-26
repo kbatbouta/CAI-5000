@@ -109,7 +109,7 @@ namespace CombatAI
                     {
                         return;
                     }
-                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - CoverUtility.TotalSurroundingCoverScore(node.cell, map) * 0.5f - interceptors.grid.Get(node.cell);
+                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) + avoidanceReader.GetProximity(node.cell) * 0.5f - CoverUtility.TotalSurroundingCoverScore(node.cell, map) * 0.5f - interceptors.grid.Get(node.cell);
                     if (c < bestCellScore)
                     {
                         float d = node.cell.DistanceToSquared(enemyLoc);
