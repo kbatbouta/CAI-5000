@@ -339,7 +339,7 @@ namespace CombatAI {
             IntVec3 flagPos = pos;
             if(item.pawn != null)
             {
-                flagPos = GetShiftedPosition(item.pawn, 180, null);
+                flagPos = GetShiftedPosition(item.pawn, 120, null);
 			}
             SightTracker.SightReader reader = item.ai?.sightReader ?? null;
             bool scanForEnemies;
@@ -404,7 +404,7 @@ namespace CombatAI {
                                             IntVec3 enemyPos = enemy.Position;
                                             if (enemy is Pawn enemyPawn)
                                             {
-                                                enemyPos = enemyPawn.GetMovingShiftedPosition(240);
+                                                enemyPos = enemyPawn.GetMovingShiftedPosition(120);
                                             }
                                             if (enemyPos.DistanceToSquared(cell) < 225)
                                             {
