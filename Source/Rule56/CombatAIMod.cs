@@ -20,6 +20,7 @@ namespace CombatAI
             {
                 Finder.Settings = new Settings();
             }
+            LongEventHandler.QueueLongEvent(ArmorUtility.Initialize, "CombatAI.Preparing", false, null);
 			LongEventHandler.QueueLongEvent(CompatibilityManager.Initialize, "CombatAI.Preparing", false, null);
 		}
 

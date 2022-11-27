@@ -1,0 +1,68 @@
+﻿using System;
+using UnityEngine;
+using Verse;
+
+namespace CombatAI
+{
+	public struct ArmorReport
+	{
+		/// <summary>
+		/// Report pawn.
+		/// </summary>
+		public Pawn pawn;
+		/// <summary>
+		/// Pawn natural blunt armor rating.
+		/// </summary>
+		public float bodyBlunt;
+		/// <summary>
+		/// Pawn natural sharp armor rating.
+		/// </summary>
+		public float bodySharp;
+		/// <summary>
+		/// Apparel blunt armor rating.
+		/// </summary>
+		public float apparelBlunt;
+		/// <summary>
+		/// Apparel sharp armor rating.
+		/// </summary>
+		public float apparelSharp;		
+		/// <summary>
+		/// Pawn bodysize.
+		/// </summary>
+		public float bodySize;
+		/// <summary>
+		/// Whether the pawn has a shield belt.
+		/// </summary>
+		public bool hasShieldBelt;
+		/// <summary>
+		/// Whether the can die.
+		/// </summary>
+		public bool immortal;
+		/// <summary>
+		/// Creation tick.
+		/// </summary>
+		public int createdAt;
+		/// <summary>
+		/// Total sharp armor.
+		/// </summary>
+		public float Sharp
+		{
+			get => bodySharp + apparelSharp;
+		}
+		/// <summary>
+		/// Total blunt armor.
+		/// </summary>
+		public float Blunt
+		{
+			get => bodyBlunt + apparelBlunt;
+		}
+		/// <summary>
+		/// How tanky is this pawn.
+		/// </summary>
+		public float TankInt
+		{
+			get => Mathf.Lerp(0f, 1f, (bodyBlunt * 0.5f + bodySharp * 0.5f + apparelBlunt * 0.5f + apparelSharp * 0.5f) / 38f);
+		}
+	}
+}
+

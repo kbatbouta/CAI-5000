@@ -4,12 +4,16 @@ using System.Collections.Generic;
 using System.Security.Policy;
 using RimWorld;
 using TMPro;
+using UnityEngine.TestTools;
 using Verse;
 
 namespace CombatAI
 {
 	public static class ArmorUtility
 	{
+		private static Dictionary<ThingDef, bool> shields = new Dictionary<ThingDef, bool>(128);
+		private static Dictionary<int, ArmorReport> reports = new Dictionary<int, ArmorReport>(128);
+		private static Dictionary<ThingDef, Pair<float, float>> baseArmors = new Dictionary<ThingDef, Pair<float, float>>(128);
 		private static Dictionary<BodyDef, BodyDefApparels> models = new Dictionary<BodyDef, BodyDefApparels>();
 
 		private class BodyDefApparels
@@ -42,112 +46,92 @@ namespace CombatAI
 			}
 		}
 
+		public static void Initialize()
+		{
+		}
+
+		public static ArmorReport GetArmorReport(this Pawn pawn)
+		{
+			if (pawn == null)
+			{
+				return default(ArmorReport);
+			}
+			if (!reports.TryGetValue(pawn.thingIDNumber, out ArmorReport report) || GenTicks.TicksGame - report.createdAt > 2000)
+			{
+				reports[pawn.thingIDNumber] = report = CreateReport(pawn);
+			}
+			return report;
+		}
+
+		private static ArmorReport CreateReport(Pawn pawn)
+		{
+			ArmorReport report = new ArmorReport();
+			report.pawn = pawn;
+			report.bodySize = pawn.BodySize;
+			if (!baseArmors.TryGetValue(pawn.def, out Pair<float, float> baseArmor))
+			{
+				baseArmor = new Pair<float, float>(pawn.GetStatValue(StatDefOf.ArmorRating_Blunt), pawn.GetStatValue(StatDefOf.ArmorRating_Sharp));				
+			}
+			report.bodyBlunt = baseArmor.First;
+			report.bodySharp = baseArmor.Second;			
+			FillApparel(ref report);
+			report.createdAt = GenTicks.TicksGame;
+			return report;
+		}
+
+		private static void FillApparel(ref ArmorReport report)
+		{
+			Pawn pawn = report.pawn;
+			if (pawn.apparel == null)
+			{
+				return;
+			}
+			BodyDefApparels bodyApparels = GetBodyApparels(pawn.RaceProps.body);
+			if (bodyApparels != null)
+			{
+				float armor_blunt = 0;
+				float armor_sharp = 0;
+				float coverage = 0;				
+				List<Apparel> apparels = pawn.apparel.WornApparel;
+				for (int i = 0; i < apparels.Count; i++)
+				{
+					Apparel apparel = apparels[i];
+					if (!shields.TryGetValue(apparel.def, out bool isShield))
+					{
+						isShield = shields[apparel.def] = apparel.def.HasComp(typeof(CompShield));
+					}
+					report.hasShieldBelt |= isShield;
+					if (apparel != null && apparel.def.apparel != null)
+					{						
+						float c = bodyApparels.Coverage(apparel.def.apparel);
+						coverage += c;
+						armor_blunt += c * apparel.GetStatValue(StatDefOf.ArmorRating_Blunt);
+						armor_sharp += c * apparel.GetStatValue(StatDefOf.ArmorRating_Sharp);						
+					}
+				}
+				if (coverage != 0)
+				{
+					report.apparelBlunt = armor_blunt / (coverage + 1e-5f);
+					report.apparelSharp = armor_sharp / (coverage + 1e-5f);
+				}
+			}			
+		}
+
+
 		private static BodyDefApparels GetBodyApparels(BodyDef body)
 		{
-			if(!models.TryGetValue(body, out BodyDefApparels apparels))
+			if (!models.TryGetValue(body, out BodyDefApparels apparels))
 			{
 				models[body] = apparels = new BodyDefApparels(body);
 			}
 			return apparels;
 		}
 
-		public static float GetAvgBodyArmor(Pawn pawn)
+		public static void ClearCache()
 		{
-			if(pawn == null || pawn.apparel == null)
-			{
-				return 0;
-			}
-			BodyDefApparels bodyApparels = GetBodyApparels(pawn.RaceProps.body);
-			if (bodyApparels != null)
-			{
-				float armor = 0;
-				//string message = $"coverage report {bodyApparels.bodyDef.defName}:\n";
-				//foreach (var p in bodyApparels.model.coverageByPartGroup)
-				//{
-				//	message += $"{p.Key}\t{p.Value}\n";
-				//}
-				//message += "---------\n";
-				List<Apparel> apparels = pawn.apparel.WornApparel;
-				for (int i = 0; i < apparels.Count; i++)
-				{
-					Apparel apparel = apparels[i];
-					if (apparel != null && apparel.def.apparel != null)
-					{
-						armor += bodyApparels.Coverage(apparel.def.apparel);
-						//message += $"{apparel.def.defName}\t{bodyApparels.Coverage(apparel.def.apparel)}\n";
-					}
-				}
-				//Log.Message(message);
-				return armor;
-			}
-			return 0;
+			reports.Clear();
+			baseArmors.Clear();
 		}
-
-		//private static readonly List<BodyPartInfo> _temp = new List<BodyPartInfo>(32);
-		//private static readonly Dictionary<>
-		////private static readonly Dictionary<BodyPartRecord, float> _dict = new Dictionary<BodyPartRecord, float>(32);
-
-		//public static float GetAvgArmorRating(Pawn pawn)
-		//{			
-		//	if (pawn.apparel == null)
-		//	{
-		//		return 0f;
-		//	}
-		//	BodyPartRecord core = pawn.RaceProps.body.corePart;
-
-		//	//List<BodyPartRecord> bodyParts = core.parts;
-		//	//_list.Clear();
-		//	//_dict.Clear();
-		//	//_dict[core] = 0f;
-		//	//_list.Add(core);
-		//	//for (int i = 0;i < bodyParts.Count; i++)
-		//	//{
-		//	//	BodyPartRecord part = bodyParts[i];
-		//	//	if (part.depth != BodyPartDepth.Inside)
-		//	//	{
-		//	//		_dict[part] = 0f;
-		//	//		_list.Add(part);
-		//	//	}
-		//	//}
-		//	//List<Apparel> wornApparel = pawn.apparel.WornApparel;			
-		//	//for (int i = 0; i < wornApparel.Count; i++)
-		//	//{
-		//	//	Apparel apparel = wornApparel[i];
-		//	//	if(apparel.def.apparel.bod)
-		//	//}
-		//	return 0f;
-		//}
-
-		//private static void ExploreBodyRecord(BodyPartRecord body)
-		//{			
-		//	_temp.Clear();
-		//	_temp.Add(new BodyPartInfo(body, 1));
-		//	List<BodyPartRecord> parts;
-		//	BodyPartInfo partInfo;
-		//	while (_temp.Count > 0)
-		//	{
-		//		partInfo = _temp.Pop();				
-		//		parts = partInfo.Parts;
-		//		for (int i = 0; i < parts.Count; i++)
-		//		{
-		//			BodyPartRecord subPart = parts[i];
-		//			if (subPart.depth != BodyPartDepth.Inside)
-		//			{
-		//				float weightedCoverage = partInfo.weightedCoverage * subPart.coverage;
-		//				if (weightedCoverage > 0.04)
-		//				{
-		//					_temp.Add(new BodyPartInfo(subPart, weightedCoverage));
-		//				}
-		//			}
-		//		}
-		//	}
-		//	_temp.Clear();
-		//}
-
-		//private static float GetAvgApparelArmorRating(Apparel apparel, RaceProperties properties)
-		//{
-		//	//apparel.def.apparel.bodyPartGroups
-		//}
 	}
 }
 

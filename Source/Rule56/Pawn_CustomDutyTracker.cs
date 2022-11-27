@@ -21,9 +21,13 @@ namespace CombatAI
             public bool canFlee = true;
             public bool canExitMap = true;
             public int failOnDistanceToFocus;
-            public DutyDef failOnFocusDutyNot;            
+            public DutyDef failOnFocusDutyNot;
 
-            public void ExposeData()
+            public CustomPawnDuty()
+            {
+            }
+
+			public void ExposeData()
             {
                 Scribe_Deep.Look(ref duty, "duty");
                 Scribe_Values.Look(ref expireAfter, "expireAfter");
@@ -135,7 +139,7 @@ namespace CombatAI
             if (curCustomDuty != null  && pawn.mindState.duty != curCustomDuty.duty && !(IsForcedDuty(pawn.mindState.duty?.def ?? null)))
             {                
                 pawn.mindState.duty = curCustomDuty.duty;
-            }
+            }       
         }
 
         public void StartDuty(CustomPawnDuty duty, bool returnCurDutyToQueue = true)
@@ -205,9 +209,9 @@ namespace CombatAI
 
         public void ExposeData()
         {
-            Scribe_References.Look(ref pawn, "pawn");
-            Scribe_Deep.Look(ref curCustomDuty, "curCustomDuty3", LookMode.Deep);
-            Scribe_Collections.Look(ref queue, "queue3", LookMode.Deep);
+            Scribe_References.Look(ref pawn, "pawn");            
+            Scribe_Deep.Look(ref curCustomDuty, "curCustomDuty3", ctorArgs: new object[0]);
+            Scribe_Collections.Look(ref queue, "queue4", LookMode.Deep);
             if(queue == null)
             {
                 queue = new List<CustomPawnDuty>();

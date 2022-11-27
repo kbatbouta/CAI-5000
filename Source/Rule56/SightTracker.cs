@@ -219,7 +219,8 @@ namespace CombatAI
                 {
                     foreach (Pawn pawn in Find.Selector.SelectedPawns)
                     {
-						ArmorUtility.GetAvgBodyArmor(pawn);
+						ArmorReport report = ArmorUtility.GetArmorReport(pawn);
+                        Log.Message($"{pawn}, t:{Math.Round(report.TankInt, 3)}, s:{report.bodySize}, bB:{Math.Round(report.bodyBlunt, 3)}, bS:{Math.Round(report.bodySharp, 3)}, aB:{Math.Round(report.apparelBlunt, 3)}, aS:{Math.Round(report.apparelSharp, 3)}, hs:{report.hasShieldBelt}");
 						TryGetReader(pawn, out SightReader reader);                        
                         if (reader != null)
                         {

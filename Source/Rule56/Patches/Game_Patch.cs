@@ -25,6 +25,7 @@ namespace CombatAI.Patches
                 SightUtility.ClearCache();
                 JobGiver_AITrashBuildingsDistant_Patch.ClearCache();
                 GenSight_Patch.ClearCache();
+                ArmorUtility.ClearCache();
             }
         }
     }

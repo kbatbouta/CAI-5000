@@ -30,7 +30,8 @@ namespace CombatAI.Patches
             private static SightTracker.SightReader sightReader;
             private static AvoidanceTracker.AvoidanceReader avoidanceReader;            
             private static bool raiders;            
-            private static int counter;           
+            private static int counter;
+            private static ArmorReport armor;            
             // private static bool crouching;
             // private static bool tpsLow;
             // private static float tpsLevel;
@@ -57,13 +58,18 @@ namespace CombatAI.Patches
                     pawn = traverseParms.pawn;
                     // fix for player pawns and drafted pawns
                     isPlayer = pawn.Faction.IsPlayerSafe();
-
-                    multiplier = (isPlayer ? (pawn.Drafted ? 0.25f : 0.75f) : 1.0f);                    
-                    // retrive CE elements                    
-                    pawn.GetSightReader(out sightReader);
+					multiplier = (isPlayer ? (pawn.Drafted ? 0.25f : 0.75f) : 1.0f);
+                    // make tankier pawns unless affect.
+					armor = ArmorUtility.GetArmorReport(pawn);                    					
+                    if (armor.createdAt != 0)
+                    {
+                        multiplier = Maths.Max(multiplier, (1 - armor.TankInt), 0.25f);
+                    }
+					// retrive CE elements
+					pawn.GetSightReader(out sightReader);
                     pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
                     
-                    /*  
+                    /*
                      * dump pathfinding data
                      */
                     if (dump = Finder.Settings.Debug_DebugDumpData && !isPlayer && sightReader != null && avoidanceReader != null && Finder.Settings.Debug && Prefs.DevMode)
@@ -275,14 +281,17 @@ namespace CombatAI.Patches
             }
 
             public static void Reset()
-            {
-                //avoidanceTracker = null;
-                avoidanceReader = null;
+            {                
+				//avoidanceTracker = null;
+				avoidanceReader = null;
                 //lightingTracker = null;
                 raiders = false;
-                sightReader = null;
+                multiplier = 1f;
+				sightReader = null;
                 counter = 0;
-                instance = null;
+                dig = false;
+                armor = default(ArmorReport);
+				instance = null;
                 visibilityAtDest = 0f;
                 map = null;
                 pawn = null;
