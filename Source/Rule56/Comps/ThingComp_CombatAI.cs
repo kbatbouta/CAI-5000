@@ -461,10 +461,10 @@ namespace CombatAI.Comps
 			if (parent.Spawned && GenTicks.TicksGame - lastScanned < 60 && parent is Pawn pawn)
 			{
 				//ArmorReport report = Armor;
-				if (pawn.CurJobDef.Is(JobDefOf.Mine))
-				{
+				//if (pawn.CurJobDef.Is(JobDefOf.Mine))
+				//{
 					pawn.jobs.StopAll();
-				}
+				//}
 				//if (dInfo.Instigator != null)
 				//{
 				//    parent.Map.debugDrawer.FlashCell(dInfo.Instigator.Position, 0.5f);
