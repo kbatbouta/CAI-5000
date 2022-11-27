@@ -239,10 +239,14 @@ namespace CombatAI.Comps
 				}
 				bool fastCheck = false;
 				if (warmup != null && ((warmup.ticksLeft + GenTicks.TicksGame - warmup.startedTick) > 120 || warmup.ticksLeft < 30))
-                {
+                { 
 					fastCheck = true;
 				}               
 				Verb verb = parent.TryGetAttackVerb();
+                if (verb == null)
+                {
+                    return;
+                }
                 if (verb.IsMeleeAttack)
                 {
                     if (pawn.CurJobDef == JobDefOf.Mine)
@@ -251,7 +255,7 @@ namespace CombatAI.Comps
                     }
 					return;
 				}
-				if (verb == null || !verb.Available() || (Mod_CE.active && Mod_CE.IsAimingCE(verb)))
+				if (!verb.Available() || (Mod_CE.active && Mod_CE.IsAimingCE(verb)))
 				{
 					return;
 				}
