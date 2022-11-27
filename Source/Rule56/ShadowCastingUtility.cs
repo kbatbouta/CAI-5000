@@ -221,7 +221,7 @@ namespace CombatAI
             }
             List<VisibleRow> rowQueue = new List<VisibleRow>();            
             rowQueue.Add(request.firstRow);
-            float coverMinDist = Maths.Max(request.firstRow.maxDepth / 3f, 10f);
+            float coverMinDist = Maths.Min(Maths.Max(request.firstRow.maxDepth / 3f, 4f), 12f);
             while (rowQueue.Count > 0)
             {                
                 VisibleRow nextRow;                
@@ -298,9 +298,9 @@ namespace CombatAI
                             {
                                 nextRow = row.Next();
                                 nextRow.endSlope = GetSlope(offset);
-                                if (lastIsCover && row.depth > 6)
+                                if (lastIsCover && row.depth > coverMinDist)
                                 {
-                                    nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
+                                    nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - coverMinDist) / coverMinDist), row.blockChance);
                                     nextRow.visibilityCarry += 1;
                                 }
                                 rowQueue.Add(nextRow);
@@ -316,14 +316,14 @@ namespace CombatAI
                         {
                             nextRow = row.Next();
                             nextRow.endSlope = GetSlope(offset);
-                            if (lastIsCover && row.depth > 6)
+                            if (lastIsCover && row.depth > coverMinDist)
                             {
-                                nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
+                                nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - coverMinDist) / coverMinDist), row.blockChance);
                                 nextRow.visibilityCarry += 1;
                             }
 							lastNextIndex = i;
 							rowQueue.Add(nextRow);							
-						}                        
+						}
                     }
                     cellsScanned++;
                     lastCell = offset;
@@ -333,9 +333,9 @@ namespace CombatAI
                 if (lastCell.y >= 0 && !lastIsWall)
                 {
                     nextRow = row.Next();
-                    if (lastIsCover && row.depth > 6)
+                    if (lastIsCover && row.depth > coverMinDist)
                     {                        
-                        nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
+                        nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - coverMinDist) / coverMinDist), row.blockChance);
                         nextRow.visibilityCarry += 1;
                     }					
 					rowQueue.Add(nextRow);					
