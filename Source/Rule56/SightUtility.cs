@@ -117,7 +117,7 @@ namespace CombatAI
 					{
 						multiplier += (ranged.Level - 5f) / 15f;
 					}
-					return (int)Maths.Max(verb.EffectiveRange * multiplier, 20f * multiplier, 10f);
+					return (int)Maths.Max(verb.EffectiveRange * multiplier, 20f * multiplier, verb.EffectiveRange * 0.8f);
 				}
 			}
 		}

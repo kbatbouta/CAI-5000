@@ -95,23 +95,27 @@ namespace CombatAI.Patches
                     float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
                     if (dig = (Finder.Settings.Pather_KillboxKiller && sightReader != null && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual)))
                     {
-                        raiders = true;
-                        //factionMultiplier = 1;
-                        TraverseParms parms = traverseParms;
-                        parms.canBashDoors = true;
-                        parms.canBashFences = true;
-                        parms.mode = TraverseMode.PassAllDestroyableThings;
-                        parms.maxDanger = Danger.Unspecified;
-                        traverseParms = parms;
-                        if (tuning == null)
+                        ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+                        if (GenTicks.TicksGame - comp.lastTookDamage > 360)
                         {
-                            tuning = new PathFinderCostTuning();                            
-                            tuning.costBlockedDoor = 34;
-                            tuning.costBlockedDoorPerHitPoint = 0;
-                            tuning.costBlockedWallBase = (int)Maths.Max(10 * Maths.Max(13 - miningSkill, 0), 24);
-                            tuning.costBlockedWallExtraForNaturalWalls = (int)Maths.Max(45 * Maths.Max(10 - miningSkill, 0), 45);
-                            tuning.costBlockedWallExtraPerHitPoint = Maths.Max(3 - miningSkill, 0);
-                            tuning.costOffLordWalkGrid = 0;
+                            raiders = true;
+                            //factionMultiplier = 1;
+                            TraverseParms parms = traverseParms;
+                            parms.canBashDoors = true;
+                            parms.canBashFences = true;
+                            parms.mode = TraverseMode.PassAllDestroyableThings;
+                            parms.maxDanger = Danger.Unspecified;
+                            traverseParms = parms;
+                            if (tuning == null)
+                            {
+                                tuning = new PathFinderCostTuning();
+                                tuning.costBlockedDoor = 34;
+                                tuning.costBlockedDoorPerHitPoint = 0;
+                                tuning.costBlockedWallBase = (int)Maths.Max(10 * Maths.Max(13 - miningSkill, 0), 24);
+                                tuning.costBlockedWallExtraForNaturalWalls = (int)Maths.Max(45 * Maths.Max(10 - miningSkill, 0), 45);
+                                tuning.costBlockedWallExtraPerHitPoint = Maths.Max(3 - miningSkill, 0);
+                                tuning.costOffLordWalkGrid = 0;
+                            }
                         }
                     }
                    
