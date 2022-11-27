@@ -22,29 +22,26 @@ namespace CombatAI.Comps
 
         private IntVec3 cellBefore;
         private List<IntVec3> miningCells = new List<IntVec3>(64);
-        
-        private Job moveJob;
+		private HashSet<Thing> visibleEnemies;
+		private Job moveJob;
 		private int lastMoved;
-        
-        public VerbProperties lastVerbProps;
+		private bool scanning;
+
+		public VerbProperties lastVerbProps;
 		public Job waitJob;
 
 		public int lastTookDamage;
 		public int lastScanned;
 		public int lastInterupted;
 		public int lastRetreated;
-        public int lastSawEnemies;
-
-        private bool scanning;
-
-        private HashSet<Thing> visibleEnemies;        
+        public int lastSawEnemies;                   
 
         public Pawn_CustomDutyTracker duties;
         public SightTracker.SightReader sightReader;
 
         public ThingComp_CombatAI()
         {
-            this.visibleEnemies = new HashSet<Thing>();            
+            this.visibleEnemies = new HashSet<Thing>(32);            
         }
 
         public override void PostSpawnSetup(bool respawningAfterLoad)
@@ -228,7 +225,7 @@ namespace CombatAI.Comps
 				if (Mod_CE.active && (pawn.CurJobDef.Is(Mod_CE.ReloadWeapon) || pawn.CurJobDef.Is(Mod_CE.HunkerDown)))
                 {					
 					return;
-                }
+                }                
                 PawnDuty duty = pawn.mindState.duty;
 				if (duty != null && (duty.def.Is(DutyDefOf.Build) || duty.def.Is(DutyDefOf.SleepForever) || duty.def.Is(DutyDefOf.TravelOrLeave)))
                 {
@@ -246,7 +243,15 @@ namespace CombatAI.Comps
 					fastCheck = true;
 				}               
 				Verb verb = parent.TryGetAttackVerb();
-				if (verb == null || verb.IsMeleeAttack || !verb.Available() || (Mod_CE.active && Mod_CE.IsAimingCE(verb)))
+                if (verb.IsMeleeAttack)
+                {
+                    if (pawn.CurJobDef == JobDefOf.Mine)
+                    {
+                        pawn.jobs.StopAll();                        
+                    }
+					return;
+				}
+				if (verb == null || !verb.Available() || (Mod_CE.active && Mod_CE.IsAimingCE(verb)))
 				{
 					return;
 				}

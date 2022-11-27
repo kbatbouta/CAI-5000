@@ -57,8 +57,8 @@ namespace CombatAI
 			{
 				index = -1;
 				return false;
-			}
-			index = Mathf.FloorToInt(Maths.Min(pawn.GetMoveSpeed() * ticksAhead / 60f, path.NodesLeftCount - 1));
+			}            
+			index = Mathf.FloorToInt(Maths.Min(pawn.GetMoveSpeed() * Mod_MoveSpeed.Mult * ticksAhead / 60f, path.NodesLeftCount - 1));
 			return true;
 		}
 

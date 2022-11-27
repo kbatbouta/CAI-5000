@@ -1,5 +1,6 @@
 ﻿using System;
-namespace CombatAI {
+namespace CombatAI
+{
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Field)]
 	public partial class LoadIf : Attribute
 	{
