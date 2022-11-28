@@ -1,4 +1,5 @@
 ﻿using System;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -62,6 +63,16 @@ namespace CombatAI
 		public float TankInt
 		{
 			get => Mathf.Lerp(0f, 1f, (bodyBlunt * 0.5f + bodySharp * 0.5f + apparelBlunt * 0.5f + apparelSharp * 0.5f) / 38f);
+		}
+
+		/// <summary>
+		/// Get the appropriate armor for a damage def.
+		/// </summary>
+		/// <param name="damage">Damage def</param>
+		/// <returns>Armor value</returns>
+		public float GetArmor(DamageDef damage)
+		{
+			return damage != null ? (damage.armorCategory == DamageArmorCategoryDefOf.Sharp ? Sharp : Blunt) : 0f;
 		}
 	}
 }

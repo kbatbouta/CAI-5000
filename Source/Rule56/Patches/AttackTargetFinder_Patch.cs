@@ -12,9 +12,12 @@ namespace CombatAI.Patches
 {
     internal static class AttackTargetFinder_Patch
     {
-        private static Map map;
+        private static Map map;        
         private static Pawn searcherPawn;
         private static Faction searcherFaction;
+		private static Verb searcherVerb;
+		private static float dmg05;
+		private static ProjectileProperties projectile;
         private static SightTracker.SightReader sightReader;
 
         [HarmonyPatch(typeof(AttackTargetFinder), nameof(AttackTargetFinder.BestAttackTarget))]
@@ -27,6 +30,11 @@ namespace CombatAI.Patches
                 if (searcher.Thing is Pawn pawn && !pawn.RaceProps.Animal)
                 {
 					searcherPawn = pawn;
+                    searcherVerb = pawn.CurrentEffectiveVerb;
+                    if(searcherVerb != null && !searcherVerb.IsMeleeAttack && (projectile = searcherVerb.GetProjectile()?.projectile ?? null) != null)
+                    {                        
+                        dmg05 = projectile.damageAmountBase / 2f;
+					}
 					pawn.GetSightReader(out sightReader);
                 }
                 searcherFaction = searcher.Thing?.Faction ?? null;
@@ -84,7 +92,29 @@ namespace CombatAI.Patches
                     }
                     if(target.Thing is Pawn enemy)
                     {
-                        Thing targeted;
+                        if (projectile != null)
+                        {
+							var report = ArmorUtility.GetArmorReport(enemy);
+                            var armor = report.GetArmor(projectile.damageDef);
+                            if (projectile.armorPenetrationBase > 0)
+                            {
+								result += Mathf.Lerp(0f, 12f, projectile.armorPenetrationBase / (armor + 1e-2f));
+                                //if (Find.Selector.SelectedPawns.Contains(searcher.Thing as Pawn))
+                                //{
+                                //    map.debugDrawer.FlashCell(searcher.Thing.Position, projectile.armorPenetrationBase, $"{projectile.armorPenetrationBase}");
+                                //    map.debugDrawer.FlashCell(target.Thing.Position, projectile.armorPenetrationBase, $"{Mathf.Lerp(0, dmg05, projectile.armorPenetrationBase / (armor + 1e-2f))}");
+                                //}
+                            }
+                            else
+                            { 
+								result -= Maths.Min(armor * 0.5f, 8f);
+							}
+						}                                                
+						Thing targeted;
+                        if (enemy.stances?.stagger != null && enemy.stances.stagger.Staggered)
+                        {
+                            result += 12;
+						}                        
                         if (!verb.IsMeleeAttack)
                         {
                             if ((enemy.CurrentEffectiveVerb?.IsMeleeAttack ?? false))

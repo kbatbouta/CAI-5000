@@ -17,7 +17,8 @@ namespace CombatAI
 
 		public static float Mult
 		{
-			get => active && (bool)boostToggle.GetValue(null) ? (float) S.GetValue(null) : 1f;
+			//get => active && (bool)boostToggle.GetValue(null) ? (float) S.GetValue(null) : 1f;
+			get => 1f;
 		}
 
 		[RunIf(loaded:true)]

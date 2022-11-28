@@ -8,7 +8,7 @@
     <displayPriorityInCategory>50</displayPriorityInCategory>
     <defaultBaseValue>1.0</defaultBaseValue>
     <minValue>0.0</minValue>
-    <maxValue>1000.0</maxValue>
+    <maxValue>250.0</maxValue>
     <toStringStyle>Integer</toStringStyle>
     <showOnAnimals>true</showOnAnimals>   
     <parts>

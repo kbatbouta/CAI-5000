@@ -42,7 +42,7 @@ namespace CombatAI
             flooder.Flood(request.locus,
                 (node) =>
                 {
-                    if ((!tpsLow && request.verb != null && !request.verb.CanHitTargetFrom(node.cell, enemyLoc)) || maxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
+                    if ((request.verb != null && !request.verb.CanHitTargetFrom(node.cell, enemyLoc)) || maxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
                     {
                         return;
                     }
