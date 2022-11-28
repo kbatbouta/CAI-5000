@@ -413,17 +413,14 @@ namespace CombatAI.Comps
                                 Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
                                 job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
-                                job_waitCombat.checkOverrideOnExpire = true;
-                                //pawn.jobs.StopAll();
+                                job_waitCombat.checkOverrideOnExpire = true;                                
                                 pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
-                                pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
-								//pawn.Map.debugDrawer.FlashCell(pawn.Position, 1, "2a", 200);
+                                pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);								
 								changedPos = true;
                             }
-                            else if (warmup == null && verb.CanHitTarget(bestEnemy))
+                            else if (warmup == null)
                             {
-                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
-                                //pawn.jobs.StopAll();
+                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);                                
                                 pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
                                 //pawn.Map.debugDrawer.FlashCell(pawn.Position, 1, "2", 200);
                             }
@@ -443,12 +440,10 @@ namespace CombatAI.Comps
                             {
                                 Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
                                 job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
-                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
-                                //pawn.jobs.StopAll();
+                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);                                
                                 pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
                                 job_waitCombat.verbToUse = verb;
-                                job_waitCombat.targetC = bestEnemy;
-								//PrepareWaitJob(job_waitCombat, verb, bestEnemy);
+                                job_waitCombat.targetC = bestEnemy;								
 								pawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);
 								//pawn.Map.debugDrawer.FlashCell(bestEnemyPositon, 0.5f, "3a", 200);
 								//pawn.Map.debugDrawer.FlashCell(pawn.Position, 1, "3a", 200);
@@ -456,8 +451,7 @@ namespace CombatAI.Comps
 							}
                             else if(warmup == null)
                             {
-                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
-								//pawn.jobs.StopAll();
+                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);								
 								job_waitCombat.verbToUse = verb;
 								job_waitCombat.targetC = bestEnemy;								
 
