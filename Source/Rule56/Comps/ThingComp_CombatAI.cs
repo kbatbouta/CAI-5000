@@ -275,7 +275,7 @@ namespace CombatAI.Comps
                 IntVec3 pawnPosition = pawn.Position;
                 float bestEnemyScore = verb.currentTarget.IsValid && verb.currentTarget.Cell.IsValid ? verb.currentTarget.Cell.DistanceToSquared(pawnPosition) : 1e6f;           
                 bool bestEnemyVisibleNow = warmup != null;
-                bool bestEnemyVisibleSoon = false;
+                //bool bestEnemyVisibleSoon = false;
                 bool retreat = false;
                 bool canRetreat = pawn.RaceProps.baseHealthScale <= 2.0f && pawn.RaceProps.baseBodySize <= 2.2f;
                 float effectiveRange = verb.EffectiveRange;
@@ -335,19 +335,19 @@ namespace CombatAI.Comps
                                         bestEnemy = enemy;
                                         bestEnemyScore = distSqr;
                                         bestEnemyPositon = shiftedPos;
-                                        bestEnemyVisibleSoon = true;
+                                        //bestEnemyVisibleSoon = true;
                                     }
                                 }
-                                else if (!bestEnemyVisibleSoon)
-                                {
-                                    distSqr = pawnPosition.DistanceToSquared(shiftedPos) * 2f;
-                                    if (bestEnemyScore > distSqr)
-                                    {
-                                        bestEnemy = enemy;
-                                        bestEnemyScore = distSqr;
-                                        bestEnemyPositon = shiftedPos;
-                                    }
-                                }
+                                //else if (!bestEnemyVisibleSoon)
+                                //{
+                                //    distSqr = pawnPosition.DistanceToSquared(shiftedPos) * 2f;
+                                //    if (bestEnemyScore > distSqr)
+                                //    {
+                                //        bestEnemy = enemy;
+                                //        bestEnemyScore = distSqr;
+                                //        bestEnemyPositon = shiftedPos;
+                                //    }
+                                //}
                             }
                         }
                     }
@@ -430,7 +430,9 @@ namespace CombatAI.Comps
                         }
                         else
                         {
-                            pawn.mindState.enemyTarget = bestEnemy;
+                            bool canHitIgnoringRange = !verb.CanHitFromCellIgnoringRange(pawnPosition, bestEnemy.Position, out _);
+
+							pawn.mindState.enemyTarget = bestEnemy;
                             CoverPositionRequest request = new CoverPositionRequest();
                             request.caster = pawn;
                             request.target = new LocalTargetInfo(bestEnemyPositon);
