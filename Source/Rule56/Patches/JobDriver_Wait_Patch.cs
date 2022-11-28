@@ -15,7 +15,12 @@ namespace CombatAI.Patches
 			public static void Postfix(JobDriver_Wait __instance)
 			{
 				if (__instance.job.def.alwaysShowWeapon && __instance.pawn.mindState?.enemyTarget != null && __instance.job.def == JobDefOf.Wait_Combat && __instance.GetType() == typeof(JobDriver_Wait))
-				{					
+				{
+					if (__instance.job.targetC.IsValid)
+					{
+						__instance.rotateToFace = TargetIndex.C;
+					}
+					//
 					//__instance.FailOnDowned(TargetIndex.C);
 					__instance.AddEndCondition(() =>
 					{
@@ -44,6 +49,7 @@ namespace CombatAI.Patches
 									}									
 								}
 								comp.lastInterupted -= 30;
+								comp.waitJob = null;
 								return JobCondition.Succeeded;
 							}
 						}
