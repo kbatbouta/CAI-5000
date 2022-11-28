@@ -457,7 +457,7 @@ namespace CombatAI.Comps
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
 								//pawn.jobs.StopAll();
 								job_waitCombat.verbToUse = verb;
-								job_waitCombat.targetC = bestEnemy;
+								//job_waitCombat.targetC = bestEnemy;
 								pawn.jobs.StartJob(waitJob = job_waitCombat, JobCondition.InterruptForced);								
 								//pawn.Map.debugDrawer.FlashCell(pawn.Position, 1, "3", 200);
                             }                      

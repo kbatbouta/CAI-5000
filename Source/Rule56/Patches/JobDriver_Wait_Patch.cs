@@ -16,21 +16,21 @@ namespace CombatAI.Patches
 			{
 				if (__instance.job.def.alwaysShowWeapon && __instance.pawn.mindState?.enemyTarget != null && __instance.job.def == JobDefOf.Wait_Combat && __instance.GetType() == typeof(JobDriver_Wait))
 				{					
-					__instance.FailOnDowned(TargetIndex.C);
+					//__instance.FailOnDowned(TargetIndex.C);
 					__instance.AddEndCondition(() =>
 					{
-						if (!__instance.pawn.IsHashIntervalTick(30))
+						if (!__instance.pawn.IsHashIntervalTick(30) || GenTicks.TicksGame - __instance.startTick < 30)
 						{
 							return JobCondition.Ongoing;
 						}
 						if (__instance.pawn.mindState?.enemyTarget is Pawn enemy)
-						{
+						{							
 							ThingComp_CombatAI comp = __instance.pawn.GetComp_Fast<ThingComp_CombatAI>();
 							if (comp?.waitJob == __instance.job)
-							{													
+							{
 								if (__instance.job.verbToUse != null)
 								{
-									if (__instance.pawn.stances?.curStance is Stance_Warmup || __instance.job.verbToUse.Bursting)
+									if (__instance.pawn.stances?.curStance is Stance_Warmup || __instance.job.verbToUse.Bursting || Mod_CE.IsAimingCE(__instance.job.verbToUse))
 									{
 										return JobCondition.Ongoing;
 									}
@@ -41,11 +41,7 @@ namespace CombatAI.Patches
 									if (__instance.job.verbToUse.CanHitTarget(enemy.GetMovingShiftedPosition(80)))
 									{
 										return JobCondition.Ongoing;
-									}
-									//if (comp.sightReader.GetAbsVisibilityToEnemies(__instance.pawn.Position) != 0)
-									//{
-									//	return JobCondition.Ongoing;
-									//}
+									}									
 								}
 								comp.lastInterupted -= 30;
 								return JobCondition.Succeeded;
