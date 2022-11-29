@@ -399,9 +399,9 @@ namespace CombatAI
 					case 0:
 						IField<float> sharp = cells_sharp[index];
 
-						return Maths.Max(sharp.value, sharp.valuePrev);
+						return Maths.Max(sharp.value, sharp.valuePrev) / Maths.Max(cell.num, cell.numPrev, 0.01f);
 					case 1:
-						return cells_sharp[index].value;
+						return cells_sharp[index].value / (cell.num + 0.01f);
 					default:
 						break;
 				}
@@ -421,9 +421,9 @@ namespace CombatAI
 					case 0:
 						IField<float> blunt = cells_blunt[index];
 
-						return Maths.Max(blunt.value, blunt.valuePrev);
+						return Maths.Max(blunt.value, blunt.valuePrev) / Maths.Max(cell.num, cell.numPrev, 0.01f);
 					case 1:
-						return cells_blunt[index].value;
+						return cells_blunt[index].value / (cell.num + 0.01f);
 					default:
 						break;
 				}

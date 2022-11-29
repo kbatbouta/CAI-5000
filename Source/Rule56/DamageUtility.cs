@@ -13,7 +13,7 @@ namespace CombatAI
 
 		public static DamageReport GetDamageReport(Thing thing, Listing_Collapsible collapsible = null)
 		{
-			if (reports.TryGetValue(thing.thingIDNumber, out DamageReport report) && report.IsValid)
+			if (collapsible == null && reports.TryGetValue(thing.thingIDNumber, out DamageReport report) && report.IsValid)
 			{
 				return report;
 			}

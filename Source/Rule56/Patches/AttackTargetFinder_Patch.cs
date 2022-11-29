@@ -97,9 +97,17 @@ namespace CombatAI.Patches
                     {
                         if (damageReport.IsValid)
                         {
-							var armorReport = ArmorUtility.GetArmorReport(enemy);
-                            var diff = Maths.Max(armorReport.Blunt - damageReport.adjustedBlunt, armorReport.Sharp - damageReport.adjustedSharp, 0f);
-                            result += 8f * Mathf.Clamp01(1 - diff);
+							var armorReport = ArmorUtility.GetArmorReport(enemy);                            
+                            var diff = 0f;
+                            if (Mod_CE.active)
+                            {                                
+								diff = Mathf.Clamp01(Maths.Max(damageReport.adjustedBlunt / (armorReport.Blunt + 1f), damageReport.adjustedSharp / (armorReport.Sharp + 1f), 0f));
+							}
+                            else
+                            {
+                                diff = Mathf.Clamp01(1 -Maths.Max(armorReport.Blunt - damageReport.adjustedBlunt, armorReport.Sharp - damageReport.adjustedSharp, 0f));
+							}
+                            result += 8f * diff;
                             //var armor = armorReport.GetArmor(projectile.damageDef);
                             //var damage = damageReport.GetAdjustedDamage(projectile.damageDef.armorCategory);
                             //if (projectile.armorPenetrationBase > 0)
@@ -107,9 +115,8 @@ namespace CombatAI.Patches
                             //    result += Mathf.Lerp(0f, 12f, damageReport.ad);
                             //if (Find.Selector.SelectedPawns.Contains(searcher.Thing as Pawn))
                             //{
-                            //    map.debugDrawer.FlashCell(target.Thing.Position, 1f - Mathf.Clamp01(diff), $"{1f - Mathf.Clamp01(diff)}");
-                            //}
-                            //}
+                            //    map.debugDrawer.FlashCell(target.Thing.Position, diff, $"{diff}");
+                            //}                            
                             //else
                             //{
                             //    result -= Maths.Min(armor * 0.5f, 8f);

@@ -115,8 +115,8 @@ namespace CombatAI
 				weakSharp = Adjust(rangedSharp, rangedSharpAp) * rangedMul;
 				weakBlunt = Adjust(rangedBlunt, rangedBluntAp) * rangedMul;
 			}
-			adjustedSharp = mainSharp * 0.9f + weakSharp * 0.1f;
-			adjustedBlunt = mainBlunt * 0.9f + weakBlunt * 0.1f;
+			adjustedSharp = mainSharp * 0.95f + weakSharp * 0.05f;
+			adjustedBlunt = mainBlunt * 0.95f + weakBlunt * 0.05f;
 			_createdAt = GenTicks.TicksGame;
 			_finalized = true;
 		}
@@ -140,7 +140,7 @@ namespace CombatAI
 						}
 						float warmupTime = Maths.Max(verb.verbProps.warmupTime, 0.5f);
 						float burstShotCount = verb.verbProps.burstShotCount;
-						float output = (1f / warmupTime) * burstShotCount;
+						float output = (1f / warmupTime) * burstShotCount;						
 						if (projectile.damageDef.armorCategory == DamageArmorCategoryDefOf.Sharp)
 						{
 							rangedSharp = (rangedSharp + output * projectile.damageAmountBase) / 2f;
@@ -196,7 +196,7 @@ namespace CombatAI
 		{
 			if (Mod_CE.active)
 			{
-				return dmg / 12f + ap;
+				return dmg / 18f + ap;
 			}
 			else
 			{

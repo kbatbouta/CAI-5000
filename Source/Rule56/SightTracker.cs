@@ -47,8 +47,15 @@ namespace CombatAI
 
 			public float GetThreat(IntVec3 cell) => GetThreat(indices.CellToIndex(cell));
 			public float GetThreat(int index)
-			{				
-				return armor.createdAt != 0 ? Mathf.Clamp01(1 - Maths.Max(armor.Blunt - GetBlunt(index), armor.Sharp - GetSharp(index), 0f)) : 0f;
+			{
+                if (!Mod_CE.active)
+                {
+                    return armor.createdAt != 0 ? Mathf.Clamp01(1 - Maths.Max(armor.Blunt - GetBlunt(index), armor.Sharp - GetSharp(index), 0f)) : 0f;
+                }
+                else
+                {
+					return armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 1f), GetSharp(index) / (armor.Sharp + 1f), 0f)) : 0f;
+				}
 			}
 
 			public float GetBlunt(IntVec3 cell) => GetBlunt(indices.CellToIndex(cell));

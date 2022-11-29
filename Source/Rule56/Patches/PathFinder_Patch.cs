@@ -292,10 +292,8 @@ namespace CombatAI.Patches
             }
 
             public static void Reset()
-            {                
-				//avoidanceTracker = null;
-				avoidanceReader = null;
-                //lightingTracker = null;
+            {				
+				avoidanceReader = null;               
                 raiders = false;
                 multiplier = 1f;
 				sightReader = null;
@@ -317,20 +315,9 @@ namespace CombatAI.Patches
             public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
             {
                 List<CodeInstruction> codes = instructions.ToList();
-                bool finished1 = false;
-                //bool finished2 = false;
+                bool finished1 = false;                
                 for (int i = 0; i < codes.Count; i++)
-                {
-                    //if (!finished2)
-                    //{
-                    //    if(codes[i].opcode == OpCodes.Ldc_I4 && codes[i].OperandIs(175))
-                    //    {
-                    //        finished2 = true;
-                    //        yield return new CodeInstruction(OpCodes.Ldloc_S, 45);
-                    //        yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PathFinder_FindPath_Patch), nameof(PathFinder_FindPath_Patch.GetPawnBlockingCost))).MoveBlocksFrom(codes[i]).MoveLabelsFrom(codes[i]);
-                    //        continue;
-                    //    }
-                    //}
+                {                   
                     if (!finished1)
                     {
                         if (codes[i].opcode == OpCodes.Stloc_S && codes[i].operand is LocalBuilder builder1 && builder1.LocalIndex == 48)
@@ -344,27 +331,8 @@ namespace CombatAI.Patches
                         }
                     }
                     yield return codes[i];
-                }
-                //if (finished)
-                //    Log.Message("CAI: Patched pather!");
-            }
-
-            //private static int GetPawnBlockingCost(int index)
-            //{
-            //    if (!raiders)
-            //    {
-            //        return 175;
-            //    }
-            //    IntVec3 cell = map.cellIndices.IndexToCell(index);
-            //    foreach (Pawn pawn in cell.GetThingList(map).Where(t => t is Pawn))
-            //    {
-            //        if (pawn.stances?.curStance is Stance_Warmup)
-            //        {
-            //            return 1200;
-            //        }
-            //    }                
-            //    return 175;
-            //}
+                }               
+            }            
 
             private static int GetCostOffsetAt(int index, int parentIndex, int openNum)
             {
@@ -379,13 +347,13 @@ namespace CombatAI.Patches
                         visibility = sightReader.GetVisibilityToEnemies(index);
                         if (visibility > visibilityAtDest)
                         {
-                            value += (int)(visibility * 65);							                           
-						}
-                        threat = sightReader.GetThreat(index);
-                        if (threat >= threatAtDest)
-                        {
-                            value += (int)(threat * 92f);
-						}
+                            value += (int)(visibility * 65);
+							threat = sightReader.GetThreat(index);
+							if (threat >= threatAtDest)
+							{
+								value += (int)(threat * 64f);
+							}
+						}                                    
                         if (!isPlayer)
                         {
                             MetaCombatAttribute attributes = sightReader.GetMetaAttributes(index);

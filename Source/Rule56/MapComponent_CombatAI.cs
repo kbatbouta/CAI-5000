@@ -10,7 +10,7 @@ namespace CombatAI
 {
     public class MapComponent_CombatAI : MapComponent
     {
-        private Listing_Collapsible collapsible = new Listing_Collapsible(true);
+        private Listing_Collapsible collapsible = new Listing_Collapsible();
 		private HashSet<IntVec3> _drawnCells = new HashSet<IntVec3>(256);
 
 		/*      Threading
@@ -51,14 +51,17 @@ namespace CombatAI
 		public override void MapComponentOnGUI()
         {
 			base.MapComponentOnGUI();
-            //if (!Find.Selector.Selc.())
+            //if (!Find.Selector.SelectedPawns.NullOrEmpty())
             //{
-            //    Thing thing = Find.Selector.SelectedObjects.First(o => o is Thing) as Thing;
-            //    if (thing != null)
-            //    {  
+            //    Pawn pawn = Find.Selector.SelectedPawns.First();
+            //    if (pawn != null)
+            //    {
             //        Rect rect = new Rect(0, 0, UI.screenWidth * 0.2f, UI.screenHeight * 0.5f);
             //        collapsible.Begin(rect, "Damage Potential Report");
-            //        DamageReport report = DamageUtility.GetDamageReport(thing, collapsible);
+            //        DamageUtility.GetDamageReport(pawn, collapsible);
+            //        ArmorReport report = ArmorUtility.GetArmorReport(pawn);
+            //        collapsible.Line(4);
+            //        collapsible.Label($"armor. s:{report.Sharp}\tb:{report.Blunt}");
             //        collapsible.End(ref rect);
             //    }
             //}
