@@ -20,7 +20,8 @@ namespace CombatAI
             public ITSignalGrid[] friendlies;
             public ITSignalGrid[] hostiles;
             public ITSignalGrid[] neutrals;
-
+            public ArmorReport armor;
+            
             private readonly Map map;
             private readonly CellIndices indices;
             private readonly SightTracker tacker;
@@ -44,7 +45,46 @@ namespace CombatAI
                 this.neutrals = neutrals.ToArray();
             }
 
-            public float GetAbsVisibilityToNeutrals(IntVec3 cell) => GetAbsVisibilityToNeutrals(indices.CellToIndex(cell));
+			public float GetThreat(IntVec3 cell) => GetThreat(indices.CellToIndex(cell));
+			public float GetThreat(int index)
+			{				
+				return armor.createdAt != 0 ? Mathf.Clamp01(1 - Maths.Max(armor.Blunt - GetBlunt(index), armor.Sharp - GetSharp(index), 0f)) : 0f;
+			}
+
+			public float GetBlunt(IntVec3 cell) => GetBlunt(indices.CellToIndex(cell));
+			public float GetBlunt(int index)
+			{
+				float value = 0f;
+				for (int i = 0; i < hostiles.Length; i++)
+				{
+					value += hostiles[i].GetBlunt(index);
+				}
+				return value;
+			}
+
+			public float GetSharp(IntVec3 cell) => GetSharp(indices.CellToIndex(cell));
+			public float GetSharp(int index)
+			{
+				float value = 0f;
+				for (int i = 0; i < hostiles.Length; i++)
+				{
+					value += hostiles[i].GetSharp(index);
+				}
+				return value;
+			}
+
+			public MetaCombatAttribute GetMetaAttributes(IntVec3 cell) => GetMetaAttributes(indices.CellToIndex(cell));
+			public MetaCombatAttribute GetMetaAttributes(int index)
+			{
+				MetaCombatAttribute value = MetaCombatAttribute.None;
+				for (int i = 0; i < hostiles.Length; i++)
+				{
+					value |= hostiles[i].GetCombatAttributesAt(index);
+				}
+				return value;
+			}
+
+			public float GetAbsVisibilityToNeutrals(IntVec3 cell) => GetAbsVisibilityToNeutrals(indices.CellToIndex(cell));
             public float GetAbsVisibilityToNeutrals(int index)
             {
                 float value = 0f;

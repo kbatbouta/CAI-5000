@@ -37,6 +37,7 @@ namespace CombatAI.Patches
             // private static float tpsLevel;
             //private static int pawnBlockingCost;
             private static bool isPlayer;
+            private static float threatAtDest;
             private static float visibilityAtDest;
             private static float multiplier = 1.0f;
             private static List<IntVec3> blocked = new List<IntVec3>(128);
@@ -62,12 +63,18 @@ namespace CombatAI.Patches
                     // make tankier pawns unless affect.
 					armor = ArmorUtility.GetArmorReport(pawn);                    					
                     if (armor.createdAt != 0)
-                    {
-                        multiplier = Maths.Max(multiplier, (1 - armor.TankInt), 0.25f);
+                    {                        
+						multiplier = Maths.Max(multiplier, (1 - armor.TankInt), 0.25f);
                     }
 					// retrive CE elements
 					pawn.GetSightReader(out sightReader);
-                    pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
+                    if (sightReader != null)
+                    {
+                        sightReader.armor = armor;
+                        threatAtDest = sightReader.GetThreat(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
+
+					}
+					pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
                     
                     /*
                      * dump pathfinding data
@@ -294,7 +301,8 @@ namespace CombatAI.Patches
 				sightReader = null;
                 counter = 0;
                 dig = false;
-                armor = default(ArmorReport);
+                threatAtDest = 0;
+				armor = default(ArmorReport);
 				instance = null;
                 visibilityAtDest = 0f;
                 map = null;
@@ -364,31 +372,38 @@ namespace CombatAI.Patches
                 {                    
                     var value = 0;
                     var visibility = 0f;
-                    if (sightReader != null)
-                    {                        
+                    var threat = 0f;
+                    var path = 1f;
+					if (sightReader != null)
+                    {  
                         visibility = sightReader.GetVisibilityToEnemies(index);
                         if (visibility > visibilityAtDest)
                         {
-                            value += (int)(visibility * 65);
-                            //if (visibility > 5)
-                            //{
-                            //    value += (int)(visibility * 300);
-                            //}
-                            //else
-                            //{
-                            //    value += (int)(visibility * 90);
-                            //}
+                            value += (int)(visibility * 65);							                           
+						}
+                        threat = sightReader.GetThreat(index);
+                        if (threat >= threatAtDest)
+                        {
+                            value += (int)(threat * 92f);
+						}
+                        if (!isPlayer)
+                        {
+                            MetaCombatAttribute attributes = sightReader.GetMetaAttributes(index);
+                            if ((attributes & MetaCombatAttribute.Ranged_AOEWeaponLarge) != MetaCombatAttribute.None)
+                            {
+                                path = 2f;
+                            }
                         }
-                    }
+					}
                     if (avoidanceReader != null && !isPlayer)
                     {
                         if(value > 3)
                         {
-                            value += (int)(avoidanceReader.GetPath(index) * Maths.Min(visibility, 5) * 21f);
+                            value += (int)(avoidanceReader.GetPath(index) * Maths.Min(visibility, 5) * 21f * path);
                         }
                         else
                         {                           
-                            value += (int)(Maths.Min(avoidanceReader.GetPath(index), 4) * 42);
+                            value += (int)(Maths.Min(avoidanceReader.GetPath(index), 4) * 42 * path);
                         }
                         float danger = avoidanceReader.GetDanger(index);
                         if(danger > 0)

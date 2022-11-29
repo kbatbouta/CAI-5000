@@ -19,6 +19,7 @@ namespace CombatAI.Patches
 		private static float dmg05;
 		private static ProjectileProperties projectile;
         private static SightTracker.SightReader sightReader;
+        private static DamageReport damageReport;
 
         [HarmonyPatch(typeof(AttackTargetFinder), nameof(AttackTargetFinder.BestAttackTarget))]
         internal static class AttackTargetFinder_BestAttackTarget_Patch
@@ -29,6 +30,7 @@ namespace CombatAI.Patches
 
                 if (searcher.Thing is Pawn pawn && !pawn.RaceProps.Animal)
                 {
+                    damageReport = DamageUtility.GetDamageReport(searcher.Thing);
 					searcherPawn = pawn;
                     searcherVerb = pawn.CurrentEffectiveVerb;
                     if(searcherVerb != null && !searcherVerb.IsMeleeAttack && (projectile = searcherVerb.GetProjectile()?.projectile ?? null) != null)
@@ -43,6 +45,7 @@ namespace CombatAI.Patches
             internal static void Postfix()
             {
                 map = null;
+                damageReport = default(DamageReport);
 				searcherPawn = null;
 				sightReader = null;                
             }
@@ -92,25 +95,27 @@ namespace CombatAI.Patches
                     }
                     if(target.Thing is Pawn enemy)
                     {
-                        if (projectile != null)
+                        if (damageReport.IsValid)
                         {
-							var report = ArmorUtility.GetArmorReport(enemy);
-                            var armor = report.GetArmor(projectile.damageDef);
-                            if (projectile.armorPenetrationBase > 0)
-                            {
-								result += Mathf.Lerp(0f, 12f, projectile.armorPenetrationBase / (armor + 1e-2f));
-                                //if (Find.Selector.SelectedPawns.Contains(searcher.Thing as Pawn))
-                                //{
-                                //    map.debugDrawer.FlashCell(searcher.Thing.Position, projectile.armorPenetrationBase, $"{projectile.armorPenetrationBase}");
-                                //    map.debugDrawer.FlashCell(target.Thing.Position, projectile.armorPenetrationBase, $"{Mathf.Lerp(0, dmg05, projectile.armorPenetrationBase / (armor + 1e-2f))}");
-                                //}
-                            }
-                            else
-                            { 
-								result -= Maths.Min(armor * 0.5f, 8f);
-							}
-						}                                                
-						Thing targeted;
+							var armorReport = ArmorUtility.GetArmorReport(enemy);
+                            var diff = Maths.Max(armorReport.Blunt - damageReport.adjustedBlunt, armorReport.Sharp - damageReport.adjustedSharp, 0f);
+                            result += 8f * Mathf.Clamp01(1 - diff);
+                            //var armor = armorReport.GetArmor(projectile.damageDef);
+                            //var damage = damageReport.GetAdjustedDamage(projectile.damageDef.armorCategory);
+                            //if (projectile.armorPenetrationBase > 0)
+                            //{
+                            //    result += Mathf.Lerp(0f, 12f, damageReport.ad);
+                            //if (Find.Selector.SelectedPawns.Contains(searcher.Thing as Pawn))
+                            //{
+                            //    map.debugDrawer.FlashCell(target.Thing.Position, 1f - Mathf.Clamp01(diff), $"{1f - Mathf.Clamp01(diff)}");
+                            //}
+                            //}
+                            //else
+                            //{
+                            //    result -= Maths.Min(armor * 0.5f, 8f);
+                            //}
+                        }
+                        Thing targeted;
                         if (enemy.stances?.stagger != null && enemy.stances.stagger.Staggered)
                         {
                             result += 12;

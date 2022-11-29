@@ -23,6 +23,20 @@ namespace CombatAI
 		[LoadNamed("CombatExtended.Verb_ShootCE")]
 		public static Type Verb_ShootCE;
 
+		[LoadNamed("CombatExtended.ProjectilePropertiesCE")]
+		public static Type ProjectilePropertiesCE;
+		[LoadNamed("CombatExtended.ProjectilePropertiesCE:armorPenetrationSharp")]
+		public static FieldInfo ProjectilePropertiesCE_ArmorPenetrationSharp;
+		[LoadNamed("CombatExtended.ProjectilePropertiesCE:armorPenetrationBlunt")]
+		public static FieldInfo ProjectilePropertiesCE_ArmorPenetrationBlunt;
+
+		[LoadNamed("CombatExtended.ToolCE")]
+		public static Type ToolCE;
+		[LoadNamed("CombatExtended.ToolCE:armorPenetrationSharp")]
+		public static FieldInfo ToolCE_ArmorPenetrationSharp;
+		[LoadNamed("CombatExtended.ToolCE:armorPenetrationBlunt")]
+		public static FieldInfo ToolCE_ArmorPenetrationBlunt;
+
 		[LoadNamed("CombatExtended.Building_TurretGunCE")]
 		public static Type Building_TurretGunCE;
 		[LoadNamed("CombatExtended.Building_TurretGunCE:Active", type: LoadableType.Getter)]
@@ -43,6 +57,23 @@ namespace CombatAI
 			return turretsCE[turret.def.index]				
 				&& (((manable = (bool)Building_TurretGunCE_IsMannable.Invoke(turret, new object[0])) && (bool)Building_TurretGunCE_MannedByColonist.Invoke(turret, new object[0])) || (!manable && (bool)Building_TurretGunCE_Active.Invoke(turret, new object[0]))); ;
 		}
+
+		public static float GetProjectileArmorPenetration(ProjectileProperties props)
+		{
+			if (props.GetType() != ProjectilePropertiesCE)
+			{
+				return props.GetArmorPenetration(1);
+			}
+			if (props.damageDef.armorCategory == DamageArmorCategoryDefOf.Sharp)
+			{
+				return (float)ProjectilePropertiesCE_ArmorPenetrationSharp.GetValue(props);
+			}
+			else
+			{
+				return (float)ProjectilePropertiesCE_ArmorPenetrationBlunt.GetValue(props);
+			}
+		}
+	
 
 		[RunIf(loaded: true)]
 		private static void OnActive()

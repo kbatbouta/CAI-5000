@@ -30,7 +30,7 @@ namespace CombatAI.Comps
 
 		public VerbProperties lastVerbProps;
 		public Job waitJob;
-
+        
 		public int lastTookDamage;
 		public int lastScanned;
 		public int lastInterupted;
@@ -370,16 +370,12 @@ namespace CombatAI.Comps
                     if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell) && cell != pawnPosition)
                     {
                         Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-                        job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
-                        //Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
-                        //pawn.jobs.StopAll();
-                        pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
-                        //pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);                        
+                        job_goto.locomotionUrgency = LocomotionUrgency.Sprint;                        
+                        pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);                        
                     }
                     else if(warmup == null)
                     {
-                        Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
-                        //pawn.jobs.StopAll();
+                        Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);                        
                         pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
                     }
                     lastRetreated = GenTicks.TicksGame - Rand.Int % 50;
@@ -421,8 +417,7 @@ namespace CombatAI.Comps
                             else if (warmup == null)
                             {
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);                                
-                                pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
-                                //pawn.Map.debugDrawer.FlashCell(pawn.Position, 1, "2", 200);
+                                pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);                                
                             }
                         }
                         else
@@ -444,19 +439,15 @@ namespace CombatAI.Comps
                                 pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
                                 job_waitCombat.verbToUse = verb;
                                 job_waitCombat.targetC = bestEnemy;								
-								pawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);
-								//pawn.Map.debugDrawer.FlashCell(bestEnemyPositon, 0.5f, "3a", 200);
-								//pawn.Map.debugDrawer.FlashCell(pawn.Position, 1, "3a", 200);
+								pawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);								
                                 changedPos = true;
 							}
                             else if(warmup == null)
                             {
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);								
 								job_waitCombat.verbToUse = verb;
-								job_waitCombat.targetC = bestEnemy;								
-
-								pawn.jobs.StartJob(waitJob = job_waitCombat, JobCondition.InterruptForced);								
-								//pawn.Map.debugDrawer.FlashCell(pawn.Position, 1, "3", 200);
+								job_waitCombat.targetC = bestEnemy;
+								pawn.jobs.StartJob(waitJob = job_waitCombat, JobCondition.InterruptForced);																
                             }                      
 						}
                     }
@@ -496,7 +487,7 @@ namespace CombatAI.Comps
                         if (effectiveVerb != null && effectiveVerb.Available() && effectiveVerb.EffectiveRange > 5)
                         {
                             float enemyRange = SightUtility.GetSightRange(dInfo.Instigator);
-                            float armorVal = dInfo.Def.armorCategory == DamageArmorCategoryDefOf.Sharp ? armor.Sharp : (armor.Blunt * 0.9f + armor.Sharp * 0.1f);
+                            float armorVal = armor.GetArmor(dInfo.Def);
                             if (armorVal == 0 || Rand.Chance(dInfo.ArmorPenetrationInt / armorVal) || (GenTicks.TicksGame - lastTookDamage < 30 && Rand.Chance(0.50f)))
                             {
                                 IntVec3 pawnPosition = parent.Position;
@@ -572,19 +563,6 @@ namespace CombatAI.Comps
         {
             this.sightReader = reader;
         }
-
-        //private void PrepareWaitJob(Job job_wait, Verb verb, Thing bestEnemy)
-        //{
-        //    if (bestEnemy is Pawn enemy)
-        //    {
-        //        job_wait.verbToUse = verb;
-        //        if (enemy.jobs?.curJob != null)
-        //        {
-        //            job_wait.targetB = enemy.jobs.curJob.targetA;
-        //            job_wait.targetC = enemy.jobs.curJob.targetB;
-        //        }
-        //    }
-        //}
     }
 }
 

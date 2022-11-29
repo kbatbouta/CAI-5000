@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using CombatAI.Comps;
 using RimWorld;
 using UnityEngine;
@@ -56,6 +57,10 @@ namespace CombatAI {
 			/// </summary>
 			public int lastCycle;
             /// <summary>
+            /// Thing potential damage report.
+            /// </summary>
+            public DamageReport damage;
+            /// <summary>
             /// Pawn pawn
             /// </summary>
             public readonly List<IntVec3> path = new List<IntVec3>(16);
@@ -80,6 +85,7 @@ namespace CombatAI {
 				this.pawn = thing as Pawn;
                 this.turretGun = thing as Building_TurretGun;
 				this.isPlayer = thing.Faction.IsPlayerSafe();
+                this.damage = DamageUtility.GetDamageReport(thing);
 				this.dormant = thing.GetComp_Fast<CompCanBeDormant>();
                 this.ai = thing.GetComp_Fast<ThingComp_CombatAI>();
                 this.sighter = thing.GetComp_Fast<ThingComp_Sighter>();                
@@ -326,9 +332,10 @@ namespace CombatAI {
             }
             if (range == 0)
             {
-                return false;
-            }
-            int ticks = GenTicks.TicksGame;
+				return false;
+			}
+            item.damage = DamageUtility.GetDamageReport(item.thing);         
+			int ticks = GenTicks.TicksGame;
             IntVec3 origin = item.thing.Position;
             IntVec3 pos = GetShiftedPosition(item.thing, 30, item.path);            
             if (!pos.InBounds(map))
@@ -370,15 +377,15 @@ namespace CombatAI {
                         }
                     });                  
                 }
-				grid.Next();
+				grid.Next(0, 0, 0);
 				grid.Set(flagPos, (item.pawn == null || !item.pawn.Downed) ? GetFlags(item) : 0);
-				grid.Next();				
+				grid.Next(item.damage.adjustedSharp, item.damage.adjustedBlunt, item.damage.attributes);
 				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
 				for (int i = 0; i < item.path.Count; i++)
                 {
                     IntVec3 cell = item.path[i];
 					grid.Set(cell, 1.0f, new Vector2(cell.x - pos.x, cell.z - pos.z));
-				}								
+				}
                 float r = range * 1.23f;
                 float rSqr = range * range;
                 float rHafledSqr = rSqr * Finder.Settings.FogOfWar_RangeFadeMultiplier * Finder.Settings.FogOfWar_RangeFadeMultiplier;               
@@ -437,12 +444,7 @@ namespace CombatAI {
                         }
                         grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                     }
-                }, range, settings.carryLimit, buffer);
-                //if (grid.GetSignalNum(flagPos) == 0)
-                //{
-                //	grid.Set(flagPos, 1.0f, Vector2.zero, (pawn == null || !pawn.Downed) ? GetFlags(item) : 0);
-                //}
-                // if we are scanning for enemies
+                }, range, settings.carryLimit, buffer);                
                 if (scanForEnemies)
                 {
                     // notify the pawn so they can start processing targets.
