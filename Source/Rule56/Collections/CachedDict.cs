@@ -94,6 +94,11 @@ namespace CombatAI
             cache.Remove(key);
         }
 
+        public void Clear()
+        {
+            cache.Clear();
+        }
+
         private void CleanUp()
         {
             if (!autoCleanUp) return;

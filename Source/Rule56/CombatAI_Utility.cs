@@ -11,9 +11,20 @@ namespace CombatAI
 {
     public static class CombatAI_Utility
     {
+		private static readonly CachedDict<int, bool> dormantCache = new CachedDict<int, bool>(256);
 		private static readonly Dictionary<int, Pair<int, float>> speedCache = new Dictionary<int, Pair<int, float>>(256);
         private static readonly Dictionary<int, Pair<int, float>> aggroCache = new Dictionary<int, Pair<int, float>>(256);
-      
+
+        public static bool IsDormant(this Thing thing)
+        {
+            if(!dormantCache.TryGetValue(thing.thingIDNumber, out bool result, expiry: 240))
+            {
+                CompCanBeDormant dormant = thing.GetComp_Fast<CompCanBeDormant>();
+                dormantCache[thing.thingIDNumber] = dormant != null && !dormant.Awake;
+			}
+            return result;
+		}
+
         public static bool Is<T>(this T def, T other) where T : Def
         {
 	        return def != null && other != null && def == other;
@@ -227,7 +238,11 @@ namespace CombatAI
                 }
                 return pawn.meleeVerbs?.curMeleeVerb ?? null;
             }
-            return null;
+            if (thing is Building_Turret turret)
+            {
+                return turret.AttackVerb;
+            }
+			return null;
         }
 
         public static bool HasWeaponVisible(this Pawn pawn)
@@ -291,6 +306,8 @@ namespace CombatAI
 
 		public static void ClearCache()
 		{
+            dormantCache.Clear();
+            aggroCache.Clear();
 			speedCache.Clear();
 		}
 	}

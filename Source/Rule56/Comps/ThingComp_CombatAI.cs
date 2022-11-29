@@ -281,13 +281,18 @@ namespace CombatAI.Comps
                 float effectiveRange = verb.EffectiveRange;
 				float retreatDistSqr = Maths.Max(effectiveRange * effectiveRange / 9, 25);               
 				foreach (Thing enemy in visibleEnemies)
-                {
+                {                   
                     if (enemy != null && enemy.Spawned && !enemy.Destroyed)
-                    {
+                    {                        
                         IntVec3 shiftedPos = enemy.Position;
-                        Pawn enemyPawn = enemy as Pawn;
+                        Pawn enemyPawn = enemy as Pawn;                        					
 						if (enemyPawn != null)
 						{
+							DevelopmentalStage stage = enemyPawn.DevelopmentalStage;							
+							if (stage <= DevelopmentalStage.Baby && stage != DevelopmentalStage.None)
+							{
+								continue;
+							}
 							shiftedPos = enemyPawn.GetMovingShiftedPosition(60);
 						}
 						float distSqr = pawnPosition.DistanceToSquared(shiftedPos);

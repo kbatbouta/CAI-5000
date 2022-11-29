@@ -291,6 +291,10 @@ namespace CombatAI {
 
 		private bool Skip(IBucketableThing item)
         {
+            if (item.dormant != null)
+            {
+                return !item.dormant.Awake;
+            }
             if (item.pawn != null)
             {
                 return !playerAlliance && ((GenTicks.TicksGame - item.pawn.needs?.rest?.lastRestTick <= 30) || item.pawn.Downed);
@@ -329,7 +333,7 @@ namespace CombatAI {
             else
             {
 				range = SightUtility.GetSightRange(item.thing, playerAlliance);
-            }
+            }            
             if (range == 0)
             {
 				return false;
@@ -406,7 +410,7 @@ namespace CombatAI {
                                     for(int i = 0; i < thingBuffer1.Count; i++)
                                     {
                                         Thing enemy = thingBuffer1[i];                                        
-                                        if (enemy.Spawned && !enemy.Destroyed && enemy.HostileTo(item.thing))
+                                        if (enemy.Spawned && !enemy.Destroyed && enemy.HostileTo(item.thing) && !enemy.IsDormant())
                                         {
                                             IntVec3 enemyPos = enemy.Position;
                                             if (enemy is Pawn enemyPawn)
@@ -418,9 +422,7 @@ namespace CombatAI {
                                                 item.ai.Notify_EnemyVisible(enemy);
                                             }
 										}
-                                    }
-                                    //
-									//comp.Notify_EnemiesVisible(.Where(t => t.Spawned && !t.Destroyed && t.Position.DistanceToSquared(cell) < 25 && t.HostileTo(thing)));
+                                    }                                    
                                 }
                             });                                                     
                         }
