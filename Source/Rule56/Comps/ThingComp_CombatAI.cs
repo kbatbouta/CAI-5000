@@ -405,13 +405,12 @@ namespace CombatAI.Comps
                             }
                             else if (warmup == null)
                             {
-                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);                                
-                                pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);                                
+                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
+                                pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
                             }
                         }
                         else
-                        {
-                            bool canHitIgnoringRange = !verb.CanHitFromCellIgnoringRange(pawnPosition, bestEnemy.Position, out _);
+                        {                            
 							pawn.mindState.enemyTarget = bestEnemy;
                             CoverPositionRequest request = new CoverPositionRequest();
                             request.caster = pawn;
