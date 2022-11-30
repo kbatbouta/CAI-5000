@@ -410,7 +410,7 @@ namespace CombatAI.Comps
                             }
                         }
                         else
-                        {                            
+                        {
 							pawn.mindState.enemyTarget = bestEnemy;
                             CoverPositionRequest request = new CoverPositionRequest();
                             request.caster = pawn;

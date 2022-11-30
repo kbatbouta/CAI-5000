@@ -187,6 +187,12 @@ namespace CombatAI
 			});
 		}
 
+		public override void FinalizeInit()
+		{
+			base.FinalizeInit();
+			asyncActions.Start();
+		}
+
 		public bool IsFogged(IntVec3 cell) => IsFogged(cellIndices.CellToIndex(cell));
 		public bool IsFogged(int index)
 		{

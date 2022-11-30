@@ -83,14 +83,20 @@ namespace CombatAI
             path = new ITByteGrid(map);
             proximity = new ITByteGrid(map);
             shootLine = new ITByteGrid(map);
-            buckets = new IBuckets<IBucketablePawn>(30);
-            asyncActions = new AsyncActions();
+            buckets = new IBuckets<IBucketablePawn>(30);            
             flooder = new CellFlooder(map);
             affliction_dmg = new IHeatGrid(map, 60, 64, 6);
             affliction_pen = new IHeatGrid(map, 60, 64, 6);
-        }
+			asyncActions = new AsyncActions();
+		}
 
-        public override void MapComponentTick()
+		public override void FinalizeInit()
+        {
+			base.FinalizeInit();
+            asyncActions.Start();
+		}
+
+		public override void MapComponentTick()
         {
             base.MapComponentTick();
             asyncActions.ExecuteMainThreadActions();

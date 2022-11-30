@@ -31,7 +31,11 @@ namespace CombatAI
 		{
 			this.mainLoopTickInterval = mainLoopTickInterval;
 			this.hashOffset = Rand.Int % 128;
-			this.thread = new Thread(OffMainThreadActionLoop);
+			this.thread = new Thread(OffMainThreadActionLoop);			
+		}
+
+		public void Start()
+		{
 			this.thread.Start();
 		}
 
@@ -53,7 +57,7 @@ namespace CombatAI
 				{
 					queuedOffThreadActions.Clear();
 				}
-				thread.Join();
+				thread.Abort();
 			}
 			catch (Exception)
 			{

@@ -41,7 +41,13 @@ namespace CombatAI
             interceptors = new InterceptorTracker(this);
 		}
 
-        public override void MapComponentTick()
+		public override void FinalizeInit()
+        {
+			base.FinalizeInit();
+            asyncActions.Start();
+		}
+
+		public override void MapComponentTick()
         {
             base.MapComponentTick();      
             asyncActions.ExecuteMainThreadActions();

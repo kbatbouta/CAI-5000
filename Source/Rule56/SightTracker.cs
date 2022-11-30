@@ -242,9 +242,18 @@ namespace CombatAI
 
 			factionedUInt64Map = new IThingsUInt64Map();
             wildUInt64Map = new IThingsUInt64Map();
-        }        
+        }
 
-        public override void MapComponentTick()
+		public override void FinalizeInit()
+        {
+			base.FinalizeInit();
+            colonistsAndFriendlies.FinalizeInit();
+			raidersAndHostiles.FinalizeInit();
+			insectsAndMechs.FinalizeInit();           
+            wildlife.FinalizeInit();
+		}
+
+		public override void MapComponentTick()
         {            
             base.MapComponentTick();
             int ticks = GenTicks.TicksGame;

@@ -160,6 +160,11 @@ namespace CombatAI {
             this.buckets = new IBuckets<IBucketableThing>(settings.buckets);
         }
 
+        public void FinalizeInit()
+        {
+            asyncActions.Start();
+        }
+
         public virtual void SightGridTick()
         {
             asyncActions.ExecuteMainThreadActions();
