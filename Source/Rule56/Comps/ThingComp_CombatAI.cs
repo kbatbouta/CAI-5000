@@ -412,15 +412,14 @@ namespace CombatAI.Comps
                         else
                         {
                             bool canHitIgnoringRange = !verb.CanHitFromCellIgnoringRange(pawnPosition, bestEnemy.Position, out _);
-
 							pawn.mindState.enemyTarget = bestEnemy;
                             CoverPositionRequest request = new CoverPositionRequest();
                             request.caster = pawn;
-                            request.target = new LocalTargetInfo(bestEnemyPositon);
+                            request.target = new LocalTargetInfo(bestEnemy.Position);
                             request.verb = verb;
                             request.maxRangeFromCaster = Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 2, 10);
 							request.checkBlockChance = true;
-                            if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && (cell != pawnPosition || warmup == null))
+                            if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && cell != pawnPosition && warmup == null)
                             {
                                 Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
                                 job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
@@ -430,15 +429,8 @@ namespace CombatAI.Comps
                                 job_waitCombat.targetC = bestEnemy;								
 								pawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);								
                                 changedPos = true;
-							}
-                            else if(warmup == null)
-                            {
-                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);								
-								job_waitCombat.verbToUse = verb;
-								job_waitCombat.targetC = bestEnemy;
-								pawn.jobs.StartJob(waitJob = job_waitCombat, JobCondition.InterruptForced);																
-                            }                      
-						}
+							}                          
+                        }
                     }
                     else
                     {
