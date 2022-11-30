@@ -125,11 +125,15 @@ namespace CombatAI
 		{
 			if (verb != null && verb.Available())
 			{
-				if (!verb.IsMeleeAttack)
+				if (verb.IsEMP())
 				{
+					attributes |= MetaCombatAttribute.Emp;
+				}
+				if (!verb.IsMeleeAttack)
+				{					
 					ProjectileProperties projectile = verb.GetProjectile()?.projectile ?? null;
 					if (projectile != null)
-					{
+					{						
 						if (projectile.explosionRadius > 0)
 						{
 							attributes |= MetaCombatAttribute.Ranged_AOEWeapon;

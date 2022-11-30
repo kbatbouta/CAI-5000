@@ -237,10 +237,11 @@ namespace CombatAI
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Debugging_Enable, ref Finder.Settings.Debug);
             collapsible.CheckboxLabeled("Draw sight grid", ref Finder.Settings.Debug_DrawShadowCasts);
             collapsible.CheckboxLabeled("Draw sight vector field", ref Finder.Settings.Debug_DrawShadowCastsVectors);
-            collapsible.CheckboxLabeled("Draw proximity grid", ref Finder.Settings.Debug_DrawAvoidanceGrid_Proximity);
+			collapsible.CheckboxLabeled("Draw threat (pawn armor vs enemy)", ref Finder.Settings.Debug_DrawThreatCasts);
+			collapsible.CheckboxLabeled("Draw proximity grid", ref Finder.Settings.Debug_DrawAvoidanceGrid_Proximity);
             collapsible.CheckboxLabeled("Draw danger grid", ref Finder.Settings.Debug_DrawAvoidanceGrid_Danger);
-            collapsible.CheckboxLabeled("Debug things tracker", ref Finder.Settings.Debug_DebugThingsTracker);
-            collapsible.CheckboxLabeled("Debug validate sight <color=red>EXTREMELY BAD FOR PERFORMANCE</color>", ref Finder.Settings.Debug_ValidateSight);
+            collapsible.CheckboxLabeled("Debug things tracker", ref Finder.Settings.Debug_DebugThingsTracker);			
+			collapsible.CheckboxLabeled("Debug validate sight <color=red>EXTREMELY BAD FOR PERFORMANCE</color>", ref Finder.Settings.Debug_ValidateSight);
             collapsible.Line(1);
             collapsible.Label("DO NOT USE THESE AT ALL - FOR DEVS ONLY - WILL FILL YOUR DISK IN 10 MINUTES");
             collapsible.CheckboxLabeled("Dump data <color=red>EXTREMELY BAD FOR PERFORMANCE THIS IS DEAD DON'T TOUCH IT</color>", ref Finder.Settings.Debug_DebugDumpData);

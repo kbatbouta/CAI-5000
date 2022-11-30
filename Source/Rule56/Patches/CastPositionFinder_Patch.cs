@@ -70,10 +70,11 @@ namespace CombatAI.Patches
                         {
                             grid = map.GetFloatGrid();
                             grid.Reset();
-                            newReq.caster.GetSightReader(out sightReader);
-                            if (sightReader != null)
+                            newReq.caster.GetSightReader(out sightReader);							
+							if (sightReader != null)
                             {
-                                request = newReq;
+                                sightReader.armor = ArmorUtility.GetArmorReport(pawn);
+								request = newReq;
                                 interceptors = map.GetComp_Fast<MapComponent_CombatAI>().interceptors;
                                 warmupTime = verb?.verbProps.warmupTime ?? 1;
                                 warmupTime = Mathf.Clamp(warmupTime, 0.5f, 0.8f);
@@ -146,10 +147,11 @@ namespace CombatAI.Patches
                 {                    
                     IntVec3 root = pawn.Position;
                     float rootVis = sightReader.GetVisibilityToEnemies(root);
+					float rootThreat = sightReader.GetThreat(request.locus);
 					map.GetCellFlooder().Flood(root,
                         (node) =>
                         {
-                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + sightReader.GetVisibilityToEnemies(node.cell) * 2 + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4;                            
+                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + sightReader.GetVisibilityToEnemies(node.cell) * 2 + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;                            
                         },
                         (cell) =>
                         {
@@ -163,7 +165,7 @@ namespace CombatAI.Patches
                             {
                                 adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);                                
                             }                            
-                            return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - Verse.CoverUtility.CalculateOverallBlockChance(adjustedLoc, cell, map) - interceptors.grid.Get(cell);
+                            return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - Verse.CoverUtility.CalculateOverallBlockChance(adjustedLoc, cell, map) - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
                         },
                         (cell) =>
                         {

@@ -44,8 +44,12 @@ namespace CombatAI
 		/// </summary>
 		public int createdAt;
 		/// <summary>
-		/// Total sharp armor.
+		/// Weak attributes.
 		/// </summary>
+		public MetaCombatAttribute weaknessAttributes;
+		/// <summary>
+		/// Total sharp armor.
+		/// </summary>		
 		public float Sharp
 		{
 			get => bodySharp + apparelSharp;
@@ -64,6 +68,13 @@ namespace CombatAI
 		{
 			get => Mathf.Lerp(0f, 1f, (bodyBlunt * 0.5f + bodySharp * 0.5f + apparelBlunt * 0.5f + apparelSharp * 0.5f) / 38f);
 		}
+		/// <summary>
+		/// Whether this is a valid report.
+		/// </summary>
+		public bool IsValid
+		{
+			get => createdAt != 0;
+		}		
 
 		/// <summary>
 		/// Get the appropriate armor for a damage def.

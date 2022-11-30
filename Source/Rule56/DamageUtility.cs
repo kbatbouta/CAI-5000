@@ -119,6 +119,14 @@ namespace CombatAI
 				collapsible.Line(4);
 				collapsible.Label($"adjustedSharp:{report.adjustedSharp}\tAdjustedBlunt:{report.adjustedBlunt}");
 			}
+			if (report.primaryIsRanged)
+			{
+				report.attributes |= MetaCombatAttribute.Ranged;
+			}
+			else
+			{
+				report.attributes |= MetaCombatAttribute.Melee;
+			}
 			reports[thing.thingIDNumber] = report;
 			return report;
 		}

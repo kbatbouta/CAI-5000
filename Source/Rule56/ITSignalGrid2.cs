@@ -101,8 +101,8 @@ namespace CombatAI
 						cells_strength[index].value += signalStrength;
 						cells_dir[index].value += dir;						
 						cells_meta[index].value |= curMeta;
-						cells_sharp[index].value += curSharp;
-						cells_blunt[index].value += curBlunt;						
+						cells_sharp[index].value = Maths.Max(curSharp, cells_sharp[index].value);
+						cells_blunt[index].value = Maths.Max(curBlunt, cells_blunt[index].value);
 					}
 					else
 					{
@@ -145,8 +145,8 @@ namespace CombatAI
 						cells_strength[index].value += signalStrength;
 						cells_dir[index].value += dir;
 						cells_meta[index].value |= metaAttributes;
-						cells_sharp[index].value += curSharp;
-						cells_blunt[index].value += curBlunt;
+						cells_sharp[index].value = Maths.Max(curSharp, cells_sharp[index].value);
+						cells_blunt[index].value = Maths.Max(curBlunt, cells_blunt[index].value);
 					}
 					else
 					{
@@ -229,8 +229,8 @@ namespace CombatAI
 						cells_dir[index].value += dir;
 						cells_flags[index].value |= flags;
 						cells_meta[index].value |= curMeta;
-						cells_sharp[index].value += curSharp;
-						cells_blunt[index].value += curBlunt;
+						cells_sharp[index].value = Maths.Max(curSharp, cells_sharp[index].value);
+						cells_blunt[index].value = Maths.Max(curBlunt, cells_blunt[index].value);
 					}
 					else
 					{
@@ -399,9 +399,9 @@ namespace CombatAI
 					case 0:
 						IField<float> sharp = cells_sharp[index];
 
-						return Maths.Max(sharp.value, sharp.valuePrev) / Maths.Max(cell.num, cell.numPrev, 0.01f);
+						return Maths.Max(sharp.value, sharp.valuePrev);
 					case 1:
-						return cells_sharp[index].value / (cell.num + 0.01f);
+						return cells_sharp[index].value;
 					default:
 						break;
 				}
@@ -421,9 +421,9 @@ namespace CombatAI
 					case 0:
 						IField<float> blunt = cells_blunt[index];
 
-						return Maths.Max(blunt.value, blunt.valuePrev) / Maths.Max(cell.num, cell.numPrev, 0.01f);
+						return Maths.Max(blunt.value, blunt.valuePrev);
 					case 1:
-						return cells_blunt[index].value / (cell.num + 0.01f);
+						return cells_blunt[index].value;
 					default:
 						break;
 				}

@@ -76,6 +76,7 @@ namespace CombatAI
 			report.bodySharp = baseArmor.Second;			
 			FillApparel(ref report);
 			report.createdAt = GenTicks.TicksGame;
+			report.weaknessAttributes = pawn.GetWeaknessAttributes();
 			return report;
 		}
 

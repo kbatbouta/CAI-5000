@@ -274,8 +274,7 @@ namespace CombatAI.Comps
                 IntVec3 bestEnemyPositon = IntVec3.Invalid;
                 IntVec3 pawnPosition = pawn.Position;
                 float bestEnemyScore = verb.currentTarget.IsValid && verb.currentTarget.Cell.IsValid ? verb.currentTarget.Cell.DistanceToSquared(pawnPosition) : 1e6f;           
-                bool bestEnemyVisibleNow = warmup != null;
-                //bool bestEnemyVisibleSoon = false;
+                bool bestEnemyVisibleNow = warmup != null;                
                 bool retreat = false;
                 bool canRetreat = pawn.RaceProps.baseHealthScale <= 2.0f && pawn.RaceProps.baseBodySize <= 2.2f;
                 float effectiveRange = verb.EffectiveRange;
@@ -289,7 +288,7 @@ namespace CombatAI.Comps
 						if (enemyPawn != null)
 						{
 							DevelopmentalStage stage = enemyPawn.DevelopmentalStage;							
-							if (stage <= DevelopmentalStage.Baby && stage != DevelopmentalStage.None)
+							if (stage <= DevelopmentalStage.Child && stage != DevelopmentalStage.None)
 							{
 								continue;
 							}
@@ -327,11 +326,7 @@ namespace CombatAI.Comps
                                 }                                
                             }
                             else if (!bestEnemyVisibleNow)
-                            {
-								//if (enemyPawn != null)
-								//{
-								//	shiftedPos = enemyPawn.GetMovingShiftedPosition(60);
-								//}
+                            {								
 								if (shiftedPos != enemy.Position && verb.CanHitTarget(shiftedPos))
                                 {
                                     distSqr = pawnPosition.DistanceToSquared(shiftedPos);
@@ -339,20 +334,9 @@ namespace CombatAI.Comps
                                     {
                                         bestEnemy = enemy;
                                         bestEnemyScore = distSqr;
-                                        bestEnemyPositon = shiftedPos;
-                                        //bestEnemyVisibleSoon = true;
+                                        bestEnemyPositon = shiftedPos;                                        
                                     }
-                                }
-                                //else if (!bestEnemyVisibleSoon)
-                                //{
-                                //    distSqr = pawnPosition.DistanceToSquared(shiftedPos) * 2f;
-                                //    if (bestEnemyScore > distSqr)
-                                //    {
-                                //        bestEnemy = enemy;
-                                //        bestEnemyScore = distSqr;
-                                //        bestEnemyPositon = shiftedPos;
-                                //    }
-                                //}
+                                }                                
                             }
                         }
                     }
@@ -410,7 +394,7 @@ namespace CombatAI.Comps
 							request.maxRangeFromCaster = Rand.Chance(0.5f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 2, 10) : 2;
                             request.wantCoverFromTarget = true;
                             if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && (cell != pawnPosition || warmup == null))
-                            {                                   
+                            {
                                 Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
                                 job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
                                 Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
@@ -461,7 +445,6 @@ namespace CombatAI.Comps
 						waitJob = null;
 						pawn.mindState.enemyTarget = bestEnemy;
                         Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);						
-						//pawn.jobs.StopAll();
 						pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
                     }
                     if (changedPos)

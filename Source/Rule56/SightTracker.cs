@@ -48,13 +48,21 @@ namespace CombatAI
 			public float GetThreat(IntVec3 cell) => GetThreat(indices.CellToIndex(cell));
 			public float GetThreat(int index)
 			{
-                if (!Mod_CE.active)
+                if (armor.weaknessAttributes != MetaCombatAttribute.None)
                 {
-                    return armor.createdAt != 0 ? Mathf.Clamp01(1 - Maths.Max(armor.Blunt - GetBlunt(index), armor.Sharp - GetSharp(index), 0f)) : 0f;
+                    MetaCombatAttribute attributes = GetMetaAttributes(index);
+                    if ((attributes & armor.weaknessAttributes) != MetaCombatAttribute.None)
+                    {
+                        return 2.0f;
+                    }
+                }
+				if (!Mod_CE.active)
+                {
+					return armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
                 }
                 else
                 {
-					return armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 1f), GetSharp(index) / (armor.Sharp + 1f), 0f)) : 0f;
+					return armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
 				}
 			}
 
@@ -259,7 +267,7 @@ namespace CombatAI
             }
             //
             // debugging stuff.
-            if (Finder.Settings.Debug_DrawShadowCasts && GenTicks.TicksGame % 15 == 0)
+            if ((Finder.Settings.Debug_DrawShadowCasts || Finder.Settings.Debug_DrawThreatCasts) && GenTicks.TicksGame % 15 == 0)
             {
                 _drawnCells.Clear();
                 if (!Find.Selector.SelectedPawns.NullOrEmpty())
@@ -268,8 +276,9 @@ namespace CombatAI
                     {
 						ArmorReport report = ArmorUtility.GetArmorReport(pawn);
                         Log.Message($"{pawn}, t:{Math.Round(report.TankInt, 3)}, s:{report.bodySize}, bB:{Math.Round(report.bodyBlunt, 3)}, bS:{Math.Round(report.bodySharp, 3)}, aB:{Math.Round(report.apparelBlunt, 3)}, aS:{Math.Round(report.apparelSharp, 3)}, hs:{report.hasShieldBelt}");
-						TryGetReader(pawn, out SightReader reader);                        
-                        if (reader != null)
+						TryGetReader(pawn, out SightReader reader);
+                        reader.armor = ArmorUtility.GetArmorReport(pawn);
+						if (reader != null)
                         {
                             IntVec3 center = pawn.Position;
                             if (center.InBounds(map))
@@ -282,17 +291,26 @@ namespace CombatAI
                                         if (cell.InBounds(map) && !_drawnCells.Contains(cell))
                                         {
                                             _drawnCells.Add(cell);
-                                            var value = reader.GetVisibilityToEnemies(cell);
-                                            if (value > 0)
-                                                map.debugDrawer.FlashCell(cell, Mathf.Clamp((float)reader.GetVisibilityToEnemies(cell) / 10f, 0f, 0.99f), $"{Math.Round(value, 3)}", 15);
-                                        }
+                                            if (Finder.Settings.Debug_DrawThreatCasts)
+                                            {
+                                                var value = reader.GetThreat(cell);
+                                                if (value > 0)
+                                                    map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 2f), $"{Math.Round(value, 2)}", 15);
+                                            }
+											else if (Finder.Settings.Debug_DrawShadowCasts)
+											{
+												var value = reader.GetVisibilityToEnemies(cell);
+												if (value > 0)
+													map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
+											}
+										}
                                     }
                                 }
                             }
                         }
                     }
                 }
-                else
+                else if (Finder.Settings.Debug_DrawShadowCasts)
                 {
                     IntVec3 center = UI.MouseMapPosition().ToIntVec3();                   
                     if (center.InBounds(map))

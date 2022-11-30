@@ -20,8 +20,9 @@ namespace CombatAI
                 return false;
             }
             Map map = request.caster.Map;
-            Pawn caster = request.caster;
-            if (request.locus == IntVec3.Zero)
+            Pawn caster = request.caster;            
+            sightReader.armor = ArmorUtility.GetArmorReport(caster);
+			if (request.locus == IntVec3.Zero)
             {
                 request.locus = request.caster.Position;
                 request.maxRangeFromLocus = request.maxRangeFromCaster;
@@ -36,8 +37,9 @@ namespace CombatAI
             IntVec3 enemyLoc = request.target.Cell;
             IntVec3 bestCell = IntVec3.Invalid;
             float rootVis = sightReader.GetVisibilityToEnemies(request.locus);
+            float rootThreat = sightReader.GetThreat(request.locus);
 			float bestCellVisibility = 1e8f;
-            float bestCellScore = 1e8f;
+            float bestCellScore = 1e8f;            
             bool tpsLow = Finder.Performance.TpsCriticallyLow;
             flooder.Flood(request.locus,
                 (node) =>
@@ -46,7 +48,7 @@ namespace CombatAI
                     {
                         return;
                     }
-                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - CoverUtility.TotalSurroundingCoverScore(node.cell, map) - interceptors.grid.Get(node.cell) * 2;
+                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - CoverUtility.TotalSurroundingCoverScore(node.cell, map) * 0.5f - interceptors.grid.Get(node.cell) * 2 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;
                     if (c < bestCellScore)
                     {
                         float v = sightReader.GetVisibilityToEnemies(node.cell);
@@ -57,7 +59,10 @@ namespace CombatAI
                             bestCell = node.cell;
                         }
                     }
-                    //map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
+                    //if (Find.Selector.SelectedPawns.Contains(request.caster))
+                    //{
+                    //    map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
+                    //}
                 },
                 (cell) =>
                 {
@@ -84,7 +89,8 @@ namespace CombatAI
             }
             Map map = request.caster.Map;
             Pawn caster = request.caster;
-            if (request.locus == IntVec3.Zero)
+			sightReader.armor = ArmorUtility.GetArmorReport(caster);
+			if (request.locus == IntVec3.Zero)
             {
                 request.locus = request.caster.Position;
                 request.maxRangeFromLocus = request.maxRangeFromCaster;
@@ -100,8 +106,9 @@ namespace CombatAI
             IntVec3 bestCell = IntVec3.Invalid;
 			float rootVis = sightReader.GetVisibilityToEnemies(request.locus);
 			float rootVisFriendlies = sightReader.GetVisibilityToFriendlies(request.locus);
+			float rootThreat = sightReader.GetThreat(request.locus);
 			float bestCellDist = request.locus.DistanceToSquared(enemyLoc);
-            float bestCellScore = 1e8f;
+            float bestCellScore = 1e8f;            
             flooder.Flood(request.locus,
                 (node) =>
                 {
@@ -109,7 +116,7 @@ namespace CombatAI
                     {
                         return;
                     }
-                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) + avoidanceReader.GetProximity(node.cell) * 0.5f - CoverUtility.TotalSurroundingCoverScore(node.cell, map) * 0.5f - interceptors.grid.Get(node.cell);
+                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) + avoidanceReader.GetProximity(node.cell) * 0.5f - CoverUtility.TotalSurroundingCoverScore(node.cell, map) * 0.5f - interceptors.grid.Get(node.cell) + (sightReader.GetThreat(node.cell) - rootThreat) * 0.75f;
                     if (c < bestCellScore)
                     {
                         float d = node.cell.DistanceToSquared(enemyLoc);
@@ -124,7 +131,7 @@ namespace CombatAI
                 },
                 (cell) =>
                 {
-                    return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (rootVisFriendlies - sightReader.GetVisibilityToFriendlies(cell)) * - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell);
+                    return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (rootVisFriendlies - sightReader.GetVisibilityToFriendlies(cell)) * - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
                 },
                 (cell) =>
                 {
