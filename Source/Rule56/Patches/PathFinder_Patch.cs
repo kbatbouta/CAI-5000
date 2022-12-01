@@ -357,7 +357,7 @@ namespace CombatAI.Patches
                         if (!isPlayer)
                         {
                             MetaCombatAttribute attributes = sightReader.GetMetaAttributes(index);
-                            if ((attributes & MetaCombatAttribute.Ranged_AOEWeaponLarge) != MetaCombatAttribute.None)
+                            if ((attributes & MetaCombatAttribute.AOELarge) != MetaCombatAttribute.None)
                             {
                                 path = 2f;
                             }

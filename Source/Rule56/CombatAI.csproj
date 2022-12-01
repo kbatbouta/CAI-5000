@@ -41,6 +41,7 @@
 	  <Folder Include="Deprecated\Utilities\" />
 	  <Folder Include="Defs\" />
 	  <Folder Include="DefOfs\" />
+	  <Folder Include="Defs\Extensions\" />
 	</ItemGroup>	
 	<ItemGroup>
 	  <None Remove="Gui\Core\GUIUtility.ScrollViews" />
@@ -54,6 +55,7 @@
 	  <None Remove="Deprecated\Utilities\" />
 	  <None Remove="Defs\" />
 	  <None Remove="DefOfs\" />
+	  <None Remove="Defs\Extensions\" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">
@@ -68,9 +70,6 @@
 		<None Update="..\..\1.4\Patches\Races_Animal_Base.xml">
 		  <Link>Xml\Patches\\Races_Animal_Base.xml</Link>
 		</None>		
-		<None Update="..\..\1.4\Defs\Stats\Stats_Sight.xml">
-		  <Link>Xml\Defs\Stats\\Stats_Sight.xml</Link>
-		</None>
 		<None Update="..\..\1.4\Defs\Stats\Stats_AI.xml">
 		  <Link>Xml\Defs\Stats\\Stats_AI.xml</Link>
 		</None>

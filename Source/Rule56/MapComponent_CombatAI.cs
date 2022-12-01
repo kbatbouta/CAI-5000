@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CombatAI.Gui;
 using System.Linq;
+using System.Threading;
 
 namespace CombatAI
 {
@@ -45,6 +46,8 @@ namespace CombatAI
         {
 			base.FinalizeInit();
             asyncActions.Start();
+            // do it on load.
+            Finder.MainThreadId = Thread.CurrentThread.ManagedThreadId;
 		}
 
 		public override void MapComponentTick()

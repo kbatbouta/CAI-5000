@@ -66,7 +66,7 @@ namespace CombatAI
                 },
                 (cell) =>
                 {
-                    return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell);
+                    return (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell);
                 },
                 (cell) =>
                 {
@@ -98,7 +98,7 @@ namespace CombatAI
             if (request.maxRangeFromLocus == 0)
             {
                 request.maxRangeFromLocus = float.MaxValue;
-            }
+            }            
 			InterceptorTracker interceptors = map.GetComp_Fast<MapComponent_CombatAI>().interceptors;
 			float maxDistSqr = request.maxRangeFromLocus * request.maxRangeFromLocus;
             CellFlooder flooder = map.GetCellFlooder();
@@ -131,11 +131,11 @@ namespace CombatAI
                 },
                 (cell) =>
                 {
-                    return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (rootVisFriendlies - sightReader.GetVisibilityToFriendlies(cell)) * - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
+                    return (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (rootVisFriendlies - sightReader.GetVisibilityToFriendlies(cell)) * - (request.checkBlockChance ? CoverUtility.CalculateOverallBlockChance(cell, enemyLoc, map) : 0) - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
                 },
                 (cell) =>
                 {
-                    return (request.validator == null || request.validator(cell)) && cell.WalkableBy(map, caster);
+					return (request.validator == null || request.validator(cell)) && cell.WalkableBy(map, caster);
                 },
                 (int)Maths.Min(request.maxRangeFromLocus, 30)
             );

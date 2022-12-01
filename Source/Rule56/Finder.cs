@@ -23,6 +23,8 @@ namespace CombatAI
         {
             get => Maths.Max(Performance.Performance, 0.50f);
         }
+
+        public static int MainThreadId;
     }
 }
 

@@ -136,10 +136,10 @@ namespace CombatAI
 					{						
 						if (projectile.explosionRadius > 0)
 						{
-							attributes |= MetaCombatAttribute.Ranged_AOEWeapon;
+							attributes |= MetaCombatAttribute.AOE;
 							if (projectile.explosionRadius > 3.5f)
 							{
-								attributes |= MetaCombatAttribute.Ranged_AOEWeaponLarge;
+								attributes |= MetaCombatAttribute.AOELarge;
 							}
 						}
 						float warmupTime = Maths.Max(verb.verbProps.warmupTime, 0.5f);

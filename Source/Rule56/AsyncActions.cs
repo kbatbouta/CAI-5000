@@ -25,7 +25,7 @@ namespace CombatAI
 		public bool Alive
 		{
 			get => alive;
-		}
+		}		
 
 		public AsyncActions(int mainLoopTickInterval = 5)
 		{

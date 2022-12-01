@@ -39,7 +39,7 @@ namespace CombatAI.Patches
 		{
             public static void Prefix()
             {
-                ai_fightEnemies = true;
+                ai_fightEnemies = true;                
 			}			
 		}
 

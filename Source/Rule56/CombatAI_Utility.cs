@@ -13,9 +13,9 @@ namespace CombatAI
     {
 		private static readonly CachedDict<int, bool> dormantCache = new CachedDict<int, bool>(256);
 		private static readonly Dictionary<int, Pair<int, float>> speedCache = new Dictionary<int, Pair<int, float>>(256);
-        private static readonly Dictionary<int, Pair<int, float>> aggroCache = new Dictionary<int, Pair<int, float>>(256);
+        private static readonly Dictionary<int, Pair<int, float>> aggroCache = new Dictionary<int, Pair<int, float>>(256);       
 
-        public static bool IsDormant(this Thing thing)
+		public static bool IsDormant(this Thing thing)
         {
             if(!dormantCache.TryGetValue(thing.thingIDNumber, out bool result, expiry: 240))
             {
@@ -32,13 +32,13 @@ namespace CombatAI
 
 		public static float GetAggroMul(this Pawn pawn)
         {
-			if (speedCache.TryGetValue(pawn.thingIDNumber, out var store) && GenTicks.TicksGame - store.First <= 600)
-			{
-				return store.second;
-			}
-			float aggro = pawn.GetStatValue(CombatAI_StatDefOf.CombatAI_AggroMul);
-			speedCache[pawn.thingIDNumber] = new Pair<int, float>(GenTicks.TicksGame, aggro);
-			return aggro;
+			//if (speedCache.TryGetValue(pawn.thingIDNumber, out var store) && GenTicks.TicksGame - store.First <= 600)
+			//{
+			//	return store.second;
+			//}
+			//float aggro = pawn.GetStatValue(CombatAI_StatDefOf.CombatAI_AggroMul);
+			//speedCache[pawn.thingIDNumber] = new Pair<int, float>(GenTicks.TicksGame, aggro);
+			return 1f;
 		}
 
 		public static float GetMoveSpeed(this Pawn pawn)

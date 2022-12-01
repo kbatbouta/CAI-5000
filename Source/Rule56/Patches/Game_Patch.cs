@@ -13,9 +13,9 @@ namespace CombatAI.Patches
             {
                 CompsCache.Notify_MapRemoved(map);
             }
-        }
+        }		
 
-        [HarmonyPatch(typeof(Game), nameof(Game.ClearCaches))]
+		[HarmonyPatch(typeof(Game), nameof(Game.ClearCaches))]
         static class Game_ClearCaches_Patch
         {
             public static void Prefix()
@@ -27,7 +27,9 @@ namespace CombatAI.Patches
                 GenSight_Patch.ClearCache();
                 ArmorUtility.ClearCache();
                 DamageUtility.ClearCache();
-            }
+                MetaCombatAttributeUtility.ClearCache();
+
+			}
         }
     }
 }

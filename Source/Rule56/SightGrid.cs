@@ -16,6 +16,22 @@ namespace CombatAI {
 
 		private const int COVERCARRYLIMIT = 6;        
 
+        private struct ISpotRecord
+        {
+            /// <summary>
+            /// Spotted flag.
+            /// </summary>
+            public UInt64 flag;
+            /// <summary>
+            /// Cell at which the spotting occured.
+            /// </summary>
+            public IntVec3 cell;
+            /// <summary>
+            /// Cell visibility.
+            /// </summary>
+            public float visibility;
+        }
+
         private class IBucketableThing : IBucketable
         {
             private int bucketIndex;
@@ -64,6 +80,10 @@ namespace CombatAI {
             /// Pawn pawn
             /// </summary>
             public readonly List<IntVec3> path = new List<IntVec3>(16);
+            /// <summary>
+            /// Contains spotting records that are to be processed on the main thread once the scan is finished.
+            /// </summary>
+            public readonly List<ISpotRecord> spottings = new List<ISpotRecord>(64);
             /// <summary>
             /// Last tick this pawn scanned for enemies
             /// </summary>
@@ -213,9 +233,8 @@ namespace CombatAI {
             {
                 wait = true;
                 asyncActions.EnqueueOffThreadAction(delegate
-                {                    
-                    grid.NextCycle();                    
-                    wait = false;
+                {
+                    asyncActions.EnqueueMainThreadAction(Continue);
                 });                                                            
             }                                                 
         }
@@ -266,6 +285,12 @@ namespace CombatAI {
                 Log.Error($"CAI: SightGridManager Notify_MapRemoved failed to stop thread with {er}");
             }
         }
+
+        private void Continue()
+        {
+			grid.NextCycle();
+			wait = false;
+		}
 
         private bool Consistent(IBucketableThing item)
         {
@@ -342,8 +367,8 @@ namespace CombatAI {
             if (range == 0)
             {
 				return false;
-			}
-            item.damage = DamageUtility.GetDamageReport(item.thing);         
+			}			
+			item.damage = DamageUtility.GetDamageReport(item.thing);         
 			int ticks = GenTicks.TicksGame;
             IntVec3 origin = item.thing.Position;
             IntVec3 pos = GetShiftedPosition(item.thing, 30, item.path);            
@@ -374,18 +399,13 @@ namespace CombatAI {
 			{
 				item.lastScannedForEnemies = ticks;                              
             }
+            if (scanForEnemies)
+            {               
+				item.ai.OnScanStarted();
+				item.spottings.Clear();
+            }
 			Action action = () =>
-            {
-                if (scanForEnemies)
-                {
-                    asyncActions.EnqueueMainThreadAction(delegate
-                    {
-                        if (!item.thing.Destroyed && item.thing.Spawned)
-                        {
-                            item.ai.OnScanStarted();
-                        }
-                    });                  
-                }
+            {                
 				grid.Next(0, 0, 0);
 				grid.Set(flagPos, (item.pawn == null || !item.pawn.Downed) ? GetFlags(item) : 0);
 				grid.Next(item.damage.adjustedSharp, item.damage.adjustedBlunt, item.damage.attributes);
@@ -400,72 +420,79 @@ namespace CombatAI {
                 float rHafledSqr = rSqr * Finder.Settings.FogOfWar_RangeFadeMultiplier * Finder.Settings.FogOfWar_RangeFadeMultiplier;               
 				ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
                 {
-                    if (scanForEnemies)
-                    {
-                        UInt64 flag = reader.GetEnemyFlags(cell);
-                        if (flag != 0)
-                        {
-                            // on the main thread check for enemies on or near this cell.
-                            asyncActions.EnqueueMainThreadAction(delegate
-                            {
-                                if (!item.thing.Destroyed && item.thing.Spawned)
-                                {
-                                    thingBuffer1.Clear();
-									sightTracker.factionedUInt64Map.GetThings(flag, thingBuffer1);
-                                    for(int i = 0; i < thingBuffer1.Count; i++)
-                                    {
-                                        Thing enemy = thingBuffer1[i];                                        
-                                        if (enemy.Spawned && !enemy.Destroyed && enemy.HostileTo(item.thing) && !enemy.IsDormant())
-                                        {
-                                            IntVec3 enemyPos = enemy.Position;
-                                            if (enemy is Pawn enemyPawn)
-                                            {
-                                                enemyPos = enemyPawn.GetMovingShiftedPosition(120);
-                                            }
-                                            if (enemyPos.DistanceToSquared(cell) < 225)
-                                            {
-                                                item.ai.Notify_EnemyVisible(enemy);
-                                            }
-										}
-                                    }                                    
-                                }
-                            });                                                     
-                        }
-                    }
-                    // NOTE: the carry is the number of cover things between the source and the current cell.                  
-                    float visibility = (float)(r - dist) / r * (1 - coverRating);
-                    float d = pos.DistanceToSquared(cell);
+                    float d = pos.DistanceToSquared(cell);                    
                     // only set anything if visibility is ok
-                    if (visibility > 0f && d < rSqr)
+                    if (d < rSqr)
                     {
-                        if (playerAlliance)
+						// NOTE: the carry is the number of cover things between the source and the current cell.                  
+						float visibility = (float)(r - dist) / r * (1 - coverRating);
+						if (visibility > 0f)
                         {
-                            if (d >= rHafledSqr)
+                            if (playerAlliance)
                             {
-                                visibility *= Maths.Min(0.05f, 0.02499f);
+                                if (d >= rHafledSqr)
+                                {
+                                    visibility *= Maths.Min(0.05f, 0.02499f);
+                                }
+                                else
+                                {
+                                    visibility = Maths.Max(visibility, 0.02500f);
+                                }
                             }
-                            else
+                            if (scanForEnemies)
                             {
-                                visibility = Maths.Max(visibility, 0.02500f);
+                                UInt64 flag = reader.GetEnemyFlags(cell);
+                                if (flag != 0)
+                                {
+                                    ISpotRecord spotting = new ISpotRecord();
+                                    spotting.cell = cell;
+                                    spotting.flag = flag;
+                                    spotting.visibility = visibility;
+                                    item.spottings.Add(spotting);
+                                }
                             }
+                            grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                         }
-                        grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                     }
-                }, range, settings.carryLimit, buffer);                
+                }, range, settings.carryLimit, buffer);
                 if (scanForEnemies)
                 {
-                    // notify the pawn so they can start processing targets.
-                    asyncActions.EnqueueMainThreadAction(delegate
+                    if (item.spottings.Count > 0 || (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight))
                     {
-                        if (item.thing != null && !item.thing.Destroyed && item.thing.Spawned)
+                        // on the main thread check for enemies on or near this cell.
+                        asyncActions.EnqueueMainThreadAction(delegate
                         {
-							item.ai.OnScanFinished();
-                        }
-                    });
+                            if (!item.thing.Destroyed && item.thing.Spawned)
+                            {
+                                for (int i = 0; i < item.spottings.Count; i++)
+                                {
+                                    ISpotRecord record = item.spottings[i];
+                                    Thing enemy;
+                                    thingBuffer1.Clear();
+                                    sightTracker.factionedUInt64Map.GetThings(record.flag, thingBuffer1);
+                                    for (int j = 0; j < thingBuffer1.Count; j++)
+                                    {
+                                        enemy = thingBuffer1[j];
+                                        if (enemy.Spawned
+                                            && !enemy.Destroyed
+                                            && (enemy.Position.DistanceToSquared(record.cell) < 225 || (enemy is Pawn enemyPawn && enemyPawn.GetMovingShiftedPosition(70).DistanceToSquared(record.cell) < 255))
+                                            && enemy.HostileTo(item.thing)
+                                            && !enemy.IsDormant())
+                                        {
+                                            item.ai.Notify_EnemyVisible(enemy);
+                                        }
+                                    }
+                                }
+                                // notify the pawn so they can start processing targets.                                
+                                item.ai.OnScanFinished();
+								item.spottings.Clear();
+                            }
+                        });
+                    }  
                 }
             };
             asyncActions.EnqueueOffThreadAction(action);            
-            item.lastCycle = grid.CycleNum;            
+            item.lastCycle = grid.CycleNum;          
             return true;
         }
 

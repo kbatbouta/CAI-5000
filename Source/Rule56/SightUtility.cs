@@ -49,7 +49,7 @@ namespace CombatAI
 			{
 				if (Finder.Settings.FogOfWar_Enabled && isPlayer)
 				{
-					range = Mathf.CeilToInt(GetSightRangePlayer(pawn, true) * pawn.GetStatValue(CombatAI.CombatAI_StatDefOf.CombatAI_SightMul));
+					range = GetSightRangePlayer(pawn, true);
 				}
 				else
 				{

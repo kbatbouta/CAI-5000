@@ -9,12 +9,14 @@ using System.Threading;
 using System.Net.NetworkInformation;
 using UnityEngine.Analytics;
 using Unity.Baselib.LowLevel;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace CombatAI.Comps
 {
     public class ThingComp_CombatAI : ThingComp
     {
-#if DEBUG_REACTION
+#if DEBUG_REACTION        
 		private HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
         private List<IntVec3> _path = new List<IntVec3>();
         private List<Color> _colors = new List<Color>();
@@ -51,8 +53,8 @@ namespace CombatAI.Comps
             if (parent is Pawn pawn)
             {
                 this.armor = ArmorUtility.GetArmorReport(pawn);
-				this.duties = new Pawn_CustomDutyTracker(pawn);
-            }
+				this.duties = new Pawn_CustomDutyTracker(pawn);				
+			}
         } 
 
 #if DEBUG_REACTION
@@ -165,25 +167,28 @@ namespace CombatAI.Comps
 
 		public void OnScanStarted()
 		{
-			if (scanning == true)
-			{
-				Log.Warning($"ISMA: OnScanStarted called while scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
-				return;
-			}
+            if (visibleEnemies.Count != 0)
+            {
+                if (scanning == true)
+                {
+                    Log.Warning($"ISMA: OnScanStarted called while scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
+                    return;
+                }                
+                visibleEnemies.Clear();
+            }
 			scanning = true;
-			visibleEnemies.Clear();
-		}
+			lastScanned = GenTicks.TicksGame;
+		}        
 
 		public void OnScanFinished()
-        {            
+        {
             if (scanning == false)
             {
                 Log.Warning($"ISMA: OnScanFinished called while not scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
                 return;
             }
             scanning = false;
-			#if DEBUG_REACTION
-
+#if DEBUG_REACTION
             if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
             {
                 _visibleEnemies.Clear();
@@ -211,9 +216,11 @@ namespace CombatAI.Comps
                 }
             }
 #endif
-            lastScanned = GenTicks.TicksGame;
-
-			if (visibleEnemies.Count > 0 && !Finder.Performance.TpsCriticallyLow)
+			if (visibleEnemies.Count == 0)
+			{
+                return;
+			}
+			if (!Finder.Performance.TpsCriticallyLow)
             {
                 if (GenTicks.TicksGame - lastInterupted < 100 && GenTicks.TicksGame - lastSawEnemies > 90)
                 {
@@ -228,7 +235,7 @@ namespace CombatAI.Comps
             if (parent is Pawn pawn && !(pawn.RaceProps?.Animal ?? true))
             {
                 float bodySize = pawn.RaceProps.baseBodySize;
-				if (GenTicks.TicksGame - lastInterupted < 60 * bodySize || visibleEnemies.Count == 0 || GenTicks.TicksGame - lastRetreated < 65 * bodySize)
+				if (GenTicks.TicksGame - lastInterupted < 60 * bodySize || GenTicks.TicksGame - lastRetreated < 65 * bodySize)
 				{
 					return;
 				}		
@@ -391,7 +398,7 @@ namespace CombatAI.Comps
                             request.target = bestEnemy;
                             request.verb = verb;
                             request.maxRangeFromTarget = 9999;
-							request.maxRangeFromCaster = Rand.Chance(0.5f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 2, 10) : 2;
+							request.maxRangeFromCaster = Rand.Chance(Finder.P50 - 0.1f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 3, 10) : 3;
                             request.wantCoverFromTarget = true;
                             if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && (cell != pawnPosition || warmup == null))
                             {
@@ -416,7 +423,7 @@ namespace CombatAI.Comps
                             request.caster = pawn;
                             request.target = new LocalTargetInfo(bestEnemy.Position);
                             request.verb = verb;
-                            request.maxRangeFromCaster = Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 2, 10);
+                            request.maxRangeFromCaster = Rand.Chance(Finder.P50 - 0.1f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 3, 10) : 3;
 							request.checkBlockChance = true;
                             if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && cell != pawnPosition && warmup == null)
                             {
