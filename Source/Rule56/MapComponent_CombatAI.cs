@@ -60,20 +60,21 @@ namespace CombatAI
 		public override void MapComponentOnGUI()
         {
 			base.MapComponentOnGUI();
-            //if (!Find.Selector.SelectedPawns.NullOrEmpty())
-            //{
-            //    Pawn pawn = Find.Selector.SelectedPawns.First();
-            //    if (pawn != null)
-            //    {
-            //        Rect rect = new Rect(0, 0, UI.screenWidth * 0.2f, UI.screenHeight * 0.5f);
-            //        collapsible.Begin(rect, "Damage Potential Report");
-            //        DamageUtility.GetDamageReport(pawn, collapsible);
-            //        ArmorReport report = ArmorUtility.GetArmorReport(pawn);
-            //        collapsible.Line(4);
-            //        collapsible.Label($"armor. s:{report.Sharp}\tb:{report.Blunt}");
-            //        collapsible.End(ref rect);
-            //    }
-            //}
+            if (Finder.Settings.Debug_DrawThreatCasts && !Find.Selector.SelectedPawns.NullOrEmpty())
+            {
+                Pawn pawn = Find.Selector.SelectedPawns.First();
+                if (pawn != null)
+                {
+                    Rect rect = new Rect(0, 30, UI.screenWidth * 0.2f, UI.screenHeight * 0.5f);
+                    collapsible.Begin(rect, "Damage Potential Report");
+                    DamageUtility.GetDamageReport(pawn, collapsible);
+                    ArmorUtility.GetArmorReport(pawn, collapsible);
+                    ArmorReport report = ArmorUtility.GetArmorReport(pawn);
+                    collapsible.Line(4);
+                    collapsible.Label($"armor. s:{report.Sharp}\tb:{report.Blunt}");
+                    collapsible.End(ref rect);
+                }
+            }
         }
 
 		public override void MapRemoved()

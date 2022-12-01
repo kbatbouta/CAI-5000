@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Policy;
+using CombatAI.Gui;
 using RimWorld;
 using TMPro;
 using UnityEngine.TestTools;
@@ -50,20 +51,20 @@ namespace CombatAI
 		{
 		}
 
-		public static ArmorReport GetArmorReport(this Pawn pawn)
+		public static ArmorReport GetArmorReport(this Pawn pawn, Listing_Collapsible collapsible = null)
 		{
 			if (pawn == null)
 			{
 				return default(ArmorReport);
 			}
-			if (!reports.TryGetValue(pawn.thingIDNumber, out ArmorReport report) || GenTicks.TicksGame - report.createdAt > 2000)
+			if (collapsible != null || !reports.TryGetValue(pawn.thingIDNumber, out ArmorReport report) || GenTicks.TicksGame - report.createdAt > 2000)
 			{
-				reports[pawn.thingIDNumber] = report = CreateReport(pawn);
+				reports[pawn.thingIDNumber] = report = CreateReport(pawn, collapsible);
 			}
 			return report;
 		}
 
-		private static ArmorReport CreateReport(Pawn pawn)
+		private static ArmorReport CreateReport(Pawn pawn, Listing_Collapsible collapsible)
 		{
 			ArmorReport report = new ArmorReport();
 			report.pawn = pawn;
@@ -74,18 +75,25 @@ namespace CombatAI
 			}
 			report.bodyBlunt = baseArmor.First;
 			report.bodySharp = baseArmor.Second;			
-			FillApparel(ref report);
+			FillApparel(ref report, collapsible);
 			report.createdAt = GenTicks.TicksGame;
 			report.weaknessAttributes = pawn.GetWeaknessAttributes();
 			return report;
 		}
 
-		private static void FillApparel(ref ArmorReport report)
+		private static void FillApparel(ref ArmorReport report, Listing_Collapsible collapsible)
 		{
 			Pawn pawn = report.pawn;
 			if (pawn.apparel == null)
 			{
 				return;
+			}
+			bool debug = collapsible != null;
+			if (debug)
+			{
+				collapsible.Line(4);
+				collapsible.Label($"Apparel for {report.pawn}");
+				collapsible.Line(1);
 			}
 			BodyDefApparels bodyApparels = GetBodyApparels(pawn.RaceProps.body);
 			if (bodyApparels != null)
@@ -96,7 +104,7 @@ namespace CombatAI
 				List<Apparel> apparels = pawn.apparel.WornApparel;
 				for (int i = 0; i < apparels.Count; i++)
 				{
-					Apparel apparel = apparels[i];
+					Apparel apparel = apparels[i];					
 					if (!shields.TryGetValue(apparel.def, out bool isShield))
 					{
 						isShield = shields[apparel.def] = apparel.def.HasComp(typeof(CompShield));
@@ -107,13 +115,23 @@ namespace CombatAI
 						float c = bodyApparels.Coverage(apparel.def.apparel);
 						coverage += c;
 						armor_blunt += c * apparel.GetStatValue(StatDefOf.ArmorRating_Blunt);
-						armor_sharp += c * apparel.GetStatValue(StatDefOf.ArmorRating_Sharp);						
+						armor_sharp += c * apparel.GetStatValue(StatDefOf.ArmorRating_Sharp);
+						if (debug)
+						{
+							collapsible.Label($"{i}. {apparel.def.label},\tc={c}");
+						}
 					}
 				}
 				if (coverage != 0)
 				{
-					report.apparelBlunt = armor_blunt / (coverage + 1e-5f);
-					report.apparelSharp = armor_sharp / (coverage + 1e-5f);
+					report.apparelBlunt = armor_blunt;
+					report.apparelSharp = armor_sharp;
+				}
+				if (debug)
+				{
+					collapsible.Line(1);
+					collapsible.Label($"b:{report.apparelBlunt}\ts:{report.apparelSharp}");
+					collapsible.Line(1);
 				}
 			}			
 		}
