@@ -58,7 +58,7 @@ namespace CombatAI
                 }
 				if (!Mod_CE.active)
                 {
-					return armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
+					return armor.createdAt != 0 ? Mathf.Clamp01(2.0f * Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
                 }
                 else
                 {

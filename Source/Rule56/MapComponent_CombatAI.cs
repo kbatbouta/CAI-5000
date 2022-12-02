@@ -65,7 +65,7 @@ namespace CombatAI
                 Pawn pawn = Find.Selector.SelectedPawns.First();
                 if (pawn != null)
                 {
-                    Rect rect = new Rect(0, 30, UI.screenWidth * 0.2f, UI.screenHeight * 0.5f);
+                    Rect rect = new Rect(0, 35, UI.screenWidth * 0.2f, UI.screenHeight * 0.5f);
                     collapsible.Begin(rect, "Damage Potential Report");
                     DamageUtility.GetDamageReport(pawn, collapsible);
                     ArmorUtility.GetArmorReport(pawn, collapsible);
