@@ -21,7 +21,7 @@ namespace CombatAI
 			bool debug = collapsible != null;
 			report.thing = thing;			
 			if (thing is Pawn pawn)
-			{
+			{			
 				report.canMelee = true;
 				if (debug)
 				{
@@ -69,7 +69,7 @@ namespace CombatAI
 						}
 					}
 				}
-				if (!(pawn.CurrentEffectiveVerb?.IsMeleeAttack ?? true))
+				if (!(pawn.CurrentEffectiveVerb?.IsMeleeAttack ?? true) || pawn.Downed)
 				{
 					report.primaryIsRanged = true;
 				}

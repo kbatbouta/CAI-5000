@@ -5,6 +5,7 @@ using System.Security.Policy;
 using CombatAI.Gui;
 using RimWorld;
 using TMPro;
+using UnityEngine;
 using UnityEngine.TestTools;
 using Verse;
 
@@ -57,7 +58,7 @@ namespace CombatAI
 			{
 				return default(ArmorReport);
 			}
-			if (collapsible != null || !reports.TryGetValue(pawn.thingIDNumber, out ArmorReport report) || GenTicks.TicksGame - report.createdAt > 2000)
+			if (collapsible != null || !reports.TryGetValue(pawn.thingIDNumber, out ArmorReport report) || GenTicks.TicksGame - report.createdAt > 900)
 			{
 				reports[pawn.thingIDNumber] = report = CreateReport(pawn, collapsible);
 			}
@@ -76,6 +77,22 @@ namespace CombatAI
 			report.bodyBlunt = baseArmor.First;
 			report.bodySharp = baseArmor.Second;			
 			FillApparel(ref report, collapsible);
+			if (pawn.health?.hediffSet != null && !pawn.RaceProps.IsMechanoid)
+			{
+				float limit = pawn.GetStatValue(StatDefOf.PainShockThreshold);
+				if (limit > 0)
+				{
+					float painInt = 1.0f - Mathf.Lerp(0, 1.0f, pawn.health.hediffSet.PainTotal / limit);
+					if (painInt > 0.85f)
+					{
+						painInt = 1.0f;
+					}
+					report.apparelBlunt *= painInt;
+					report.apparelSharp *= painInt;
+					report.bodyBlunt *= painInt;
+					report.bodySharp *= painInt;
+				}
+			}
 			report.createdAt = GenTicks.TicksGame;
 			report.weaknessAttributes = pawn.GetWeaknessAttributes();
 			return report;
@@ -111,7 +128,7 @@ namespace CombatAI
 					}
 					report.hasShieldBelt |= isShield;
 					if (apparel != null && apparel.def.apparel != null)
-					{						
+					{
 						float c = bodyApparels.Coverage(apparel.def.apparel);
 						coverage += c;
 						armor_blunt += c * apparel.GetStatValue(StatDefOf.ArmorRating_Blunt);
