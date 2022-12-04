@@ -15,7 +15,8 @@ using System.Runtime.InteropServices;
 namespace CombatAI.Comps
 {
     public class ThingComp_CombatAI : ThingComp
-    {		
+    {
+        //Whether a scan is occuring.
 		private bool scanning;
 
 		#region TimeStamps
