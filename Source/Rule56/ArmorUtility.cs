@@ -135,9 +135,14 @@ namespace CombatAI
 					}
 				}
 				if (coverage != 0)
-				{
+				{					
 					report.apparelBlunt = armor_blunt;
 					report.apparelSharp = armor_sharp;
+					if (report.hasShieldBelt)
+					{
+						report.apparelBlunt *= 4;
+						report.apparelSharp *= 4; 
+					}
 				}
 				if (debug)
 				{

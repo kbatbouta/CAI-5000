@@ -321,9 +321,9 @@ namespace CombatAI {
 
 		private bool Skip(IBucketableThing item)
         {
-            if (item.dormant != null)
+            if (!playerAlliance && item.dormant != null)
             {
-                return !item.dormant.Awake;
+                return !item.dormant.Awake || item.dormant.WaitingToWakeUp;
             }
             if (item.pawn != null)
             {
