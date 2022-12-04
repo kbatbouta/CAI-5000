@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         # You can configure operating systems to build on here. It shouldn't make a difference 
-        operating-system: [ubuntu-latest, windows-latest, macOS-latest]
+        operating-system: [ubuntu-latest]
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
@@ -41,13 +41,16 @@ jobs:
     - name: Upload Mod Files
       uses: actions/upload-artifact@v2
       with:
-        name: build-${{ matrix.operating-system }}
+        name: cai-5000
         path: |
           About/
           Resources/
           1.*/
           Source/
           !**/.*
+          LICENSE.md
+          LoadFolders.xml
+          README.md
         # This final path is to exclude hidden files such as .gitkeep and .DS_STORE. 
         # I would recommend keeping it, but I don't think it will break anything if 
         # you remove or modify it.
