@@ -13,9 +13,9 @@ namespace CombatAI
 {
 	public static class ArmorUtility
 	{
-		private static Dictionary<ThingDef, bool> shields = new Dictionary<ThingDef, bool>(128);
-		private static Dictionary<int, ArmorReport> reports = new Dictionary<int, ArmorReport>(128);		
-		private static Dictionary<BodyDef, BodyDefApparels> models = new Dictionary<BodyDef, BodyDefApparels>();
+		private static Dictionary<ThingDef, bool> shields			= new Dictionary<ThingDef, bool>(128);
+		private static Dictionary<int, ArmorReport> reports			= new Dictionary<int, ArmorReport>(128);		
+		private static Dictionary<BodyDef, BodyDefApparels> models	= new Dictionary<BodyDef, BodyDefApparels>();
 
 		private class BodyDefApparels
 		{

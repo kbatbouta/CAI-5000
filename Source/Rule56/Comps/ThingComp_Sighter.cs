@@ -10,26 +10,41 @@ namespace CombatAI.Comps
 		private CompPowerTrader _compPower;
 		private CompMannable _compMannable;
 
+		/// <summary>
+		/// Parent sight radius.
+		/// </summary>
 		public int SightRadius
 		{
 			get => Props.radiusNight == null ? Props.radius : (int) Mathf.Lerp(Props.radiusNight.Value, Props.radius, parent.Map.skyManager.CurSkyGlow);
 		}
 
+		/// <summary>
+		/// Source CompProperties_Sighter.
+		/// </summary>
 		public CompProperties_Sighter Props
 		{
 			get => props as CompProperties_Sighter;
 		}
-				
+
+		/// <summary>
+		/// Parent power trader.
+		/// </summary>
 		public CompPowerTrader CompPower
 		{
 			get => Props.powered ? (_compPower ?? (_compPower = parent?.GetComp_Fast<CompPowerTrader>() ?? null)) : null;
 		}
-		
+
+		/// <summary>
+		/// Parent mannable.
+		/// </summary>
 		public CompMannable CompMannable
 		{
 			get => Props.mannable ? (_compMannable ?? (_compMannable = parent?.GetComp_Fast<CompMannable>() ?? null)) : null;
 		}
 
+		/// <summary>
+		/// Whether this sighter is active. Used by SightGrid to check if the parent should be skipped or not.
+		/// </summary>
 		public bool Active
 		{
 			get

@@ -15,22 +15,10 @@ using System.Runtime.InteropServices;
 namespace CombatAI.Comps
 {
     public class ThingComp_CombatAI : ThingComp
-    {
-		#region States
-
-		/*
-         * States 
-         */
-
+    {		
 		private bool scanning;
 
-		#endregion
-
 		#region TimeStamps
-
-		/*
-         * Time stamps 
-         */
 
 		/// <summary>
 		/// When the pawn was last order to move by CAI.
@@ -85,11 +73,6 @@ namespace CombatAI.Comps
         /// </summary>
         public SightTracker.SightReader sightReader;
        
-        public ArmorReport CachedArmorReport
-        {
-            get => armor;
-        }
-
 		public ThingComp_CombatAI()
         {
             this.visibleEnemies = new HashSet<Thing>(32);            
@@ -101,96 +84,10 @@ namespace CombatAI.Comps
             if (parent is Pawn pawn)
             {
                 this.armor = ArmorUtility.GetArmorReport(pawn);
-				this.duties = new Pawn_CustomDutyTracker(pawn);				
-			}
-        } 
-
-#if DEBUG_REACTION
-
-        public override void DrawGUIOverlay()
-        {
-            if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight && parent is Pawn pawn)
-            {
-                base.DrawGUIOverlay();
-                var verb = pawn.CurrentEffectiveVerb;
-                var sightRange = Maths.Min(SightUtility.GetSightRange(pawn), verb.EffectiveRange);
-                var sightRangeSqr = sightRange * sightRange;
-                if (sightRange != 0 && verb != null)
-                {
-                    Vector3 drawPos = pawn.DrawPos;                    
-                    IntVec3 shiftedPos = PawnPathUtility.GetMovingShiftedPosition(pawn, 30);
-                    List<Pawn> nearbyVisiblePawns = GenClosest.ThingsInRange(pawn.Position, pawn.Map, Utilities.TrackedThingsRequestCategory.Pawns, sightRange)
-                        .Select(t => t as Pawn)
-                        .Where(p => !p.Dead && !p.Downed && PawnPathUtility.GetMovingShiftedPosition(p, 60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, PawnPathUtility.GetMovingShiftedPosition(p, 60)) && p.HostileTo(pawn))
-                        .ToList();
-                    CombatAI.Gui.GUIUtility.ExecuteSafeGUIAction(() =>
-                    {
-                        Vector2 drawPosUI = UI.MapToUIPosition(drawPos);
-                        Text.Font = GameFont.Tiny;
-                        string state = GenTicks.TicksGame - lastInterupted > 120 ? "<color=blue>O</color>" : "<color=yellow>X</color>";
-                        Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}");
-                    });
-                    bool bugged = nearbyVisiblePawns.Count != _visibleEnemies.Count;
-                    if (bugged)
-                    {
-                        Rect rect;
-                        Vector2 a = UI.MapToUIPosition(drawPos);
-                        Vector2 b;
-                        Vector2 mid;
-                        foreach (var other in nearbyVisiblePawns.Where(p => !_visibleEnemies.Contains(p)))
-                        {
-                            b = UI.MapToUIPosition(other.DrawPos);
-                            Widgets.DrawLine(a, b, Color.red, 1);
-
-                            mid = (a + b) / 2;
-                            rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
-                            Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
-                            Widgets.DrawBox(rect);
-                            Widgets.Label(rect, $"<color=red>Errored</color>.  {Math.Round(other.Position.DistanceTo(pawn.Position), 1)}");
-                        }
-                    }
-                    bool selected = Find.Selector.SelectedPawns.Contains(pawn);
-                    if (bugged || selected)
-                    {
-                        GenDraw.DrawRadiusRing(pawn.Position, sightRange);
-                    }
-                    if (selected)
-                    {
-                        for (int i = 1; i < _path.Count; i++)
-                        {
-                            Widgets.DrawBoxSolid(new Rect(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)) - new Vector2(5, 5), new Vector2(10, 10)), _colors[i]);
-                            Widgets.DrawLine(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), UI.MapToUIPosition(_path[i].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), Color.white, 1);
-                        }
-                        if (_path.Count > 0)
-                        {
-                            Vector2 v = UI.MapToUIPosition(pawn.DrawPos.Yto0());
-                            Widgets.DrawLine(UI.MapToUIPosition(_path.Last().ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), v, _colors.Last(), 1);
-                            Widgets.DrawBoxSolid(new Rect(v - new Vector2(5, 5), new Vector2(10, 10)), _colors.Last());
-                        }
-                        if (!_visibleEnemies.EnumerableNullOrEmpty())
-                        {
-                            Vector2 a = UI.MapToUIPosition(pawn.DrawPos);
-                            Vector2 b;
-                            Vector2 mid;
-                            Rect rect;
-                            int index = 0;
-                            foreach (var other in _visibleEnemies)
-                            {
-                                b = UI.MapToUIPosition(other.DrawPos);
-                                Widgets.DrawLine(a, b, Color.blue, 1);
-
-                                mid = (a + b) / 2;
-                                rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
-                                Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
-                                Widgets.DrawBox(rect);
-                                Widgets.Label(rect, $"<color=gray>({index++}).</color> {Math.Round(other.Position.DistanceTo(pawn.Position), 1)}");
-                            }
-                        }
-                    }
-                }
+                this.duties = new Pawn_CustomDutyTracker(pawn);
             }
         }
-#endif		
+
 		public override void CompTickRare()
         {
             base.CompTickRare();
@@ -241,6 +138,10 @@ namespace CombatAI.Comps
 			return GenTicks.TicksGame - lastInterupted <= ticks;
 		}
 
+        /// <summary>
+        /// Called when a scan for enemies starts. Will clear the visible enemy queue. If not called, calling OnScanFinished or Notify_VisibleEnemy(s) will result in an error.
+        /// Should only be called from the main thread.
+        /// </summary>
 		public void OnScanStarted()
 		{            
             if (visibleEnemies.Count != 0)
@@ -254,8 +155,13 @@ namespace CombatAI.Comps
             }
 			scanning = true;
 			lastScanned = GenTicks.TicksGame;
-		}        
+		}
 
+		/// <summary>
+		/// Called a scan is finished. This will process enemies queued in visibleEnemies. Responsible for parent reacting.
+        /// If OnScanStarted is not called before then this will result in an error.
+        /// Should only be called from the main thread.
+		/// </summary>
 		public void OnScanFinished()
         {
             if (scanning == false)
@@ -264,6 +170,7 @@ namespace CombatAI.Comps
                 return;
             }
             scanning = false;
+
 #if DEBUG_REACTION
             if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
             {
@@ -292,13 +199,17 @@ namespace CombatAI.Comps
                 }
             }
 #endif
+            // if no enemies are visible skip.
 			if (visibleEnemies.Count == 0)
 			{
                 return;
 			}
+            // check if the TPS is good enough.
 			if (!Finder.Performance.TpsCriticallyLow)
             {
-                if (GenTicks.TicksGame - lastInterupted < 100 && GenTicks.TicksGame - lastSawEnemies > 90)
+				// if the pawn haven't seen enemies in a while and recently reacted then reset lastInterupted.
+                // This is done to ensure fast reaction times when exiting then entering combat.
+				if (GenTicks.TicksGame - lastInterupted < 100 && GenTicks.TicksGame - lastSawEnemies > 90)
                 {
                     lastInterupted = -1;
                     if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
@@ -307,33 +218,41 @@ namespace CombatAI.Comps
                     }
                 }
                 lastSawEnemies = GenTicks.TicksGame;
-            }             
+            } 
             if (parent is Pawn pawn && !(pawn.RaceProps?.Animal ?? true))
             {
                 float bodySize = pawn.RaceProps.baseBodySize;
+                // pawn reaction cooldown changes with their bodysize.
 				if (GenTicks.TicksGame - lastInterupted < 60 * bodySize || GenTicks.TicksGame - lastRetreated < 65 * bodySize)
 				{
 					return;
-				}		
+				}
+                // if CE is acrive skip reaction if the pawn is reloading or hunkering down.
 				if (Mod_CE.active && (pawn.CurJobDef.Is(Mod_CE.ReloadWeapon) || pawn.CurJobDef.Is(Mod_CE.HunkerDown)))
                 {					
 					return;
                 }
+                // if the pawn is kidnaping a pawn skip.
                 if (pawn.CurJobDef.Is(JobDefOf.Kidnap))
                 {
                     return;
                 }
-                PawnDuty duty = pawn.mindState.duty;
+                // Skip if some vanilla duties are active.
+                PawnDuty duty = pawn.mindState.duty;                
 				if (duty != null && (duty.def.Is(DutyDefOf.Build) || duty.def.Is(DutyDefOf.SleepForever) || duty.def.Is(DutyDefOf.TravelOrLeave)))
                 {
                     lastInterupted = GenTicks.TicksGame + Rand.Int % 240;
                     return;
                 }
+                // pawns above a certain bodysize who are worming up should be skiped.
+                // This is mainly for large mech pawns.
                 Stance_Warmup warmup = (pawn.stances?.curStance ?? null) as Stance_Warmup;
 				if (warmup != null && bodySize > 2.5f)
 				{
 					return;
 				}
+                // A not fast check will check for retreat and for reactions to enemies that are visible or soon to be visible.
+                // A fast check will check only for retreat.
 				bool fastCheck = false;
 				if (warmup != null && ((warmup.ticksLeft + GenTicks.TicksGame - warmup.startedTick) > 120 || warmup.ticksLeft < 30))
                 { 
@@ -372,6 +291,7 @@ namespace CombatAI.Comps
                         Pawn enemyPawn = enemy as Pawn;                        					
 						if (enemyPawn != null)
 						{
+                            // skip for children
 							DevelopmentalStage stage = enemyPawn.DevelopmentalStage;							
 							if (stage <= DevelopmentalStage.Child && stage != DevelopmentalStage.None)
 							{
@@ -535,8 +455,13 @@ namespace CombatAI.Comps
             }
         }       
 
+        /// <summary>
+        /// Called When the parent takes damage.
+        /// </summary>
+        /// <param name="dInfo">Damage info</param>
 		public void Notify_TookDamage(DamageInfo dInfo)
 		{
+            // if the pawn is tanky enough skip.
 			if (parent.Spawned && GenTicks.TicksGame - lastScanned < 90 && parent is Pawn pawn && !pawn.Dead && !pawn.Downed && armor.TankInt < 0.4f)
 			{			
 				if (dInfo.Def != null && dInfo.Instigator != null)
@@ -580,7 +505,10 @@ namespace CombatAI.Comps
 			lastTookDamage = GenTicks.TicksGame;
 		}
 
-
+        /// <summary>
+        /// Enqueue enemies for reaction processing.
+        /// </summary>
+        /// <param name="things">Spotted enemies</param>
 		public void Notify_EnemiesVisible(IEnumerable<Thing> things)
         {
             if (!scanning)
@@ -591,6 +519,10 @@ namespace CombatAI.Comps
             visibleEnemies.AddRange(things);            
         }
 
+		/// <summary>
+		/// Enqueue enemy for reaction processing.
+		/// </summary>
+		/// <param name="things">Spotted enemy</param>
 		public void Notify_EnemyVisible(Thing thing)
 		{
 			if (!scanning)
@@ -601,10 +533,23 @@ namespace CombatAI.Comps
 			visibleEnemies.Add(thing);
 		}
 
+        /// <summary>
+        /// Called to notify a wait job started by reaction has ended. Will reduce the reaction cooldown.
+        /// </summary>
         public void Notify_WaitJobEnded()
         {
             this.lastInterupted -= 30;
         }
+
+        /// <summary>
+        /// Called when the parent sightreader group has changed.
+        /// Should only be called from SighTracker/SightGrid.
+        /// </summary>
+        /// <param name="reader">The new sightReader</param>
+		public void Notify_SightReaderChanged(SightTracker.SightReader reader)
+		{
+			this.sightReader = reader;
+		}
 
 		public override void PostExposeData()
         {
@@ -618,18 +563,97 @@ namespace CombatAI.Comps
                 }
                 duties.pawn = pawn;
             }
-        }        
-
-        public void Notify_SightReaderChanged(SightTracker.SightReader reader)
-        {
-            this.sightReader = reader;
-        }
+        }                
 
 #if DEBUG_REACTION
 
-        /*
+		/*
          * Debug only vars.
          */
+
+		public override void DrawGUIOverlay()
+		{
+			if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight && parent is Pawn pawn)
+			{
+				base.DrawGUIOverlay();
+				var verb = pawn.CurrentEffectiveVerb;
+				var sightRange = Maths.Min(SightUtility.GetSightRange(pawn), verb.EffectiveRange);
+				var sightRangeSqr = sightRange * sightRange;
+				if (sightRange != 0 && verb != null)
+				{
+					Vector3 drawPos = pawn.DrawPos;
+					IntVec3 shiftedPos = PawnPathUtility.GetMovingShiftedPosition(pawn, 30);
+					List<Pawn> nearbyVisiblePawns = GenClosest.ThingsInRange(pawn.Position, pawn.Map, Utilities.TrackedThingsRequestCategory.Pawns, sightRange)
+						.Select(t => t as Pawn)
+						.Where(p => !p.Dead && !p.Downed && PawnPathUtility.GetMovingShiftedPosition(p, 60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, PawnPathUtility.GetMovingShiftedPosition(p, 60)) && p.HostileTo(pawn))
+						.ToList();
+					CombatAI.Gui.GUIUtility.ExecuteSafeGUIAction(() =>
+					{
+						Vector2 drawPosUI = UI.MapToUIPosition(drawPos);
+						Text.Font = GameFont.Tiny;
+						string state = GenTicks.TicksGame - lastInterupted > 120 ? "<color=blue>O</color>" : "<color=yellow>X</color>";
+						Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}");
+					});
+					bool bugged = nearbyVisiblePawns.Count != _visibleEnemies.Count;
+					if (bugged)
+					{
+						Rect rect;
+						Vector2 a = UI.MapToUIPosition(drawPos);
+						Vector2 b;
+						Vector2 mid;
+						foreach (var other in nearbyVisiblePawns.Where(p => !_visibleEnemies.Contains(p)))
+						{
+							b = UI.MapToUIPosition(other.DrawPos);
+							Widgets.DrawLine(a, b, Color.red, 1);
+
+							mid = (a + b) / 2;
+							rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
+							Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
+							Widgets.DrawBox(rect);
+							Widgets.Label(rect, $"<color=red>Errored</color>.  {Math.Round(other.Position.DistanceTo(pawn.Position), 1)}");
+						}
+					}
+					bool selected = Find.Selector.SelectedPawns.Contains(pawn);
+					if (bugged || selected)
+					{
+						GenDraw.DrawRadiusRing(pawn.Position, sightRange);
+					}
+					if (selected)
+					{
+						for (int i = 1; i < _path.Count; i++)
+						{
+							Widgets.DrawBoxSolid(new Rect(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)) - new Vector2(5, 5), new Vector2(10, 10)), _colors[i]);
+							Widgets.DrawLine(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), UI.MapToUIPosition(_path[i].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), Color.white, 1);
+						}
+						if (_path.Count > 0)
+						{
+							Vector2 v = UI.MapToUIPosition(pawn.DrawPos.Yto0());
+							Widgets.DrawLine(UI.MapToUIPosition(_path.Last().ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), v, _colors.Last(), 1);
+							Widgets.DrawBoxSolid(new Rect(v - new Vector2(5, 5), new Vector2(10, 10)), _colors.Last());
+						}
+						if (!_visibleEnemies.EnumerableNullOrEmpty())
+						{
+							Vector2 a = UI.MapToUIPosition(pawn.DrawPos);
+							Vector2 b;
+							Vector2 mid;
+							Rect rect;
+							int index = 0;
+							foreach (var other in _visibleEnemies)
+							{
+								b = UI.MapToUIPosition(other.DrawPos);
+								Widgets.DrawLine(a, b, Color.blue, 1);
+
+								mid = (a + b) / 2;
+								rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
+								Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
+								Widgets.DrawBox(rect);
+								Widgets.Label(rect, $"<color=gray>({index++}).</color> {Math.Round(other.Position.DistanceTo(pawn.Position), 1)}");
+							}
+						}
+					}
+				}
+			}
+		}
 
 		private HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
 		private List<IntVec3> _path = new List<IntVec3>();
