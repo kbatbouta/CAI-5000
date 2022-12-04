@@ -1,348 +1,531 @@
-﻿//using System;
-//using RimWorld;
-//using Verse;
-//using UnityEngine;
-//using System.Runtime.InteropServices;
-//using System.Diagnostics;
-//using System.Text;
-//using System.Runtime.CompilerServices;
-//using System.Reflection;
+﻿using System;
+using RimWorld;
+using Verse;
+using UnityEngine;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
+using System.Text;
+using System.Runtime.CompilerServices;
+using System.Reflection;
+using RimWorld.BaseGen;
+using static Mono.Math.BigInteger;
+using Verse.Noise;
 
-//namespace CombatAI
-//{      
-//    /*
-//     * -----------------------------
-//     *
-//     *
-//     * ------ Important note -------
-//     * 
-//     * when casting update the grid at a regualar intervals for a pawn/Thing or risk exploding value issues.
-//     */
-//    [StaticConstructorOnStartup]
-//    public class ITSignalGrid
-//    {
-//        [StructLayout(LayoutKind.Auto)]
-//        private struct ITCell
-//        {            
-//            public short expireAt;
-//            public short sig;            
-//            public ushort signalNum;                        
-//            public ushort signalNumPrev;            
-//            public float signalStrength;            
-//            public float signalStrengthPrev;
-            
-//            public ISignalFields extras;
-//            /// <summary>
-//            /// Will prepare this record for the next cycle by either reseting prev fields or replacing them with the current values.
-//            /// </summary>            
-//            /// <param name="reset">Wether to reset prev</param>
-//            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-//            public void Next(bool expired)
-//            {
-//                extras.Next(expired);
-//                if (!expired)
-//                {                                        
-//                    signalNumPrev       = signalNum;                    
-//                    signalStrengthPrev = signalStrength;                    
-//                }
-//                else
-//                {                    
-//                    signalNumPrev       = 0;            
-//                    signalStrengthPrev  = 0;                    
-//                }
-//            }                       
-//        }
+namespace CombatAI
+{      
+    /*
+     * -----------------------------
+     *
+     *
+     * ------ Important note -------
+     * 
+     * when casting update the grid at a regualar intervals for a pawn/Thing or risk exploding value issues.
+     */
+    [StaticConstructorOnStartup]
+    public class ITSignalGrid
+    {
+		private struct IField<T> where T : struct
+		{
+			public T value;
+			public T valuePrev;
 
-//        private class ISignalFields
-//        {
-//            /// <summary>
-//            /// The general direction of the signal.
-//            /// </summary>
-//            public Vector2 direction;
-//            /// <summary>
-//            /// The prevoius direction.
-//            /// </summary>
-//            public Vector2 directionPrev;
-//            /// <summary>
-//            /// The signal flags.
-//            /// </summary>
-//            public UInt64 flags;
-//            /// <summary>
-//            /// The prevoius signal flags.
-//            /// </summary>
-//            public UInt64 flagsPrev;
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public void ReSet(T newVal, bool expired)
+			{				
+				this.valuePrev = expired ? default(T) : this.value;
+				this.value = newVal;
+			}
+		}
 
-//            /// <summary>
-//            /// Will prepare this record for the next cycle by either reseting prev fields or replacing them with the current values.
-//            /// </summary>            
-//            /// <param name="reset">Wether to reset prev</param>
-//            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-//            public void Next(bool expired)
-//            {
-//                if (!expired)
-//                {
-//                    directionPrev = direction;
-//                    flagsPrev = flags;
-//                }
-//                else
-//                {
-//                    directionPrev = Vector2.zero;
-//                    flagsPrev = 0;
-//                }
-//            }
-//        }
+		[StructLayout(LayoutKind.Sequential)]
+		private struct IFieldInfo
+		{
+			public short cycle;
+			public short sig;
+			public short num;
+			public short numPrev;
+		}
 
-//        //
-//        // State fields.
-//        #region Fields
-        
-//        private short sig = 13;                        
-//        private short cycle = 19;
-//        //private UInt64 currentSignalFlags;
+		public readonly int NumGridCells;
 
-//        #endregion
+		private readonly CellIndices		indices;
+		private readonly IFieldInfo[]		cells;
+		private readonly IField<float>[]	cells_strength;
+		private readonly IField<Vector2>[]	cells_dir;
+		private readonly IField<UInt64>[]	cells_flags;
+		private readonly IField<float>[] cells_blunt;
+		private readonly IField<float>[] cells_sharp;
+		private readonly IField<MetaCombatAttribute>[] cells_meta;
 
-//        //
-//        // Read only fields.
-//        #region ReadonlyFields
-        
-//        private readonly CellIndices cellIndices;        
-//        private readonly ITCell[] signalArray;               
-//        private readonly Map map;
-//        private readonly int mapCellNum;
 
-//        #endregion
+		private short r_cycle	= 19;
+		private short r_sig		= 19;
+		private float curBlunt;
+		private float curSharp;
+		private MetaCombatAttribute curMeta;
 
-//        /// <summary>
-//        /// The current cycle of update.
-//        /// </summary>
-//        public short CycleNum => cycle;        
+		public short CycleNum
+		{
+			get
+			{
+				return r_cycle;
+			}
+		}
 
-//        public ITSignalGrid(Map map)
-//        {
-//            cellIndices = map.cellIndices;                        
-//            mapCellNum = cellIndices.NumGridCells;    
-//            signalArray = new ITCell[mapCellNum];            
-//            this.map = map;            
-//            for (int i = 0; i < signalArray.Length; i++)
-//            {
-//                signalArray[i] = new ITCell()
-//                {
-//                    sig = 0,
-//                    expireAt = 0,
-//                    extras = new ISignalFields()
-//                };
-//            }
-//        }
+		public ITSignalGrid(Map map)
+		{
+			this.indices = map.cellIndices;
+			this.NumGridCells = indices.NumGridCells;
 
-//        public void Set(IntVec3 cell, float signalStrength, Vector2 dir) => Set(cellIndices.CellToIndex(cell), signalStrength, dir);
-//        public void Set(int index, float signalStrength, Vector2 dir)
-//        {
-//            if (index >= 0 && index < mapCellNum)
-//            {
-//                ITCell record = signalArray[index];                
-//                if (record.sig != sig)
-//                {
-//                    IntVec3 cell = cellIndices.IndexToCell(index);                    
-//                    float t = record.expireAt - CycleNum;
-//                    if (t == 1)
-//                    {
-//                        record.signalNum++;                        
-//                        record.signalStrength += signalStrength;                        
-//                        record.extras.direction += dir;
-//                        // TODO remake
-//                        // record.extras.flags |= flags;
-//                    }
-//                    else
-//                    {
-//                        if (t == 0)
-//                        {
-//                            record.expireAt = (short)(CycleNum + 1);
-//                            record.Next(expired: false);                            
-//                        }
-//                        else
-//                        {
-//                            record.expireAt = (short)(CycleNum + 1);
-//                            record.Next(expired: true);                            
-//                        }
-//                        record.signalNum = 1;
-//                        record.signalStrength = signalStrength;
-//                        record.extras.direction = dir;
-//                        record.extras.flags = 0;                     
-//                    }
-//                    record.sig = sig;
-//                    signalArray[index] = record;
-//                }
-//            }
-//        }
+			cells =				new IFieldInfo[NumGridCells];
+			cells_strength =	new IField<float>[NumGridCells];
+			cells_dir =			new IField<Vector2>[NumGridCells];
+			cells_flags =		new IField<UInt64>[NumGridCells];
+			cells_blunt	=		new IField<float>[NumGridCells];
+			cells_sharp =		new IField<float>[NumGridCells];
+			cells_meta =		new IField<MetaCombatAttribute>[NumGridCells];
+		}
 
-//        public void Set(IntVec3 cell, float signalStrength, Vector2 dir, UInt64 flags) => Set(cellIndices.CellToIndex(cell), signalStrength, dir, flags);
-//        public void Set(int index, float signalStrength, Vector2 dir, UInt64 flags)
-//        {
-//            if (index >= 0 && index < mapCellNum)
-//            {
-//                ITCell record = signalArray[index];
-//                if (record.sig != sig)
-//                {
-//                    IntVec3 cell = cellIndices.IndexToCell(index);
-//                    float t = record.expireAt - CycleNum;
-//                    if (t == 1)
-//                    {
-//                        record.signalNum++;                        
-//                        record.signalStrength += signalStrength;
-//                        record.extras.direction += dir;
-//                        record.extras.flags |= flags;
-//                    }
-//                    else
-//                    {
-//                        if (t == 0)
-//                        {
-//                            record.expireAt = (short)(CycleNum + 1);
-//                            record.Next(expired: false);
-//                        }
-//                        else
-//                        {
-//                            record.expireAt = (short)(CycleNum + 1);
-//                            record.Next(expired: true);
-//                        }
-//                        record.signalNum = 1;
-//                        record.signalStrength = signalStrength;
-//                        record.extras.direction = dir;
-//                        record.extras.flags = flags;
-//                    }
-//                    record.sig = sig;
-//                    signalArray[index] = record;
-//                }
-//            }
-//        }
+		public void Set(IntVec3 cell, float signalStrength, Vector2 dir) => Set(indices.CellToIndex(cell), signalStrength, dir);
+		public void Set(int index, float signalStrength, Vector2 dir)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo info = cells[index];
+				if (info.sig != r_sig)
+				{
+					int dc = r_cycle - info.cycle;
+					if (dc == 0)
+					{
+						info.num += 1;
+						cells_strength[index].value += signalStrength;
+						cells_dir[index].value += dir;
+						cells_meta[index].value |= curMeta;
+						cells_sharp[index].value = Maths.Max(curSharp, cells_sharp[index].value);
+						cells_blunt[index].value = Maths.Max(curBlunt, cells_blunt[index].value);
+					}
+					else
+					{
+						bool expired = dc > 1;
+						if (expired)
+						{
+							info.numPrev = 0;
+						}
+						else
+						{
+							info.numPrev = info.num;
+						}
+						info.num = 1;
+						cells_strength[index].ReSet(signalStrength, expired);
+						cells_dir[index].ReSet(dir, expired);
+						cells_flags[index].ReSet(0, expired);
+						cells_meta[index].ReSet(curMeta, expired);
+						cells_sharp[index].ReSet(curSharp, expired);
+						cells_blunt[index].ReSet(curBlunt, expired);
+						info.cycle = r_cycle;						
+					}
+					info.sig = r_sig;
+					cells[index] = info;
+				}
+			}
+		}
 
-//        public float GetSignalNum(IntVec3 cell) => GetSignalNum(cellIndices.CellToIndex(cell));
-//        public float GetSignalNum(int index)
-//        {
-//            if (index >= 0 && index < mapCellNum)
-//            {
-//                ITCell record = signalArray[index];
-//                if (record.expireAt - CycleNum == 1)                
-//                    return Maths.Max(record.signalNumPrev, record.signalNum);                
-//                else if (record.expireAt - CycleNum == 0)
-//                    return record.signalNum;
-//            }
-//            return 0;
-//        }
+		public void Set(IntVec3 cell, float signalStrength, Vector2 dir, MetaCombatAttribute metaAttributes) => Set(indices.CellToIndex(cell), signalStrength, dir, metaAttributes);
+		public void Set(int index, float signalStrength, Vector2 dir, MetaCombatAttribute metaAttributes)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo info = cells[index];
+				if (info.sig != r_sig)
+				{
+					int dc = r_cycle - info.cycle;
+					if (dc == 0)
+					{
+						info.num += 1;
+						cells_strength[index].value += signalStrength;
+						cells_dir[index].value += dir;
+						cells_meta[index].value |= metaAttributes;
+						cells_sharp[index].value = Maths.Max(curSharp, cells_sharp[index].value);
+						cells_blunt[index].value = Maths.Max(curBlunt, cells_blunt[index].value);
+					}
+					else
+					{
+						bool expired = dc > 1;
+						if (expired)
+						{
+							info.numPrev = 0;
+						}
+						else
+						{
+							info.numPrev = info.num;
+						}
+						info.num = 1;
+						cells_strength[index].ReSet(signalStrength, expired);
+						cells_dir[index].ReSet(dir, expired);
+						cells_flags[index].ReSet(0, expired);
+						cells_meta[index].ReSet(metaAttributes, expired);
+						cells_sharp[index].ReSet(curSharp, expired);
+						cells_blunt[index].ReSet(curBlunt, expired);
+						info.cycle = r_cycle;
+					}
+					info.sig = r_sig;
+					cells[index] = info;
+				}
+			}
+		}
 
-//        public float GetSignalStrengthAt(int index) => GetSignalStrengthAt(index, out _);
-//        public float GetSignalStrengthAt(IntVec3 cell) => GetSignalStrengthAt(cellIndices.CellToIndex(cell), out _);
+		public void Set(IntVec3 cell, MetaCombatAttribute metaAttributes) => Set(indices.CellToIndex(cell), metaAttributes);
+		public void Set(int index, MetaCombatAttribute metaAttributes)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo info = cells[index];
+				if (info.sig != r_sig)
+				{
+					int dc = r_cycle - info.cycle;
+					if (dc == 0)
+					{
+						cells_meta[index].value |= metaAttributes;
+						cells_sharp[index].value = Maths.Max(curSharp, cells_sharp[index].value);
+						cells_blunt[index].value = Maths.Max(curBlunt, cells_blunt[index].value);
+					}
+					else
+					{
+						bool expired = dc > 1;
+						if (expired)
+						{
+							info.numPrev = 0;
+						}
+						else
+						{
+							info.numPrev = info.num;
+						}
+						info.num = 0;
+						cells_strength[index].ReSet(0, expired);
+						cells_dir[index].ReSet(Vector2.zero, expired);
+						cells_flags[index].ReSet(0, expired);
+						cells_meta[index].ReSet(metaAttributes, expired);
+						cells_sharp[index].ReSet(curSharp, expired);
+						cells_blunt[index].ReSet(curBlunt, expired);
+						info.cycle = r_cycle;
+					}
+					info.sig = r_sig;
+					cells[index] = info;
+				}
+			}
+		}
 
-//        public float GetSignalStrengthAt(IntVec3 cell, out int signalNum) => GetSignalStrengthAt(cellIndices.CellToIndex(cell), out signalNum);
-//        public float GetSignalStrengthAt(int index, out int signalNum)
-//        {
-//            if (index >= 0 && index < mapCellNum)
-//            {
-//                ITCell record = signalArray[index];
-//                if (record.expireAt - CycleNum == 1)
-//                {
-//                    signalNum = Maths.Max(record.signalNumPrev, record.signalNum);
-//                    return Maths.Max(0.75f * record.signalStrengthPrev + 0.25f * signalNum, 0.75f * record.signalStrength + 0.25f * signalNum, 0f);                   
-//                }
-//                else if(record.expireAt - CycleNum == 0)
-//                {
-//                    signalNum = record.signalNum;
-//                    return Maths.Max(0.75f * record.signalStrength + 0.25f * signalNum, 0f);
-//                }
-//            }
-//            signalNum = 0;
-//            return 0f;
-//        }        
+		public void Set(IntVec3 cell, UInt64 flags) => Set(indices.CellToIndex(cell), flags);
+		public void Set(int index, UInt64 flags)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo info = cells[index];
+				if (info.sig != r_sig)
+				{
+					int dc = r_cycle - info.cycle;
+					if (dc == 0)
+					{
+						cells_flags[index].value |= flags;
+						cells_sharp[index].value = Maths.Max(curSharp, cells_sharp[index].value);
+						cells_blunt[index].value = Maths.Max(curBlunt, cells_blunt[index].value);
+					}
+					else
+					{
+						bool expired = dc > 1;
+						if (expired)
+						{
+							info.numPrev = 0;
+						}
+						else
+						{
+							info.numPrev = info.num;
+						}
+						info.num = 0;
+						cells_strength[index].ReSet(0, expired);
+						cells_dir[index].ReSet(Vector2.zero, expired);
+						cells_flags[index].ReSet(flags, expired);
+						cells_meta[index].ReSet(curMeta, expired);
+						cells_sharp[index].ReSet(curSharp, expired);
+						cells_blunt[index].ReSet(curBlunt, expired);
+						info.cycle = r_cycle;
+					}
+					info.sig = r_sig;
+					cells[index] = info;
+				}
+			}
+		}
 
-//        public UInt64 GetFlagsAt(IntVec3 cell) => GetFlagsAt(cellIndices.CellToIndex(cell));
-//        public UInt64 GetFlagsAt(int index)
-//        {
-//            if (index >= 0 && index < mapCellNum)
-//            {
-//                ITCell record = signalArray[index];
-//                if (record.expireAt - CycleNum == 1)                      
-//                    return record.extras.flags | record.extras.flagsPrev;                
-//                else if (record.expireAt - CycleNum == 0)
-//                    return record.extras.flags;
-//            }
-//            return 0;
-//        }
+		public void Set(IntVec3 cell, float signalStrength, Vector2 dir, UInt64 flags) => Set(indices.CellToIndex(cell), signalStrength, dir, flags);
+		public void Set(int index, float signalStrength, Vector2 dir, UInt64 flags)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo info = cells[index];
+				if (info.sig != r_sig)
+				{
+					int dc = r_cycle - info.cycle;
+					if (dc == 0)
+					{
+						info.num += 1;
+						cells_strength[index].value += signalStrength;
+						cells_dir[index].value += dir;
+						cells_flags[index].value |= flags;
+						cells_meta[index].value |= curMeta;
+						cells_sharp[index].value = Maths.Max(curSharp, cells_sharp[index].value);
+						cells_blunt[index].value = Maths.Max(curBlunt, cells_blunt[index].value);
+					}
+					else
+					{
+						bool expired = dc > 1;
+						if (expired)
+						{
+							info.numPrev = 0;
+						}
+						else
+						{
+							info.numPrev = info.num;
+						}
+						info.num = 1;
+						cells_strength[index].ReSet(signalStrength, expired);
+						cells_dir[index].ReSet(dir, expired);
+						cells_flags[index].ReSet(flags, expired);
+						cells_meta[index].ReSet(curMeta, expired);
+						cells_sharp[index].ReSet(curSharp, expired);
+						cells_blunt[index].ReSet(curBlunt, expired);
+						info.cycle = r_cycle;
+					}
+					info.sig = r_sig;
+					cells[index] = info;
+				}
+			}
+		}
 
-//        public Vector2 GetSignalDirectionAt(IntVec3 cell) => GetSignalDirectionAt(cellIndices.CellToIndex(cell));
-//        public Vector2 GetSignalDirectionAt(int index)
-//        {
-//            if (index >= 0 && index < mapCellNum)
-//            {
-//                ITCell record = signalArray[index];
-//                if (record.expireAt - CycleNum == 1)
-//                {
-//                    if (record.signalNum > record.signalNumPrev)
-//                        return record.extras.direction / (record.signalNum + 0.01f);
-//                    else
-//                        return record.extras.directionPrev / (record.signalNumPrev + 0.01f);
-//                }
-//                else if (record.expireAt - CycleNum == 0)
-//                    return record.extras.direction / (record.signalNum + 0.01f);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int GetSignalNum(IntVec3 cell) => GetSignalNum(indices.CellToIndex(cell));
+		public int GetSignalNum(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];				
+				switch (r_cycle - cell.cycle)
+				{
+					case 0:
+						return Maths.Max(cell.num, cell.numPrev);
+					case 1:
+						return cell.num;
+					default:
+						return 0;
+				}
+			}
+			return 0;
+		}
 
-//            }
-//            return Vector2.zero;
-//        }      
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public float GetRawSignalStrengthAt(IntVec3 cell) => GetRawSignalStrengthAt(indices.CellToIndex(cell));
+		public float GetRawSignalStrengthAt(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];
+				switch (r_cycle - cell.cycle)
+				{
+					case 0:
+						IField<float> strength = cells_strength[index];
 
-//        /// <summary>
-//        /// Prepare the grid for a new casting operation.
-//        /// </summary>
-//        /// <param name="center">Center of casting.</param>
-//        /// <param name="range">Expected range of casting.</param>
-//        /// <param name="casterFlags">caster's Flags</param>
-//        public void Next()
-//        {            
-//            if (sig++ == short.MaxValue)
-//                sig = 19;    
-//        }
+						return Maths.Max(strength.value, strength.valuePrev);
+					case 1:
+						return cells_strength[index].value;
+					default:
+						break;
+				}
+			}
+			return 0;
+		}		
 
-//        public void NextCycle()
-//        {
-//            if (sig++ == short.MaxValue)
-//            {
-//                sig = 19;
-//            }
-//            if (cycle++ == short.MaxValue)
-//            {
-//                cycle = 13;
-//            }            
-//        }
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public float GetSignalStrengthAt(IntVec3 cell) => GetSignalStrengthAt(indices.CellToIndex(cell));
+		public float GetSignalStrengthAt(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];				
+				switch (r_cycle - cell.cycle)
+				{
+					case 0:						
+						IField<float> strength = cells_strength[index];
 
-//        private static StringBuilder _builder = new StringBuilder();
+						return Maths.Max(strength.value, strength.valuePrev) * 0.9f + Maths.Max(cell.num, cell.numPrev) * 0.1f;
+					case 1:
+						return cells_strength[index].value * 0.9f + cell.num * 0.1f;
+					default:
+						break;
+				}
+			}
+			return 0;
+		}
 
-//        public string GetDebugInfoAt(IntVec3 cell) => GetDebugInfoAt(map.cellIndices.CellToIndex(cell));
-//        public string GetDebugInfoAt(int index)
-//        {
-//            if (index >= 0 && index < mapCellNum)
-//            {
-//                ITCell record = signalArray[index];
-//                _builder.Clear();
-//                _builder.AppendFormat("<color=grey>{0}</color> {1}\n", "Partially expired ", record.expireAt - CycleNum == 0);
-//                _builder.AppendFormat("<color=grey>{0}</color> {1}", "Expired           ", record.expireAt - CycleNum < 0);
-//                _builder.AppendLine();
-//                _builder.AppendFormat("<color=orange>{0}</color> {1}\n" +
-//                    "<color=grey>cur</color>  {2}\t" +
-//                    "<color=grey>prev</color> {3}", "Enemies", GetSignalNum(index), record.signalNum, record.signalNumPrev);
-//                _builder.AppendLine();
-//                _builder.AppendFormat("<color=orange>{0}</color> {1}\n " +
-//                    "<color=grey>cur</color>  {2}\t" +
-//                    "<color=grey>prev</color> {3}", "Visibility", GetSignalStrengthAt(index), Math.Round(record.signalStrength, 2), Math.Round(record.signalStrengthPrev, 2));
-//                _builder.AppendLine();
-//                _builder.AppendFormat("<color=orange>{0}</color> {1}\n" +
-//                    "<color=grey>cur</color>  {2} " +
-//                    "<color=grey>prev</color> {3}", "Direction", GetSignalDirectionAt(index), record.extras.direction, record.extras.directionPrev);
-//                _builder.AppendLine();
-//                _builder.AppendFormat("<color=orange>{0}</color> {1}\n" +
-//                    "<color=grey>cur</color>\n{2}\n" +
-//                    "<color=grey>prev</color>\n{3}", "Flags", Convert.ToString((long)GetFlagsAt(index), 2).Replace("1", "<color=green>1</color>"), Convert.ToString((long)record.extras.flags, 2).Replace("1", "<color=green>1</color>"), Convert.ToString((long)record.extras.flagsPrev, 2).Replace("1", "<color=green>1</color>"));
-//                return _builder.ToString();
-//            }
-//            return "<color=red>Out of bounds</color>";
-//        }
-//    }
-//}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public float GetSignalStrengthAt(IntVec3 cell, out int signalNum) => GetSignalStrengthAt(indices.CellToIndex(cell), out signalNum);
+		public float GetSignalStrengthAt(int index, out int signalNum)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];
+				switch (r_cycle - cell.cycle)
+				{
+					case 0:
+						IField<float> strength = cells_strength[index];
+						signalNum = Maths.Max(cell.num, cell.numPrev); 
+						return Maths.Max(strength.value, strength.valuePrev) * 0.9f + signalNum * 0.1f;
+					case 1:
+						signalNum = cell.num;
+						return cells_strength[index].value * 0.9f + signalNum * 0.1f;
+					default:
+						break;
+				}
+			}
+			return signalNum = 0;
+		}
+
+		public UInt64 GetFlagsAt(IntVec3 cell) => GetFlagsAt(indices.CellToIndex(cell));
+		public UInt64 GetFlagsAt(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];
+				switch (r_cycle - cell.cycle)
+				{
+					case 0:
+						IField<UInt64> flags = cells_flags[index];
+
+						return flags.value | flags.valuePrev;
+					case 1:
+						return cells_flags[index].value;
+					default:
+						break;
+				}
+			}
+			return 0;
+		}
+
+		public MetaCombatAttribute GetCombatAttributesAt(IntVec3 cell) => GetCombatAttributesAt(indices.CellToIndex(cell));
+		public MetaCombatAttribute GetCombatAttributesAt(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];
+				switch (r_cycle - cell.cycle)
+				{
+					case 0:
+						IField<MetaCombatAttribute> flags = cells_meta[index];
+
+						return flags.value | flags.valuePrev;
+					case 1:
+						return cells_meta[index].value;
+					default:
+						break;
+				}
+			}
+			return 0;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public float GetSharp(IntVec3 cell) => GetSharp(indices.CellToIndex(cell));
+		public float GetSharp(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];
+				switch (r_cycle - cell.cycle)
+				{
+					case 0:
+						IField<float> sharp = cells_sharp[index];
+
+						return Maths.Max(sharp.value, sharp.valuePrev);
+					case 1:
+						return cells_sharp[index].value;
+					default:
+						break;
+				}
+			}
+			return 0;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public float GetBlunt(IntVec3 cell) => GetBlunt(indices.CellToIndex(cell));
+		public float GetBlunt(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];
+				switch (r_cycle - cell.cycle)
+				{
+					case 0:
+						IField<float> blunt = cells_blunt[index];
+
+						return Maths.Max(blunt.value, blunt.valuePrev);
+					case 1:
+						return cells_blunt[index].value;
+					default:
+						break;
+				}
+			}
+			return 0;
+		}
+
+		public Vector2 GetSignalDirectionAt(IntVec3 cell) => GetSignalDirectionAt(indices.CellToIndex(cell));
+		public Vector2 GetSignalDirectionAt(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];
+				switch (r_cycle - cell.cycle)
+				{
+					case 0:
+						IField<Vector2> dir = cells_dir[index];
+						
+						return cell.num >= cell.numPrev ? dir.value / (cell.num + 0.01f) : dir.valuePrev / (cell.numPrev + 0.01f);
+					case 1:
+						return cells_dir[index].value / (cell.num + 0.01f);
+					default:
+						break;
+				}
+
+			}
+			return Vector2.zero;
+		}
+
+
+		/// <summary>
+		/// Prepare the grid for a new casting operation.
+		/// </summary>
+		/// <param name="sharp">Sharp damage output/s</param>
+		/// <param name="blunt">Blunt damage output/s</param>
+		/// <param name="meta">Meta flags.</param>
+		public void Next(float sharp, float blunt, MetaCombatAttribute meta)
+		{
+			if (r_sig++ == short.MaxValue)
+				r_sig = 19;
+			this.curSharp = sharp;
+			this.curBlunt = blunt;
+			this.curMeta = meta;
+		}
+
+		/// <summary>
+		/// TODO
+		/// </summary>
+		public void NextCycle()
+		{
+			if (r_sig++ == short.MaxValue)
+			{
+				r_sig = 19;
+			}
+			if (r_cycle++ == short.MaxValue)
+			{
+				r_cycle = 13;
+			}
+		}
+	}
+}
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
-  <StatDef>
+  <!-- <StatDef>
     <defName>CombatAI_AggroMul</defName>    
     <label>Aggressiveness multiplier</label>
     <alwaysHide>true</alwaysHide>
@@ -32,6 +32,6 @@
     <minValue>-1.0</minValue>
     <maxValue>1.0</maxValue>
     <toStringStyle>Integer</toStringStyle>        
-  </StatDef>
+  </StatDef> -->
 
 </Defs>

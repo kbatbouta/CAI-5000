@@ -24,8 +24,13 @@ namespace CombatAI.Gui
             {
                 get => collapsibles != null ? collapsibles : collapsibles = new List<Listing_Collapsible>();
             }
+          
+			public bool AnyExpanded
+			{
+                get => collapsibles.Any(c => c.expanded);
+			}
 
-            public void CollapseAll()
+			public void CollapseAll()
             {
                 foreach (Listing_Collapsible collapsible in AllCollapsibles)
                 {

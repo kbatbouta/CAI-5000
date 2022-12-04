@@ -83,6 +83,16 @@ namespace CombatAI.R
                    _CombatAI_Expand : _CombatAI_Expand = "CombatAI.Expand".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Preparing = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Preparing</c>. inner text:
+        ///
+        /// <code>Preparing Combat AI</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Preparing {
+            get => _CombatAI_Preparing != null ? 
+                   _CombatAI_Preparing : _CombatAI_Preparing = "CombatAI.Preparing".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic</c>. inner text:
         ///

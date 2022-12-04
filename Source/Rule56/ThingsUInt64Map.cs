@@ -39,19 +39,7 @@ namespace CombatAI
 
         public void Remove(Thing thing) =>
             buckets.RemoveId(thing.thingIDNumber);
-
-        //public IEnumerable<Thing> GetThings(UInt64 flag)
-        //{
-        //    foreach(int index in GetBucketIndices(flag))
-        //    {
-        //        List<IBucketableThing> items = buckets.GetBucket(index);
-        //        for(int i = 0;i < items.Count;i++)
-        //        {
-        //            yield return items[i].thing;
-        //        }
-        //    }                    
-        //}
-
+     
 		public IEnumerable<Thing> GetThings(UInt64 flag)
 		{
 			unchecked

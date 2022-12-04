@@ -20,7 +20,8 @@ namespace CombatAI
             public ITSignalGrid[] friendlies;
             public ITSignalGrid[] hostiles;
             public ITSignalGrid[] neutrals;
-
+            public ArmorReport armor;
+            
             private readonly Map map;
             private readonly CellIndices indices;
             private readonly SightTracker tacker;
@@ -44,7 +45,61 @@ namespace CombatAI
                 this.neutrals = neutrals.ToArray();
             }
 
-            public float GetAbsVisibilityToNeutrals(IntVec3 cell) => GetAbsVisibilityToNeutrals(indices.CellToIndex(cell));
+			public float GetThreat(IntVec3 cell) => GetThreat(indices.CellToIndex(cell));
+			public float GetThreat(int index)
+			{
+                if (armor.weaknessAttributes != MetaCombatAttribute.None)
+                {
+                    MetaCombatAttribute attributes = GetMetaAttributes(index);
+                    if ((attributes & armor.weaknessAttributes) != MetaCombatAttribute.None)
+                    {
+                        return 2.0f;
+                    }
+                }
+				if (!Mod_CE.active)
+                {
+					return armor.createdAt != 0 ? Mathf.Clamp01(2f * Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
+                }
+                else
+                {
+					return armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
+				}
+			}
+
+			public float GetBlunt(IntVec3 cell) => GetBlunt(indices.CellToIndex(cell));
+			public float GetBlunt(int index)
+			{
+				float value = 0f;
+				for (int i = 0; i < hostiles.Length; i++)
+				{
+					value += hostiles[i].GetBlunt(index);
+				}
+				return value;
+			}
+
+			public float GetSharp(IntVec3 cell) => GetSharp(indices.CellToIndex(cell));
+			public float GetSharp(int index)
+			{
+				float value = 0f;
+				for (int i = 0; i < hostiles.Length; i++)
+				{
+					value += hostiles[i].GetSharp(index);
+				}
+				return value;
+			}
+
+			public MetaCombatAttribute GetMetaAttributes(IntVec3 cell) => GetMetaAttributes(indices.CellToIndex(cell));
+			public MetaCombatAttribute GetMetaAttributes(int index)
+			{
+				MetaCombatAttribute value = MetaCombatAttribute.None;
+				for (int i = 0; i < hostiles.Length; i++)
+				{
+					value |= hostiles[i].GetCombatAttributesAt(index);
+				}
+				return value;
+			}
+
+			public float GetAbsVisibilityToNeutrals(IntVec3 cell) => GetAbsVisibilityToNeutrals(indices.CellToIndex(cell));
             public float GetAbsVisibilityToNeutrals(int index)
             {
                 float value = 0f;
@@ -187,9 +242,18 @@ namespace CombatAI
 
 			factionedUInt64Map = new IThingsUInt64Map();
             wildUInt64Map = new IThingsUInt64Map();
-        }        
+        }
 
-        public override void MapComponentTick()
+		public override void FinalizeInit()
+        {
+			base.FinalizeInit();
+            colonistsAndFriendlies.FinalizeInit();
+			raidersAndHostiles.FinalizeInit();
+			insectsAndMechs.FinalizeInit();           
+            wildlife.FinalizeInit();
+		}
+
+		public override void MapComponentTick()
         {            
             base.MapComponentTick();
             int ticks = GenTicks.TicksGame;
@@ -212,15 +276,18 @@ namespace CombatAI
             }
             //
             // debugging stuff.
-            if (Finder.Settings.Debug_DrawShadowCasts && GenTicks.TicksGame % 15 == 0)
+            if ((Finder.Settings.Debug_DrawShadowCasts || Finder.Settings.Debug_DrawThreatCasts) && GenTicks.TicksGame % 15 == 0)
             {
                 _drawnCells.Clear();
                 if (!Find.Selector.SelectedPawns.NullOrEmpty())
                 {
                     foreach (Pawn pawn in Find.Selector.SelectedPawns)
                     {
+						//ArmorReport report = ArmorUtility.GetArmorReport(pawn);
+                        //Log.Message($"{pawn}, t:{Math.Round(report.TankInt, 3)}, s:{report.bodySize}, bB:{Math.Round(report.bodyBlunt, 3)}, bS:{Math.Round(report.bodySharp, 3)}, aB:{Math.Round(report.apparelBlunt, 3)}, aS:{Math.Round(report.apparelSharp, 3)}, hs:{report.hasShieldBelt}");
                         TryGetReader(pawn, out SightReader reader);
-                        if (reader != null)
+                        reader.armor = ArmorUtility.GetArmorReport(pawn);
+						if (reader != null)
                         {
                             IntVec3 center = pawn.Position;
                             if (center.InBounds(map))
@@ -233,17 +300,29 @@ namespace CombatAI
                                         if (cell.InBounds(map) && !_drawnCells.Contains(cell))
                                         {
                                             _drawnCells.Add(cell);
-                                            var value = reader.GetAbsVisibilityToEnemies(cell);
-                                            if (value > 0)
-                                                map.debugDrawer.FlashCell(cell, Mathf.Clamp((float)reader.GetVisibilityToEnemies(cell) / 10f, 0f, 0.99f), $"{Math.Round(value, 3)} {value}", 15);
-                                        }
+                                            if (Finder.Settings.Debug_DrawThreatCasts)
+                                            {
+												var value = reader.GetThreat(cell);
+                                                if (value > 0)
+                                                    map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 4f), $"{Math.Round(value, 2)}", 15);
+												//var value = reader.hostiles[0].GetSharp(cell) + reader.hostiles[0].GetBlunt(cell);
+												//if (value > 0)
+												//	map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 4f), $"{Math.Round(reader.hostiles[0].GetSharp(cell), 2)} {Math.Round(reader.hostiles[0].GetBlunt(cell), 2)}", 15);
+											}
+											else if (Finder.Settings.Debug_DrawShadowCasts)
+											{
+												var value = reader.GetVisibilityToEnemies(cell);
+												if (value > 0)
+													map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
+											}
+										}
                                     }
                                 }
                             }
                         }
                     }
                 }
-                else
+                else if (Finder.Settings.Debug_DrawShadowCasts)
                 {
                     IntVec3 center = UI.MouseMapPosition().ToIntVec3();                   
                     if (center.InBounds(map))
@@ -455,8 +534,8 @@ namespace CombatAI
             }              
             return true;
         }
-        
-        public void Register(Thing thing)
+
+	    public void Register(Thing thing)
         {
             // make sure it's not already in.
             factionedUInt64Map.Remove(thing);

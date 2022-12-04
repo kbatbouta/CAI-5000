@@ -6,7 +6,7 @@
     <CombatAI.Open>Open</CombatAI.Open>
     <CombatAI.Hide>Hide</CombatAI.Hide>
     <CombatAI.Expand>Hide</CombatAI.Expand>
-
+    <CombatAI.Preparing>Preparing Combat AI</CombatAI.Preparing>
     <CombatAI.Settings.Basic>Basic Settings</CombatAI.Settings.Basic>
     <CombatAI.Settings.Basic.FogOfWar>[BETA] Fog of war</CombatAI.Settings.Basic.FogOfWar>
     <CombatAI.Settings.Basic.FogOfWar.Enable>Enable fog of war</CombatAI.Settings.Basic.FogOfWar.Enable>

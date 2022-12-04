@@ -8,6 +8,10 @@ using Verse.AI;
 using System.Collections.ObjectModel;
 using NAudio.Utils;
 using UnityEngine.UI;
+using CombatAI.Comps;
+using System.Net.NetworkInformation;
+using UnityEngine.SocialPlatforms;
+using static Microsoft.Build.Utilities.SDKManifest;
 
 namespace CombatAI
 {
@@ -20,32 +24,62 @@ namespace CombatAI
 			return GetSightRange(thing, !(Faction.OfPlayerSilentFail?.HostileTo(thing.Faction) ?? true));
 		}
 
-		public static int GetSightRange(Thing thing, bool isPlayer)
+		public static int GetSightRange(ThingComp_Sighter sighter, bool isPlayer)
 		{
+			if (!isPlayer || !Finder.Settings.FogOfWar_Enabled)
+			{
+				return 0;
+			}
+			if (rangeCache.TryGetValue(sighter.parent.thingIDNumber, out Pair<int, int> store) && GenTicks.TicksGame - store.First <= 600)
+			{
+				return store.Second;
+			}
+			int range = Mathf.CeilToInt(sighter.SightRadius * Finder.Settings.FogOfWar_RangeMultiplier);
+			rangeCache[sighter.parent.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);			
+			return range;
+		}
+
+		public static int GetSightRange(Thing thing, bool isPlayer)
+		{			
 			if (rangeCache.TryGetValue(thing.thingIDNumber, out Pair<int, int> store) && GenTicks.TicksGame - store.First <= 600)
 			{
 				return store.Second;
 			}
 			int range = 0;
 			if (thing is Pawn pawn)
-			{				
+			{
 				if (Finder.Settings.FogOfWar_Enabled && isPlayer)
 				{
-					range = Mathf.CeilToInt(GetSightRangePlayer(pawn, true) * pawn.GetStatValue(CombatAI.CombatAI_StatDefOf.CombatAI_SightMul));
+					range = GetSightRangePlayer(pawn, true);
 				}
 				else
 				{
 					range = GetSightRange(pawn);
-				}							
+				}
 			}
-			else if (thing is Building_TurretGun turret)
+			else if (thing is Building_Turret turret)
 			{
-				range = GetSightRange(turret);
-			}			
+				Verb verb = turret.AttackVerb;
+				if (verb != null)
+				{
+					if (verb.verbProps.isMortar)
+					{
+						range = Mathf.CeilToInt(Maths.Min(48, verb.EffectiveRange));
+					}
+					else
+					{
+						range = Mathf.CeilToInt(turret.AttackVerb?.EffectiveRange ?? 0f);
+					}
+				}
+				else
+				{
+					range = 0;
+				}
+			}
 			if (Finder.Settings.FogOfWar_Enabled && isPlayer)
 			{
 				range = Mathf.CeilToInt(range * Finder.Settings.FogOfWar_RangeMultiplier);
-			}			
+			}
 			rangeCache[thing.thingIDNumber] = new Pair<int, int>(GenTicks.TicksGame, range);
 			return range;
 		}		
@@ -95,7 +129,7 @@ namespace CombatAI
 					{
 						multiplier += (ranged.Level - 5f) / 15f;
 					}
-					return (int)Maths.Max(verb.EffectiveRange * multiplier, 20f * multiplier, 10f);
+					return (int)Maths.Max(verb.EffectiveRange * multiplier, 20f * multiplier, verb.EffectiveRange * 0.8f);
 				}
 			}
 		}
@@ -150,26 +184,6 @@ namespace CombatAI
 				range = Maths.Max(range * Mathf.Clamp(skill / 7.5f, 0.778f, 1.425f), 4);
 				return Mathf.CeilToInt(range);
 			}
-		}
-
-		private static int GetSightRange(Building_TurretGun turret)
-		{
-			float range = turret.CurrentEffectiveVerb?.EffectiveRange ?? -1;
-			if (range != 0 && turret.IsMannable)
-			{
-				Pawn user = turret.mannableComp.ManningPawn;
-				if (user != null)
-				{
-					SkillRecord shooting = user.skills?.GetSkill(SkillDefOf.Shooting) ?? null;
-					float skill = 5;
-					if (shooting != null)
-					{
-						skill = shooting.Level;
-					}
-					range = Maths.Max(range * Mathf.Clamp(skill / 7.5f, 0.778f, 1.225f), 5);
-				}
-			}
-			return Mathf.CeilToInt(range);
 		}
 		
 		public static void ClearCache()

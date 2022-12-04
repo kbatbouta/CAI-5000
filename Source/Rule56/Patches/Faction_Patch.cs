@@ -35,6 +35,10 @@ namespace CombatAI.Patches
             {
                 if (member?.Spawned ?? false)
                 {
+                    if (!member.Dead && !member.Downed)
+                    {
+                        member.GetComp_Fast<ThingComp_CombatAI>()?.Notify_TookDamage(dinfo);
+                    }
                     member.Map?.GetComp_Fast<AvoidanceTracker>()?.Notify_Injury(member, dinfo);
                     member.GetComp_Fast<ThingComp_Statistics>()?.Notify_PawnTookDamage();
                 }

@@ -73,7 +73,7 @@ namespace CombatAI
 								}
 								else
 								{
-									float visibility = pawns.GetSignalStrengthAt(index);
+									float visibility = pawns.GetRawSignalStrengthAt(index);
 									float visRLimit = 0.03f;
 									if (glowSky < 1)
 									{
@@ -185,6 +185,12 @@ namespace CombatAI
 			{
 				OffThreadLoop(0, 0, grid2d.Length, grid2d[0].Length);
 			});
+		}
+
+		public override void FinalizeInit()
+		{
+			base.FinalizeInit();
+			asyncActions.Start();
 		}
 
 		public bool IsFogged(IntVec3 cell) => IsFogged(cellIndices.CellToIndex(cell));

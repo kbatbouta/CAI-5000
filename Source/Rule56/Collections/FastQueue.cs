@@ -30,6 +30,23 @@ namespace CombatAI
             get => count;
         }
 
+		/// <summary>
+		/// Allows list like access
+		/// </summary>
+		/// <param name="index">Index</param>
+		/// <returns>Item</returns>
+		public T this[int index]
+        {
+            get
+            {
+                return nodes[(start + index) % count];
+            }
+            set
+            {                
+				nodes[(start + index) % count] = value;
+			}
+        }
+
         private FastQueue() { }
         /// <summary>
         /// Constructor for FastQueue.
@@ -67,22 +84,31 @@ namespace CombatAI
         public T Dequeue()
         {
             count--;
-            T val = nodes[start++];
-            if (start >= nodes.Length)
+            T val = nodes[start];       
+            nodes[start++] = default(T);            
+			if (start >= nodes.Length)
             {
                 start = 0;
             }
             return val;
         }
 
-        /// <summary>
-        /// Clear all elements in the queue.
-        /// </summary>
-        public void Clear()
+		/// <summary>
+		///  Clear all elements in the queue.
+		/// </summary>
+		/// <param name="deep">Whether to do a deep clear.</param>
+		public void Clear(bool deep = false)
         {
-            start = 0;
+            if (deep)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    nodes[(start + i) % count] = default(T);
+                }
+            }
+			start = 0;
             end = 0;
-            count = 0;
+            count = 0;            
         }
 
         /// <summary>

@@ -221,7 +221,7 @@ namespace CombatAI
             }
             List<VisibleRow> rowQueue = new List<VisibleRow>();            
             rowQueue.Add(request.firstRow);
-            float coverMinDist = Maths.Max(request.firstRow.maxDepth / 3f, 10f);
+            float coverMinDist = Maths.Min(Maths.Max(request.firstRow.maxDepth / 3f, 4f), 12f);
             while (rowQueue.Count > 0)
             {                
                 VisibleRow nextRow;                
@@ -247,7 +247,7 @@ namespace CombatAI
                     IntVec3 cell = request.source + row.Transform(offset.ToIntVec3());                
                     bool isWall = !cell.InBounds(request.map) || (fill = grid.GetFillCategory(cell)) == FillCategory.Full;
                     bool process = true;
-                    if (!isWall && (i == 0 || i - lastNextIndex == 1))
+                    if (!isWall && (i == 0 || i - lastNextIndex == 1 || lastIsWall))
                     {
                         IntVec3 temp = request.source + row.Transform(offset.ToIntVec3() + Back);
                         if (temp.InBounds(request.map) && grid.GetFillCategory(temp) == FillCategory.Full)
@@ -257,21 +257,21 @@ namespace CombatAI
                             {
                                 isWall = true;
                                 process = false;
-                                fill = FillCategory.Full;
-								//int t_count = request.buffer.Count;
-								//int t_lastNextIndex = lastNextIndex;
-								//int t_i = i;
-								//request.map.GetComponent<MapComponent_CombatAI>().EnqueueMainThreadAction(() =>
-								//{
-								//	if (row.quartor == 0)
-								//	{
-								//		request.map.debugDrawer.FlashCell(cell, 1, $"{t_i} {t_count} {t_lastNextIndex}");
-								//	}
-								//});
+                                fill = FillCategory.Full;								
 							}
                         }
-                    }                    
-                    bool isCover = !isWall && fill == FillCategory.Partial;
+                    }
+					//int t_count = request.buffer.Count;
+					//int t_lastNextIndex = lastNextIndex;
+					//int t_i = i;
+					//request.map.GetComponent<MapComponent_CombatAI>().EnqueueMainThreadAction(() =>
+					//{
+					//	//if (row.quartor == 0)
+					//	//{
+					//	request.map.debugDrawer.FlashCell(cell, 1, $"{t_i} {t_count} {t_lastNextIndex}");
+					//	//}
+					//});
+					bool isCover = !isWall && fill == FillCategory.Partial;
                     
                     if (process && (isWall || (offset.z >= row.depth * row.startSlope && offset.z <= row.depth * row.endSlope)))
                     {                        
@@ -298,9 +298,9 @@ namespace CombatAI
                             {
                                 nextRow = row.Next();
                                 nextRow.endSlope = GetSlope(offset);
-                                if (lastIsCover && row.depth > 6)
+                                if (lastIsCover && row.depth > coverMinDist)
                                 {
-                                    nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
+                                    nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - coverMinDist) / coverMinDist), row.blockChance);
                                     nextRow.visibilityCarry += 1;
                                 }
                                 rowQueue.Add(nextRow);
@@ -316,14 +316,14 @@ namespace CombatAI
                         {
                             nextRow = row.Next();
                             nextRow.endSlope = GetSlope(offset);
-                            if (lastIsCover && row.depth > 6)
+                            if (lastIsCover && row.depth > coverMinDist)
                             {
-                                nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
+                                nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - coverMinDist) / coverMinDist), row.blockChance);
                                 nextRow.visibilityCarry += 1;
                             }
 							lastNextIndex = i;
 							rowQueue.Add(nextRow);							
-						}                        
+						}
                     }
                     cellsScanned++;
                     lastCell = offset;
@@ -333,9 +333,9 @@ namespace CombatAI
                 if (lastCell.y >= 0 && !lastIsWall)
                 {
                     nextRow = row.Next();
-                    if (lastIsCover && row.depth > 6)
+                    if (lastIsCover && row.depth > coverMinDist)
                     {                        
-                        nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - 6f) / coverMinDist), row.blockChance);
+                        nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - coverMinDist) / coverMinDist), row.blockChance);
                         nextRow.visibilityCarry += 1;
                     }					
 					rowQueue.Add(nextRow);					
@@ -373,7 +373,7 @@ namespace CombatAI
                     var cell = request.source + row.Transform(offset.ToIntVec3());
                     var isWall = !cell.InBounds(request.map) || !grid.CanBeSeenOver(cell);
 					var process = true;
-					if (!isWall && (i == 0 || i - lastNextIndex == 1))
+					if (!isWall && (i == 0 || i - lastNextIndex == 1 || lastIsWall))
 					{
 						IntVec3 temp = request.source + row.Transform(offset.ToIntVec3() + Back);
 						if (temp.InBounds(request.map) && grid.GetFillCategory(temp) == FillCategory.Full)

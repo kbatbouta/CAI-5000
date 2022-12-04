@@ -12,9 +12,14 @@ namespace CombatAI.Patches
 {
     internal static class AttackTargetFinder_Patch
     {
-        private static Map map;
+        private static Map map;        
         private static Pawn searcherPawn;
+        private static Faction searcherFaction;
+		private static Verb searcherVerb;
+		private static float dmg05;
+		private static ProjectileProperties projectile;
         private static SightTracker.SightReader sightReader;
+        private static DamageReport damageReport;
 
         [HarmonyPatch(typeof(AttackTargetFinder), nameof(AttackTargetFinder.BestAttackTarget))]
         internal static class AttackTargetFinder_BestAttackTarget_Patch
@@ -25,14 +30,22 @@ namespace CombatAI.Patches
 
                 if (searcher.Thing is Pawn pawn && !pawn.RaceProps.Animal)
                 {
+                    damageReport = DamageUtility.GetDamageReport(searcher.Thing);
 					searcherPawn = pawn;
-					pawn.GetSightReader(out sightReader);
+                    searcherVerb = pawn.CurrentEffectiveVerb;
+                    if(searcherVerb != null && !searcherVerb.IsMeleeAttack && (projectile = searcherVerb.GetProjectile()?.projectile ?? null) != null)
+                    {                        
+                        dmg05 = projectile.damageAmountBase / 2f;
+					}
+					pawn.TryGetSightReader(out sightReader);
                 }
+                searcherFaction = searcher.Thing?.Faction ?? null;
             }
 
             internal static void Postfix()
             {
                 map = null;
+                damageReport = default(DamageReport);
 				searcherPawn = null;
 				sightReader = null;                
             }
@@ -66,7 +79,7 @@ namespace CombatAI.Patches
             public static float GetTargetBaseScore(IAttackTarget target, IAttackTargetSearcher searcher, Verb verb)
             {
                 float result = 60f;
-                if (sightReader != null)
+                if (sightReader != null && searcherPawn != null)
                 {                    
                     if ((verb.IsMeleeAttack || verb.EffectiveRange <= 15))
                     {
@@ -82,12 +95,43 @@ namespace CombatAI.Patches
                     }
                     if(target.Thing is Pawn enemy)
                     {
+                        if (damageReport.IsValid)
+                        {
+							var armorReport = ArmorUtility.GetArmorReport(enemy);                            
+                            var diff = 0f;
+                            if (Mod_CE.active)
+                            {                                
+								diff = Mathf.Clamp01(Maths.Max(damageReport.adjustedBlunt / (armorReport.Blunt + 1f), damageReport.adjustedSharp / (armorReport.Sharp + 1f), 0f));
+							}
+                            else
+                            {
+                                diff = Mathf.Clamp01(1 -Maths.Max(armorReport.Blunt - damageReport.adjustedBlunt, armorReport.Sharp - damageReport.adjustedSharp, 0f));
+							}
+                            result += 8f * diff;
+                            //var armor = armorReport.GetArmor(projectile.damageDef);
+                            //var damage = damageReport.GetAdjustedDamage(projectile.damageDef.armorCategory);
+                            //if (projectile.armorPenetrationBase > 0)
+                            //{
+                            //    result += Mathf.Lerp(0f, 12f, damageReport.ad);
+                            //if (Find.Selector.SelectedPawns.Contains(searcher.Thing as Pawn))
+                            //{
+                            //    map.debugDrawer.FlashCell(target.Thing.Position, diff, $"{diff}");
+                            //}                            
+                            //else
+                            //{
+                            //    result -= Maths.Min(armor * 0.5f, 8f);
+                            //}
+                        }
                         Thing targeted;
+                        if (enemy.stances?.stagger != null && enemy.stances.stagger.Staggered)
+                        {
+                            result += 12;
+						}                        
                         if (!verb.IsMeleeAttack)
                         {
                             if ((enemy.CurrentEffectiveVerb?.IsMeleeAttack ?? false))
                             {
-                                if ((targeted = enemy.jobs?.curJob?.targetA.Thing)?.Faction == searcherPawn.Faction)
+                                if (searcherFaction != null && (targeted = enemy.jobs?.curJob?.targetA.Thing)?.Faction == searcherFaction)
                                 {
                                     result += 8 + enemy.Position.DistanceToSquared(targeted.Position) < 150 ? 16 : 0;
                                 }

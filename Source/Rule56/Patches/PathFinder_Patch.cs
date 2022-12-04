@@ -21,7 +21,8 @@ namespace CombatAI.Patches
         static class PathFinder_FindPath_Patch
         {
             //private static IGridBufferedWriter gridWriter;
-            private static DataWriter_Path pathWriter;
+            private static ThingComp_CombatAI comp;
+			private static DataWriter_Path pathWriter;
             private static bool dump;
             private static bool dig;
             private static Pawn pawn;
@@ -30,14 +31,17 @@ namespace CombatAI.Patches
             private static SightTracker.SightReader sightReader;
             private static AvoidanceTracker.AvoidanceReader avoidanceReader;            
             private static bool raiders;            
-            private static int counter;           
+            private static int counter;
+            private static ArmorReport armor;            
             // private static bool crouching;
             // private static bool tpsLow;
             // private static float tpsLevel;
             //private static int pawnBlockingCost;
             private static bool isPlayer;
+            private static float threatAtDest;
             private static float visibilityAtDest;
             private static float multiplier = 1.0f;
+            private static List<IntVec3> blocked = new List<IntVec3>(128);
 
             internal static bool Prefix(PathFinder __instance, ref PawnPath __result, IntVec3 start, LocalTargetInfo dest, ref TraverseParms traverseParms, PathEndMode peMode, ref PathFinderCostTuning tuning, out bool __state)
             {
@@ -56,16 +60,27 @@ namespace CombatAI.Patches
                     pawn = traverseParms.pawn;
                     // fix for player pawns and drafted pawns
                     isPlayer = pawn.Faction.IsPlayerSafe();
+					multiplier = (isPlayer ? (pawn.Drafted ? 0.25f : 0.75f) : 1.0f);
+                    // make tankier pawns unless affect.
+					armor = ArmorUtility.GetArmorReport(pawn);                    					
+                    if (armor.createdAt != 0)
+                    {                        
+						multiplier = Maths.Max(multiplier, (1 - armor.TankInt), 0.25f);
+                    }
+					// retrive CE elements
+					pawn.TryGetSightReader(out sightReader);
+                    if (sightReader != null)
+                    {
+                        sightReader.armor = armor;
+                        threatAtDest = sightReader.GetThreat(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
 
-                    multiplier = (isPlayer ? (pawn.Drafted ? 0.25f : 0.75f) : 1.0f);                    
-                    // retrive CE elements                    
-                    pawn.GetSightReader(out sightReader);
-                    pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
-
-                    /*  
+					}
+					pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
+                    comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+					/*
                      * dump pathfinding data
                      */
-                    if (dump = Finder.Settings.Debug_DebugDumpData && !isPlayer && sightReader != null && avoidanceReader != null && Finder.Settings.Debug && Prefs.DevMode)
+					if (dump = Finder.Settings.Debug_DebugDumpData && !isPlayer && sightReader != null && avoidanceReader != null && Finder.Settings.Debug && Prefs.DevMode)
                     {
                         //if (gridWriter == null)
                         //{
@@ -86,10 +101,9 @@ namespace CombatAI.Patches
                     }
 
                     float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-                    if (dig = (Finder.Settings.Pather_KillboxKiller && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual)))
-                    {
-                        raiders = true;
-                        //factionMultiplier = 1;
+                    if (dig = comp != null && !comp.TookDamageRecently(360) && (Finder.Settings.Pather_KillboxKiller && sightReader != null && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual)))
+                    {                             
+                        raiders = true;                           
                         TraverseParms parms = traverseParms;
                         parms.canBashDoors = true;
                         parms.canBashFences = true;
@@ -98,14 +112,14 @@ namespace CombatAI.Patches
                         traverseParms = parms;
                         if (tuning == null)
                         {
-                            tuning = new PathFinderCostTuning();                            
+                            tuning = new PathFinderCostTuning();
                             tuning.costBlockedDoor = 34;
                             tuning.costBlockedDoorPerHitPoint = 0;
-                            tuning.costBlockedWallBase = (int)Maths.Max(15 * Maths.Max(10 - miningSkill, 0), 24);
-                            tuning.costBlockedWallExtraForNaturalWalls = (int)Maths.Max(45 * Maths.Max(15 - miningSkill, 0), 45);
-                            tuning.costBlockedWallExtraPerHitPoint = Maths.Max(6 - miningSkill, 0);
+                            tuning.costBlockedWallBase = (int)Maths.Max(10 * Maths.Max(13 - miningSkill, 0), 24);
+                            tuning.costBlockedWallExtraForNaturalWalls = (int)Maths.Max(45 * Maths.Max(10 - miningSkill, 0), 45);
+                            tuning.costBlockedWallExtraPerHitPoint = Maths.Max(3 - miningSkill, 0);
                             tuning.costOffLordWalkGrid = 0;
-                        }
+                        }                        
                     }
                    
                     //pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out sightReader);
@@ -189,10 +203,10 @@ namespace CombatAI.Patches
                         //if (comp != null && comp.TryStartMiningJobs(__result))
                         //{
                         //}
-                        //if (pawn.GetComp_Fast())
-                        IntVec3 cellBefore;
-                        Thing thing = __result.FirstBlockingBuilding(out cellBefore, pawn);
-                        if (thing != null && pawn.mindState?.duty?.def != DutyDefOf.Sapper && pawn.CurJob?.def != JobDefOf.Mine)
+                        //if (pawn.GetComp_Fast())                        
+						blocked.Clear();
+                        Thing thing;
+                        if ( __result.TryGetSapperSubPath(pawn, blocked, 50, Finder.Performance.TpsCriticallyLow ? 4 : 2, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (thing = blocked[0].GetEdifice(map)) != null && pawn.mindState?.duty?.def != DutyDefOf.Sapper && pawn.CurJob?.def != JobDefOf.Mine)
                         {
                             Job job = DigUtility.PassBlockerJob(pawn, thing, cellBefore, true, true);
                             if (job != null)
@@ -208,11 +222,11 @@ namespace CombatAI.Patches
                                 //}
                                 pawn.jobs.StopAll();
                                 pawn.jobs.StartJob(job, JobCondition.InterruptForced);
-                                if (Rand.Chance(0.8f))
-                                {
+                                if (enemiesAhead)
+                                {                                    
                                     //GenClosest.ClosestThingReachable(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), maxDistance:)
                                     int count = 0;
-                                    int countTarget = Rand.Int % 3 + 1;
+                                    int countTarget = Rand.Int % 6 + 4 + Maths.Min(blocked.Count, 10);
                                     Faction faction = pawn.Faction;
                                     Predicate<Thing> validator = (t) =>
                                     {
@@ -225,10 +239,11 @@ namespace CombatAI.Patches
                                             Comps.ThingComp_CombatAI comp = ally.GetComp_Fast<Comps.ThingComp_CombatAI>();
                                             if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false)
                                             {
-                                                Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 50, 100, Rand.Int % 500 + 1500, 0, true, DutyDefOf.AssaultColony);
+                                                Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 1500 + Rand.Int % 1000, 0, true, null);
                                                 if (custom != null)
                                                 {
-                                                    comp.duties.StartDuty(custom, true);
+                                                    custom.duty.locomotion = LocomotionUrgency.Sprint;
+													comp.duties.StartDuty(custom, true);
                                                 }
                                             }
                                             count++;
@@ -236,7 +251,7 @@ namespace CombatAI.Patches
                                         }
                                         return false;
                                     };
-                                    Verse.GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 4, 25f, out int _);
+                                    Verse.GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 10, 40, out int _);
                                     //List<Pawn> allies = pawn.Position.(map, Utilities.TrackedThingsRequestCategory.Pawns, 10f)
                                     //    .Where(t => t.Faction == pawn.Faction && pawn.CanReach(t, PathEndMode.InteractionCell, Danger.Unspecified))
                                     //    .Select(t => t as Pawn)
@@ -273,14 +288,16 @@ namespace CombatAI.Patches
             }
 
             public static void Reset()
-            {
-                //avoidanceTracker = null;
-                avoidanceReader = null;
-                //lightingTracker = null;
+            {				
+				avoidanceReader = null;               
                 raiders = false;
-                sightReader = null;
+                multiplier = 1f;
+				sightReader = null;
                 counter = 0;
-                instance = null;
+                dig = false;
+                threatAtDest = 0;
+				armor = default(ArmorReport);
+				instance = null;
                 visibilityAtDest = 0f;
                 map = null;
                 pawn = null;
@@ -294,20 +311,9 @@ namespace CombatAI.Patches
             public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
             {
                 List<CodeInstruction> codes = instructions.ToList();
-                bool finished1 = false;
-                //bool finished2 = false;
+                bool finished1 = false;                
                 for (int i = 0; i < codes.Count; i++)
-                {
-                    //if (!finished2)
-                    //{
-                    //    if(codes[i].opcode == OpCodes.Ldc_I4 && codes[i].OperandIs(175))
-                    //    {
-                    //        finished2 = true;
-                    //        yield return new CodeInstruction(OpCodes.Ldloc_S, 45);
-                    //        yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PathFinder_FindPath_Patch), nameof(PathFinder_FindPath_Patch.GetPawnBlockingCost))).MoveBlocksFrom(codes[i]).MoveLabelsFrom(codes[i]);
-                    //        continue;
-                    //    }
-                    //}
+                {                   
                     if (!finished1)
                     {
                         if (codes[i].opcode == OpCodes.Stloc_S && codes[i].operand is LocalBuilder builder1 && builder1.LocalIndex == 48)
@@ -321,27 +327,8 @@ namespace CombatAI.Patches
                         }
                     }
                     yield return codes[i];
-                }
-                //if (finished)
-                //    Log.Message("CAI: Patched pather!");
-            }
-
-            //private static int GetPawnBlockingCost(int index)
-            //{
-            //    if (!raiders)
-            //    {
-            //        return 175;
-            //    }
-            //    IntVec3 cell = map.cellIndices.IndexToCell(index);
-            //    foreach (Pawn pawn in cell.GetThingList(map).Where(t => t is Pawn))
-            //    {
-            //        if (pawn.stances?.curStance is Stance_Warmup)
-            //        {
-            //            return 1200;
-            //        }
-            //    }                
-            //    return 175;
-            //}
+                }               
+            }            
 
             private static int GetCostOffsetAt(int index, int parentIndex, int openNum)
             {
@@ -349,31 +336,38 @@ namespace CombatAI.Patches
                 {                    
                     var value = 0;
                     var visibility = 0f;
-                    if (sightReader != null)
-                    {                        
+                    var threat = 0f;
+                    var path = 1f;
+					if (sightReader != null)
+                    {  
                         visibility = sightReader.GetVisibilityToEnemies(index);
                         if (visibility > visibilityAtDest)
                         {
                             value += (int)(visibility * 65);
-                            //if (visibility > 5)
-                            //{
-                            //    value += (int)(visibility * 300);
-                            //}
-                            //else
-                            //{
-                            //    value += (int)(visibility * 90);
-                            //}
+							threat = sightReader.GetThreat(index);
+							if (threat >= threatAtDest)
+							{
+								value += (int)(threat * 64f);
+							}
+						}                                    
+                        if (!isPlayer)
+                        {
+                            MetaCombatAttribute attributes = sightReader.GetMetaAttributes(index);
+                            if ((attributes & MetaCombatAttribute.AOELarge) != MetaCombatAttribute.None)
+                            {
+                                path = 2f;
+                            }
                         }
-                    }
+					}
                     if (avoidanceReader != null && !isPlayer)
                     {
                         if(value > 3)
                         {
-                            value += (int)(avoidanceReader.GetPath(index) * Maths.Min(visibility, 5) * 21f);
+                            value += (int)(avoidanceReader.GetPath(index) * Maths.Min(visibility, 5) * 21f * path);
                         }
                         else
                         {                           
-                            value += (int)(Maths.Min(avoidanceReader.GetPath(index), 4) * 42);
+                            value += (int)(Maths.Min(avoidanceReader.GetPath(index), 4) * 42 * path);
                         }
                         float danger = avoidanceReader.GetDanger(index);
                         if(danger > 0)
@@ -425,7 +419,7 @@ namespace CombatAI.Patches
                         //we use this so the game doesn't die
                         var v = (Maths.Min(value, l1 + l2) * multiplier * 1);
                         //map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), v, $" {l1 + l2}");                        
-                        return (int)(Maths.Min(value, l1 + l2) * multiplier * Finder.P50);
+                        return (int)(Maths.Min(value, l1 + l2) * multiplier * Finder.P75);
                         //return (int)(Maths.Min(value, 1000f) * factionMultiplier * 1);
                     }
                 }

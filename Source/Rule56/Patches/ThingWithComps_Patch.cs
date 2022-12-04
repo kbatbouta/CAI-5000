@@ -11,7 +11,7 @@ namespace CombatAI.Patches
         {
             public static void Prefix(ThingWithComps __instance)
             {             
-                CompsCache.Notify_ThingDestroyed(__instance);
+                CompCache.Notify_ThingDestroyed(__instance);
             }
         }
     }
