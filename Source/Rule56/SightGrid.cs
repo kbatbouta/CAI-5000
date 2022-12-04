@@ -394,13 +394,10 @@ namespace CombatAI {
                 {
                     scanForEnemies = false;
 				}                
-			}
-			if (scanForEnemies)
-			{
-				item.lastScannedForEnemies = ticks;                              
-            }
+			}			
             if (scanForEnemies)
-            {               
+            {
+				item.lastScannedForEnemies = ticks;
 				item.ai.OnScanStarted();
 				item.spottings.Clear();
             }

@@ -242,7 +242,11 @@ namespace CombatAI.Comps
 				if (Mod_CE.active && (pawn.CurJobDef.Is(Mod_CE.ReloadWeapon) || pawn.CurJobDef.Is(Mod_CE.HunkerDown)))
                 {					
 					return;
-                }                
+                }
+                if (pawn.CurJobDef.Is(JobDefOf.Kidnap))
+                {
+                    return;
+                }
                 PawnDuty duty = pawn.mindState.duty;
 				if (duty != null && (duty.def.Is(DutyDefOf.Build) || duty.def.Is(DutyDefOf.SleepForever) || duty.def.Is(DutyDefOf.TravelOrLeave)))
                 {
@@ -459,9 +463,9 @@ namespace CombatAI.Comps
 
 		public void Notify_TookDamage(DamageInfo dInfo)
 		{
-			if (parent.Spawned && GenTicks.TicksGame - lastScanned < 90 && parent is Pawn pawn && armor.TankInt < 0.3f)
-			{
-                if (dInfo.Def != null && dInfo.Instigator != null)
+			if (parent.Spawned && GenTicks.TicksGame - lastScanned < 90 && parent is Pawn pawn && !pawn.Dead && !pawn.Downed && armor.TankInt < 0.4f)
+			{			
+				if (dInfo.Def != null && dInfo.Instigator != null)
                 {
                     if (pawn.CurJobDef.Is(JobDefOf.Mine))
                     {
