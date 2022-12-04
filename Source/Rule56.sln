@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 25.0.1703.7
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rule56", "Rule56\CombatAI.csproj", "{20A152DB-6471-43AC-BCAE-569E16D7DB09}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatExtended", "..\..\CombatRealism\Source\CombatExtended\CombatExtended.csproj", "{EEDAC5CC-FCF9-43EA-9B15-A687C894A8C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombatAI", "Rule56\CombatAI.csproj", "{20A152DB-6471-43AC-BCAE-569E16D7DB09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +19,6 @@ Global
 		{B79950E6-529C-4E02-822B-A2D01012A659}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B79950E6-529C-4E02-822B-A2D01012A659}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B79950E6-529C-4E02-822B-A2D01012A659}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EEDAC5CC-FCF9-43EA-9B15-A687C894A8C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EEDAC5CC-FCF9-43EA-9B15-A687C894A8C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EEDAC5CC-FCF9-43EA-9B15-A687C894A8C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EEDAC5CC-FCF9-43EA-9B15-A687C894A8C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
