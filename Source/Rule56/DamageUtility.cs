@@ -69,9 +69,14 @@ namespace CombatAI
 						}
 					}
 				}
-				if (!(pawn.CurrentEffectiveVerb?.IsMeleeAttack ?? true) || pawn.Downed)
+				Verb effectiveVerb = pawn.CurrentEffectiveVerb;
+				if (effectiveVerb != null)
 				{
-					report.primaryIsRanged = true;
+					if (!effectiveVerb.IsMeleeAttack && !pawn.Downed)
+					{
+						report.primaryIsRanged = true;
+					}
+					report.primaryVerbProps = effectiveVerb.verbProps;
 				}
 				float rangedMul = 1;
 				float meleeMul = 1;
@@ -110,8 +115,9 @@ namespace CombatAI
 						collapsible.Label($"r.melee mS:{Math.Round(report.meleeSharp, 2)}\tmB:{Math.Round(report.meleeBlunt, 2)}");
 						collapsible.Label($"r.melee mSAp:{Math.Round(report.meleeSharpAp, 2)}\tmBAp:{Math.Round(report.meleeBluntAp, 2)}");
 					}
+					report.primaryVerbProps = verb.verbProps;
 				}
-				report.primaryIsRanged = true;
+				report.primaryIsRanged = true;				
 				report.Finalize(1, 1);
 			}
 			if (debug)
@@ -129,6 +135,26 @@ namespace CombatAI
 			}
 			reports[thing.thingIDNumber] = report;
 			return report;
+		}
+
+		public static float ThreatTo(this DamageReport damage, ArmorReport armor)
+		{
+			if(!damage.IsValid || !armor.IsValid)
+			{
+				return 0f;
+			}
+			if ((damage.attributes & armor.weaknessAttributes) != MetaCombatAttribute.None)
+			{
+				return 2f;
+			}
+			if (!Mod_CE.active)
+			{
+				return Mathf.Clamp01(2f * Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f),damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
+			}
+			else
+			{
+				return Mathf.Clamp01(Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f), damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
+			}
 		}
 
 		public static void ClearCache()

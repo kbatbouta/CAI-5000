@@ -12,8 +12,8 @@ namespace CombatAI
     {      
         public static bool TryFindCoverPosition(CoverPositionRequest request, out IntVec3 coverCell)
         {
-            request.caster.GetSightReader(out SightReader sightReader);            
-            request.caster.GetAvoidanceTracker(out AvoidanceReader avoidanceReader);
+            request.caster.TryGetSightReader(out SightReader sightReader);            
+            request.caster.TryGetAvoidanceReader(out AvoidanceReader avoidanceReader);
             if (sightReader == null || avoidanceReader == null)
             {
                 coverCell = IntVec3.Invalid;
@@ -80,8 +80,8 @@ namespace CombatAI
 
         public static bool TryFindRetreatPosition(CoverPositionRequest request, out IntVec3 coverCell)
         {
-            request.caster.GetSightReader(out SightReader sightReader);
-            request.caster.GetAvoidanceTracker(out AvoidanceReader avoidanceReader);
+            request.caster.TryGetSightReader(out SightReader sightReader);
+            request.caster.TryGetAvoidanceReader(out AvoidanceReader avoidanceReader);
             if (sightReader == null || avoidanceReader == null)
             {
                 coverCell = IntVec3.Invalid;

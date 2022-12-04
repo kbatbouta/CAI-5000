@@ -37,7 +37,7 @@ namespace CombatAI.Patches
                     {                        
                         dmg05 = projectile.damageAmountBase / 2f;
 					}
-					pawn.GetSightReader(out sightReader);
+					pawn.TryGetSightReader(out sightReader);
                 }
                 searcherFaction = searcher.Thing?.Faction ?? null;
             }

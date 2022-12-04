@@ -21,7 +21,7 @@ namespace CombatAI
 				return result;
 			}
 			DamageReport report = DamageUtility.GetDamageReport(pawn);
-			if (pawn.CurrentEffectiveVerb?.IsMeleeAttack ?? true)
+			if (!report.primaryIsRanged)
 			{
 				result |= MetaCombatAttribute.AOELarge;
 			}

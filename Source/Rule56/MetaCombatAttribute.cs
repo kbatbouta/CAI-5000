@@ -11,7 +11,8 @@ namespace CombatAI
 		Emp			= 16,
 		Fire		= 32,
 		Gas			= 64,
-		Explosives	= 128
+		Explosives	= 128,
+		Mortar		= 256,
 	}
 }
 

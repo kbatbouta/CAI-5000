@@ -39,11 +39,11 @@ namespace CombatAI.Patches
 									{
 										return JobCondition.Ongoing;
 									}
-									if (__instance.job.verbToUse.CanHitTarget(enemy.GetMovingShiftedPosition(40)))
+									if (__instance.job.verbToUse.CanHitTarget(PawnPathUtility.GetMovingShiftedPosition(enemy, 40)))
 									{
 										return JobCondition.Ongoing;
 									}
-									if (__instance.job.verbToUse.CanHitTarget(enemy.GetMovingShiftedPosition(80)))
+									if (__instance.job.verbToUse.CanHitTarget(PawnPathUtility.GetMovingShiftedPosition(enemy, 80)))
 									{
 										return JobCondition.Ongoing;
 									}									

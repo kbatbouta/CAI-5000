@@ -70,7 +70,7 @@ namespace CombatAI.Patches
                         {
                             grid = map.GetFloatGrid();
                             grid.Reset();
-                            newReq.caster.GetSightReader(out sightReader);							
+                            newReq.caster.TryGetSightReader(out sightReader);							
 							if (sightReader != null)
                             {
                                 sightReader.armor = ArmorUtility.GetArmorReport(pawn);

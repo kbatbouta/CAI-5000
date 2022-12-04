@@ -11,7 +11,7 @@ namespace CombatAI.Patches
         {
             public static void Prefix(Map map)
             {
-                CompsCache.Notify_MapRemoved(map);
+                CompCache.Notify_MapRemoved(map);
             }
         }		
 
@@ -20,15 +20,15 @@ namespace CombatAI.Patches
         {
             public static void Prefix()
             {
-                CombatAI_Utility.ClearCache();
-				CompsCache.ClearCaches();
+                TCacheHelper.ClearCache();
+				StatCache.ClearCache();
+				CompCache.ClearCaches();
                 SightUtility.ClearCache();
                 JobGiver_AITrashBuildingsDistant_Patch.ClearCache();
                 GenSight_Patch.ClearCache();
                 ArmorUtility.ClearCache();
                 DamageUtility.ClearCache();
-                MetaCombatAttributeUtility.ClearCache();
-
+                MetaCombatAttributeUtility.ClearCache();                
 			}
         }
     }

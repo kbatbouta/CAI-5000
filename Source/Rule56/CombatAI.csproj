@@ -42,6 +42,7 @@
 	  <Folder Include="Defs\" />
 	  <Folder Include="DefOfs\" />
 	  <Folder Include="Defs\Extensions\" />
+	  <Folder Include="Cache\" />
 	</ItemGroup>	
 	<ItemGroup>
 	  <None Remove="Gui\Core\GUIUtility.ScrollViews" />
@@ -56,6 +57,7 @@
 	  <None Remove="Defs\" />
 	  <None Remove="DefOfs\" />
 	  <None Remove="Defs\Extensions\" />
+	  <None Remove="Cache\" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">

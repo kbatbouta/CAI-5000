@@ -67,10 +67,14 @@ namespace CombatAI
 		/// <summary>
 		/// The combined and the adjusted blunr value. 
 		/// </summary>
-		public float adjustedBlunt;
+		public float adjustedBlunt;		
+		/// <summary>
+		/// Primary verb properties.
+		/// </summary>
+		public VerbProperties primaryVerbProps;
 		/// <summary>
 		/// Whether this is valid report or not.
-		/// </summary>
+		/// </summary>		
 		public bool IsValid
 		{
 			get

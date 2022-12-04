@@ -58,7 +58,7 @@ namespace CombatAI
                 }
 				if (!Mod_CE.active)
                 {
-					return armor.createdAt != 0 ? Mathf.Clamp01(2.0f * Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
+					return armor.createdAt != 0 ? Mathf.Clamp01(2f * Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
                 }
                 else
                 {
@@ -283,9 +283,9 @@ namespace CombatAI
                 {
                     foreach (Pawn pawn in Find.Selector.SelectedPawns)
                     {
-						ArmorReport report = ArmorUtility.GetArmorReport(pawn);
-                        Log.Message($"{pawn}, t:{Math.Round(report.TankInt, 3)}, s:{report.bodySize}, bB:{Math.Round(report.bodyBlunt, 3)}, bS:{Math.Round(report.bodySharp, 3)}, aB:{Math.Round(report.apparelBlunt, 3)}, aS:{Math.Round(report.apparelSharp, 3)}, hs:{report.hasShieldBelt}");
-						TryGetReader(pawn, out SightReader reader);
+						//ArmorReport report = ArmorUtility.GetArmorReport(pawn);
+                        //Log.Message($"{pawn}, t:{Math.Round(report.TankInt, 3)}, s:{report.bodySize}, bB:{Math.Round(report.bodyBlunt, 3)}, bS:{Math.Round(report.bodySharp, 3)}, aB:{Math.Round(report.apparelBlunt, 3)}, aS:{Math.Round(report.apparelSharp, 3)}, hs:{report.hasShieldBelt}");
+                        TryGetReader(pawn, out SightReader reader);
                         reader.armor = ArmorUtility.GetArmorReport(pawn);
 						if (reader != null)
                         {
@@ -302,10 +302,13 @@ namespace CombatAI
                                             _drawnCells.Add(cell);
                                             if (Finder.Settings.Debug_DrawThreatCasts)
                                             {
-                                                var value = reader.GetThreat(cell);
+												var value = reader.GetThreat(cell);
                                                 if (value > 0)
-                                                    map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 2f), $"{Math.Round(value, 2)}", 15);
-                                            }
+                                                    map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 4f), $"{Math.Round(value, 2)}", 15);
+												//var value = reader.hostiles[0].GetSharp(cell) + reader.hostiles[0].GetBlunt(cell);
+												//if (value > 0)
+												//	map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 4f), $"{Math.Round(reader.hostiles[0].GetSharp(cell), 2)} {Math.Round(reader.hostiles[0].GetBlunt(cell), 2)}", 15);
+											}
 											else if (Finder.Settings.Debug_DrawShadowCasts)
 											{
 												var value = reader.GetVisibilityToEnemies(cell);

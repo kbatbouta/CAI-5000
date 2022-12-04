@@ -67,7 +67,7 @@ namespace CombatAI.Patches
 						multiplier = Maths.Max(multiplier, (1 - armor.TankInt), 0.25f);
                     }
 					// retrive CE elements
-					pawn.GetSightReader(out sightReader);
+					pawn.TryGetSightReader(out sightReader);
                     if (sightReader != null)
                     {
                         sightReader.armor = armor;

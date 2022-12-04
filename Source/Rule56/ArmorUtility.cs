@@ -14,8 +14,7 @@ namespace CombatAI
 	public static class ArmorUtility
 	{
 		private static Dictionary<ThingDef, bool> shields = new Dictionary<ThingDef, bool>(128);
-		private static Dictionary<int, ArmorReport> reports = new Dictionary<int, ArmorReport>(128);
-		private static Dictionary<ThingDef, Pair<float, float>> baseArmors = new Dictionary<ThingDef, Pair<float, float>>(128);
+		private static Dictionary<int, ArmorReport> reports = new Dictionary<int, ArmorReport>(128);		
 		private static Dictionary<BodyDef, BodyDefApparels> models = new Dictionary<BodyDef, BodyDefApparels>();
 
 		private class BodyDefApparels
@@ -69,20 +68,16 @@ namespace CombatAI
 		{
 			ArmorReport report = new ArmorReport();
 			report.pawn = pawn;
-			report.bodySize = pawn.BodySize;
-			if (!baseArmors.TryGetValue(pawn.def, out Pair<float, float> baseArmor))
-			{
-				baseArmor = new Pair<float, float>(pawn.GetStatValue(StatDefOf.ArmorRating_Blunt), pawn.GetStatValue(StatDefOf.ArmorRating_Sharp));				
-			}
-			report.bodyBlunt = baseArmor.First;
-			report.bodySharp = baseArmor.Second;			
+			report.bodySize = pawn.BodySize;			
+			report.bodyBlunt = pawn.GetStatValue_Fast(StatDefOf.ArmorRating_Blunt, 900);
+			report.bodySharp = pawn.GetStatValue_Fast(StatDefOf.ArmorRating_Sharp, 900);			
 			FillApparel(ref report, collapsible);
 			if (pawn.health?.hediffSet != null && !pawn.RaceProps.IsMechanoid)
 			{
-				float limit = pawn.GetStatValue(StatDefOf.PainShockThreshold);
+				float limit = pawn.GetStatValue_Fast(StatDefOf.PainShockThreshold, 1800);
 				if (limit > 0)
 				{
-					float painInt = 1.0f - Mathf.Lerp(0, 1.0f, pawn.health.hediffSet.PainTotal / limit);
+					float painInt = 1.0f - Mathf.Clamp01(pawn.health.hediffSet.PainTotal / limit);
 					if (painInt > 0.85f)
 					{
 						painInt = 1.0f;
@@ -117,7 +112,7 @@ namespace CombatAI
 			{
 				float armor_blunt = 0;
 				float armor_sharp = 0;
-				float coverage = 0;				
+				float coverage = 0;
 				List<Apparel> apparels = pawn.apparel.WornApparel;
 				for (int i = 0; i < apparels.Count; i++)
 				{
@@ -131,8 +126,8 @@ namespace CombatAI
 					{
 						float c = bodyApparels.Coverage(apparel.def.apparel);
 						coverage += c;
-						armor_blunt += c * apparel.GetStatValue(StatDefOf.ArmorRating_Blunt);
-						armor_sharp += c * apparel.GetStatValue(StatDefOf.ArmorRating_Sharp);
+						armor_blunt += c * apparel.GetStatValue_Fast(StatDefOf.ArmorRating_Blunt, 2700);
+						armor_sharp += c * apparel.GetStatValue_Fast(StatDefOf.ArmorRating_Sharp, 2700);
 						if (debug)
 						{
 							collapsible.Label($"{i}. {apparel.def.label},\tc={c}");
@@ -165,8 +160,7 @@ namespace CombatAI
 
 		public static void ClearCache()
 		{
-			reports.Clear();
-			baseArmors.Clear();
+			reports.Clear();			
 		}
 	}
 }

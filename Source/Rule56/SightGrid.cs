@@ -47,7 +47,7 @@ namespace CombatAI {
 			/// <summary>
 			/// Thing.
 			/// </summary>
-			public readonly Building_TurretGun turretGun;
+			public readonly Building_TurretGun turretGun;            
 			/// <summary>
 			/// Thing.
 			/// </summary>
@@ -110,7 +110,7 @@ namespace CombatAI {
                 this.ai = thing.GetComp_Fast<ThingComp_CombatAI>();
                 this.sighter = thing.GetComp_Fast<ThingComp_Sighter>();                
                 this.faction = thing.Faction;
-                this.bucketIndex = bucketIndex;
+                this.bucketIndex = bucketIndex;                
             }
         }
         
@@ -355,7 +355,7 @@ namespace CombatAI {
             {
                 return false;
             }
-            int range;
+            int range;            
             if (item.sighter != null)
             {
 				range = SightUtility.GetSightRange(item.sighter, playerAlliance);
@@ -405,8 +405,8 @@ namespace CombatAI {
 				item.spottings.Clear();
             }
 			Action action = () =>
-            {                
-				grid.Next(0, 0, 0);
+            {
+				grid.Next(item.damage.adjustedSharp, item.damage.adjustedBlunt, item.damage.attributes);
 				grid.Set(flagPos, (item.pawn == null || !item.pawn.Downed) ? GetFlags(item) : 0);
 				grid.Next(item.damage.adjustedSharp, item.damage.adjustedBlunt, item.damage.attributes);
 				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
@@ -475,7 +475,7 @@ namespace CombatAI {
                                         enemy = thingBuffer1[j];
                                         if (enemy.Spawned
                                             && !enemy.Destroyed
-                                            && (enemy.Position.DistanceToSquared(record.cell) < 225 || (enemy is Pawn enemyPawn && enemyPawn.GetMovingShiftedPosition(70).DistanceToSquared(record.cell) < 255))
+                                            && (enemy.Position.DistanceToSquared(record.cell) < 225 || (enemy is Pawn enemyPawn && PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 70).DistanceToSquared(record.cell) < 255))
                                             && enemy.HostileTo(item.thing)
                                             && !enemy.IsDormant())
                                         {
@@ -491,7 +491,7 @@ namespace CombatAI {
                     }  
                 }
             };
-            asyncActions.EnqueueOffThreadAction(action);            
+            asyncActions.EnqueueOffThreadAction(action);         
             item.lastCycle = grid.CycleNum;          
             return true;
         }
@@ -505,7 +505,7 @@ namespace CombatAI {
                 {
                     subPath.Clear();
                 }
-				if (walls != null && pawn.TryGetCellIndexAhead(ticksAhead, out int index))
+				if (walls != null && PawnPathUtility.TryGetCellIndexAhead(pawn, ticksAhead, out int index))
                 {                    
 					PawnPath path = pawn.pather.curPath;
                     IntVec3 cell = pawn.Position;

@@ -69,11 +69,11 @@ namespace CombatAI.Comps
                 var sightRangeSqr = sightRange * sightRange;
                 if (sightRange != 0 && verb != null)
                 {
-                    Vector3 drawPos = pawn.DrawPos;
-                    IntVec3 shiftedPos = pawn.GetMovingShiftedPosition(30);
+                    Vector3 drawPos = pawn.DrawPos;                    
+                    IntVec3 shiftedPos = PawnPathUtility.GetMovingShiftedPosition(pawn, 30);
                     List<Pawn> nearbyVisiblePawns = GenClosest.ThingsInRange(pawn.Position, pawn.Map, Utilities.TrackedThingsRequestCategory.Pawns, sightRange)
                         .Select(t => t as Pawn)
-                        .Where(p => !p.Dead && !p.Downed && p.GetMovingShiftedPosition(60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, p.GetMovingShiftedPosition(60)) && p.HostileTo(pawn))
+                        .Where(p => !p.Dead && !p.Downed && PawnPathUtility.GetMovingShiftedPosition(p, 60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, PawnPathUtility.GetMovingShiftedPosition(p, 60)) && p.HostileTo(pawn))
                         .ToList();
                     CombatAI.Gui.GUIUtility.ExecuteSafeGUIAction(() =>
                     {
@@ -299,7 +299,7 @@ namespace CombatAI.Comps
 							{
 								continue;
 							}
-							shiftedPos = enemyPawn.GetMovingShiftedPosition(60);
+							shiftedPos = PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 60);
 						}
 						float distSqr = pawnPosition.DistanceToSquared(shiftedPos);
                         if (canRetreat && distSqr < retreatDistSqr)
@@ -381,7 +381,7 @@ namespace CombatAI.Comps
                     bool changedPos = false;
 					// parent.Map.debugDrawer.FlashCell(pawn.Position, 0.9f, "s", duration: 100);
 					// ------------------------------------------------------------
-					float moveSpeed = pawn.GetMoveSpeed();
+					float moveSpeed = pawn.GetStatValue_Fast(StatDefOf.MoveSpeed, 450);
                     if (pawn.stances?.stagger?.Staggered ?? false)
                     {
                         moveSpeed = pawn.stances.stagger.StaggerMoveSpeedFactor;

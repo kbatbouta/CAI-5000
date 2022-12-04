@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace CombatAI
 {
-    public static class CompsCache
+    public static class CompCache
     {
         static List<Action<Map>> mapComponents_removeActions = null;
         static Dictionary<Type, Action<ThingWithComps>> thingComps_removeActions = new Dictionary<Type, Action<ThingWithComps>>();        
