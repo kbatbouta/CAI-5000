@@ -16,13 +16,15 @@ namespace CombatAI
 
         public static float P75
         {
-            get => Mathf.Max(Performance.Performance, 0.75f);
+            get => Maths.Max(Performance.Performance, 0.75f);
         }
 
         public static float P50
         {
-            get => Mathf.Max(Performance.Performance, 0.50f);
+            get => Maths.Max(Performance.Performance, 0.50f);
         }
+
+        public static int MainThreadId;
     }
 }
 

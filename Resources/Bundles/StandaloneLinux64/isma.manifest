@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 2131158677
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 160de5b7437a13619d99b6cc06128a7a
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 55d48f4ad9c3b13330b9eb5ee5686477
+HashAppended: 0
+ClassTypes:
+- Class: 48
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/FogShader.shader
+Dependencies: []

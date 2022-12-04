@@ -10,7 +10,7 @@
 <#@ template debug="true" hostspecific="true" language="C#" #>
 <#@ output extension=".cs" #>
 <#     
-    string texturesPath = "$(SolutionDir)/../../../1.4/Textures/Commune";    
+    string texturesPath = "$(SolutionDir)/../../../1.4/Textures/Isma";    
 #>
 
 using System;

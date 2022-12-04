@@ -56,7 +56,7 @@ namespace CombatAI.Statistics
             //{
             //    visibleEnemiesTicks[i] += comp.visibleEnemiesTicks[i];
             //    visibleEnemiesInjuries[i] += comp.visibleEnemiesInjuries[i];                
-            //    visibleEnemiesInjuryProbability[i] = (float)visibleEnemiesInjuries[i] / Mathf.Max((float)visibleEnemiesTicks[i], 1);                                
+            //    visibleEnemiesInjuryProbability[i] = (float)visibleEnemiesInjuries[i] / Maths.Max((float)visibleEnemiesTicks[i], 1);                                
             //}
             //for (int j = 1; j < 10; j++)
             //{

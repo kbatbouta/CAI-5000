@@ -6,8 +6,16 @@
     <CombatAI.Open>Open</CombatAI.Open>
     <CombatAI.Hide>Hide</CombatAI.Hide>
     <CombatAI.Expand>Hide</CombatAI.Expand>
-
+    <CombatAI.Preparing>Preparing Combat AI</CombatAI.Preparing>
     <CombatAI.Settings.Basic>Basic Settings</CombatAI.Settings.Basic>
+    <CombatAI.Settings.Basic.FogOfWar>[BETA] Fog of war</CombatAI.Settings.Basic.FogOfWar>
+    <CombatAI.Settings.Basic.FogOfWar.Enable>Enable fog of war</CombatAI.Settings.Basic.FogOfWar.Enable>
+    <CombatAI.Settings.Basic.FogOfWar.Density>Fog density (how dark the fog of war is)</CombatAI.Settings.Basic.FogOfWar.Density>
+    <CombatAI.Settings.Basic.FogOfWar.Density.Readouts>{0} Fog desnity</CombatAI.Settings.Basic.FogOfWar.Density.Readouts>
+    <CombatAI.Settings.Basic.FogOfWar.RangeMul>Fog of war sight radius multiplie (default is 1.0)</CombatAI.Settings.Basic.FogOfWar.RangeMul>
+    <CombatAI.Settings.Basic.FogOfWar.RangeMul.Readouts>{0}x</CombatAI.Settings.Basic.FogOfWar.RangeMul.Readouts>
+    <CombatAI.Settings.Basic.FogOfWar.FadeMul>Fog of war sight fade radius multiplier (default is 0.5)</CombatAI.Settings.Basic.FogOfWar.FadeMul>
+    <CombatAI.Settings.Basic.FogOfWar.FadeMul.Readouts>{0}x</CombatAI.Settings.Basic.FogOfWar.FadeMul.Readouts>
     <CombatAI.Settings.Basic.KillBoxKiller>Enable The Killbox killer 5000</CombatAI.Settings.Basic.KillBoxKiller>
     <CombatAI.Settings.Basic.CELean>Enable Combat Extended lean profile</CombatAI.Settings.Basic.CELean>
     <CombatAI.Settings.Basic.PerformanceOpt>Enable dynamic performance settings</CombatAI.Settings.Basic.PerformanceOpt>

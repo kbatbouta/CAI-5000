@@ -87,7 +87,7 @@ namespace CombatAI
                 switch (dc)
                 {
                     case 0:
-                        return Math.Max(cell.value, cell.valuePrev);
+                        return Maths.Max(cell.value, cell.valuePrev);
                     case 1:
                         return cell.value;
                     default:
@@ -97,7 +97,8 @@ namespace CombatAI
             return 0;
         }
 
-        public UInt64 GetFlags(IntVec3 cell) => GetFlags(cellIndices.CellToIndex(cell));
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public UInt64 GetFlags(IntVec3 cell) => GetFlags(cellIndices.CellToIndex(cell));
         public UInt64 GetFlags(int index)
         {
             if (index >= 0 && index < mapCellNum)

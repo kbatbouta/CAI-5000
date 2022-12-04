@@ -22,7 +22,7 @@ namespace CombatAI.Patches
 			public static bool Prefix(Pawn pawn)
 			{				
                 if (lastGaveById.TryGetValue(pawn.thingIDNumber, out int ticks) && GenTicks.TicksGame - ticks < 30)
-				{					
+				{	
 					return false;
 				}
 				return true;
@@ -33,7 +33,11 @@ namespace CombatAI.Patches
 				if(__result != null)
 				{
 					lastGaveById[pawn.thingIDNumber] = GenTicks.TicksGame;
-                }
+				}
+				else
+				{
+					lastGaveById[pawn.thingIDNumber] = GenTicks.TicksGame + 20;
+				}
 			}
 		}
 

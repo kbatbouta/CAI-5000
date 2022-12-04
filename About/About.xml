@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<name>Combat AI 5000</name>
+	<name>CAI 5000 - Advance Combat AI Mod</name>
 	<author>Krkr</author>
 	<supportedVersions>	
 		<li>1.4</li>
@@ -28,11 +28,7 @@
 		<li>rwmt.Multiplayer</li>
 	</incompatibleWith>
 	<description>
-Imperial Stormtrooper Marksmanship Academy
-
-"My Legions of Terror will be trained in basic marksmanship. Any [troops] who cannot learn to hit a man-sized target at 10 meters will be used for target practice."
-— Evil Overlord List, Rule #56
-
+*T-800s are not included*
 Advance combat AI brought you by the RocketMan Team - Discord: https://discord.gg/Jx8UYNtS24
 	</description>
 </ModMetaData>

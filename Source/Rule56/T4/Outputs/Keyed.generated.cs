@@ -83,6 +83,16 @@ namespace CombatAI.R
                    _CombatAI_Expand : _CombatAI_Expand = "CombatAI.Expand".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Preparing = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Preparing</c>. inner text:
+        ///
+        /// <code>Preparing Combat AI</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Preparing {
+            get => _CombatAI_Preparing != null ? 
+                   _CombatAI_Preparing : _CombatAI_Preparing = "CombatAI.Preparing".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic</c>. inner text:
         ///
@@ -91,6 +101,86 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Settings_Basic {
             get => _CombatAI_Settings_Basic != null ? 
                    _CombatAI_Settings_Basic : _CombatAI_Settings_Basic = "CombatAI.Settings.Basic".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar</c>. inner text:
+        ///
+        /// <code>[BETA] Fog of war</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar {
+            get => _CombatAI_Settings_Basic_FogOfWar != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar : _CombatAI_Settings_Basic_FogOfWar = "CombatAI.Settings.Basic.FogOfWar".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_Enable = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.Enable</c>. inner text:
+        ///
+        /// <code>Enable fog of war</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_Enable {
+            get => _CombatAI_Settings_Basic_FogOfWar_Enable != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_Enable : _CombatAI_Settings_Basic_FogOfWar_Enable = "CombatAI.Settings.Basic.FogOfWar.Enable".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_Density = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.Density</c>. inner text:
+        ///
+        /// <code>Fog density (how dark the fog of war is)</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_Density {
+            get => _CombatAI_Settings_Basic_FogOfWar_Density != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_Density : _CombatAI_Settings_Basic_FogOfWar_Density = "CombatAI.Settings.Basic.FogOfWar.Density".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_Density_Readouts = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.Density.Readouts</c>. inner text:
+        ///
+        /// <code>{0} Fog desnity</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_Density_Readouts {
+            get => _CombatAI_Settings_Basic_FogOfWar_Density_Readouts != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_Density_Readouts : _CombatAI_Settings_Basic_FogOfWar_Density_Readouts = "CombatAI.Settings.Basic.FogOfWar.Density.Readouts".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_RangeMul = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.RangeMul</c>. inner text:
+        ///
+        /// <code>Fog of war sight radius multiplie (default is 1.0)</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_RangeMul {
+            get => _CombatAI_Settings_Basic_FogOfWar_RangeMul != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_RangeMul : _CombatAI_Settings_Basic_FogOfWar_RangeMul = "CombatAI.Settings.Basic.FogOfWar.RangeMul".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.RangeMul.Readouts</c>. inner text:
+        ///
+        /// <code>{0}x</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts {
+            get => _CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts : _CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts = "CombatAI.Settings.Basic.FogOfWar.RangeMul.Readouts".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_FadeMul = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.FadeMul</c>. inner text:
+        ///
+        /// <code>Fog of war sight fade radius multiplier (default is 0.5)</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_FadeMul {
+            get => _CombatAI_Settings_Basic_FogOfWar_FadeMul != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_FadeMul : _CombatAI_Settings_Basic_FogOfWar_FadeMul = "CombatAI.Settings.Basic.FogOfWar.FadeMul".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.FadeMul.Readouts</c>. inner text:
+        ///
+        /// <code>{0}x</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts {
+            get => _CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts : _CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts = "CombatAI.Settings.Basic.FogOfWar.FadeMul.Readouts".Translate();
         }             
                       
         private static TaggedString _CombatAI_Settings_Basic_KillBoxKiller = null;

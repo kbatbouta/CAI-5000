@@ -11,115 +11,20 @@ namespace CombatAI
 {
     public static class CombatAI_Utility
     {
-        public static bool TryGetBlockedSubPath(this PawnPath path, Pawn pawn, List<IntVec3> store, ref IntVec3 cellBefore)
-        {            
-            if (path == null || !path.Found || pawn == null)
-            {
-                return false;
-            }            
-            Map map = pawn.Map;
-            int i = path.curNodeIndex - 1;
-            int num = 0;          
-            IntVec3 loc = path.nodes[path.curNodeIndex];
-            while(i >= 0)
-            {
-                IntVec3 next = path.nodes[i];
-                IntVec3 dLoc = next - loc;
-                bool blocked = false;                
-                if (dLoc.x != 0 && dLoc.z != 0)
-                {
-                    IntVec3 s1 = loc + new IntVec3(dLoc.x, 0, 0);
-                    IntVec3 s2 = loc + new IntVec3(0, 0, dLoc.z);                    
-                    if (!s1.IsCellWalkable(pawn) && !s2.IsCellWalkable(pawn))
-                    {
-                        map.debugDrawer.FlashCell(s1, 0.9f, "b", 200);
-                        map.debugDrawer.FlashCell(s2, 0.9f, "b", 200);
-                        if (num == 0)
-                        {                                                                                    
-                            store.Clear();
-                            cellBefore = loc;
-                            map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
-                        }
-                        num++;
-                        blocked = true;
-                        store.Add(Rand.Chance(0.5f) ? s1 : s2);                        
-                    }
-                    if (!blocked && num > 0)
-                    {
-                        return true;
-                    }
-                    if (!next.IsCellWalkable(pawn))
-                    {
-                        map.debugDrawer.FlashCell(next, 0.9f, "b", 200);
-                        if (num == 0)
-                        {                            
-                            store.Clear();
-                            if (!s1.IsCellWalkable(pawn))
-                            {
-                                cellBefore = s2;
-                            }
-                            else if(!s2.IsCellWalkable(pawn))
-                            {
-                                cellBefore = s1;
-                            }
-                            else
-                            {
-                                cellBefore = Rand.Chance(0.5f) ? s1 : s2; 
-                            }
-                            map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
-                        }   
-                        num++;
-                        blocked = true;
-                        store.Add(next);                        
-                    }
-                }
-                else if(!next.IsCellWalkable(pawn))
-                {
-                    map.debugDrawer.FlashCell(next, 0.9f, "b", 200);
-                    if (num == 0)
-                    {                        
-                        store.Clear();
-                        cellBefore = loc;
-                        map.debugDrawer.FlashCell(cellBefore, 0.1f, "_", 200);
-                    }
-                    num++;
-                    blocked = true;
-                    store.Add(next);                    
-                }
-                if (!blocked && num > 0)
-                {
-                    return true;
-                }                           
-                loc = next;
-                i--;
-            }
-            return false;
-        }
+		public static bool Is<T>(this T def, T other) where T : Def
+		{
+			return def != null && other != null && def == other;
+		}
 
-        public static bool IsCellWalkable(this IntVec3 cell, Pawn pawn)
-        {            
-            if (!cell.WalkableBy(pawn.Map, pawn))
-            {
-                return false;
-            }
-            if (pawn.pather.WillCollideWithPawnAt(cell))
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public static bool GetAvoidanceTracker(this Pawn pawn, out AvoidanceTracker.AvoidanceReader reader)
+		public static bool IsDormant(this Thing thing)
         {
-            return pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out reader);
-        }        
-
-        public static ISGrid<float> GetFloatGrid(this Map map)
-        {
-            ISGrid<float> grid = map.GetComp_Fast<MapComponent_CombatAI>().f_grid;
-            grid.Reset();
-            return grid;
-        }
+			if (!TKVCache<Thing, CompCanBeDormant, bool>.TryGet(thing, out bool value, expiry: 240))
+			{
+				CompCanBeDormant dormant = thing.GetComp_Fast<CompCanBeDormant>();
+				TKVCache<Thing, CompCanBeDormant, bool>.Put(thing, dormant != null && !dormant.Awake);
+			}
+			return value;
+		}                 
 
         public static Verb TryGetAttackVerb(this Thing thing)
         {
@@ -131,7 +36,11 @@ namespace CombatAI
                 }
                 return pawn.meleeVerbs?.curMeleeVerb ?? null;
             }
-            return null;
+            if (thing is Building_Turret turret)
+            {
+                return turret.AttackVerb;
+            }
+			return null;
         }
 
         public static bool HasWeaponVisible(this Pawn pawn)
@@ -139,59 +48,44 @@ namespace CombatAI
             return (pawn.CurJob?.def.alwaysShowWeapon ?? false) || (pawn.mindState?.duty?.def.alwaysShowWeapon ?? false);
         }
 
-        public static bool GetSightReader(this Pawn pawn, out SightTracker.SightReader reader)
-        {
-            SightTracker tracker = pawn.Map.GetComp_Fast<SightTracker>();
-            return tracker.TryGetReader(pawn, out reader);
-        }
+		public static bool TryGetAvoidanceReader(this Pawn pawn, out AvoidanceTracker.AvoidanceReader reader)
+		{
+			return pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out reader);
+		}
 
-        public static UInt64 GetThingFlags(this Thing thing)
-        {
-            return ((UInt64)1) << (GetThingFlagsIndex(thing));
-        }
 
-        public static int GetThingFlagsIndex(this Thing thing)
-        {
-            return thing.thingIDNumber % 64;
-        }
+		public static bool TryGetSightReader(this Pawn pawn, out SightTracker.SightReader reader)
+        { 
+			if (pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out reader) && reader != null)
+			{
+				reader.armor = ArmorUtility.GetArmorReport(pawn);
+				return true;
+			}
+			return false;
+		}
 
-        public static float DistanceToSegmentSquared(this Vector3 point, Vector3 lineStart, Vector3 lineEnd, out Vector3 closest)
-        {
-            float dx = lineEnd.x - lineStart.x;
-            float dz = lineEnd.z - lineStart.z;
-            if ((dx == 0) && (dz == 0))
-            {
-                closest = lineStart;
-                dx = point.x - lineStart.x;
-                dz = point.z - lineStart.z;
-                return dx * dx + dz * dz;
-            }
-            float t = ((point.x - lineStart.x) * dx + (point.z - lineStart.z) * dz) / (dx * dx + dz * dz);
-            if (t < 0)
-            {
-                closest = new Vector3(lineStart.x, 0, lineStart.z);
-                dx = point.x - lineStart.x;
-                dz = point.z - lineStart.z;
-            }
-            else if (t > 1)
-            {
-                closest = new Vector3(lineEnd.x, 0, lineEnd.z);
-                dx = point.x - lineEnd.x;
-                dz = point.z - lineEnd.z;
-            }
-            else
-            {
-                closest = new Vector3(lineStart.x + t * dx, 0, lineStart.z + t * dz);
-                dx = point.x - closest.x;
-                dz = point.z - closest.z;
-            }
-            return dx * dx + dz * dz;
-        }        
+		public static ISGrid<float> GetFloatGrid(this Map map)
+		{
+			ISGrid<float> grid = map.GetComp_Fast<MapComponent_CombatAI>().f_grid;
+			grid.Reset();
+			return grid;
+		}
 
-        public static CellFlooder GetCellFlooder(this Map map)
+		public static CellFlooder GetCellFlooder(this Map map)
         {
             return map.GetComp_Fast<MapComponent_CombatAI>().flooder;
-        }        
-    }
+        }
+
+
+		public static UInt64 GetThingFlags(this Thing thing)
+		{
+			return ((UInt64)1) << (GetThingFlagsIndex(thing));
+		}
+
+		public static int GetThingFlagsIndex(this Thing thing)
+		{
+			return thing.thingIDNumber % 64;
+		}
+	}
 }
 

@@ -20,7 +20,9 @@ namespace CombatAI
             {
                 Finder.Settings = new Settings();
             }
-        }
+            LongEventHandler.QueueLongEvent(ArmorUtility.Initialize, "CombatAI.Preparing", false, null);
+			LongEventHandler.QueueLongEvent(CompatibilityManager.Initialize, "CombatAI.Preparing", false, null);
+		}
 
         public override string SettingsCategory() => R.Keyed.CombatAI;
 
@@ -38,10 +40,24 @@ namespace CombatAI
 
         private void FillCollapsible_Basic(Listing_Collapsible collapsible)
         {
-            collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_CELean, ref Finder.Settings.LeanCE_Enabled);
+            if (Mod_CE.active)
+            {                
+                collapsible.Lambda(20, (rect) =>
+                {
+                    Widgets.DrawBoxSolid(rect, Color.white);
+                    rect = rect.ContractedBy(1);
+					Widgets.DrawBoxSolid(rect, !Finder.Settings.LeanCE_Enabled ? Color.yellow : Color.green);
+                    rect.xMin += 5;
+                    GUI.color = Color.black;
+                    Text.CurFontStyle.fontStyle = FontStyle.Bold;
+                    Widgets.Label(rect, !Finder.Settings.LeanCE_Enabled ? "Combat Extended Detected! PLEASE ENABLE CE PROFILE!" : "Combat Extended Detected!");
+				}, useMargins: false);
+				collapsible.Line(1);
+			}
+            collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_CELean, ref Finder.Settings.LeanCE_Enabled);            
             collapsible.Line(1);
-            collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_PerformanceOpt, ref Finder.Settings.PerformanceOpt_Enabled, tooltip: R.Keyed.CombatAI_Settings_Basic_PerformanceOpt_Description);
-            collapsible.Line(1);
+            collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_PerformanceOpt, ref Finder.Settings.PerformanceOpt_Enabled, tooltip: R.Keyed.CombatAI_Settings_Basic_PerformanceOpt_Description);			
+			collapsible.Line(1);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_KillBoxKiller, ref Finder.Settings.Pather_KillboxKiller);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_Pather, ref Finder.Settings.Pather_Enabled);
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_Caster, ref Finder.Settings.Caster_Enabled);
@@ -61,7 +77,39 @@ namespace CombatAI
             }, useMargins: true);
         }
 
-        private void FillCollapsible_Performance(Listing_Collapsible collapsible)
+		private void FillCollapsible_FogOfWar(Listing_Collapsible collapsible)
+        {
+			collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Basic_FogOfWar_Enable, ref Finder.Settings.FogOfWar_Enabled);
+			if (Finder.Settings.FogOfWar_Enabled)
+			{
+                collapsible.Line(1);
+
+				collapsible.Label(R.Keyed.CombatAI_Settings_Basic_FogOfWar_Density);
+				collapsible.Lambda(25, (rect) =>
+				{
+					Finder.Settings.FogOfWar_FogColor = Widgets.HorizontalSlider(rect, Finder.Settings.FogOfWar_FogColor, 0.0f, 1.0f, false, R.Keyed.CombatAI_Settings_Basic_FogOfWar_Density_Readouts.Formatted(Finder.Settings.FogOfWar_FogColor.ToString()));
+				}, useMargins: true);
+
+				collapsible.Line(1);
+
+				collapsible.Label(R.Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul);
+				collapsible.Lambda(25, (rect) =>
+				{
+					Finder.Settings.FogOfWar_RangeMultiplier = Widgets.HorizontalSlider(rect, Finder.Settings.FogOfWar_RangeMultiplier, 0.75f, 2.0f, false, R.Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeMultiplier.ToString()));
+				}, useMargins: true);
+
+				collapsible.Line(1);
+
+				collapsible.Label(R.Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul);
+                collapsible.Lambda(25, (rect) =>
+                {
+                    Finder.Settings.FogOfWar_RangeFadeMultiplier = Widgets.HorizontalSlider(rect, Finder.Settings.FogOfWar_RangeFadeMultiplier, 0.0f, 1.0f, false, R.Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeFadeMultiplier.ToString()));
+                }, useMargins: true);
+			}
+		}
+
+
+		private void FillCollapsible_Performance(Listing_Collapsible collapsible)
         {
             collapsible.Label(R.Keyed.CombatAI_Settings_Advance_Sight_Performance_Description);
             /*
@@ -189,10 +237,11 @@ namespace CombatAI
             collapsible.CheckboxLabeled(R.Keyed.CombatAI_Settings_Debugging_Enable, ref Finder.Settings.Debug);
             collapsible.CheckboxLabeled("Draw sight grid", ref Finder.Settings.Debug_DrawShadowCasts);
             collapsible.CheckboxLabeled("Draw sight vector field", ref Finder.Settings.Debug_DrawShadowCastsVectors);
-            collapsible.CheckboxLabeled("Draw proximity grid", ref Finder.Settings.Debug_DrawAvoidanceGrid_Proximity);
+			collapsible.CheckboxLabeled("Draw threat (pawn armor vs enemy)", ref Finder.Settings.Debug_DrawThreatCasts);
+			collapsible.CheckboxLabeled("Draw proximity grid", ref Finder.Settings.Debug_DrawAvoidanceGrid_Proximity);
             collapsible.CheckboxLabeled("Draw danger grid", ref Finder.Settings.Debug_DrawAvoidanceGrid_Danger);
-            collapsible.CheckboxLabeled("Debug things tracker", ref Finder.Settings.Debug_DebugThingsTracker);
-            collapsible.CheckboxLabeled("Debug validate sight <color=red>EXTREMELY BAD FOR PERFORMANCE</color>", ref Finder.Settings.Debug_ValidateSight);
+            collapsible.CheckboxLabeled("Debug things tracker", ref Finder.Settings.Debug_DebugThingsTracker);			
+			collapsible.CheckboxLabeled("Debug validate sight <color=red>EXTREMELY BAD FOR PERFORMANCE</color>", ref Finder.Settings.Debug_ValidateSight);
             collapsible.Line(1);
             collapsible.Label("DO NOT USE THESE AT ALL - FOR DEVS ONLY - WILL FILL YOUR DISK IN 10 MINUTES");
             collapsible.CheckboxLabeled("Dump data <color=red>EXTREMELY BAD FOR PERFORMANCE THIS IS DEAD DON'T TOUCH IT</color>", ref Finder.Settings.Debug_DebugDumpData);
@@ -206,7 +255,8 @@ namespace CombatAI
 
         private bool collapsibleGroupInited = false;
         private Listing_Collapsible collapsible_basic = new Listing_Collapsible(true, true);
-        private Listing_Collapsible collapsible_advance = new Listing_Collapsible(true, true);
+		private Listing_Collapsible collapsible_fog = new Listing_Collapsible(false, true);
+		private Listing_Collapsible collapsible_advance = new Listing_Collapsible(true, true);
         private Listing_Collapsible collapsible_performance = new Listing_Collapsible(true, true);
         private Listing_Collapsible collapsible_debug = new Listing_Collapsible(true, true);
         private Listing_Collapsible.Group_Collapsible collapsible_groupLeft = new Listing_Collapsible.Group_Collapsible();
@@ -223,27 +273,41 @@ namespace CombatAI
 
                 collapsible_performance.Group = collapsible_groupRight;
                 collapsible_groupRight.Register(collapsible_performance);
-            }
+
+                collapsible_fog.Group = collapsible_groupLeft;
+                collapsible_groupLeft.Register(collapsible_fog);
+
+				collapsible_basic.Group = collapsible_groupLeft;
+				collapsible_groupLeft.Register(collapsible_basic);
+                collapsible_basic.Expanded = true;				
+			}
             Rect rectLeft = inRect.LeftHalf();
             // -------------
             // Left  section
             //
             // general settings
-            collapsible_basic.Expanded = true;
-
+            // collapsible_basic.Expanded = true;
+            if (!collapsible_groupLeft.AnyExpanded)
+            {
+                collapsible_basic.Expanded = true;
+			}
             collapsible_basic.Begin(rectLeft, R.Keyed.CombatAI_Settings_Basic);
             FillCollapsible_Basic(collapsible_basic);
             collapsible_basic.End(ref rectLeft);
             rectLeft.yMin += 5;
 
-            // -------------
-            //
-            // Right section
-            Rect rectRight = inRect.RightHalf();
-            rectRight.xMin += 5;
-            collapsible_advance.Expanded = true;
+			collapsible_fog.Begin(rectLeft, R.Keyed.CombatAI_Settings_Basic_FogOfWar);
+			FillCollapsible_FogOfWar(collapsible_fog);
+			collapsible_fog.End(ref rectLeft);
+			rectLeft.yMin += 5;
 
-            collapsible_advance.Begin(rectRight, R.Keyed.CombatAI_Settings_Advance);
+			// -------------
+			//
+			// Right section
+			Rect rectRight = inRect.RightHalf();
+            rectRight.xMin += 5;
+            collapsible_advance.Expanded = true;			
+			collapsible_advance.Begin(rectRight, R.Keyed.CombatAI_Settings_Advance);
             FillCollapsible_Advance(collapsible_advance);
             collapsible_advance.End(ref rectRight);
             rectRight.yMin += 5;

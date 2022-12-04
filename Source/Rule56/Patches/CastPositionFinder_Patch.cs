@@ -18,57 +18,87 @@ namespace CombatAI.Patches
 {
     public static class Harmony_CastPositionFinder
     {
+        private static bool ai_fightEnemies;
         private static Verb verb;
         private static Pawn pawn;
         private static Thing target;
-        private static Map map;
-        private static bool isHunting;
+        private static Map map;        
+        private static bool skipped;
         private static IntVec3 targetPosition;
         private static float warmupTime;
-        private static float range;        
-        private static ISGrid<float> grid;
+        private static float range;
+        private static CastPositionRequest request;		
+		private static ISGrid<float> grid;
+        private static InterceptorTracker interceptors;
         private static AvoidanceTracker avoidanceTracker;
         private static AvoidanceTracker.AvoidanceReader avoidanceReader;
-        private static SightTracker.SightReader sightReader;       
+        private static SightTracker.SightReader sightReader;
 
-        [HarmonyPatch(typeof(CastPositionFinder), nameof(CastPositionFinder.TryFindCastPosition))]
+		[HarmonyPatch(typeof(JobGiver_AIFightEnemies), nameof(JobGiver_AIFightEnemies.TryFindShootingPosition))]
+        public static class JobGiver_AIFightEnemies_TryFindShootingPosition_Patch
+		{
+            public static void Prefix()
+            {
+                ai_fightEnemies = true;                
+			}			
+		}
+
+		[HarmonyPatch(typeof(CastPositionFinder), nameof(CastPositionFinder.TryFindCastPosition))]
         public static class CastPositionFinder_TryFindCastPosition_Patch
         {
             private static FieldInfo fBestSpotPref = AccessTools.Field(typeof(CastPositionFinder), nameof(CastPositionFinder.bestSpotPref));
 
-            public static void Prefix(CastPositionRequest newReq)
+            public static void Prefix(ref CastPositionRequest newReq)
             {
-                isHunting = false;
-                if (newReq.caster != null)
+                if (ai_fightEnemies)
                 {
-                    isHunting = (newReq.caster.Faction?.IsPlayerSafe() ?? false) && !newReq.caster.Drafted && newReq.caster.mindState?.duty == null;                    
-                    if (!isHunting)
+                    ai_fightEnemies = false;
+                    newReq.maxRangeFromTarget = 0;
+				}
+                skipped = true;
+                if (newReq.caster != null && newReq.target != null && (newReq.maxRangeFromTarget == 0 || newReq.maxRangeFromTarget * newReq.maxRangeFromTarget > newReq.caster.Position.DistanceToSquared(newReq.target.Position)) && newReq.maxRangeFromLocus == 0)
+                {
+                    if ((pawn = newReq.caster) != null && !(pawn.RaceProps?.Animal ?? true) && !((pawn.Faction?.IsPlayerSafe() ?? false) && !pawn.Drafted && pawn.mindState?.duty == null) && !(pawn.mindState != null && (pawn.mindState.duty?.def == DutyDefOf.Sapper || pawn.mindState.duty?.def == DutyDefOf.Breaching)))
                     {
-                        pawn = newReq.caster;
                         map = newReq.caster?.Map;
                         verb = newReq.verb;
-                        range = verb.EffectiveRange;                    
+                        range = verb.EffectiveRange;
+                        map = pawn.Map;
                         avoidanceTracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
                         avoidanceTracker.TryGetReader(pawn, out avoidanceReader);
-                        grid = map.GetFloatGrid();                    
-                        newReq.caster.GetSightReader(out sightReader);
-                        warmupTime = verb?.verbProps.warmupTime ?? 1;
-                        warmupTime = Mathf.Clamp(warmupTime, 0.5f, 0.8f);                    
-                        target = newReq.target;
-                        targetPosition = target.Position;
-                        newReq.wantCoverFromTarget = true;
-                        return;
-                    }
+                        if (avoidanceReader != null)
+                        {
+                            grid = map.GetFloatGrid();
+                            grid.Reset();
+                            newReq.caster.TryGetSightReader(out sightReader);							
+							if (sightReader != null)
+                            {
+                                sightReader.armor = ArmorUtility.GetArmorReport(pawn);
+								request = newReq;
+                                interceptors = map.GetComp_Fast<MapComponent_CombatAI>().interceptors;
+                                warmupTime = verb?.verbProps.warmupTime ?? 1;
+                                warmupTime = Mathf.Clamp(warmupTime, 0.5f, 0.8f);
+                                target = newReq.target;
+                                targetPosition = target.Position;
+                                newReq.wantCoverFromTarget = true;
+                                skipped = false;
+                                //
+                                // map.debugDrawer.FlashCell(pawn.Position, 1, "dude", 100);
+                                return;
+                            }
+                        }
+                    }                
                 }
-                pawn = null;
-                grid = null;
-                avoidanceTracker = null;
-                avoidanceReader = null;
-                sightReader = null;                
-                verb = null;
-                target = null;
-                map = null;                
-            }
+				pawn = null;
+				grid = null;
+				avoidanceTracker = null;
+				avoidanceReader = null;
+				sightReader = null;
+				verb = null;
+				target = null;
+				map = null;
+				skipped = true;
+			}
 
             public static void Postfix(IntVec3 dest, bool __result)
             {
@@ -80,8 +110,9 @@ namespace CombatAI.Patches
                 {
                     grid.Reset();
                 }
-                isHunting = false;
-                grid = null;
+                skipped = true;
+				grid = null;
+                interceptors = null;
                 avoidanceTracker = null;
                 avoidanceReader = null;
                 sightReader = null;                
@@ -112,16 +143,18 @@ namespace CombatAI.Patches
 
             private static void FloodCellRect(CellRect rect)
             {
-                if (sightReader != null)
+                if (!skipped && sightReader != null)
                 {                    
                     IntVec3 root = pawn.Position;
-                    map.GetCellFlooder().Flood(root,
+                    float rootVis = sightReader.GetVisibilityToEnemies(root);
+					float rootThreat = sightReader.GetThreat(request.locus);
+					map.GetCellFlooder().Flood(root,
                         (node) =>
                         {
-                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + Mathf.Min(avoidanceReader.GetProximity(node.cell) / 2f, 2f);                            
+                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + sightReader.GetVisibilityToEnemies(node.cell) * 2 + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;                            
                         },
                         (cell) =>
-                        {                            
+                        {
                             Vector2 dir = sightReader.GetEnemyDirection(cell);
                             IntVec3 adjustedLoc;
                             if (dir.sqrMagnitude < 4)
@@ -132,13 +165,13 @@ namespace CombatAI.Patches
                             {
                                 adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);                                
                             }                            
-                            return sightReader.GetVisibilityToEnemies(cell) - Verse.CoverUtility.CalculateOverallBlockChance(cell, adjustedLoc, map);
+                            return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - Verse.CoverUtility.CalculateOverallBlockChance(adjustedLoc, cell, map) - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
                         },
                         (cell) =>
                         {
                             return rect.Contains(cell) && cell.WalkableBy(map, pawn) && map.reservationManager.CanReserve(pawn, cell);
                         }
-                    ,maxDist: Mathf.Max(rect.Height, rect.Width));
+                    ,maxDist: Maths.Max(rect.Height, rect.Width) * 2);
                 }
             }
         }
@@ -148,26 +181,29 @@ namespace CombatAI.Patches
         {
             public static void Postfix(IntVec3 c, ref float __result)
             {
-                if (__result == -1)
+                if (!skipped)
                 {
-                    return;
-                }
-                if (sightReader != null)
-                {
-                    if (!grid.IsSet(c))
-                    {                        
-                        __result = -1;                        
-                    }
-                    else
+                    if (__result == -1)
                     {
-                        __result -= grid[c] * Finder.P50;
+                        return;
                     }
-                }
-                //bool pawnSelected = Find.Selector.SelectedPawns?.Contains(pawn) ?? false;
-                //if (pawnSelected)
-                //{
-                //    map.debugDrawer.FlashCell(c, grid[c] / 10f, text: $"{Math.Round(grid[c], 2)} {Math.Round(__result, 2)}");
-                //}
+                    if (sightReader != null)
+                    {
+						float before = __result;
+						if (!grid.IsSet(c))
+                        {
+                            __result = -1;
+                        }
+                        else
+                        {
+                            __result -= grid[c] * Finder.P50;
+							//if (Find.Selector.SelectedPawns.Contains(pawn))
+							//{
+							//	map.debugDrawer.FlashCell(c, (grid[c] + 5f) / 10f, $"{Math.Round(grid[c], 2)}");
+							//}
+						}						
+					}				
+				}               
             }
         }
     }

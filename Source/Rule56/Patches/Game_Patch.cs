@@ -11,19 +11,25 @@ namespace CombatAI.Patches
         {
             public static void Prefix(Map map)
             {
-                CompsCache.Notify_MapRemoved(map);
+                CompCache.Notify_MapRemoved(map);
             }
-        }
+        }		
 
-        [HarmonyPatch(typeof(Game), nameof(Game.ClearCaches))]
+		[HarmonyPatch(typeof(Game), nameof(Game.ClearCaches))]
         static class Game_ClearCaches_Patch
         {
             public static void Prefix()
             {
-                CompsCache.ClearCaches();
+                TCacheHelper.ClearCache();
+				StatCache.ClearCache();
+				CompCache.ClearCaches();
                 SightUtility.ClearCache();
                 JobGiver_AITrashBuildingsDistant_Patch.ClearCache();
-            }
+                GenSight_Patch.ClearCache();
+                ArmorUtility.ClearCache();
+                DamageUtility.ClearCache();
+                MetaCombatAttributeUtility.ClearCache();                
+			}
         }
     }
 }

@@ -12,7 +12,7 @@ namespace CombatAI
 
         private readonly Dictionary<int, int> bucketIndexByIds = new Dictionary<int, int>();
 
-        public readonly int count;        
+        public readonly int numBuckets;        
 
         public int Index
         {
@@ -22,18 +22,26 @@ namespace CombatAI
             }
         }
 
+        public int Count
+        {
+            get
+            {
+                return bucketIndexByIds.Count;
+			}
+        }
+
         public List<T> Current
         {
             get
             {
-                return new List<T>(buckets[curIndex]);
+                return buckets[curIndex];
             }
-        }
+        }        
 
-        public IBuckets(int count)
+        public IBuckets(int numBuckets)
         {
-            this.count = count;
-            buckets = new List<T>[count];
+            this.numBuckets = numBuckets;
+            buckets = new List<T>[numBuckets];
             for(int i = 0;i < buckets.Length; i++)
             {
                 buckets[i] = new List<T>();
@@ -72,14 +80,31 @@ namespace CombatAI
 
         public List<T> GetBucket(int index)
         {
-            return new List<T>(buckets[index]);
+            return buckets[index];
+        }
+
+        public T GetById(int id)
+        {
+            if (bucketIndexByIds.TryGetValue(id, out int index))
+            {
+                List<T> bucket = buckets[index];
+				T val;
+				for (int i = 0; i < bucket.Count; i++)
+                {
+                    if ((val = bucket[i]).UniqueIdNumber == id)
+                    {
+                        return val;
+                    }
+                }                
+			}
+            return default(T);
         }
 
         public List<T> Next()
         {
             int index = curIndex;
-            curIndex = (curIndex + 1) % count;
-            return new List<T>(buckets[index]);
+            curIndex = (curIndex + 1) % numBuckets;
+            return buckets[index];
         }
 
         public void Reset()
@@ -105,6 +130,24 @@ namespace CombatAI
             }
             bucketIndexByIds.Clear();
         }
-    }
+
+        public List<T> GetAll()
+        {
+            List<T> result = new List<T>();
+			for (int i = 0; i < buckets.Length; i++)
+			{
+                result.AddRange(buckets[i]);
+			}
+            return result;
+		}
+
+		public void GetAll(List<T> listBuffer)
+		{			
+			for (int i = 0; i < buckets.Length; i++)
+			{
+				listBuffer.AddRange(buckets[i]);
+			}			
+		}
+	}
 }
 

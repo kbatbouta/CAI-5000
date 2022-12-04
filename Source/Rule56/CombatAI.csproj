@@ -18,6 +18,7 @@
 		<Configurations>Release;Debug</Configurations>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DebugSymbols>true</DebugSymbols>
 		<OutputPath>..\..\1.4\Assemblies</OutputPath>
 		<OutputPath>..\..\1.4\Assemblies</OutputPath>
 		<DefineConstants>TRACE;NDEBUG</DefineConstants>
@@ -26,7 +27,7 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<OutputPath>..\..\1.4\Assemblies</OutputPath>
-		<DefineConstants>TRACE;DEBUG;NETFRAMEWORK;NET472;</DefineConstants>
+		<DefineConstants>DEBUG;TRACE;DEBUG_REACTION;NETFRAMEWORK;NET472;</DefineConstants>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 	<ItemGroup>	  
@@ -35,18 +36,30 @@
 	  <Folder Include="Patches\" />
 	  <Folder Include="Collections\" />
 	  <Folder Include="Comps\" />
-	  <Folder Include="Utilities\" />
 	  <Folder Include="Statistics\" />
+	  <Folder Include="Deprecated\" />
+	  <Folder Include="Deprecated\Utilities\" />
+	  <Folder Include="Defs\" />
+	  <Folder Include="DefOfs\" />
+	  <Folder Include="Defs\Extensions\" />
+	  <Folder Include="Cache\" />
+	  <Folder Include="Comps\Deprecated\" />
 	</ItemGroup>	
 	<ItemGroup>
 	  <None Remove="Gui\Core\GUIUtility.ScrollViews" />
 	  <None Remove="Patches\" />
 	  <None Remove="Collections\" />
 	  <None Remove="Comps\" />
-	  <None Remove="Utilities\" />
 	  <None Remove="Statistics\" />
 	  <None Remove="Statistics\DataWriter_Path.config" />
 	  <None Remove="Statistics\DataWriter_Path.cs" />
+	  <None Remove="Deprecated\" />
+	  <None Remove="Deprecated\Utilities\" />
+	  <None Remove="Defs\" />
+	  <None Remove="DefOfs\" />
+	  <None Remove="Defs\Extensions\" />
+	  <None Remove="Cache\" />
+	  <None Remove="Comps\Deprecated\" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">
@@ -61,6 +74,12 @@
 		<None Update="..\..\1.4\Patches\Races_Animal_Base.xml">
 		  <Link>Xml\Patches\\Races_Animal_Base.xml</Link>
 		</None>		
+		<None Update="..\..\1.4\Defs\Stats\Stats_AI.xml">
+		  <Link>Xml\Defs\Stats\\Stats_AI.xml</Link>
+		</None>
+		<None Update="..\..\1.4\Defs\ThingDef_Buildings\Buildings_Security.xml">
+		  <Link>Xml\Defs\ThingDef_Buildings\\Buildings_Security.xml</Link>
+		</None>
 	</ItemGroup>
 	<!-- ................ -->
 	<!--     Packages     -->
