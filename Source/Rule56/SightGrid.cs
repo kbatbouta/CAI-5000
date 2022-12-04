@@ -384,7 +384,7 @@ namespace CombatAI {
 			}
             SightTracker.SightReader reader = item.ai?.sightReader ?? null;
             bool scanForEnemies;
-            if (scanForEnemies = (!item.isPlayer && item.sighter == null && reader != null && item.ai != null && ticks - item.ai.lastInterupted >= 45 && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15)))
+            if (scanForEnemies = (!item.isPlayer && item.sighter == null && reader != null && item.ai != null && !item.ai.ReactedRecently(45) && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15)))
             {
                 if (item.dormant != null && !item.dormant.Awake)
                 {

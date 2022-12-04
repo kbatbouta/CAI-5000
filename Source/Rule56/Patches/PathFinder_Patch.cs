@@ -21,7 +21,8 @@ namespace CombatAI.Patches
         static class PathFinder_FindPath_Patch
         {
             //private static IGridBufferedWriter gridWriter;
-            private static DataWriter_Path pathWriter;
+            private static ThingComp_CombatAI comp;
+			private static DataWriter_Path pathWriter;
             private static bool dump;
             private static bool dig;
             private static Pawn pawn;
@@ -75,11 +76,11 @@ namespace CombatAI.Patches
 
 					}
 					pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
-                    
-                    /*
+                    comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+					/*
                      * dump pathfinding data
                      */
-                    if (dump = Finder.Settings.Debug_DebugDumpData && !isPlayer && sightReader != null && avoidanceReader != null && Finder.Settings.Debug && Prefs.DevMode)
+					if (dump = Finder.Settings.Debug_DebugDumpData && !isPlayer && sightReader != null && avoidanceReader != null && Finder.Settings.Debug && Prefs.DevMode)
                     {
                         //if (gridWriter == null)
                         //{
@@ -100,30 +101,25 @@ namespace CombatAI.Patches
                     }
 
                     float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-                    if (dig = (Finder.Settings.Pather_KillboxKiller && sightReader != null && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual)))
-                    {
-                        ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
-                        if (GenTicks.TicksGame - comp.lastTookDamage > 360)
+                    if (dig = comp != null && !comp.TookDamageRecently(360) && (Finder.Settings.Pather_KillboxKiller && sightReader != null && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual)))
+                    {                             
+                        raiders = true;                           
+                        TraverseParms parms = traverseParms;
+                        parms.canBashDoors = true;
+                        parms.canBashFences = true;
+                        parms.mode = TraverseMode.PassAllDestroyableThings;
+                        parms.maxDanger = Danger.Unspecified;
+                        traverseParms = parms;
+                        if (tuning == null)
                         {
-                            raiders = true;
-                            //factionMultiplier = 1;
-                            TraverseParms parms = traverseParms;
-                            parms.canBashDoors = true;
-                            parms.canBashFences = true;
-                            parms.mode = TraverseMode.PassAllDestroyableThings;
-                            parms.maxDanger = Danger.Unspecified;
-                            traverseParms = parms;
-                            if (tuning == null)
-                            {
-                                tuning = new PathFinderCostTuning();
-                                tuning.costBlockedDoor = 34;
-                                tuning.costBlockedDoorPerHitPoint = 0;
-                                tuning.costBlockedWallBase = (int)Maths.Max(10 * Maths.Max(13 - miningSkill, 0), 24);
-                                tuning.costBlockedWallExtraForNaturalWalls = (int)Maths.Max(45 * Maths.Max(10 - miningSkill, 0), 45);
-                                tuning.costBlockedWallExtraPerHitPoint = Maths.Max(3 - miningSkill, 0);
-                                tuning.costOffLordWalkGrid = 0;
-                            }
-                        }
+                            tuning = new PathFinderCostTuning();
+                            tuning.costBlockedDoor = 34;
+                            tuning.costBlockedDoorPerHitPoint = 0;
+                            tuning.costBlockedWallBase = (int)Maths.Max(10 * Maths.Max(13 - miningSkill, 0), 24);
+                            tuning.costBlockedWallExtraForNaturalWalls = (int)Maths.Max(45 * Maths.Max(10 - miningSkill, 0), 45);
+                            tuning.costBlockedWallExtraPerHitPoint = Maths.Max(3 - miningSkill, 0);
+                            tuning.costOffLordWalkGrid = 0;
+                        }                        
                     }
                    
                     //pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out sightReader);

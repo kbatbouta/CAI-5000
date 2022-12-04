@@ -19,9 +19,7 @@ namespace CombatAI.Patches
 					if (__instance.job.targetC.IsValid)
 					{
 						__instance.rotateToFace = TargetIndex.C;
-					}
-					//
-					//__instance.FailOnDowned(TargetIndex.C);
+					}					
 					__instance.AddEndCondition(() =>
 					{
 						if (!__instance.pawn.IsHashIntervalTick(30) || GenTicks.TicksGame - __instance.startTick < 30)
@@ -48,7 +46,7 @@ namespace CombatAI.Patches
 										return JobCondition.Ongoing;
 									}									
 								}
-								comp.lastInterupted -= 30;
+								comp.Notify_WaitJobEnded();								
 								comp.waitJob = null;
 								return JobCondition.Succeeded;
 							}

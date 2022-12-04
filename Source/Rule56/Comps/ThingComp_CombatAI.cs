@@ -16,33 +16,81 @@ namespace CombatAI.Comps
 {
     public class ThingComp_CombatAI : ThingComp
     {
-#if DEBUG_REACTION        
-		private HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
-        private List<IntVec3> _path = new List<IntVec3>();
-        private List<Color> _colors = new List<Color>();
-#endif
+		#region States
 
-        private ArmorReport armor;
-        private IntVec3 cellBefore;
-        private List<IntVec3> miningCells = new List<IntVec3>(64);
-		private HashSet<Thing> visibleEnemies;
-		private Job moveJob;
-		private int lastMoved;
+		/*
+         * States 
+         */
+
 		private bool scanning;
 
-		public VerbProperties lastVerbProps;
+		#endregion
+
+		#region TimeStamps
+
+		/*
+         * Time stamps 
+         */
+
+		/// <summary>
+		/// When the pawn was last order to move by CAI.
+		/// </summary>
+		private int lastMoved;
+		/// <summary>
+		/// When the last injury occured/damage. 
+		/// </summary>
+		private int lastTookDamage;
+		/// <summary>
+		/// When the last scan occured. SightGrid is responisble for these scan cycles.
+		/// </summary>
+		private int lastScanned;
+		/// <summary>
+		/// When did this comp last interupt the parent pawn. IE: reacted, retreated, etc.
+		/// </summary>
+		private int lastInterupted;
+		/// <summary>
+		/// When the pawn was last order to retreat by CAI.
+		/// </summary>
+		private int lastRetreated;
+		/// <summary>
+		/// Last tick any enemies where reported in a scan.
+		/// </summary>
+		private int lastSawEnemies;
+
+		#endregion        
+		
+        /// <summary>
+        /// Parent armor report.
+        /// </summary>
+		private ArmorReport armor;
+        /// <summary>
+        /// Set of visible enemies. A queue for visible enemies during scans.
+        /// </summary>
+		private HashSet<Thing> visibleEnemies;
+
+        /// <summary>
+        /// Move job started by this comp.
+        /// </summary>
+		public Job moveJob;		
+        /// <summary>
+        /// Wait job started/queued by this comp.
+        /// </summary>
 		public Job waitJob;
-        
-		public int lastTookDamage;
-		public int lastScanned;
-		public int lastInterupted;
-		public int lastRetreated;
-        public int lastSawEnemies;                   
-
+        /// <summary>
+        /// Custom pawn duty tracker. Allows the execution of new duties then going back to the old one once the new one is finished.
+        /// </summary>
         public Pawn_CustomDutyTracker duties;
+        /// <summary>
+        /// Parent sight reader.
+        /// </summary>
         public SightTracker.SightReader sightReader;
+       
+        public ArmorReport CachedArmorReport
+        {
+            get => armor;
+        }
 
-        public ThingComp_CombatAI()
+		public ThingComp_CombatAI()
         {
             this.visibleEnemies = new HashSet<Thing>(32);            
         }
@@ -165,8 +213,36 @@ namespace CombatAI.Comps
 			}
 		}
 
-		public void OnScanStarted()
+        /// <summary>
+        /// Returns whether the parent has retreated in the last number of ticks. 
+        /// </summary>
+        /// <param name="ticks">The number of ticks</param>
+        /// <returns>Whether the pawn retreated in the last number of ticks</returns>
+		public bool RetreatedRecently(int ticks)
 		{
+			return GenTicks.TicksGame - lastRetreated <= ticks;
+		}
+		/// <summary>
+		/// Returns whether the parent has took damage in the last number of ticks. 
+		/// </summary>
+		/// <param name="ticks">The number of ticks</param>
+		/// <returns>Whether the pawn took damage in the last number of ticks</returns>
+		public bool TookDamageRecently(int ticks)
+		{
+			return GenTicks.TicksGame - lastTookDamage <= ticks;
+		}
+		/// <summary>
+		/// Returns whether the parent has reacted in the last number of ticks. 
+		/// </summary>
+		/// <param name="ticks">The number of ticks</param>
+		/// <returns>Whether the reacted in the last number of ticks</returns>
+		public bool ReactedRecently(int ticks)
+		{
+			return GenTicks.TicksGame - lastInterupted <= ticks;
+		}
+
+		public void OnScanStarted()
+		{            
             if (visibleEnemies.Count != 0)
             {
                 if (scanning == true)
@@ -279,17 +355,15 @@ namespace CombatAI.Comps
 				if (!verb.Available() || (Mod_CE.active && Mod_CE.IsAimingCE(verb)))
 				{
 					return;
-				}
-				lastVerbProps = verb.verbProps;
+				}				
 				Thing bestEnemy = pawn.mindState.enemyTarget;
                 IntVec3 bestEnemyPositon = IntVec3.Invalid;
                 IntVec3 pawnPosition = pawn.Position;
                 float bestEnemyScore = verb.currentTarget.IsValid && verb.currentTarget.Cell.IsValid ? verb.currentTarget.Cell.DistanceToSquared(pawnPosition) : 1e6f;           
                 bool bestEnemyVisibleNow = warmup != null;                
                 bool retreat = false;
-                bool canRetreat = pawn.RaceProps.baseHealthScale <= 2.0f && pawn.RaceProps.baseBodySize <= 2.2f;
-                float effectiveRange = verb.EffectiveRange;
-				float retreatDistSqr = Maths.Max(effectiveRange * effectiveRange / 9, 25);               
+                bool canRetreat = pawn.RaceProps.baseHealthScale <= 2.0f && pawn.RaceProps.baseBodySize <= 2.2f;                
+				float retreatDistSqr = Maths.Max(verb.EffectiveRange * verb.EffectiveRange / 9, 25);               
 				foreach (Thing enemy in visibleEnemies)
                 {                   
                     if (enemy != null && enemy.Spawned && !enemy.Destroyed)
@@ -459,7 +533,7 @@ namespace CombatAI.Comps
 					}
 				}                
             }
-        }      
+        }       
 
 		public void Notify_TookDamage(DamageInfo dInfo)
 		{
@@ -481,8 +555,7 @@ namespace CombatAI.Comps
                             if (armorVal == 0 || Rand.Chance(dInfo.ArmorPenetrationInt / armorVal) || (GenTicks.TicksGame - lastTookDamage < 30 && Rand.Chance(0.50f)))
                             {
                                 IntVec3 pawnPosition = parent.Position;
-                                waitJob = null;
-                                //pawn.Map.debugDrawer.FlashCell(pawn.Position, 1f, "FLEE", 200);
+                                waitJob = null;                                
                                 pawn.mindState.enemyTarget = dInfo.Instigator;
                                 CoverPositionRequest request = new CoverPositionRequest();
                                 request.caster = pawn;
@@ -497,8 +570,7 @@ namespace CombatAI.Comps
                                     Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                                     pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
                                     pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
-                                }
-								//pawn.Map.debugDrawer.FlashCell(pawn.Position);
+                                }								
 								lastRetreated = GenTicks.TicksGame - Rand.Int % 50;
                             }
                         }
@@ -527,18 +599,17 @@ namespace CombatAI.Comps
 				return;
 			}
 			visibleEnemies.Add(thing);
-		}        
+		}
+
+        public void Notify_WaitJobEnded()
+        {
+            this.lastInterupted -= 30;
+        }
 
 		public override void PostExposeData()
         {
             base.PostExposeData();
-            Scribe_Deep.Look(ref duties, "duties");
-            Scribe_Collections.Look(ref miningCells, "miningCells", LookMode.Value);
-            if (miningCells == null)
-            {
-                miningCells = new List<IntVec3>();
-            }
-            Scribe_Values.Look(ref cellBefore, "cellBefore");
+            Scribe_Deep.Look(ref duties, "duties");         
             if (parent is Pawn pawn)
             {
                 if (duties == null)
@@ -553,6 +624,17 @@ namespace CombatAI.Comps
         {
             this.sightReader = reader;
         }
-    }
+
+#if DEBUG_REACTION
+
+        /*
+         * Debug only vars.
+         */
+
+		private HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
+		private List<IntVec3> _path = new List<IntVec3>();
+		private List<Color> _colors = new List<Color>();
+#endif
+	}
 }
 

@@ -43,6 +43,7 @@
 	  <Folder Include="DefOfs\" />
 	  <Folder Include="Defs\Extensions\" />
 	  <Folder Include="Cache\" />
+	  <Folder Include="Comps\Deprecated\" />
 	</ItemGroup>	
 	<ItemGroup>
 	  <None Remove="Gui\Core\GUIUtility.ScrollViews" />
@@ -58,6 +59,7 @@
 	  <None Remove="DefOfs\" />
 	  <None Remove="Defs\Extensions\" />
 	  <None Remove="Cache\" />
+	  <None Remove="Comps\Deprecated\" />
 	</ItemGroup>
 	<ItemGroup>		
 		<None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">
