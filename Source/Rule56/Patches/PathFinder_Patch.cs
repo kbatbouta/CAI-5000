@@ -33,34 +33,45 @@ namespace CombatAI.Patches
             private static bool raiders;            
             private static int counter;
             private static ArmorReport armor;            
-            // private static bool crouching;
-            // private static bool tpsLow;
-            // private static float tpsLevel;
-            //private static int pawnBlockingCost;
             private static bool isPlayer;
             private static float threatAtDest;
             private static float visibilityAtDest;
             private static float multiplier = 1.0f;
             private static List<IntVec3> blocked = new List<IntVec3>(128);
+            private static bool fallbackCall = false;
 
-            internal static bool Prefix(PathFinder __instance, ref PawnPath __result, IntVec3 start, LocalTargetInfo dest, ref TraverseParms traverseParms, PathEndMode peMode, ref PathFinderCostTuning tuning, out bool __state)
+            private static TraverseParms original_traverseParms;
+			private static PathEndMode origina_peMode;
+
+			[HarmonyPriority(int.MaxValue)]
+			internal static bool Prefix(PathFinder __instance, ref PawnPath __result, IntVec3 start, LocalTargetInfo dest, ref TraverseParms traverseParms, PathEndMode peMode, ref PathFinderCostTuning tuning, out bool __state)
             {
-                dump = false;
-                //pawnBlockingCost = 175;
-                if (Finder.Settings.Pather_Enabled && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
+                if (fallbackCall)
                 {                    
-                    //Log.Message($"{traverseParms.pawn}");
-                    // prepare the performance parameters.
-                    //tpsLevel = PerformanceTracker.TpsLevel;
-                    //tpsLow = PerformanceTracker.TpsCriticallyLow;
-
-                    // prepare the modifications
-                    instance = __instance;
+					return __state = true;
+                }
+                dump = false;                              
+                if (Finder.Settings.Pather_Enabled && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
+                {
+                    original_traverseParms = traverseParms;
+                    origina_peMode = peMode;					
+					// prepare the modifications
+					instance = __instance;
                     map = __instance.map;
-                    pawn = traverseParms.pawn;
-                    // fix for player pawns and drafted pawns
+                    pawn = traverseParms.pawn;                    
                     isPlayer = pawn.Faction.IsPlayerSafe();
-					multiplier = (isPlayer ? (pawn.Drafted ? 0.25f : 0.75f) : 1.0f);
+                    if (!isPlayer)
+                    {
+                        multiplier = 1;
+                    }
+                    else if (!pawn.Drafted)
+                    {
+                        multiplier = 0.75f;
+                    }
+                    else
+                    {
+                        multiplier = 0.25f;
+                    }
                     // make tankier pawns unless affect.
 					armor = ArmorUtility.GetArmorReport(pawn);                    					
                     if (armor.createdAt != 0)
@@ -101,7 +112,7 @@ namespace CombatAI.Patches
                     }
 
                     float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-                    if (dig = comp != null && !comp.TookDamageRecently(360) && (Finder.Settings.Pather_KillboxKiller && sightReader != null && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 && !dump && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual)))
+                    if (dig = Finder.Settings.Pather_KillboxKiller && !dump && comp != null && !comp.TookDamageRecently(360) && sightReader != null && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual))
                     {                             
                         raiders = true;                           
                         TraverseParms parms = traverseParms;
@@ -120,10 +131,7 @@ namespace CombatAI.Patches
                             tuning.costBlockedWallExtraPerHitPoint = Maths.Max(3 - miningSkill, 0);
                             tuning.costOffLordWalkGrid = 0;
                         }                        
-                    }
-                   
-                    //pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out sightReader);
-
+                    }                   
                     // get the visibility at the destination
                     if (sightReader != null)
                     {
@@ -134,158 +142,112 @@ namespace CombatAI.Patches
                         else
                         {
                             visibilityAtDest = Maths.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * 0.875f, 5);
-                        }
-                        //Verb verb = pawn.GetWeaponVerbWithFallback();
-                        //if (verb != null)
-                        //{
-                        //    if (verb.verbProps.range > 20)
-                        //    {
-                        //        visibilityAtDest *= 1.225f;
-                        //    }
-                        //    else if (verb.verbProps.range > 10)
-                        //    {
-                        //        visibilityAtDest *= 0.425f;
-                        //    }
-                        //    else
-                        //    {
-                        //        visibilityAtDest *= 0.275f;
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    visibilityAtDest *= 0.50f;
-                        //}
-                    }
-                    // get wether this is a raider
-                    raiders |= pawn.HostileTo(Faction.OfPlayerSilentFail);
-                    //if (raiders)
-                    //{
-                    //    //pawnBlockingCost = 1200;
-                    //}
-                    // Run normal if we're not being suppressed, running for cover, crouch-walking or not actually moving to another cell
-                    //CompSuppressable comp = pawn?.TryGetCompFast<CompSuppressable>();
-                    //if (comp == null || !comp.isSuppressed || comp.IsCrouchWalking || pawn.CurJob?.def == CE_JobDefOf.RunForCover || start == dest.Cell && peMode == PathEndMode.OnCell)
-                    //{
-                        __state = true;
-                    //    crouching = comp?.IsCrouchWalking ?? false;
-                        counter = 0;
-                        return true;
-                    //}
-                    //
-                    // Make all destinations unreachable
-                    //__state = false;
-                    //__result = PawnPath.NotFound;
-                    //return false;
+                        }                   
+                    }                    
+                    raiders |= pawn.HostileTo(Faction.OfPlayerSilentFail);                                      
+                    counter = 0;
+                    return __state = true;                    
                 }
                 __state = false;
                 Reset();
                 return true;
             }
 
-            public static void Postfix(PathFinder __instance, PawnPath __result, bool __state)
+            [HarmonyPriority(int.MinValue)]
+            public static void Postfix(PathFinder __instance, ref PawnPath __result, bool __state, IntVec3 start, LocalTargetInfo dest, TraverseParms traverseParms, PathEndMode peMode, PathFinderCostTuning tuning)
             {
-                if (dump)
+                if (fallbackCall)
                 {
-                    //if (gridWriter != null)
-                    //{
-                    //    gridWriter.Write();
-                    //}
+                    return;
+                }
+                if (dump)
+                {                   
                     if (pathWriter != null)
                     {
                         pathWriter.Write();
                     }
                 }
-                if (__state)
+				if (__state)
                 {
                     if (Finder.Settings.Pather_KillboxKiller && dig &&  __result != null && !__result.nodes.NullOrEmpty() && (pawn?.RaceProps.Humanlike ?? false))
-                    {
-                        //ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
-                        //if (comp != null && comp.TryStartMiningJobs(__result))
-                        //{
-                        //}
-                        //if (pawn.GetComp_Fast())                        
+                    {                                            
 						blocked.Clear();
-                        Thing thing;
-                        if ( __result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (thing = blocked[0].GetEdifice(map)) != null && pawn.mindState?.duty?.def != DutyDefOf.Sapper && pawn.CurJob?.def != JobDefOf.Mine)
-                        {
-                            Job job = DigUtility.PassBlockerJob(pawn, thing, cellBefore, true, true);
-                            if (job != null)
+                        Thing blocker;
+                        if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null && pawn.mindState?.duty?.def != DutyDefOf.Sapper && pawn.CurJob?.def != JobDefOf.Mine)
+                        {			
+							if (tuning != null && (!enemiesAhead || enemiesBefore))
                             {
-                                job.playerForced = true;
-                                job.expiryInterval = 3600;
-                                job.maxNumMeleeAttacks = 300;
-                                //if (__result.nodes.Count > 0)
-                                //{
-                                //    Pawn_CustomDutyTracker.CustomPawnDuty sapper = new Pawn_CustomDutyTracker.CustomPawnDuty();
-                                //    sapper.duty = new PawnDuty(DutyDefOf.Sapper, __result.nodes[0]);
-                                //    pawn.GetComp_Fast<Comps.ThingComp_CombatAI>()?.duties?.StartDuty(sapper, true);
-                                //}
-                                pawn.jobs.StopAll();
-                                pawn.jobs.StartJob(job, JobCondition.InterruptForced);
-                                if (enemiesAhead)
-                                {                                    
-                                    //GenClosest.ClosestThingReachable(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), maxDistance:)
-                                    int count = 0;
-                                    int countTarget = Rand.Int % 6 + 4 + Maths.Min(blocked.Count, 10);
-                                    Faction faction = pawn.Faction;
-                                    Predicate<Thing> validator = (t) =>
-                                    {
-                                        if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
-                                        && ally.mindState?.duty?.def != DutyDefOf.Escort
-                                        && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
-                                        && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10
-                                        && GenTicks.TicksGame - ally.LastAttackTargetTick > 60)
+                                try
+                                {
+                                    __result.Dispose();
+                                    fallbackCall = true;
+                                    dig = false;
+                                    tuning.costBlockedWallBase = Maths.Max(tuning.costBlockedWallBase * 3, 128);
+                                    tuning.costBlockedWallExtraForNaturalWalls = Maths.Max(tuning.costBlockedWallExtraForNaturalWalls * 3, 128);
+                                    tuning.costBlockedWallExtraPerHitPoint = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 4);
+                                    __result = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
+                                }
+                                catch (Exception er)
+                                {
+                                    Log.Error($"ISMA: Error occured in FindPath fallback call {er.ToString()}");
+                                }
+                                finally
+                                {
+                                    fallbackCall = false;
+                                }
+                            }
+                            else
+                            {
+                                Job job = DigUtility.PassBlockerJob(pawn, blocker, cellBefore, true, true);
+                                if (job != null)
+                                {
+                                    job.playerForced = true;
+                                    job.expiryInterval = 3600;
+                                    job.maxNumMeleeAttacks = 300;                                    
+                                    pawn.jobs.StopAll();
+                                    pawn.jobs.StartJob(job, JobCondition.InterruptForced);
+                                    if (enemiesAhead)
+                                    {                                        
+                                        int count = 0;
+                                        int countTarget = Rand.Int % 6 + 4 + Maths.Min(blocked.Count, 10);
+                                        Faction faction = pawn.Faction;
+                                        Predicate<Thing> validator = (t) =>
                                         {
-                                            Comps.ThingComp_CombatAI comp = ally.GetComp_Fast<Comps.ThingComp_CombatAI>();
-                                            if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false)
+                                            if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
+											&& !ally.CurJobDef.Is(JobDefOf.Mine)
+											&& ally.mindState?.duty?.def != DutyDefOf.Escort                                            
+                                            && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
+                                            && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
                                             {
-                                                Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 1500 + Rand.Int % 1000, 0, true, null);
-                                                if (custom != null)
+                                                Comps.ThingComp_CombatAI comp = ally.GetComp_Fast<Comps.ThingComp_CombatAI>();
+                                                if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false)
                                                 {
-                                                    custom.duty.locomotion = LocomotionUrgency.Sprint;
-													comp.duties.StartDuty(custom, true);
+                                                    Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 300 * blocked.Count + Rand.Int % 1000, 0, true, null);
+                                                    if (custom != null)
+                                                    {
+                                                        custom.duty.locomotion = LocomotionUrgency.Sprint;
+                                                        comp.duties.StartDuty(custom, true);
+                                                    }
                                                 }
+                                                count++;
+                                                return count == countTarget;
                                             }
-                                            count++;
-                                            return count == countTarget; 
-                                        }
-                                        return false;
-                                    };
-                                    Verse.GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 10, 40, out int _);
-                                    //List<Pawn> allies = pawn.Position.(map, Utilities.TrackedThingsRequestCategory.Pawns, 10f)
-                                    //    .Where(t => t.Faction == pawn.Faction && pawn.CanReach(t, PathEndMode.InteractionCell, Danger.Unspecified))
-                                    //    .Select(t => t as Pawn)
-                                    //    .Where(p => !p.Destroyed && p.mindState?.duty?.def != DutyDefOf.Escort && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(p.Position) == 0) && p.skills?.GetSkill(SkillDefOf.Mining).Level < 10 && GenTicks.TicksGame - p.LastAttackTargetTick > 60).ToList();
-                                    //if (allies != null && allies.Count > 0)
-                                    //{
-                                    //    foreach (Pawn ally in allies.TakeRandom(Rand.Int % 3 + 1))
-                                    //    {
-                                    //if (ally != null)
-                                    //{
-                                    //    Comps.ThingComp_CombatAI comp = ally.GetComp_Fast<Comps.ThingComp_CombatAI>();
-                                    //    if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false)
-                                    //    {
-                                    //        Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 50, 100, Rand.Int % 500 + 1500, 0, true, DutyDefOf.AssaultColony);
-                                    //        if (custom != null)
-                                    //        {
-                                    //            comp.duties.StartDuty(custom, true);
-                                    //        }
-                                    //    }
-                                    //}
-                                    //    }
-                                    //}
+                                            return false;
+                                        };
+                                        Verse.GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 10, 40, out int _);                                     
+                                    }
                                 }
                             }
                         }
                     }
-                    AvoidanceTracker tracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
+					AvoidanceTracker tracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
                     if (tracker != null)
                     {
                         tracker.Notify_PathFound(pawn, __result);
-                    }
-                }
-                Reset();
-            }
+                    }			
+				}                
+                Reset();                
+			}
 
             public static void Reset()
             {				

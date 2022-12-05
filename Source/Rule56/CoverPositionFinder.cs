@@ -48,7 +48,7 @@ namespace CombatAI
                     {
                         return;
                     }
-                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - CoverUtility.TotalSurroundingCoverScore(node.cell, map) * 0.5f - interceptors.grid.Get(node.cell) * 2 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;
+                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - interceptors.grid.Get(node.cell) * 2 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.25f;
                     if (c < bestCellScore)
                     {
                         float v = sightReader.GetVisibilityToEnemies(node.cell);
@@ -66,7 +66,7 @@ namespace CombatAI
                 },
                 (cell) =>
                 {
-                    return (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 3 - interceptors.grid.Get(cell);
+                    return (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - interceptors.grid.Get(cell);
                 },
                 (cell) =>
                 {
@@ -116,7 +116,7 @@ namespace CombatAI
                     {
                         return;
                     }
-                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) + avoidanceReader.GetProximity(node.cell) * 0.5f - CoverUtility.TotalSurroundingCoverScore(node.cell, map) * 0.5f - interceptors.grid.Get(node.cell) + (sightReader.GetThreat(node.cell) - rootThreat) * 0.75f;
+                    float c = (node.dist - node.distAbs) / (node.distAbs + 1f) + avoidanceReader.GetProximity(node.cell) * 0.5f - interceptors.grid.Get(node.cell) + (sightReader.GetThreat(node.cell) - rootThreat) * 0.75f;
                     if (c < bestCellScore)
                     {
                         float d = node.cell.DistanceToSquared(enemyLoc);
