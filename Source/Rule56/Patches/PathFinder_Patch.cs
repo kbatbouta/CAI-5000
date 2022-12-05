@@ -206,7 +206,7 @@ namespace CombatAI.Patches
                         //if (pawn.GetComp_Fast())                        
 						blocked.Clear();
                         Thing thing;
-                        if ( __result.TryGetSapperSubPath(pawn, blocked, 50, Finder.Performance.TpsCriticallyLow ? 4 : 2, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (thing = blocked[0].GetEdifice(map)) != null && pawn.mindState?.duty?.def != DutyDefOf.Sapper && pawn.CurJob?.def != JobDefOf.Mine)
+                        if ( __result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (thing = blocked[0].GetEdifice(map)) != null && pawn.mindState?.duty?.def != DutyDefOf.Sapper && pawn.CurJob?.def != JobDefOf.Mine)
                         {
                             Job job = DigUtility.PassBlockerJob(pawn, thing, cellBefore, true, true);
                             if (job != null)
