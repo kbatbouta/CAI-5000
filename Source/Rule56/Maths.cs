@@ -72,5 +72,15 @@ namespace CombatAI
 			byte temp;
 			return (temp = (a < b ? a : b)) < c ? temp : c;
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static float Sqr(float a)	=> a * a;
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static int Sqr(int a)		=> a * a;
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static short Sqr(short a)	=> (short)(a * a);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static byte Sqr(byte a)		=> (byte) (a * a);
+
 	}
 }

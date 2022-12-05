@@ -397,7 +397,7 @@ namespace CombatAI.Comps
                             request.target = bestEnemy;
                             request.verb = verb;
                             request.maxRangeFromTarget = 9999;
-							request.maxRangeFromCaster = Rand.Chance(Finder.P50 - 0.1f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 3, 10) : 3;
+							request.maxRangeFromCaster = Rand.Chance(Finder.P50 - 0.1f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 4, 10) : 4;
                             request.wantCoverFromTarget = true;
                             if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && (cell != pawnPosition || warmup == null))
                             {
@@ -409,11 +409,11 @@ namespace CombatAI.Comps
                                 pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);								
 								changedPos = true;
                             }
-                            else if (warmup == null)
-                            {
-                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
-                                pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
-                            }
+                            //else if (warmup == null)
+                            //{
+                            //    Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
+                            //    pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
+                            //}
                         }
                         else
                         {
@@ -422,7 +422,7 @@ namespace CombatAI.Comps
                             request.caster = pawn;
                             request.target = new LocalTargetInfo(bestEnemy.Position);
                             request.verb = verb;
-                            request.maxRangeFromCaster = Rand.Chance(Finder.P50 - 0.1f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 3, 10) : 3;
+                            request.maxRangeFromCaster = Rand.Chance(Finder.P50 - 0.1f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 4, 10) : 4;
 							request.checkBlockChance = true;
                             if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && cell != pawnPosition && warmup == null)
                             {
@@ -476,7 +476,7 @@ namespace CombatAI.Comps
                         Verb effectiveVerb = pawn.CurrentEffectiveVerb;
                         if (effectiveVerb != null && effectiveVerb.Available() && effectiveVerb.EffectiveRange > 5)
                         {
-                            float enemyRange = SightUtility.GetSightRange(dInfo.Instigator);
+                            float enemyRange = dInfo.Instigator.TryGetAttackVerb()?.EffectiveRange ?? 5f;
                             float armorVal = armor.GetArmor(dInfo.Def);
                             if (armorVal == 0 || Rand.Chance(dInfo.ArmorPenetrationInt / armorVal) || (GenTicks.TicksGame - lastTookDamage < 30 && Rand.Chance(0.50f)))
                             {
@@ -578,7 +578,7 @@ namespace CombatAI.Comps
 			{
 				base.DrawGUIOverlay();
 				var verb = pawn.CurrentEffectiveVerb;
-				var sightRange = Maths.Min(SightUtility.GetSightRange(pawn), verb.EffectiveRange);
+				var sightRange = Maths.Min(SightUtility.GetSightRadius(pawn).scan, verb.EffectiveRange);
 				var sightRangeSqr = sightRange * sightRange;
 				if (sightRange != 0 && verb != null)
 				{

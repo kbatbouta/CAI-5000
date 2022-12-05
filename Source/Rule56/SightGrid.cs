@@ -1,22 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.NetworkInformation;
 using CombatAI.Comps;
 using RimWorld;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Verse;
 using Verse.AI;
 
-namespace CombatAI {
+namespace CombatAI
+{
 	public class SightGrid
     {		
 		private readonly List<Vector3> buffer = new List<Vector3>(1024);
         private readonly List<Thing> thingBuffer1 = new List<Thing>(256);
 		private readonly List<Thing> thingBuffer2 = new List<Thing>(256);        
 
-		private const int COVERCARRYLIMIT = 6;        
+		private const int COVERCARRYLIMIT = 6;
 
-        private struct ISpotRecord
+		public struct ISightRadius
+		{
+			/// <summary>
+			/// Scan radius. Used while scanning for enemies.
+			/// </summary>
+			public int scan;
+			/// <summary>
+			/// Sight radius. Determine the radius of the thing's influence map.
+			/// </summary>
+			public int sight;
+			/// <summary>
+			/// Fog radius. Determine how far this thing will reveal fog of war.
+			/// </summary>
+			public int fog;
+			/// <summary>
+			/// Creation tick timestamp.
+			/// </summary>
+			public int createdAt;
+			/// <summary>
+			/// Whether this is a valid report.
+			/// </summary>
+			public bool IsValid
+			{
+				get => createdAt != 0 && GenTicks.TicksGame - createdAt < 600;
+			}
+		}
+
+		private struct ISpotRecord
         {
             /// <summary>
             /// Spotted flag.
@@ -30,16 +60,19 @@ namespace CombatAI {
             /// Cell visibility.
             /// </summary>
             public float visibility;
-        }
+        }		
 
-        private class IBucketableThing : IBucketable
-        {
-            private int bucketIndex;
-
+		private class IBucketableThing : IBucketable
+        {            
+			private int bucketIndex;
             /// <summary>
-            /// Thing.
+            /// Current sight grid.
             /// </summary>
-            public readonly Thing thing;
+            public readonly SightGrid grid;
+			/// <summary>
+			/// Thing.
+			/// </summary>
+			public readonly Thing thing;
 			/// <summary>
 			/// Thing.
 			/// </summary>
@@ -71,15 +104,11 @@ namespace CombatAI {
 			/// <summary>
 			/// Last cycle.
 			/// </summary>
-			public int lastCycle;
-            /// <summary>
-            /// Thing potential damage report.
-            /// </summary>
-            public DamageReport damage;
-            /// <summary>
-            /// Pawn pawn
-            /// </summary>
-            public readonly List<IntVec3> path = new List<IntVec3>(16);
+			public int lastCycle;            
+			/// <summary>
+			/// Pawn pawn
+			/// </summary>
+			public readonly List<IntVec3> path = new List<IntVec3>(16);
             /// <summary>
             /// Contains spotting records that are to be processed on the main thread once the scan is finished.
             /// </summary>
@@ -88,10 +117,18 @@ namespace CombatAI {
             /// Last tick this pawn scanned for enemies
             /// </summary>
             public int lastScannedForEnemies;
-            /// <summary>
-            /// Bucket index.
-            /// </summary>
-            public int BucketIndex =>
+			/// <summary>
+			/// Thing potential damage report.
+			/// </summary>
+			public DamageReport cachedDamage;
+			/// <summary>
+			/// Cached sight radius report.
+			/// </summary>
+			public ISightRadius cachedSightRadius;
+			/// <summary>
+			/// Bucket index.
+			/// </summary>
+			public int BucketIndex =>
                 bucketIndex;
             /// <summary>
             /// Thing id number.
@@ -99,20 +136,22 @@ namespace CombatAI {
             public int UniqueIdNumber =>
                 thing.thingIDNumber;
 
-            public IBucketableThing(Thing thing, int bucketIndex)
+            public IBucketableThing(SightGrid grid, Thing thing, int bucketIndex)
             {
+                this.grid = grid;
 				this.thing = thing;
 				this.pawn = thing as Pawn;
                 this.turretGun = thing as Building_TurretGun;
-				this.isPlayer = thing.Faction.IsPlayerSafe();
-                this.damage = DamageUtility.GetDamageReport(thing);
+				this.isPlayer = thing.Faction.IsPlayerSafe();                
 				this.dormant = thing.GetComp_Fast<CompCanBeDormant>();
                 this.ai = thing.GetComp_Fast<ThingComp_CombatAI>();
                 this.sighter = thing.GetComp_Fast<ThingComp_Sighter>();                
                 this.faction = thing.Faction;
-                this.bucketIndex = bucketIndex;                
-            }
-        }
+                this.bucketIndex = bucketIndex;
+				this.cachedDamage = DamageUtility.GetDamageReport(thing);
+				this.cachedSightRadius = SightUtility.GetSightRadius(thing);
+			}			
+		}
         
         private WallGrid _walls;
         private int ticksUntilUpdate;
@@ -244,8 +283,9 @@ namespace CombatAI {
             buckets.RemoveId(thing.thingIDNumber);
             if (Valid(thing))
             {
-				buckets.Add(new IBucketableThing(thing, (thing.thingIDNumber + 19) % settings.buckets));                
-                if (trackFactions)
+                IBucketableThing item;
+				buckets.Add(item = new IBucketableThing(this, thing, (thing.thingIDNumber + 19) % settings.buckets));
+				if (trackFactions)
                 {
                     numsByFaction.TryGetValue(thing.Faction, out int num);
                     numsByFaction[thing.Faction] = num + 1;
@@ -354,23 +394,21 @@ namespace CombatAI {
             if (grid.CycleNum == item.lastCycle || Skip(item))
             {
                 return false;
-            }
-            int range;            
-            if (item.sighter != null)
+            }           
+			if (!item.cachedSightRadius.IsValid)
             {
-				range = SightUtility.GetSightRange(item.sighter, playerAlliance);
+                item.cachedSightRadius = SightUtility.GetSightRadius(item.thing);
 			}
-            else
+            if (item.cachedSightRadius.sight == 0)
             {
-				range = SightUtility.GetSightRange(item.thing, playerAlliance);
-            }            
-            if (range == 0)
+                return false;
+            }
+            if (!!item.cachedDamage.IsValid)
             {
-				return false;
-			}			
-			item.damage = DamageUtility.GetDamageReport(item.thing);         
+                item.cachedDamage = DamageUtility.GetDamageReport(item.thing);
+            }
 			int ticks = GenTicks.TicksGame;
-            IntVec3 origin = item.thing.Position;
+			IntVec3 origin = item.thing.Position;
             IntVec3 pos = GetShiftedPosition(item.thing, 30, item.path);            
             if (!pos.InBounds(map))
             {
@@ -401,57 +439,71 @@ namespace CombatAI {
 				item.ai.OnScanStarted();
 				item.spottings.Clear();
             }
+            ISightRadius sightRadius = item.cachedSightRadius; 
 			Action action = () =>
             {
-				grid.Next(item.damage.adjustedSharp, item.damage.adjustedBlunt, item.damage.attributes);
+				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
 				grid.Set(flagPos, (item.pawn == null || !item.pawn.Downed) ? GetFlags(item) : 0);
-				grid.Next(item.damage.adjustedSharp, item.damage.adjustedBlunt, item.damage.attributes);
+				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
 				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
 				for (int i = 0; i < item.path.Count; i++)
                 {
                     IntVec3 cell = item.path[i];
 					grid.Set(cell, 1.0f, new Vector2(cell.x - pos.x, cell.z - pos.z));
 				}
-                float r = range * 1.23f;
-                float rSqr = range * range;
-                float rHafledSqr = rSqr * Finder.Settings.FogOfWar_RangeFadeMultiplier * Finder.Settings.FogOfWar_RangeFadeMultiplier;               
+                //float r = range * 1.13f;
+                // used in fog of war calcs
+                //float rHafledSqr = Maths.Sqr(r * Finder.Settings.FogOfWar_RangeFadeMultiplier);
+                //if (scanForEnemies)
+                //{
+                //    // we do this because we want raiders to react to stuff slightly outside their range.
+                //    // The reason we placed this here is because rHafledSqr is used for fog of war and needs the actucal value while rSqr is used for casting in general.
+                //    r += 10;
+                //}
+                //float rSqr = Maths.Sqr(r);
+                float r_fade        = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
+                float d_fade        = sightRadius.fog - r_fade;
+				float rSqr_sight    = Maths.Sqr(sightRadius.sight);
+				float rSqr_scan     = Maths.Sqr(sightRadius.scan);
+				float rSqr_fog      = Maths.Sqr(sightRadius.fog);
+				float rSqr_fade     = Maths.Sqr(r_fade);                
 				ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
                 {
-                    float d = pos.DistanceToSquared(cell);                    
-                    // only set anything if visibility is ok
-                    if (d < rSqr)
+                    float d = pos.DistanceToSquared(cell);
+                    float visibility = 0f;		
+					if (d < rSqr_sight)
                     {
-						// NOTE: the carry is the number of cover things between the source and the current cell.                  
-						float visibility = (float)(r - dist) / r * (1 - coverRating);
+						visibility = (float)(sightRadius.sight - dist) / sightRadius.sight * (1 - coverRating);
 						if (visibility > 0f)
-                        {
-                            if (playerAlliance)
-                            {
-                                if (d >= rHafledSqr)
-                                {
-                                    visibility *= Maths.Min(0.05f, 0.02499f);
-                                }
-                                else
-                                {
-                                    visibility = Maths.Max(visibility, 0.02500f);
-                                }
-                            }
-                            if (scanForEnemies)
-                            {
-                                UInt64 flag = reader.GetEnemyFlags(cell);
-                                if (flag != 0)
-                                {
-                                    ISpotRecord spotting = new ISpotRecord();
-                                    spotting.cell = cell;
-                                    spotting.flag = flag;
-                                    spotting.visibility = visibility;
-                                    item.spottings.Add(spotting);
-                                }
-                            }
+                        {                           
                             grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                         }
+					}
+                    if (playerAlliance && d < rSqr_fog )
+                    {
+                        float val;
+                        if (d < rSqr_fade)
+                        {
+                            val = 1f;
+                        }
+                        else
+                        {
+                            val = 1f - Mathf.Clamp01((dist - r_fade) / d_fade);
+                        }
                     }
-                }, range, settings.carryLimit, buffer);
+					if (scanForEnemies && d < rSqr_scan)
+					{                    
+                        UInt64 flag = reader.GetEnemyFlags(cell);
+                        if (flag != 0)
+                        {
+                            ISpotRecord spotting = new ISpotRecord();
+                            spotting.cell = cell;
+                            spotting.flag = flag;
+                            spotting.visibility = visibility;
+                            item.spottings.Add(spotting);
+                        }                       
+					}
+				}, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), settings.carryLimit, buffer);
                 if (scanForEnemies)
                 {
                     if (item.spottings.Count > 0 || (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight))
@@ -491,9 +543,9 @@ namespace CombatAI {
             asyncActions.EnqueueOffThreadAction(action);         
             item.lastCycle = grid.CycleNum;          
             return true;
-        }
+        }		
 
-        private IntVec3 GetShiftedPosition(Thing thing, int ticksAhead, List<IntVec3> subPath)
+		private IntVec3 GetShiftedPosition(Thing thing, int ticksAhead, List<IntVec3> subPath)
         {            
             if (thing is Pawn pawn)
             {
@@ -528,6 +580,6 @@ namespace CombatAI {
                 return thing.Position;
             }
         }
-    }
+	}
 }
 
