@@ -47,15 +47,14 @@ namespace CombatAI
 				}				
 				int numGridCells = indices.NumGridCells;		
 				WallGrid walls = comp.walls;
-				ITSignalGrid pawns = comp.sight.grid;				
+				ITFloatGrid fogGrid = comp.sight.gridFog;				
 				IntVec3 pos = this.pos.ToIntVec3();
 				IntVec3 loc;
 			
-				ColorInt[] glowGrid = comp.glow.glowGrid;
-				float glowCell;
+				ColorInt[] glowGrid = comp.glow.glowGrid;				
 				float glowSky = comp.SkyGlow;
 				bool changed = false;
-				if (pawns != null)
+				if (fogGrid != null)
 				{
 					for (int x = 0; x < SECTION_SIZE; x++)
 					{
@@ -72,19 +71,21 @@ namespace CombatAI
 									comp.grid[index] = false;
 								}
 								else
-								{
-									float visibility = pawns.GetRawSignalStrengthAt(index);
-									float visRLimit = 0.03f;
+								{									
+									float visRLimit = Mathf.Lerp(0, 0.15f, 1 - glowSky);
+									float visibility = fogGrid.Get(index);									
 									if (glowSky < 1)
 									{
-										ColorInt glow = glowGrid[index];
-										glowCell = Maths.Min(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f, 0.5f);
-										visibility = visibility - (1 - Maths.Max(glowCell, glowSky)) * 0.015f;
-										visRLimit = Mathf.Lerp(0.02f, 0.03f, glowSky);
+										ColorInt glow = glowGrid[index];										
+										visRLimit = Maths.Max(Mathf.Lerp(0, 0.15f, 1 - Maths.Min(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f, 0.75f)), visRLimit);
+									}
+									if (visibility < visRLimit)
+									{
+										visibility = 0f;
 									}
 									if (visibility > 0)
 									{
-										val = Maths.Max(cells[x * SECTION_SIZE + z] - 0.3f, (visRLimit - visibility) / visRLimit, 0f);
+										val = Maths.Max(cells[x * SECTION_SIZE + z] - 0.3f, 1 - visibility, 0f);
 										comp.grid[index] = false;
 									}
 									else

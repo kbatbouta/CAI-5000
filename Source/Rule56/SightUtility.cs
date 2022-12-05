@@ -277,7 +277,7 @@ namespace CombatAI
 		//		return Mathf.CeilToInt(range);
 		//	}
 		//}
-		
+
 		public static void ClearCache()
         {            
 			rangeCache.Clear();			

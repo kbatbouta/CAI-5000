@@ -188,9 +188,13 @@ namespace CombatAI
 		/// </summary>
 		public bool trackFactions = false;
         /// <summary>
-        /// Tracks the number of factions tracked.
+        /// Fog of war grid. Can be null.
         /// </summary>
-        public int FactionNum
+		public ITFloatGrid gridFog;
+		/// <summary>
+		/// Tracks the number of factions tracked.
+		/// </summary>        
+		public int FactionNum
         {
             get
             {
@@ -267,7 +271,7 @@ namespace CombatAI
                 tmpInconsistentRecords.Clear();
             }
             ticksUntilUpdate = (int)settings.interval + Mathf.CeilToInt(settings.interval * (1.0f - Finder.P50));
-            buckets.Next();            
+            buckets.Next();    
             if (buckets.Index == 0)
             {
                 wait = true;
@@ -328,6 +332,7 @@ namespace CombatAI
 
         private void Continue()
         {
+            gridFog?.NextCycle();
 			grid.NextCycle();
 			wait = false;
 		}
@@ -441,16 +446,20 @@ namespace CombatAI
             }
             ISightRadius sightRadius = item.cachedSightRadius; 
 			Action action = () =>
-            {
+            {                                
 				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
 				grid.Set(flagPos, (item.pawn == null || !item.pawn.Downed) ? GetFlags(item) : 0);
 				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
 				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
-				for (int i = 0; i < item.path.Count; i++)
+                if (playerAlliance)
                 {
-                    IntVec3 cell = item.path[i];
-					grid.Set(cell, 1.0f, new Vector2(cell.x - pos.x, cell.z - pos.z));
-				}
+					gridFog.Next();
+					gridFog.Set(origin, 1.0f);
+					for (int i = 0; i < item.path.Count; i++)
+                    {                        
+                        gridFog.Set(item.path[i], 1.0f);                    
+                    }
+                }
                 //float r = range * 1.13f;
                 // used in fog of war calcs
                 //float rHafledSqr = Maths.Sqr(r * Finder.Settings.FogOfWar_RangeFadeMultiplier);
@@ -479,7 +488,7 @@ namespace CombatAI
                             grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                         }
 					}
-                    if (playerAlliance && d < rSqr_fog )
+                    if (playerAlliance && d < rSqr_fog)
                     {
                         float val;
                         if (d < rSqr_fade)
@@ -490,7 +499,8 @@ namespace CombatAI
                         {
                             val = 1f - Mathf.Clamp01((dist - r_fade) / d_fade);
                         }
-                    }
+                        gridFog?.Set(cell, val);
+					}
 					if (scanForEnemies && d < rSqr_scan)
 					{                    
                         UInt64 flag = reader.GetEnemyFlags(cell);

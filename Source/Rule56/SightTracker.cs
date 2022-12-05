@@ -217,16 +217,19 @@ namespace CombatAI
         public readonly SightGrid raidersAndHostiles;
         public readonly SightGrid insectsAndMechs;        
 		public readonly SightGrid wildlife;
-        
+
+        public readonly ITFloatGrid fogGrid;      
         public readonly IThingsUInt64Map factionedUInt64Map;
         public readonly IThingsUInt64Map wildUInt64Map;
 
         public SightTracker(Map map) : base(map)
-        {            
-            colonistsAndFriendlies =
+        {
+            fogGrid = new ITFloatGrid(map);
+			colonistsAndFriendlies =
                 new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
-            colonistsAndFriendlies.playerAlliance = true;
-            colonistsAndFriendlies.trackFactions = true;
+			colonistsAndFriendlies.gridFog = fogGrid;
+			colonistsAndFriendlies.playerAlliance = true;
+            colonistsAndFriendlies.trackFactions = true;            
 
 			raidersAndHostiles =
                 new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
