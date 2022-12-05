@@ -163,7 +163,7 @@ namespace CombatAI.Patches
                             }
                             else
                             {
-                                adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);                                
+                                adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);  
                             }                            
                             return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - Verse.CoverUtility.CalculateOverallBlockChance(adjustedLoc, cell, map) - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
                         },

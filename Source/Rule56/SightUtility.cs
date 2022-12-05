@@ -75,7 +75,7 @@ namespace CombatAI
 				SkillRecord melee = pawn.skills?.GetSkill(SkillDefOf.Melee) ?? null;
 				if (melee != null)
 				{
-					result.sight = (int)(Mathf.Clamp(melee.Level, 5, 13) * ((pawn.equipment?.Primary?.def.IsMeleeWeapon ?? null) != null ? 1.5f : 0.85f));
+					result.sight = Maths.Max((int)(Mathf.Clamp(melee.Level, 5, 13) * ((pawn.equipment?.Primary?.def.IsMeleeWeapon ?? null) != null ? 1.5f : 0.85f)), 15);
 					result.scan = 0;
 				}
 				else
