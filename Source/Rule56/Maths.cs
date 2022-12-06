@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using UnityEngine;
+using Verse;
 
 namespace CombatAI
 {
 	public static class Maths
-	{
+	{		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static float Max(float a, float b)	=> a > b ? a : b;
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -81,6 +84,117 @@ namespace CombatAI
 		public static short Sqr(short a)	=> (short)(a * a);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte Sqr(byte a)		=> (byte) (a * a);
-
+		
+		public static float Sqrt_Fast(float x, int iterations)
+		{
+			int n;
+			int k;
+			int a = (int)(x * 1024);
+			if ((a & 0xFFFF0000) != 0)
+			{
+				if ((a & 0xFFF00000) != 0)
+				{
+					n = 20;
+				}
+				else
+				{
+					n = 16;
+				}
+			}
+			else
+			{
+				if ((a & 0xFFFFF000) != 0)
+				{
+					n = 12;
+				}
+				else if((a & 0xFFFFFFC0) != 0)
+				{
+					n = 6;
+				}
+				else
+				{
+					n = 0;
+				}
+			}
+			k = a >> n;
+			while (k != 0)
+			{
+				k = k >> 1;
+				n++;
+			}
+			int bot = 1 << ((n - 1) >> 1);
+			int top = bot << 1;
+			while (iterations-- > 0)
+			{
+				int mid = (bot + top) >> 1;
+				int midSqr = mid * mid;
+				if (midSqr == a)
+				{
+					return mid / 32f;
+				}
+				else if (midSqr < a)
+				{
+					bot = mid;
+				}
+				else
+				{
+					top = mid;
+				}
+			}
+			return (bot + top) / 64f;
+		}
+		public static int Sqrt_Fast(int a, int iterations)
+		{
+			int n;
+			int k;
+			if ((a & 0xFFFFFF00) != 0)
+			{
+				if ((a & 0xFFFFF000) != 0)
+				{
+					n = 12;
+				}
+				else
+				{
+					n = 8;
+				}
+			}
+			else
+			{
+				if ((a & 0xFFFFFFF0) != 0)
+				{
+					n = 4;
+				}
+				else
+				{
+					n = 0;
+				}
+			}
+			k = a >> n;
+			while (k != 0)
+			{
+				k = k >> 1;
+				n++;
+			}
+			int bot = 1 << ((n - 1) >> 1);
+			int top = bot << 1;
+			while (iterations-- > 0)
+			{
+				int mid = (bot + top) >> 1;
+				int midSqr = mid * mid;
+				if (midSqr == a)
+				{
+					return mid;
+				}
+				else if (midSqr < a)
+				{
+					bot = mid;
+				}
+				else
+				{
+					top = mid;
+				}
+			}
+			return (bot + top) >> 1;
+		}
 	}
 }
