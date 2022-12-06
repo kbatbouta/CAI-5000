@@ -1,118 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 
-  <ThingDef Abstract="True" Name="CombatAI_CCTVBase" ParentName="BuildingBase">
-    <comps>
-      <li Class="CompProperties_Forbiddable" />
-      <li Class="CompProperties_Power">
-        <compClass>CompPowerTrader</compClass>
-        <basePowerConsumption>250</basePowerConsumption>
-      </li>
-      <li Class="CompProperties_Flickable" />
-      <li Class="CompProperties_Breakdownable" />      
-    </comps>
-    <tickerType>Normal</tickerType>
-    <altitudeLayer>Building</altitudeLayer> 
-    <hasInteractionCell>False</hasInteractionCell>
-    <minifiedDef>MinifiedThing</minifiedDef>
-    <stealable>false</stealable>
-    <thingCategories>
-      <li>BuildingsSecurity</li>
-    </thingCategories>
-    <designationCategory>Security</designationCategory>
-    <researchPrerequisites>
-      <li>HeavyTurrets</li>
-    </researchPrerequisites>
-    <statBases>      
-      <MaxHitPoints>180</MaxHitPoints>
-      <Flammability>0.7</Flammability>
-      <WorkToBuild>2500</WorkToBuild>
-      <Mass>20</Mass>
-      <Beauty>-20</Beauty>
-    </statBases>    
-  </ThingDef>
+    <ThingDef Abstract="True" Name="CombatAI_CCTVBase" ParentName="BuildingBase">
+        <comps>
+            <li Class="CompProperties_Forbiddable"/>
+            <li Class="CompProperties_Power">
+                <compClass>CompPowerTrader</compClass>
+                <basePowerConsumption>250</basePowerConsumption>
+            </li>
+            <li Class="CompProperties_Flickable"/>
+            <li Class="CompProperties_Breakdownable"/>
+        </comps>
+        <tickerType>Normal</tickerType>
+        <altitudeLayer>Building</altitudeLayer>
+        <hasInteractionCell>False</hasInteractionCell>
+        <minifiedDef>MinifiedThing</minifiedDef>
+        <stealable>false</stealable>
+        <thingCategories>
+            <li>BuildingsSecurity</li>
+        </thingCategories>
+        <designationCategory>Security</designationCategory>
+        <researchPrerequisites>
+            <li>HeavyTurrets</li>
+        </researchPrerequisites>
+        <statBases>
+            <MaxHitPoints>180</MaxHitPoints>
+            <Flammability>0.7</Flammability>
+            <WorkToBuild>2500</WorkToBuild>
+            <Mass>20</Mass>
+            <Beauty>-20</Beauty>
+        </statBases>
+    </ThingDef>
 
-  <!-- <ThingDef ParentName="CombatAI_CCTVBase">
-    <defName>CombatAI_CCTVPole</defName>
-    <label>Pole CCTV</label>   
-    <drawerType>MapMeshAndRealTime</drawerType>   
-    <graphicData>
-      <graphicClass>Graphic_Single</graphicClass>
-      <texPath>Isma/Buildings/CCTV/cctv_pole</texPath>
-      <drawSize>(3.5,3.5)</drawSize>
-      <damageData>
-        <rect>(0.38,0.2,0.56375,0.8)</rect>
-        <cornerTL>Damage/Corner</cornerTL>
-      </damageData>
-      <shadowData>
-        <offset>(-0.13,-0.87,-0.1)</offset>
-        <volume>(0.5,2.0,0.5)</volume>
-      </shadowData>
-    </graphicData>        
-    <uiIconScale>0.50</uiIconScale>
-    <stealable>false</stealable>
-    <rotatable>false</rotatable>
-    <size>(1,1)</size>
-    <passability>PassThroughOnly</passability>
-    <pathCost>50</pathCost>
-    <fillPercent>0.3</fillPercent>     
-    <researchPrerequisites>      
-      <li>HeavyTurrets</li>
-    </researchPrerequisites>
-    <placeWorkers>
-      <li>PlaceWorker_NotUnderRoof</li>      
-      <li>PlaceWorker_PreventInteractionSpotOverlap</li>
-    </placeWorkers>
-    <comps>
-      <li Class="CombatAI.Comps.CompProperties_Sighter">
-        <radius>15</radius>
-        <radiusNight>5</radiusNight>
-        <powered>true</powered>
-        <mannable>false</mannable>
-      </li>
-    </comps>
-  </ThingDef> -->
+    <!-- <ThingDef ParentName="CombatAI_CCTVBase">
+      <defName>CombatAI_CCTVPole</defName>
+      <label>Pole CCTV</label>   
+      <drawerType>MapMeshAndRealTime</drawerType>   
+      <graphicData>
+        <graphicClass>Graphic_Single</graphicClass>
+        <texPath>Isma/Buildings/CCTV/cctv_pole</texPath>
+        <drawSize>(3.5,3.5)</drawSize>
+        <damageData>
+          <rect>(0.38,0.2,0.56375,0.8)</rect>
+          <cornerTL>Damage/Corner</cornerTL>
+        </damageData>
+        <shadowData>
+          <offset>(-0.13,-0.87,-0.1)</offset>
+          <volume>(0.5,2.0,0.5)</volume>
+        </shadowData>
+      </graphicData>        
+      <uiIconScale>0.50</uiIconScale>
+      <stealable>false</stealable>
+      <rotatable>false</rotatable>
+      <size>(1,1)</size>
+      <passability>PassThroughOnly</passability>
+      <pathCost>50</pathCost>
+      <fillPercent>0.3</fillPercent>     
+      <researchPrerequisites>      
+        <li>HeavyTurrets</li>
+      </researchPrerequisites>
+      <placeWorkers>
+        <li>PlaceWorker_NotUnderRoof</li>      
+        <li>PlaceWorker_PreventInteractionSpotOverlap</li>
+      </placeWorkers>
+      <comps>
+        <li Class="CombatAI.Comps.CompProperties_Sighter">
+          <radius>15</radius>
+          <radiusNight>5</radiusNight>
+          <powered>true</powered>
+          <mannable>false</mannable>
+        </li>
+      </comps>
+    </ThingDef> -->
 
-  <ThingDef ParentName="CombatAI_CCTVBase">
-    <defName>CombatAI_CCTVSentinel</defName>
-    <label>Sentinel CCTV</label>   
-    <drawerType>MapMeshAndRealTime</drawerType>   
-    <graphicData>
-      <graphicClass>Graphic_Single</graphicClass>
-      <texPath>Isma/Buildings/CCTV/cctv_sentinel</texPath>
-      <drawSize>(1.0,1.0)</drawSize>
-      <damageData>
-        <rect>(0.38,0.2,0.56375,0.8)</rect>
-        <cornerTL>Damage/Corner</cornerTL>
-      </damageData>
-      <shadowData>
-        <offset>(-0.13,-0.87,-0.1)</offset>
-        <volume>(0.5,0.5,0.5)</volume>
-      </shadowData>
-    </graphicData>        
-    <uiIconScale>1.2</uiIconScale>
-    <stealable>false</stealable>
-    <rotatable>false</rotatable>
-    <size>(1,1)</size>
-    <passability>PassThroughOnly</passability>
-    <pathCost>90</pathCost>
-    <fillPercent>0.4</fillPercent>     
-    <researchPrerequisites>      
-      <li>HeavyTurrets</li>
-    </researchPrerequisites>
-    <placeWorkers>
-      <li>PlaceWorker_NotUnderRoof</li>      
-      <li>PlaceWorker_PreventInteractionSpotOverlap</li>
-    </placeWorkers>
-    <comps>
-      <li Class="CombatAI.Comps.CompProperties_Sighter">
-        <radius>8</radius>
-        <radiusNight>5</radiusNight>
-        <powered>true</powered>
-        <mannable>false</mannable>
-      </li>
-    </comps>
-  </ThingDef>
+    <ThingDef ParentName="CombatAI_CCTVBase">
+        <defName>CombatAI_CCTVSentinel</defName>
+        <label>Sentinel CCTV</label>
+        <drawerType>MapMeshAndRealTime</drawerType>
+        <graphicData>
+            <graphicClass>Graphic_Single</graphicClass>
+            <texPath>Isma/Buildings/CCTV/cctv_sentinel</texPath>
+            <drawSize>(1.0,1.0)</drawSize>
+            <damageData>
+                <rect>(0.38,0.2,0.56375,0.8)</rect>
+                <cornerTL>Damage/Corner</cornerTL>
+            </damageData>
+            <shadowData>
+                <offset>(-0.13,-0.87,-0.1)</offset>
+                <volume>(0.5,0.5,0.5)</volume>
+            </shadowData>
+        </graphicData>
+        <uiIconScale>1.2</uiIconScale>
+        <stealable>false</stealable>
+        <rotatable>false</rotatable>
+        <size>(1,1)</size>
+        <passability>PassThroughOnly</passability>
+        <pathCost>90</pathCost>
+        <fillPercent>0.4</fillPercent>
+        <researchPrerequisites>
+            <li>HeavyTurrets</li>
+        </researchPrerequisites>
+        <placeWorkers>
+            <li>PlaceWorker_NotUnderRoof</li>
+            <li>PlaceWorker_PreventInteractionSpotOverlap</li>
+        </placeWorkers>
+        <comps>
+            <li Class="CombatAI.Comps.CompProperties_Sighter">
+                <radius>8</radius>
+                <radiusNight>5</radiusNight>
+                <powered>true</powered>
+                <mannable>false</mannable>
+            </li>
+        </comps>
+    </ThingDef>
 
 
 </Defs>

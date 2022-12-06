@@ -9,8 +9,8 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ template debug="true" hostspecific="true" language="C#" #>
 <#@ output extension=".cs" #>
-<#     
-    string texturesPath = "$(SolutionDir)/../../../1.4/Textures/Isma";    
+<#
+    var texturesPath = "$(SolutionDir)/../../../1.4/Textures/Isma";
 #>
 
 using System;
@@ -40,18 +40,18 @@ namespace CombatAI.R
     /// </summary>
     public static class Tex
     {     
-<#   
+<#
     foreach (var file in Directory.GetFiles(texturesPath, "*.png", SearchOption.AllDirectories))
-    {                
-        string path = file.Substring(texturesPath.Length + 1, file.Length - texturesPath.Length - 5).Replace('\\', '/');
-        string name = path.Replace('/', '_').Replace('-', '_').Replace('.', '_').Trim();        
+    {
+        var path = file.Substring(texturesPath.Length + 1, file.Length - texturesPath.Length - 5).Replace('\\', '/');
+        var name = path.Replace('/', '_').Replace('-', '_').Replace('.', '_').Trim();
 #>
 
         /// <summary> Texture at <c><#= file #></c>:        
         /// <code><#= path #>.png</code>
         /// </summary>       
         public static readonly Texture2D <#= name #> = ContentFinder<Texture2D>.Get( "<#= path #>", true);      
-<#                       
+<#
     }
 #>
     }

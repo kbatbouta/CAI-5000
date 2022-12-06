@@ -19,9 +19,7 @@ namespace CombatAI.Patches
 			public static void Postfix(Building_Door __instance)
 			{
 				if (!__instance.Destroyed && __instance.Spawned)
-				{
 					__instance.Map?.GetComp_Fast<WallGrid>()?.RecalculateCell(__instance.Position, __instance);
-				}
 			}
 		}
 
@@ -31,11 +29,8 @@ namespace CombatAI.Patches
 			public static void Postfix(Building_Door __instance)
 			{
 				if (__instance.IsHashIntervalTick(30) && !__instance.Destroyed && __instance.Spawned)
-				{
 					__instance.Map?.GetComp_Fast<WallGrid>()?.RecalculateCell(__instance.Position, __instance);
-				}
 			}
 		}
 	}
 }
-

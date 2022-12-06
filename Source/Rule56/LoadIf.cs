@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace CombatAI
 {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Field)]
@@ -12,4 +13,3 @@ namespace CombatAI
 		}
 	}
 }
-

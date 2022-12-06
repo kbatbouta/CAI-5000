@@ -17,12 +17,10 @@ namespace CombatAI.Patches
 		{
 			public static void Postfix(CompProjectileInterceptor __instance)
 			{
-				if ((__instance.parent?.IsHashIntervalTick(30) ?? false) && !__instance.parent.Destroyed && __instance.parent.Spawned && __instance.Active)
-				{
+				if ((__instance.parent?.IsHashIntervalTick(30) ?? false) && !__instance.parent.Destroyed &&
+				    __instance.parent.Spawned && __instance.Active)
 					__instance.parent.Map.GetComp_Fast<MapComponent_CombatAI>().interceptors.TryRegister(__instance);
-				}
 			}
 		}
 	}
 }
-

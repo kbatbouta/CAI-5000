@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace CombatAI
 {
 	public enum InterceptorFlags
@@ -9,4 +10,3 @@ namespace CombatAI
 		interceptGroundProjectiles = 8
 	}
 }
-

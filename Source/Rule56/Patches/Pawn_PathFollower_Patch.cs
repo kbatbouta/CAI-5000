@@ -17,23 +17,21 @@ namespace CombatAI.Patches
 {
 	public static class Pawn_PathFollower_Patch
 	{
-        [HarmonyPatch(typeof(Pawn_PathFollower), nameof(Pawn_PathFollower.SetupMoveIntoNextCell))]
-        static class Pawn_PathFollower__Patch
-        {
-            public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-            {
-                return instructions.MethodReplacer(AccessTools.Method(typeof(GenGrid), nameof(GenGrid.WalkableBy)), AccessTools.Method(typeof(Pawn_PathFollower_Patch), nameof(Pawn_PathFollower_Patch.WalkableBy)));
-            }
-        }
+		[HarmonyPatch(typeof(Pawn_PathFollower), nameof(Pawn_PathFollower.SetupMoveIntoNextCell))]
+		private static class Pawn_PathFollower__Patch
+		{
+			public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions,
+				ILGenerator generator)
+			{
+				return instructions.MethodReplacer(AccessTools.Method(typeof(GenGrid), nameof(GenGrid.WalkableBy)),
+					AccessTools.Method(typeof(Pawn_PathFollower_Patch), nameof(WalkableBy)));
+			}
+		}
 
-        private static bool WalkableBy(IntVec3 cell, Map map, Pawn pawn)
-        {
-            if (Finder.Settings.Debug)
-            {
-                return cell.WalkableBy(map, pawn);
-            }
-            return true;
-        }
-    }
+		private static bool WalkableBy(IntVec3 cell, Map map, Pawn pawn)
+		{
+			if (Finder.Settings.Debug) return cell.WalkableBy(map, pawn);
+			return true;
+		}
+	}
 }
-

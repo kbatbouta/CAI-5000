@@ -12,10 +12,10 @@ using Verse.AI;
 namespace CombatAI
 {
 	public class SightGrid
-    {		
+	{
 		private readonly List<Vector3> buffer = new List<Vector3>(1024);
-        private readonly List<Thing> thingBuffer1 = new List<Thing>(256);
-		private readonly List<Thing> thingBuffer2 = new List<Thing>(256);        
+		private readonly List<Thing> thingBuffer1 = new List<Thing>(256);
+		private readonly List<Thing> thingBuffer2 = new List<Thing>(256);
 
 		private const int COVERCARRYLIMIT = 6;
 
@@ -25,571 +25,534 @@ namespace CombatAI
 			/// Scan radius. Used while scanning for enemies.
 			/// </summary>
 			public int scan;
+
 			/// <summary>
 			/// Sight radius. Determine the radius of the thing's influence map.
 			/// </summary>
 			public int sight;
+
 			/// <summary>
 			/// Fog radius. Determine how far this thing will reveal fog of war.
 			/// </summary>
 			public int fog;
+
 			/// <summary>
 			/// Creation tick timestamp.
 			/// </summary>
 			public int createdAt;
+
 			/// <summary>
 			/// Whether this is a valid report.
 			/// </summary>
-			public bool IsValid
-			{
-				get => createdAt != 0 && GenTicks.TicksGame - createdAt < 600;
-			}
+			public bool IsValid => createdAt != 0 && GenTicks.TicksGame - createdAt < 600;
 		}
 
 		private struct ISpotRecord
-        {
-            /// <summary>
-            /// Spotted flag.
-            /// </summary>
-            public UInt64 flag;
-            /// <summary>
-            /// Cell at which the spotting occured.
-            /// </summary>
-            public IntVec3 cell;
-            /// <summary>
-            /// Cell visibility.
-            /// </summary>
-            public float visibility;
-        }		
+		{
+			/// <summary>
+			/// Spotted flag.
+			/// </summary>
+			public ulong flag;
+
+			/// <summary>
+			/// Cell at which the spotting occured.
+			/// </summary>
+			public IntVec3 cell;
+
+			/// <summary>
+			/// Cell visibility.
+			/// </summary>
+			public float visibility;
+		}
 
 		private class IBucketableThing : IBucketable
-        {            
+		{
 			private int bucketIndex;
-            /// <summary>
-            /// Current sight grid.
-            /// </summary>
-            public readonly SightGrid grid;
+
+			/// <summary>
+			/// Current sight grid.
+			/// </summary>
+			public readonly SightGrid grid;
+
 			/// <summary>
 			/// Thing.
 			/// </summary>
 			public readonly Thing thing;
+
 			/// <summary>
 			/// Thing.
 			/// </summary>
 			public readonly Pawn pawn;
+
 			/// <summary>
 			/// Thing.
 			/// </summary>
-			public readonly Building_TurretGun turretGun;            
+			public readonly Building_TurretGun turretGun;
+
 			/// <summary>
 			/// Thing.
 			/// </summary>
 			public readonly bool isPlayer;
+
 			/// <summary>
 			/// Thing's faction on IBucketableThing instance creation.
 			/// </summary>
 			public readonly Faction faction;
-            /// <summary>
-            /// Sighting component.
-            /// </summary>
-            public readonly ThingComp_Sighter sighter;
-            /// <summary>
-            /// Dormant comp.
-            /// </summary>
-            public readonly CompCanBeDormant dormant;
+
+			/// <summary>
+			/// Sighting component.
+			/// </summary>
+			public readonly ThingComp_Sighter sighter;
+
+			/// <summary>
+			/// Dormant comp.
+			/// </summary>
+			public readonly CompCanBeDormant dormant;
+
 			/// <summary>
 			/// Dormant comp.
 			/// </summary>
 			public readonly ThingComp_CombatAI ai;
+
 			/// <summary>
 			/// Last cycle.
 			/// </summary>
-			public int lastCycle;            
+			public int lastCycle;
+
 			/// <summary>
 			/// Pawn pawn
 			/// </summary>
 			public readonly List<IntVec3> path = new List<IntVec3>(16);
-            /// <summary>
-            /// Contains spotting records that are to be processed on the main thread once the scan is finished.
-            /// </summary>
-            public readonly List<ISpotRecord> spottings = new List<ISpotRecord>(64);
-            /// <summary>
-            /// Last tick this pawn scanned for enemies
-            /// </summary>
-            public int lastScannedForEnemies;
+
+			/// <summary>
+			/// Contains spotting records that are to be processed on the main thread once the scan is finished.
+			/// </summary>
+			public readonly List<ISpotRecord> spottings = new List<ISpotRecord>(64);
+
+			/// <summary>
+			/// Last tick this pawn scanned for enemies
+			/// </summary>
+			public int lastScannedForEnemies;
+
 			/// <summary>
 			/// Thing potential damage report.
 			/// </summary>
 			public DamageReport cachedDamage;
+
 			/// <summary>
 			/// Cached sight radius report.
 			/// </summary>
 			public ISightRadius cachedSightRadius;
+
 			/// <summary>
 			/// Bucket index.
 			/// </summary>
 			public int BucketIndex =>
-                bucketIndex;
-            /// <summary>
-            /// Thing id number.
-            /// </summary>
-            public int UniqueIdNumber =>
-                thing.thingIDNumber;
+				bucketIndex;
 
-            public IBucketableThing(SightGrid grid, Thing thing, int bucketIndex)
-            {
-                this.grid = grid;
+			/// <summary>
+			/// Thing id number.
+			/// </summary>
+			public int UniqueIdNumber =>
+				thing.thingIDNumber;
+
+			public IBucketableThing(SightGrid grid, Thing thing, int bucketIndex)
+			{
+				this.grid = grid;
 				this.thing = thing;
-				this.pawn = thing as Pawn;
-                this.turretGun = thing as Building_TurretGun;
-				this.isPlayer = thing.Faction.IsPlayerSafe();                
-				this.dormant = thing.GetComp_Fast<CompCanBeDormant>();
-                this.ai = thing.GetComp_Fast<ThingComp_CombatAI>();
-                this.sighter = thing.GetComp_Fast<ThingComp_Sighter>();                
-                this.faction = thing.Faction;
-                this.bucketIndex = bucketIndex;
-				this.cachedDamage = DamageUtility.GetDamageReport(thing);
-				this.cachedSightRadius = SightUtility.GetSightRadius(thing);
-			}			
+				pawn = thing as Pawn;
+				turretGun = thing as Building_TurretGun;
+				isPlayer = thing.Faction.IsPlayerSafe();
+				dormant = thing.GetComp_Fast<CompCanBeDormant>();
+				ai = thing.GetComp_Fast<ThingComp_CombatAI>();
+				sighter = thing.GetComp_Fast<ThingComp_Sighter>();
+				faction = thing.Faction;
+				this.bucketIndex = bucketIndex;
+				cachedDamage = DamageUtility.GetDamageReport(thing);
+				cachedSightRadius = SightUtility.GetSightRadius(thing);
+			}
 		}
-        
-        private WallGrid _walls;
-        private int ticksUntilUpdate;
-        private bool wait = false;        
+
+		private WallGrid _walls;
+		private int ticksUntilUpdate;
+		private bool wait = false;
 		private AsyncActions asyncActions;
-        private IBuckets<IBucketableThing> buckets;
+		private IBuckets<IBucketableThing> buckets;
 		private readonly Dictionary<Faction, int> numsByFaction = new Dictionary<Faction, int>();
 		private readonly List<IBucketableThing> tmpDeRegisterList = new List<IBucketableThing>(64);
-        private readonly List<IBucketableThing> tmpInvalidRecords = new List<IBucketableThing>(64);
-        private readonly List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>(64);
+		private readonly List<IBucketableThing> tmpInvalidRecords = new List<IBucketableThing>(64);
+		private readonly List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>(64);
 
-        /// <summary>
-        /// Parent map.
-        /// </summary>
-        public readonly Map map;
-        /// <summary>
-        /// Sight grid contains all sight data.
-        /// </summary>
-        public readonly ITSignalGrid grid;                
-        /// <summary>
-        /// Performance settings.
-        /// </summary>
-        public readonly Settings.SightPerformanceSettings settings;
-        /// <summary>
-        /// Parent map sight tracker.
-        /// </summary>
-        public readonly SightTracker sightTracker;
-        /// <summary>
-        /// Whether this is the player grid
-        /// </summary>
-        public bool playerAlliance = false;
+		/// <summary>
+		/// Parent map.
+		/// </summary>
+		public readonly Map map;
+
+		/// <summary>
+		/// Sight grid contains all sight data.
+		/// </summary>
+		public readonly ITSignalGrid grid;
+
+		/// <summary>
+		/// Performance settings.
+		/// </summary>
+		public readonly Settings.SightPerformanceSettings settings;
+
+		/// <summary>
+		/// Parent map sight tracker.
+		/// </summary>
+		public readonly SightTracker sightTracker;
+
+		/// <summary>
+		/// Whether this is the player grid
+		/// </summary>
+		public bool playerAlliance = false;
+
 		/// <summary>
 		/// Whether this is the player grid
 		/// </summary>
 		public bool trackFactions = false;
-        /// <summary>
-        /// Fog of war grid. Can be null.
-        /// </summary>
+
+		/// <summary>
+		/// Fog of war grid. Can be null.
+		/// </summary>
 		public ITFloatGrid gridFog;
+
 		/// <summary>
 		/// Tracks the number of factions tracked.
 		/// </summary>        
-		public int FactionNum
-        {
-            get
-            {
-                return numsByFaction.Count;
-            }
-        }
+		public int FactionNum => numsByFaction.Count;
+
 		/// <summary>
 		/// The map's wallgrid.
 		/// </summary>                
-		public WallGrid Walls
-        {
-            get
-            {
-                return _walls != null ? _walls : _walls = sightTracker.map.GetComp_Fast<WallGrid>();
+		public WallGrid Walls => _walls != null ? _walls : _walls = sightTracker.map.GetComp_Fast<WallGrid>();
+
+		public SightGrid(SightTracker sightTracker, Settings.SightPerformanceSettings settings)
+		{
+			this.sightTracker = sightTracker;
+			map = sightTracker.map;
+			this.settings = settings;
+			grid = new ITSignalGrid(map);
+			asyncActions = new AsyncActions(1);
+			ticksUntilUpdate = Rand.Int % this.settings.interval;
+			buckets = new IBuckets<IBucketableThing>(settings.buckets);
+		}
+
+		public void FinalizeInit()
+		{
+			asyncActions.Start();
+		}
+
+		public virtual void SightGridTick()
+		{
+			asyncActions.ExecuteMainThreadActions();
+			if (ticksUntilUpdate-- > 0 || wait) return;
+			tmpInvalidRecords.Clear();
+			tmpInconsistentRecords.Clear();
+			var bucket = buckets.Current;
+			for (var i = 0; i < bucket.Count; i++)
+			{
+				var item = bucket[i];
+				if (!Valid(item))
+				{
+					tmpInvalidRecords.Add(item);
+					continue;
+				}
+
+				if (!Consistent(item))
+				{
+					tmpInconsistentRecords.Add(item);
+					continue;
+				}
+
+				TryCastSight(item);
 			}
-        }
 
-        public SightGrid(SightTracker sightTracker, Settings.SightPerformanceSettings settings)
-        {            
-            this.sightTracker = sightTracker;
-            this.map = sightTracker.map;
-            this.settings = settings;                    
-            this.grid = new ITSignalGrid(map);            
-            this.asyncActions = new AsyncActions(1);            
-            this.ticksUntilUpdate = Rand.Int % this.settings.interval;
-            this.buckets = new IBuckets<IBucketableThing>(settings.buckets);
-        }
+			if (tmpInvalidRecords.Count != 0)
+			{
+				for (var i = 0; i < tmpInvalidRecords.Count; i++) TryDeRegister(tmpInvalidRecords[i].thing);
+				tmpInvalidRecords.Clear();
+			}
 
-        public void FinalizeInit()
-        {
-            asyncActions.Start();
-        }
+			if (tmpInconsistentRecords.Count != 0)
+			{
+				for (var i = 0; i < tmpInconsistentRecords.Count; i++)
+				{
+					TryDeRegister(tmpInconsistentRecords[i].thing);
+					sightTracker.Register(tmpInconsistentRecords[i].thing);
+				}
 
-        public virtual void SightGridTick()
-        {
-            asyncActions.ExecuteMainThreadActions();
-            if (ticksUntilUpdate-- > 0 || wait)
-            {
-                return;
-            }
-            tmpInvalidRecords.Clear();
-            tmpInconsistentRecords.Clear();
-            List<IBucketableThing> bucket = buckets.Current;  
-            for (int i = 0; i < bucket.Count; i++)
-            {
-                IBucketableThing item = bucket[i];
-                if(!Valid(item))
-                {
-                    tmpInvalidRecords.Add(item);
-                    continue;
-                }
-                if (!Consistent(item))
-                {
-                    tmpInconsistentRecords.Add(item);
-                    continue;
-                }
-                TryCastSight(item);                                      
-            }
-            if(tmpInvalidRecords.Count != 0)
-            {
-                for (int i = 0; i < tmpInvalidRecords.Count; i++)
-                {
-                    TryDeRegister(tmpInvalidRecords[i].thing);
-                }        
-                tmpInvalidRecords.Clear();
-            }
-            if (tmpInconsistentRecords.Count != 0)
-            {
-                for (int i = 0; i < tmpInconsistentRecords.Count; i++)
-                {
-                    TryDeRegister(tmpInconsistentRecords[i].thing);
-                    sightTracker.Register(tmpInconsistentRecords[i].thing);
-                }
-                tmpInconsistentRecords.Clear();
-            }
-            ticksUntilUpdate = (int)settings.interval + Mathf.CeilToInt(settings.interval * (1.0f - Finder.P50));
-            buckets.Next();    
-            if (buckets.Index == 0)
-            {
-                wait = true;
-                asyncActions.EnqueueOffThreadAction(delegate
-                {
-                    asyncActions.EnqueueMainThreadAction(Continue);
-                });                                                            
-            }                                                 
-        }
+				tmpInconsistentRecords.Clear();
+			}
 
-        public virtual void Register(Thing thing)
-        {
-            buckets.RemoveId(thing.thingIDNumber);
-            if (Valid(thing))
-            {
-                IBucketableThing item;
+			ticksUntilUpdate = (int)settings.interval + Mathf.CeilToInt(settings.interval * (1.0f - Finder.P50));
+			buckets.Next();
+			if (buckets.Index == 0)
+			{
+				wait = true;
+				asyncActions.EnqueueOffThreadAction(delegate { asyncActions.EnqueueMainThreadAction(Continue); });
+			}
+		}
+
+		public virtual void Register(Thing thing)
+		{
+			buckets.RemoveId(thing.thingIDNumber);
+			if (Valid(thing))
+			{
+				IBucketableThing item;
 				buckets.Add(item = new IBucketableThing(this, thing, (thing.thingIDNumber + 19) % settings.buckets));
 				if (trackFactions)
-                {
-                    numsByFaction.TryGetValue(thing.Faction, out int num);
-                    numsByFaction[thing.Faction] = num + 1;
+				{
+					numsByFaction.TryGetValue(thing.Faction, out var num);
+					numsByFaction[thing.Faction] = num + 1;
 				}
-            }
-        }
+			}
+		}
 
-        public virtual void TryDeRegister(Thing thing)
-        {
-            if (trackFactions)
-            {
-                IBucketableThing bucketable = buckets.GetById(thing.thingIDNumber);
-                if (bucketable != null && numsByFaction.TryGetValue(bucketable.faction, out int num))
-                {
-                    if(num > 1)
-                    {
-                        numsByFaction[bucketable.faction] = num - 1;
-					}
-                    else
-                    {
-                        numsByFaction.Remove(bucketable.faction);
-					}
+		public virtual void TryDeRegister(Thing thing)
+		{
+			if (trackFactions)
+			{
+				var bucketable = buckets.GetById(thing.thingIDNumber);
+				if (bucketable != null && numsByFaction.TryGetValue(bucketable.faction, out var num))
+				{
+					if (num > 1)
+						numsByFaction[bucketable.faction] = num - 1;
+					else
+						numsByFaction.Remove(bucketable.faction);
 				}
-            }
-			buckets.RemoveId(thing.thingIDNumber);            
-        }
+			}
 
-        public virtual void Destroy()
-        {
-            try
-            {
-                buckets.Release();
-                asyncActions.Kill();                
-            }
-            catch(Exception er)
-            {
-                Log.Error($"CAI: SightGridManager Notify_MapRemoved failed to stop thread with {er}");
-            }
-        }
+			buckets.RemoveId(thing.thingIDNumber);
+		}
 
-        private void Continue()
-        {
-            gridFog?.NextCycle();
+		public virtual void Destroy()
+		{
+			try
+			{
+				buckets.Release();
+				asyncActions.Kill();
+			}
+			catch (Exception er)
+			{
+				Log.Error($"CAI: SightGridManager Notify_MapRemoved failed to stop thread with {er}");
+			}
+		}
+
+		private void Continue()
+		{
+			gridFog?.NextCycle();
 			grid.NextCycle();
 			wait = false;
 		}
 
-        private bool Consistent(IBucketableThing item)
-        {
-            if(item.faction != item.thing.Faction)
-            {
-                return false;
-            }
-            return true;
-        }  
+		private bool Consistent(IBucketableThing item)
+		{
+			if (item.faction != item.thing.Faction) return false;
+			return true;
+		}
 
-        private bool Valid(Thing thing)
-        {
-            if (thing == null)
-            {
-                return false;
-            }
-            if (thing.Destroyed || !thing.Spawned)
-            {
-                return false;
-            }
-			return (thing is Pawn pawn && !pawn.Dead) || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter));
-        }
+		private bool Valid(Thing thing)
+		{
+			if (thing == null) return false;
+			if (thing.Destroyed || !thing.Spawned) return false;
+			return (thing is Pawn pawn && !pawn.Dead) || thing is Building_Turret ||
+			       thing.def.HasComp(typeof(ThingComp_Sighter));
+		}
 
 		private bool Valid(IBucketableThing item)
 		{
-            return !item.thing.Destroyed && item.thing.Spawned && (item.pawn == null || !item.pawn.Dead);			
+			return !item.thing.Destroyed && item.thing.Spawned && (item.pawn == null || !item.pawn.Dead);
 		}
 
 		private bool Skip(IBucketableThing item)
-        {
-            if (!playerAlliance && item.dormant != null)
-            {
-                return !item.dormant.Awake || item.dormant.WaitingToWakeUp;
-            }
-            if (item.pawn != null)
-            {
-                return !playerAlliance && ((GenTicks.TicksGame - item.pawn.needs?.rest?.lastRestTick <= 30) || item.pawn.Downed);
-            }
-            if (item.sighter != null)
-            {
-                return playerAlliance && !item.sighter.Active;
-            }
-            if (item.turretGun != null)
-            {
-                return playerAlliance && (!item.turretGun.Active || (item.turretGun.IsMannable && !(item.turretGun.mannableComp?.MannedNow ?? false)));
-            }
-            if (Mod_CE.active && item.thing is Building_Turret turret)
-            {                
-                return !Mod_CE.IsTurretActiveCE(turret);
-            }
-            return false;
-        }
+		{
+			if (!playerAlliance && item.dormant != null) return !item.dormant.Awake || item.dormant.WaitingToWakeUp;
+			if (item.pawn != null)
+				return !playerAlliance &&
+				       (GenTicks.TicksGame - item.pawn.needs?.rest?.lastRestTick <= 30 || item.pawn.Downed);
+			if (item.sighter != null) return playerAlliance && !item.sighter.Active;
+			if (item.turretGun != null)
+				return playerAlliance && (!item.turretGun.Active ||
+				                          (item.turretGun.IsMannable &&
+				                           !(item.turretGun.mannableComp?.MannedNow ?? false)));
+			if (Mod_CE.active && item.thing is Building_Turret turret) return !Mod_CE.IsTurretActiveCE(turret);
+			return false;
+		}
 
-        private UInt64 GetFlags(IBucketableThing item)
-        {
-            return item.thing.GetThingFlags();
-        }
+		private ulong GetFlags(IBucketableThing item)
+		{
+			return item.thing.GetThingFlags();
+		}
 
-        private bool TryCastSight(IBucketableThing item)
-        {
-            if (grid.CycleNum == item.lastCycle || Skip(item))
-            {
-                return false;
-            }           
-			if (!item.cachedSightRadius.IsValid)
-            {
-                item.cachedSightRadius = SightUtility.GetSightRadius(item.thing);
+		private bool TryCastSight(IBucketableThing item)
+		{
+			if (grid.CycleNum == item.lastCycle || Skip(item)) return false;
+			if (!item.cachedSightRadius.IsValid) item.cachedSightRadius = SightUtility.GetSightRadius(item.thing);
+			if (item.cachedSightRadius.sight == 0) return false;
+			if (!!item.cachedDamage.IsValid) item.cachedDamage = DamageUtility.GetDamageReport(item.thing);
+			var ticks = GenTicks.TicksGame;
+			var origin = item.thing.Position;
+			var pos = GetShiftedPosition(item.thing, 30, item.path);
+			if (!pos.InBounds(map))
+			{
+				Log.Error($"ISMA: SighGridUpdater {item.thing} position is outside the map's bounds!");
+				return false;
 			}
-            if (item.cachedSightRadius.sight == 0)
-            {
-                return false;
-            }
-            if (!!item.cachedDamage.IsValid)
-            {
-                item.cachedDamage = DamageUtility.GetDamageReport(item.thing);
-            }
-			int ticks = GenTicks.TicksGame;
-			IntVec3 origin = item.thing.Position;
-            IntVec3 pos = GetShiftedPosition(item.thing, 30, item.path);            
-            if (!pos.InBounds(map))
-            {
-                Log.Error($"ISMA: SighGridUpdater {item.thing} position is outside the map's bounds!");
-                return false;
-            }
-            IntVec3 flagPos = pos;
-            if(item.pawn != null)
-            {
-                flagPos = GetShiftedPosition(item.pawn, 60, null);
+
+			var flagPos = pos;
+			if (item.pawn != null) flagPos = GetShiftedPosition(item.pawn, 60, null);
+			var reader = item.ai?.sightReader ?? null;
+			bool scanForEnemies;
+			if (scanForEnemies = !item.isPlayer && item.sighter == null && reader != null && item.ai != null &&
+			                     !item.ai.ReactedRecently(45) && ticks - item.lastScannedForEnemies >=
+			                     (!Finder.Performance.TpsCriticallyLow ? 10 : 15))
+			{
+				if (item.dormant != null && !item.dormant.Awake)
+					scanForEnemies = false;
+				else if (item.pawn != null && item.pawn.mindState?.duty?.def == DutyDefOf.SleepForever)
+					scanForEnemies = false;
 			}
-            SightTracker.SightReader reader = item.ai?.sightReader ?? null;
-            bool scanForEnemies;
-            if (scanForEnemies = (!item.isPlayer && item.sighter == null && reader != null && item.ai != null && !item.ai.ReactedRecently(45) && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15)))
-            {
-                if (item.dormant != null && !item.dormant.Awake)
-                {
-                    scanForEnemies = false;
-                }
-                else if(item.pawn != null && item.pawn.mindState?.duty?.def == DutyDefOf.SleepForever)
-                {
-                    scanForEnemies = false;
-				}                
-			}			
-            if (scanForEnemies)
-            {
+
+			if (scanForEnemies)
+			{
 				item.lastScannedForEnemies = ticks;
 				item.ai.OnScanStarted();
 				item.spottings.Clear();
-            }
-            ISightRadius sightRadius = item.cachedSightRadius; 
+			}
+
+			var sightRadius = item.cachedSightRadius;
 			Action action = () =>
-            {                                
-				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
-				grid.Set(flagPos, (item.pawn == null || !item.pawn.Downed) ? GetFlags(item) : 0);
-				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
+			{
+				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt,
+					item.cachedDamage.attributes);
+				grid.Set(flagPos, item.pawn == null || !item.pawn.Downed ? GetFlags(item) : 0);
+				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt,
+					item.cachedDamage.attributes);
 				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
-                if (playerAlliance)
-                {
+				if (playerAlliance)
+				{
 					gridFog.Next();
 					gridFog.Set(origin, 1.0f);
-					for (int i = 0; i < item.path.Count; i++)
-                    {                        
-                        gridFog.Set(item.path[i], 1.0f);                    
-                    }
-                }
-                //float r = range * 1.13f;
-                // used in fog of war calcs
-                //float rHafledSqr = Maths.Sqr(r * Finder.Settings.FogOfWar_RangeFadeMultiplier);
-                //if (scanForEnemies)
-                //{
-                //    // we do this because we want raiders to react to stuff slightly outside their range.
-                //    // The reason we placed this here is because rHafledSqr is used for fog of war and needs the actucal value while rSqr is used for casting in general.
-                //    r += 10;
-                //}
-                //float rSqr = Maths.Sqr(r);
-                float r_fade        = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
-                float d_fade        = sightRadius.fog - r_fade;
-				float rSqr_sight    = Maths.Sqr(sightRadius.sight);
-				float rSqr_scan     = Maths.Sqr(sightRadius.scan);
-				float rSqr_fog      = Maths.Sqr(sightRadius.fog);
-				float rSqr_fade     = Maths.Sqr(r_fade);                
+					for (var i = 0; i < item.path.Count; i++) gridFog.Set(item.path[i], 1.0f);
+				}
+
+				//float r = range * 1.13f;
+				// used in fog of war calcs
+				//float rHafledSqr = Maths.Sqr(r * Finder.Settings.FogOfWar_RangeFadeMultiplier);
+				//if (scanForEnemies)
+				//{
+				//    // we do this because we want raiders to react to stuff slightly outside their range.
+				//    // The reason we placed this here is because rHafledSqr is used for fog of war and needs the actucal value while rSqr is used for casting in general.
+				//    r += 10;
+				//}
+				//float rSqr = Maths.Sqr(r);
+				var r_fade = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
+				var d_fade = sightRadius.fog - r_fade;
+				float rSqr_sight = Maths.Sqr(sightRadius.sight);
+				float rSqr_scan = Maths.Sqr(sightRadius.scan);
+				float rSqr_fog = Maths.Sqr(sightRadius.fog);
+				var rSqr_fade = Maths.Sqr(r_fade);
 				ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
-                {
-                    float d = pos.DistanceToSquared(cell);
-                    float visibility = 0f;		
+				{
+					float d = pos.DistanceToSquared(cell);
+					var visibility = 0f;
 					if (d < rSqr_sight)
-                    {
+					{
 						visibility = (float)(sightRadius.sight - dist) / sightRadius.sight * (1 - coverRating);
-						if (visibility > 0f)
-                        {                           
-                            grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
-                        }
+						if (visibility > 0f) grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
 					}
-                    if (playerAlliance && d < rSqr_fog)
-                    {
-                        float val;
-                        if (d < rSqr_fade)
-                        {
-                            val = 1f;
-                        }
-                        else
-                        {
-                            val = 1f - Mathf.Clamp01((dist - r_fade) / d_fade);
-                        }
-                        gridFog?.Set(cell, val);
+
+					if (playerAlliance && d < rSqr_fog)
+					{
+						float val;
+						if (d < rSqr_fade)
+							val = 1f;
+						else
+							val = 1f - Mathf.Clamp01((dist - r_fade) / d_fade);
+						gridFog?.Set(cell, val);
 					}
+
 					if (scanForEnemies && d < rSqr_scan)
-					{                    
-                        UInt64 flag = reader.GetEnemyFlags(cell);
-                        if (flag != 0)
-                        {
-                            ISpotRecord spotting = new ISpotRecord();
-                            spotting.cell = cell;
-                            spotting.flag = flag;
-                            spotting.visibility = visibility;
-                            item.spottings.Add(spotting);
-                        }                       
+					{
+						var flag = reader.GetEnemyFlags(cell);
+						if (flag != 0)
+						{
+							var spotting = new ISpotRecord();
+							spotting.cell = cell;
+							spotting.flag = flag;
+							spotting.visibility = visibility;
+							item.spottings.Add(spotting);
+						}
 					}
 				}, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), settings.carryLimit, buffer);
-                if (scanForEnemies)
-                {
-                    if (item.spottings.Count > 0 || (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight))
-                    {
-                        // on the main thread check for enemies on or near this cell.
-                        asyncActions.EnqueueMainThreadAction(delegate
-                        {
-                            if (!item.thing.Destroyed && item.thing.Spawned)
-                            {
-                                for (int i = 0; i < item.spottings.Count; i++)
-                                {
-                                    ISpotRecord record = item.spottings[i];
-                                    Thing enemy;
-                                    thingBuffer1.Clear();
-                                    sightTracker.factionedUInt64Map.GetThings(record.flag, thingBuffer1);
-                                    for (int j = 0; j < thingBuffer1.Count; j++)
-                                    {
-                                        enemy = thingBuffer1[j];
-                                        if (enemy.Spawned
-                                            && !enemy.Destroyed
-                                            && (enemy.Position.DistanceToSquared(record.cell) < 225 || (enemy is Pawn enemyPawn && PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 70).DistanceToSquared(record.cell) < 255))
-                                            && enemy.HostileTo(item.thing)
-                                            && !enemy.IsDormant())
-                                        {
-                                            item.ai.Notify_EnemyVisible(enemy);
-                                        }
-                                    }
-                                }
-                                // notify the pawn so they can start processing targets.                                
-                                item.ai.OnScanFinished();
+				if (scanForEnemies)
+					if (item.spottings.Count > 0 || (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight))
+						// on the main thread check for enemies on or near this cell.
+						asyncActions.EnqueueMainThreadAction(delegate
+						{
+							if (!item.thing.Destroyed && item.thing.Spawned)
+							{
+								for (var i = 0; i < item.spottings.Count; i++)
+								{
+									var record = item.spottings[i];
+									Thing enemy;
+									thingBuffer1.Clear();
+									sightTracker.factionedUInt64Map.GetThings(record.flag, thingBuffer1);
+									for (var j = 0; j < thingBuffer1.Count; j++)
+									{
+										enemy = thingBuffer1[j];
+										if (enemy.Spawned
+										    && !enemy.Destroyed
+										    && (enemy.Position.DistanceToSquared(record.cell) < 225 ||
+										        (enemy is Pawn enemyPawn &&
+										         PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 70)
+											         .DistanceToSquared(record.cell) < 255))
+										    && enemy.HostileTo(item.thing)
+										    && !enemy.IsDormant())
+											item.ai.Notify_EnemyVisible(enemy);
+									}
+								}
+
+								// notify the pawn so they can start processing targets.                                
+								item.ai.OnScanFinished();
 								item.spottings.Clear();
-                            }
-                        });
-                    }  
-                }
-            };
-            asyncActions.EnqueueOffThreadAction(action);         
-            item.lastCycle = grid.CycleNum;          
-            return true;
-        }		
+							}
+						});
+			};
+			asyncActions.EnqueueOffThreadAction(action);
+			item.lastCycle = grid.CycleNum;
+			return true;
+		}
 
 		private IntVec3 GetShiftedPosition(Thing thing, int ticksAhead, List<IntVec3> subPath)
-        {            
-            if (thing is Pawn pawn)
-            {
-                WallGrid walls = Walls;
-                if (subPath != null)
-                {
-                    subPath.Clear();
-                }
-				if (walls != null && PawnPathUtility.TryGetCellIndexAhead(pawn, ticksAhead, out int index))
-                {                    
-					PawnPath path = pawn.pather.curPath;
-                    IntVec3 cell = pawn.Position;
+		{
+			if (thing is Pawn pawn)
+			{
+				var walls = Walls;
+				if (subPath != null) subPath.Clear();
+				if (walls != null && PawnPathUtility.TryGetCellIndexAhead(pawn, ticksAhead, out var index))
+				{
+					var path = pawn.pather.curPath;
+					var cell = pawn.Position;
 					IntVec3 temp;
-					for (int i = 0; i < index; i++)
-                    {                        
-                        if (!walls.CanBeSeenOver(temp = path.Peek(i)))
-                        {
-                            return cell;
-                        }
-                        cell = temp;
-                        if (subPath != null)
-                        {
-                            subPath.Add(cell);
-                        }
+					for (var i = 0; i < index; i++)
+					{
+						if (!walls.CanBeSeenOver(temp = path.Peek(i))) return cell;
+						cell = temp;
+						if (subPath != null) subPath.Add(cell);
 					}
-                    return cell;
+
+					return cell;
 				}
-                return thing.Position;
-            }
-            else
-            {
-                return thing.Position;
-            }
-        }
+
+				return thing.Position;
+			}
+			else
+			{
+				return thing.Position;
+			}
+		}
 	}
 }
-
