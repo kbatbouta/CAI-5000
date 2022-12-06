@@ -13,23 +13,31 @@ namespace CombatAI
 			public Pawn attacker;
 			public Thing target;
 
-			public Pawn TargetPawn => target as Pawn;
+			public Pawn TargetPawn
+			{
+				get => target as Pawn;
+			}
 
 			private bool _tragetIsPawn;
-			public bool TargetIsPawn => _tragetIsPawn;
+			public bool TargetIsPawn
+			{
+				get => _tragetIsPawn;
+			}
 
-			public bool IsValid =>
-				(attacker?.Spawned ?? false)
-				&& (target?.Spawned ?? false)
-				&& !attacker.Downed
-				&& attacker.mindState?.enemyTarget != null
-				&& attacker.mindState?.enemyTarget == target;
+			public bool IsValid
+			{
+				get => (attacker?.Spawned ?? false)
+					&& (target?.Spawned ?? false)
+					&& !attacker.Downed
+					&& attacker.mindState?.enemyTarget != null
+					&& attacker.mindState?.enemyTarget == target;
+			}
 
 			public PawnReservationRecord(Pawn attacker, Thing target)
 			{
 				this.attacker = attacker;
 				this.target = target;
-				_tragetIsPawn = target is Pawn;
+				this._tragetIsPawn = target is Pawn;
 			}
 
 			public void ExposeData()
@@ -39,26 +47,17 @@ namespace CombatAI
 				Scribe_Values.Look(ref _tragetIsPawn, "_tragetIsPawn");
 			}
 
-			public bool Equals(PawnReservationRecord other)
-			{
-				return other.attacker == attacker && other.target == target;
-			}
-
-			public override bool Equals(object obj)
-			{
-				return obj is PawnReservationRecord other ? other.Equals(this) : false;
-			}
-
+			public bool Equals(PawnReservationRecord other) => other.attacker == attacker && other.target == target;
+			public override bool Equals(object obj) => obj is PawnReservationRecord other ? other.Equals(this) : false;
 			public override int GetHashCode()
 			{
-				var hash = 17;
+				int hash = 17;
 				unchecked
 				{
 					hash = (hash * 7919) ^ (target?.thingIDNumber ?? 0);
 					hash = (hash * 7919) ^ (attacker?.thingIDNumber ?? 0);
 					hash = (hash * 7919) ^ (_tragetIsPawn ? 13 : 0);
 				}
-
 				return hash;
 			}
 		}
@@ -71,7 +70,10 @@ namespace CombatAI
 			private Thing target;
 			private List<PawnReservationRecord> reservations = new List<PawnReservationRecord>(4);
 
-			public Thing Target => target;
+			public Thing Target
+			{
+				get => target;
+			}
 
 			public int RecordCount
 			{
@@ -91,7 +93,10 @@ namespace CombatAI
 				}
 			}
 
-			public bool IsValid => target != null && target.Spawned;
+			public bool IsValid
+			{
+				get => target != null && target.Spawned;
+			}
 
 			public ReservedCombatTarget()
 			{
@@ -99,7 +104,7 @@ namespace CombatAI
 
 			public ReservedCombatTarget(Thing thing)
 			{
-				target = thing;
+				this.target = thing;
 			}
 
 			public void Add(Pawn attacker)
@@ -110,7 +115,6 @@ namespace CombatAI
 					Dirty();
 				}
 			}
-
 			public void ExposeData()
 			{
 				if (Scribe.mode == LoadSaveMode.Saving)
@@ -119,7 +123,6 @@ namespace CombatAI
 				Scribe_Collections.Look(ref reservations, "reservations", LookMode.Deep);
 				reservations ??= new List<PawnReservationRecord>();
 			}
-
 			public void Dirty()
 			{
 				reservations.RemoveAll(r => !r.IsValid);
@@ -151,6 +154,7 @@ namespace CombatAI
 			//    }
 			//}
 			//}
+
 		}
 
 		public override void MapComponentTick()
@@ -159,41 +163,34 @@ namespace CombatAI
 			if ((GenTicks.TicksGame + 31) % 15000 == 0)
 			{
 				reservations.RemoveAll(r => !r.Value.IsValid);
-				foreach (var pair in reservations)
+				foreach (KeyValuePair<Thing, ReservedCombatTarget> pair in reservations)
 					pair.Value.Dirty();
 			}
 		}
 
 		public void Reserve(Pawn attacker, Thing target)
 		{
-			if (attacker != null && TryGetReservedCombatTarget(target, out var store))
+			if (attacker != null && TryGetReservedCombatTarget(target, out ReservedCombatTarget store))
 				store.Add(attacker);
 		}
 
-		public bool Reserved(Thing target)
-		{
-			return Reserved(target, out int _);
-		}
-
+		public bool Reserved(Thing target) => Reserved(target, out int _);
 		public bool Reserved(Thing target, out int num)
 		{
-			if (!TryGetReservedCombatTarget(target, out var store))
+			if (!TryGetReservedCombatTarget(target, out ReservedCombatTarget store))
 			{
 				num = 0;
 				return false;
 			}
-
 			return (num = store.RecordCount) > 0;
 		}
-
 		public bool Reserved(Thing target, out List<Pawn> attackers)
 		{
-			if (!TryGetReservedCombatTarget(target, out var store))
+			if (!TryGetReservedCombatTarget(target, out ReservedCombatTarget store))
 			{
 				attackers = null;
 				return false;
 			}
-
 			store.Dirty();
 			attackers = new List<Pawn>();
 			attackers.AddRange(store.Records.Select(r => r.attacker));
@@ -207,14 +204,13 @@ namespace CombatAI
 				store = null;
 				return false;
 			}
-
 			if (!reservations.TryGetValue(target, out store))
 			{
 				store = new ReservedCombatTarget(target);
 				reservations[target] = store;
 			}
-
 			return true;
 		}
 	}
 }
+

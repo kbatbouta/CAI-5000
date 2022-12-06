@@ -9,9 +9,9 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ template debug="true" hostspecific="true" language="C#" #>
 <#@ output extension=".cs" #>
-<#
-    var docPath = "$(SolutionDir)/../../../1.4/Languages/English/Keyed/Translations.xml";
-    var doc = new XmlDocument();
+<#         
+    string docPath = "$(SolutionDir)/../../../1.4/Languages/English/Keyed/Translations.xml";  
+    XmlDocument doc = new XmlDocument();
     doc.Load(docPath);
 #>
 using Verse;
@@ -38,13 +38,13 @@ namespace CombatAI.R
     /// </summary>
     public static class Keyed 
     {     
-<#
+<# 
     foreach (XmlNode node in doc.DocumentElement.ChildNodes)
     {
         if (node.NodeType == XmlNodeType.Element)
-        {
-            var name = node.Name.Replace('.', '_');
-            var key = node.Name;
+        { 
+            string name = node.Name.Replace('.','_');
+            string key = node.Name;                             
 #>
                       
         private static TaggedString _<#= name #> = null;
@@ -56,8 +56,8 @@ namespace CombatAI.R
             get => _<#= name #> != null ? 
                    _<#= name #> : _<#= name #> = "<#= key #>".Translate();
         }             
-<#
-        }
+<#                           
+        }              
     }
 #>
     }

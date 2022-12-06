@@ -9,11 +9,12 @@ namespace CombatAI
 
 		public static void ClearCache()
 		{
-			for (var i = 0; i < clearFuncs.Count; i++)
+			for (int i = 0; i < clearFuncs.Count; i++)
 			{
-				var action = clearFuncs[i];
+				Action action = clearFuncs[i];
 				action();
 			}
 		}
 	}
 }
+

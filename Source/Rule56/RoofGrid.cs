@@ -13,61 +13,56 @@ namespace CombatAI
 
 		public RoofGrid(Map map) : base(map)
 		{
-			cellIndices = map.cellIndices;
-			grid = new RoofType[cellIndices.NumGridCells];
+			this.cellIndices = map.cellIndices;
+			this.grid = new RoofType[cellIndices.NumGridCells];
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void SetRoof(IntVec3 c, RoofDef def)
-		{
-			SetRoof(cellIndices.CellToIndex(c), def);
-		}
-
+		public void SetRoof(IntVec3 c, RoofDef def) => SetRoof(cellIndices.CellToIndex(c), def);
 		public void SetRoof(int index, RoofDef def)
 		{
 			if (index >= 0 && index < cellIndices.NumGridCells)
 			{
 				if (def == null)
-				{
+				{					
 					grid[index] = RoofType.None;
 				}
 				else
 				{
-					var val = RoofType.None;
+					RoofType val = RoofType.None;
 					if (def.isThickRoof)
+					{
 						val |= RoofType.RockThick;
+					}
 					else
+					{
 						val |= RoofType.RockThin;
-					if (!def.isNatural) val |= RoofType.Constructed;
+					}
+					if (!def.isNatural)
+					{
+						val |= RoofType.Constructed;
+					}
 					grid[index] = val;
 				}
 			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public RoofType GetRoofType(IntVec3 c)
-		{
-			return GetRoofType(cellIndices.CellToIndex(c));
-		}
-
+		public RoofType GetRoofType(IntVec3 c) => GetRoofType(cellIndices.CellToIndex(c));
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public RoofType GetRoofType(int index)
 		{
-			if (index >= 0 && index < cellIndices.NumGridCells) return grid[index];
+			if (index >= 0 && index < cellIndices.NumGridCells)
+			{
+				return grid[index];
+			}
 			return RoofType.None;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool Roofed(IntVec3 c)
-		{
-			return Roofed(cellIndices.CellToIndex(c));
-		}
-
+		public bool Roofed(IntVec3 c) => Roofed(cellIndices.CellToIndex(c));
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool Roofed(int index)
-		{
-			return GetRoofType(index) != RoofType.None;
-		}
+		public bool Roofed(int index) => GetRoofType(index) != RoofType.None;		
 
 		public RoofType this[IntVec3 c]
 		{
@@ -79,8 +74,15 @@ namespace CombatAI
 
 		public RoofType this[int index]
 		{
-			get => grid[index];
-			set => grid[index] = value;
+			get
+			{				
+				return grid[index];
+			}
+			set
+			{
+				grid[index] = value;
+			}
 		}
 	}
 }
+

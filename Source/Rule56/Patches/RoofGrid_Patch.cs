@@ -11,8 +11,9 @@ namespace CombatAI.Patches
 		{
 			public static void Prefix(Verse.RoofGrid __instance, IntVec3 c, RoofDef def)
 			{
-				__instance.map.GetComp_Fast<RoofGrid>().SetRoof(c, def);
+				__instance.map.GetComp_Fast<RoofGrid>().SetRoof(c, def);				
 			}
 		}
 	}
 }
+

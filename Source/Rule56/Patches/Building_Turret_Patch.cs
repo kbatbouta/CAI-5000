@@ -10,23 +10,31 @@ namespace CombatAI.Patches
 {
 	public static class Building_Turret_Patch
 	{
-		private static List<Type> types;
-		private static List<MethodInfo> methods;
+		static List<Type> types;
+		static List<MethodInfo> methods;
 
 		[HarmonyPatch]
-		private static class Building_Turret_SpawnSetup_Patch
+		static class Building_Turret_SpawnSetup_Patch
 		{
 			public static bool Prepare()
 			{
-				if (methods != null) return methods.Count != 0;
-				methods = new List<MethodInfo>();
-				foreach (var t in types ?? (types = typeof(Building_TurretGun).AllSubclassesNonAbstract().ToList()))
+				if(methods != null)
 				{
-					if (typeof(Building_TurretGun).IsAssignableFrom(t)) continue;
-					var method = AccessTools.Method(t, nameof(Building_Turret.SpawnSetup));
-					if (method != null && method.DeclaringType == t && method.HasMethodBody()) methods.Add(method);
+					return methods.Count != 0;
 				}
-
+				methods = new List<MethodInfo>();
+				foreach (Type t in (types ?? (types = typeof(Building_TurretGun).AllSubclassesNonAbstract().ToList())))
+				{					
+					if (typeof(Building_TurretGun).IsAssignableFrom(t))
+					{
+						continue;
+					}
+					MethodInfo method = AccessTools.Method(t, nameof(Building_Turret.SpawnSetup));
+					if (method != null && method.DeclaringType == t && method.HasMethodBody())
+					{						
+						methods.Add(method);
+					}
+				}
 				return methods.Count != 0;
 			}
 
@@ -42,18 +50,26 @@ namespace CombatAI.Patches
 		}
 
 		[HarmonyPatch]
-		private static class Building_Turret_DeSpawn_Patch
+		static class Building_Turret_DeSpawn_Patch
 		{
 			public static bool Prepare()
 			{
-				if (methods != null) return methods.Count != 0;
-				foreach (var t in types ?? (types = typeof(Building_TurretGun).AllSubclassesNonAbstract().ToList()))
+				if (methods != null)
 				{
-					if (typeof(Building_TurretGun).IsAssignableFrom(t)) continue;
-					var method = AccessTools.Method(t, nameof(Building_Turret.SpawnSetup));
-					if (method != null && method.DeclaringType == t && method.HasMethodBody()) methods.Add(method);
+					return methods.Count != 0;
 				}
-
+				foreach (Type t in (types ?? (types = typeof(Building_TurretGun).AllSubclassesNonAbstract().ToList())))
+				{					
+					if (typeof(Building_TurretGun).IsAssignableFrom(t))
+					{
+						continue;
+					}
+					MethodInfo method = AccessTools.Method(t, nameof(Building_Turret.SpawnSetup));
+					if (method != null && method.DeclaringType == t && method.HasMethodBody())
+					{
+						methods.Add(method);
+					}
+				}
 				return methods.Count != 0;
 			}
 
@@ -69,3 +85,4 @@ namespace CombatAI.Patches
 		}
 	}
 }
+

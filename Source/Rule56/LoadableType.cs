@@ -1,5 +1,4 @@
 ﻿using System;
-
 namespace CombatAI
 {
 	public enum LoadableType
@@ -10,6 +9,7 @@ namespace CombatAI
 		Getter = 4,
 		Setter = 8,
 		Constructor = 16,
-		Type = 32
+		Type = 32,
 	}
 }
+

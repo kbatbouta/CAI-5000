@@ -6,9 +6,12 @@ namespace CombatAI
 {
 	public class PawnDefExtension : DefModExtension
 	{
-		[Unsaved(false)] private MetaCombatAttribute _weakness;
-		[Unsaved(false)] private MetaCombatAttribute _strength;
-		[Unsaved(false)] private bool _inited;
+		[Unsaved(allowLoading: false)]
+		private MetaCombatAttribute _weakness;
+		[Unsaved(allowLoading: false)]
+		private MetaCombatAttribute _strength;
+		[Unsaved(allowLoading: false)]
+		private bool _inited;
 
 		private List<MetaCombatAttribute> weakAttributes = new List<MetaCombatAttribute>();
 		private List<MetaCombatAttribute> strongAttributes = new List<MetaCombatAttribute>();
@@ -17,7 +20,10 @@ namespace CombatAI
 		{
 			get
 			{
-				if (!_inited) Init();
+				if (!_inited)
+				{
+					Init();
+				}
 				return _weakness;
 			}
 		}
@@ -26,7 +32,10 @@ namespace CombatAI
 		{
 			get
 			{
-				if (!_inited) Init();
+				if (!_inited)
+				{
+					Init();
+				}
 				return _strength;
 			}
 		}
@@ -39,3 +48,4 @@ namespace CombatAI
 		}
 	}
 }
+

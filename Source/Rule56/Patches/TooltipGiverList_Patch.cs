@@ -13,12 +13,15 @@ namespace CombatAI.Patches
 			{
 				if (Finder.Settings.FogOfWar_Enabled && t is Pawn pawn && !t.Destroyed && t.Spawned)
 				{
-					var map = pawn.Map;
-					if (map != null) return !map.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(pawn.Position) ?? true;
+					Map map = pawn.Map;
+					if(map != null)
+					{
+						return !map.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(pawn.Position) ?? true;
+					}
 				}
-
 				return true;
 			}
 		}
 	}
 }
+

@@ -18,18 +18,16 @@ namespace CombatAI.Patches
 		{
 			public static bool Prefix(IntVec3 cell, Map map)
 			{
-				return !Finder.Settings.FogOfWar_Enabled ||
-				       !(map.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(cell) ?? false);
+				return !Finder.Settings.FogOfWar_Enabled || !(map.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(cell) ?? false);
 			}
-		}
+		}		
 
 		[HarmonyPatch(typeof(FleckMaker), nameof(FleckMaker.PlaceFootprint))]
 		private static class FleckMaker_PlaceFootprint_Patch
 		{
 			public static bool Prefix(IntVec3 loc, Map map)
 			{
-				return !Finder.Settings.FogOfWar_Enabled ||
-				       !(map.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(loc) ?? false);
+				return !Finder.Settings.FogOfWar_Enabled || !(map.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(loc) ?? false);
 			}
 		}
 
@@ -38,9 +36,9 @@ namespace CombatAI.Patches
 		{
 			public static bool Prefix(IntVec3 loc, Map map)
 			{
-				return !Finder.Settings.FogOfWar_Enabled ||
-				       !(map.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(loc) ?? false);
+				return !Finder.Settings.FogOfWar_Enabled || !(map.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(loc) ?? false);
 			}
 		}
 	}
 }
+

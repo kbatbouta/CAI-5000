@@ -23,10 +23,13 @@ namespace CombatAI.Patches
 			public static bool Prefix(object obj)
 			{
 				Map map;
-				if (Finder.Settings.FogOfWar_Enabled && obj is Pawn pawn && !pawn.Destroyed && pawn.Spawned &&
-				    (map = pawn.Map) != null) return !map.GetComp_Fast<MapComponent_FogGrid>().IsFogged(pawn.Position);
+				if(Finder.Settings.FogOfWar_Enabled && obj is Pawn pawn && !pawn.Destroyed && pawn.Spawned && (map = pawn.Map) != null)
+				{
+					return !map.GetComp_Fast<MapComponent_FogGrid>().IsFogged(pawn.Position);
+				}
 				return true;
 			}
 		}
 	}
 }
+

@@ -22,18 +22,21 @@ namespace CombatAI
 		public readonly object locker_Main = new object();
 		public readonly object locker_offMain = new object();
 
-		public bool Alive => alive;
+		public bool Alive
+		{
+			get => alive;
+		}		
 
 		public AsyncActions(int mainLoopTickInterval = 5)
 		{
 			this.mainLoopTickInterval = mainLoopTickInterval;
-			hashOffset = Rand.Int % 128;
-			thread = new Thread(OffMainThreadActionLoop);
+			this.hashOffset = Rand.Int % 128;
+			this.thread = new Thread(OffMainThreadActionLoop);			
 		}
 
 		public void Start()
 		{
-			thread.Start();
+			this.thread.Start();
 		}
 
 		public void ExecuteMainThreadActions()
@@ -50,12 +53,10 @@ namespace CombatAI
 				{
 					queuedMainThreadActions.Clear();
 				}
-
 				lock (locker_offMain)
 				{
 					queuedOffThreadActions.Clear();
 				}
-
 				thread.Abort();
 			}
 			catch (Exception)
@@ -91,7 +92,6 @@ namespace CombatAI
 					queuedOffThreadActions.RemoveAt(0);
 				}
 			}
-
 			return action;
 		}
 
@@ -105,20 +105,20 @@ namespace CombatAI
 					action = queuedMainThreadActions[0];
 					queuedMainThreadActions.RemoveAt(0);
 				}
-
 				mainThreadActionQueueEmpty = queuedMainThreadActions.Count == 0;
 			}
-
 			return action;
 		}
 
 		private void MainThreadActionLoop()
 		{
-			if (!mainThreadActionQueueEmpty || (GenTicks.TicksGame + hashOffset) % mainLoopTickInterval == 0)
+			if (!mainThreadActionQueueEmpty || (GenTicks.TicksGame + this.hashOffset) % mainLoopTickInterval == 0)
+			{
 				while (true)
 				{
-					var action = DequeueMainThreadAction();
+					Action action = DequeueMainThreadAction();
 					if (action != null)
+					{
 						try
 						{
 							action();
@@ -127,17 +127,22 @@ namespace CombatAI
 						{
 							Log.Error(er.ToString());
 						}
+					}
 					else
+					{
 						break;
+					}
 				}
+			}
 		}
 
 		private void OffMainThreadActionLoop()
 		{
 			while (alive)
 			{
-				var action = DequeueOffThreadAction();
+				Action action = DequeueOffThreadAction();
 				if (action != null)
+				{
 					try
 					{
 						action();
@@ -146,9 +151,13 @@ namespace CombatAI
 					{
 						Log.Error(er.ToString());
 					}
+				}
 				else
+				{
 					Thread.Sleep(1);
+				}
 			}
 		}
 	}
 }
+

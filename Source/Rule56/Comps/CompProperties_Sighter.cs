@@ -15,7 +15,8 @@ namespace CombatAI.Comps
 
 		public CompProperties_Sighter()
 		{
-			compClass = typeof(ThingComp_Sighter);
+			this.compClass = typeof(ThingComp_Sighter);
 		}
 	}
 }
+

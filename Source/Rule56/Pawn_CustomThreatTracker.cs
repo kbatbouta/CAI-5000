@@ -16,18 +16,30 @@ namespace CombatAI
 			public readonly List<Thing> things = new List<Thing>(64);
 			public readonly Thing parent;
 
-			public int NewNum => Maths.Max(things.Count - oldCount, 0);
+			public int NewNum
+			{
+				get => Maths.Max(things.Count - oldCount, 0);
+			}
 
-			public int CurNum => things.Count;
+			public int CurNum
+			{
+				get => things.Count;
+			}
 
-			public float CurDistSqr => curDistSqr;
+			public float CurDistSqr
+			{
+				get => curDistSqr;
+			}
 
-			public float OldDistSqr => oldDistSqr;
+			public float OldDistSqr
+			{
+				get => oldDistSqr;
+			}
 
 			public CustomThreatVector(Thing parent)
 			{
 				this.parent = parent;
-			}
+			}						
 
 			public void Push(Thing thing)
 			{
@@ -41,15 +53,16 @@ namespace CombatAI
 				curDistSqr = 1e6f;
 				oldCount = things.Count;
 				things.Clear();
-			}
+			}			
 		}
 
 		public Pawn pawn;
-		public CustomThreatVector[] threatVectors = new CustomThreatVector[4];
+		public CustomThreatVector[] threatVectors = new CustomThreatVector[4];	
 
 		public Pawn_CustomThreatTracker(Pawn pawn)
 		{
 			this.pawn = pawn;
-		}
+		}		
 	}
 }
+

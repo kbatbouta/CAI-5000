@@ -3,22 +3,23 @@ using Verse;
 
 namespace CombatAI
 {
-	public struct CoverPositionRequest
-	{
-		public Pawn caster;
+    public struct CoverPositionRequest
+    {
+        public Pawn caster;
 
-		public LocalTargetInfo target;
+        public LocalTargetInfo target;
 
-		public Verb verb;
+        public Verb verb;
 
-		public float maxRangeFromCaster;
+        public float maxRangeFromCaster;        
 
-		public IntVec3 locus;
+        public IntVec3 locus;
 
-		public float maxRangeFromLocus;
+        public float maxRangeFromLocus;
 
-		public bool checkBlockChance;
-
-		public Func<IntVec3, bool> validator;
-	}
+        public bool checkBlockChance;
+        
+        public Func<IntVec3, bool> validator;        
+    }
 }
+

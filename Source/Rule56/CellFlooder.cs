@@ -25,7 +25,7 @@ namespace CombatAI
 			new IntVec3(-1, 0, 0),
 			new IntVec3(0, 0, 1),
 			new IntVec3(1, 0, 0),
-			new IntVec3(0, 0, -1)
+			new IntVec3(0, 0, -1),
 		};
 
 		public Map map;
@@ -33,33 +33,27 @@ namespace CombatAI
 		private int sig;
 		private WallGrid walls;
 		private readonly FastHeap<Node> floodQueue = new FastHeap<Node>();
-
 		private readonly int[] sigArray;
 		//
 		// private readonly List<Node> floodedCells = new List<Node>();
 
 		public CellFlooder(Map map)
 		{
-			sig = 13;
+			this.sig = 13;
 			this.map = map;
-			walls = map.GetComponent<WallGrid>();
-			sigArray = new int[map.cellIndices.NumGridCells];
+			this.walls = map.GetComponent<WallGrid>();
+			this.sigArray = new int[map.cellIndices.NumGridCells];
 		}
 
-		public void Flood(IntVec3 center, Action<IntVec3, IntVec3, float> action,
-			Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
-		{
-			Flood(center, (node) => action(node.cell, node.parent, node.dist), costFunction, validator, maxDist);
-		}
+		public void Flood(IntVec3 center, Action<IntVec3, IntVec3, float> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25) => Flood(center, (node) => action(node.cell, node.parent, node.dist), costFunction, validator, maxDist);
 
-		public void Flood(IntVec3 center, Action<Node> action, Func<IntVec3, float> costFunction = null,
-			Func<IntVec3, bool> validator = null, int maxDist = 25)
+		public void  Flood(IntVec3 center, Action<Node> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
 		{
 			sig++;
-			var blocked = GetBlockedTestFunc(validator);
-			walls = map.GetComponent<WallGrid>();
-			var node = GetIntialFloodedCell(center);
-			node.dist = costFunction != null ? costFunction(node.cell) : 0;
+			Func<IntVec3, bool> blocked = GetBlockedTestFunc(validator);
+			this.walls = map.GetComponent<WallGrid>();
+			Node node = GetIntialFloodedCell(center);
+			node.dist = costFunction != null ? costFunction(node.cell) : 0;			
 			Node nextNode;
 			int cellIndex;
 			IntVec3 nextCell;
@@ -79,12 +73,16 @@ namespace CombatAI
 				// map.debugDrawer.FlashCell(node.cell, node.dist / 25f, $"{map.cellIndices.CellToIndex(node.cell)} {map.cellIndices.CellToIndex(node.parent)}", duration: 15);
 				//
 				// check for the distance
-				if (node.distAbs >= maxDist) continue;
-				for (var i = 0; i < 4; i++)
+				if (node.distAbs >= maxDist)
+				{
+					continue;
+				}
+				for (int i = 0; i < 4; i++)
 				{
 					offset = offsets[i];
 					nextCell = node.cell + offset;
 					if (nextCell.InBounds(map))
+					{
 						if (sigArray[cellIndex = map.cellIndices.CellToIndex(nextCell)] != sig)
 						{
 							sigArray[cellIndex] = sig;
@@ -94,8 +92,7 @@ namespace CombatAI
 								nextNode.cell = nextCell;
 								// TODO improve this.
 								// this is not perfectly accurate but it does result in consistant result.
-								if (Mathf.Abs(nextCell.x - node.parent.x) == 1 &&
-								    Mathf.Abs(nextCell.z - node.parent.z) == 1)
+								if (Mathf.Abs(nextCell.x - node.parent.x) == 1 && Mathf.Abs(nextCell.z - node.parent.z) == 1)
 								{
 									nextNode.parent = node.parent;
 									nextNode.dist = node.dist + 0.4123f;
@@ -107,13 +104,16 @@ namespace CombatAI
 									nextNode.dist = node.dist + 1;
 									nextNode.distAbs = node.distAbs + 1;
 								}
-
-								if (costFunction != null) nextNode.dist += costFunction(nextCell);
+								if (costFunction != null)
+								{
+									nextNode.dist += costFunction(nextCell);
+								}
 								floodQueue.Enqueue(nextNode);
 								//
 								//floodedCells.Add(nextNode);
 							}
 						}
+					}
 				}
 			}
 		}
@@ -121,14 +121,18 @@ namespace CombatAI
 		private Func<IntVec3, bool> GetBlockedTestFunc(Func<IntVec3, bool> validator)
 		{
 			if (validator == null)
+			{
 				return (cell) => walls.GetFillCategory(cell) == FillCategory.Full;
+			}
 			else
+			{
 				return (cell) => walls.GetFillCategory(cell) == FillCategory.Full || !validator(cell);
+			}
 		}
 
 		private Node GetIntialFloodedCell(IntVec3 center)
 		{
-			var cell = new Node();
+			Node cell = new Node();
 			cell.cell = center;
 			cell.parent = center;
 			cell.dist = 0;
@@ -136,3 +140,4 @@ namespace CombatAI
 		}
 	}
 }
+
