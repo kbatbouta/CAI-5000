@@ -50,7 +50,7 @@ namespace CombatAI.R
         private static TaggedString _<#= name #> = null;
         /// <summary> Keyed string. key=<c><#= node.Name #></c>. inner text:
         ///
-        /// <code><#= node.InnerText #></code>
+        /// <code><#= node.InnerText.Replace('\n', ' ').Trim() #></code>
         /// </summary>       
         public static TaggedString <#= name #> {
             get => _<#= name #> != null ? 

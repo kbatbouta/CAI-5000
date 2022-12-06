@@ -216,7 +216,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Basic_PerformanceOpt_Description = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.PerformanceOpt.Description</c>. inner text:
         ///
-        /// <code>Automatically adjust settings to maintain both a good level of TPS and a good AI.</code>
+        /// <code>Automatically adjust settings to maintain both a good level of         TPS and a good AI.</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Basic_PerformanceOpt_Description {
             get => _CombatAI_Settings_Basic_PerformanceOpt_Description != null ? 
@@ -266,7 +266,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Basic_DestWeight_Description = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.DestWeight.Description</c>. inner text:
         ///
-        /// <code>Lower numbers mean pathfinding will be more aggressive at avoiding enemies, flanking and minimizing risk to pawns.</code>
+        /// <code>Lower numbers mean pathfinding will be more aggressive at avoiding         enemies, flanking and minimizing risk to pawns.</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Basic_DestWeight_Description {
             get => _CombatAI_Settings_Basic_DestWeight_Description != null ? 
@@ -316,7 +316,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Advance_Warning = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Warning</c>. inner text:
         ///
-        /// <code>WARNING: This is only for advanced users! Don't enable this if you don't know what you're doing!</code>
+        /// <code>WARNING: This is only for advanced users! Don't enable this if you don't know         what you're doing!</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Advance_Warning {
             get => _CombatAI_Settings_Advance_Warning != null ? 
@@ -346,7 +346,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Description = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Description</c>. inner text:
         ///
-        /// <code>You can adjust how many buckets pawns/turrets are divided into and how often they updates. Warning: DON'T USE THIS IF YOU DON'T KNOW WHAT YOU'RE DOING</code>
+        /// <code>You can adjust how many buckets pawns/turrets are divided         into and how often they updates. Warning: DON'T USE THIS IF YOU DON'T KNOW WHAT YOU'RE DOING</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Description {
             get => _CombatAI_Settings_Advance_Sight_Performance_Description != null ? 
@@ -436,7 +436,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description</c>. inner text:
         ///
-        /// <code>The maximum number of things along line of sight. This includes trees, buildings, etc. Higher values means more accurate sight model but higher performance impact.</code>
+        /// <code>The maximum number of things along line         of sight. This includes trees, buildings, etc. Higher values means more accurate sight model but higher         performance impact.</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description {
             get => _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description != null ? 
