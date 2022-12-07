@@ -34,7 +34,7 @@ namespace CombatAI
 				throw new Exception($"ISMA: GetSightRadius got an object that is niether a pawn, turret nor does it have sighter. {thing}");
 			}
 			Faction f = thing.Faction;
-			if (f != null && (f.IsPlayerSafe() || f.HostileTo(Faction.OfPlayer)))
+			if (f != null && (f.IsPlayerSafe() || !f.HostileTo(Faction.OfPlayer)))
 			{
 				result.fog = Maths.Max((Mathf.CeilToInt(GetFogRadius(thing, result.sight) *  Finder.Settings.FogOfWar_RangeMultiplier)), 3);
 			}
