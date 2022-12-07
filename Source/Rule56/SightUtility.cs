@@ -36,9 +36,8 @@ namespace CombatAI
 			Faction f = thing.Faction;
 			if (f != null && (f.IsPlayerSafe() || f.HostileTo(Faction.OfPlayer)))
 			{
-				result.fog = Mathf.CeilToInt(GetFogRadius(thing, result.sight));
+				result.fog = Maths.Max((Mathf.CeilToInt(GetFogRadius(thing, result.sight) *  Finder.Settings.FogOfWar_RangeMultiplier)), 3);
 			}
-			result.fog = Mathf.CeilToInt(result.sight * Finder.Settings.FogOfWar_RangeMultiplier);
 			result.createdAt = GenTicks.TicksGame;
 			return result;
 		}
