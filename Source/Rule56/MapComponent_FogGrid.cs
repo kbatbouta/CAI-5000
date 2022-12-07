@@ -81,18 +81,13 @@ namespace CombatAI
 									}
 									if (visibility < visRLimit)
 									{
-										visibility = 0f;
-									}
-									if (visibility > 0)
-									{
-										val = Maths.Max(cells[x * SECTION_SIZE + z] - 0.3f, 1 - visibility, 0f);
-										comp.grid[index] = false;
+										comp.grid[index] = true;
 									}
 									else
 									{
-										val = Maths.Min(cells[x * SECTION_SIZE + z] + 0.3f, 1.0f);
-										comp.grid[index] = true;
+										comp.grid[index] = false;
 									}
+									val = Maths.Max(1 - visibility, 0);
 								}
 								if (old != val)
 								{
