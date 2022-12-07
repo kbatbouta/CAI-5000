@@ -1,15 +1,14 @@
 ﻿using System;
-using RimWorld;
-using Verse;
 using System.Collections.Generic;
 using CombatAI.Gui;
+using RimWorld;
 using UnityEngine;
-
+using Verse;
 namespace CombatAI
 {
 	public static class DamageUtility
 	{
-		private static Dictionary<int, DamageReport> reports = new Dictionary<int, DamageReport>(1024);
+		private static readonly Dictionary<int, DamageReport> reports = new Dictionary<int, DamageReport>(1024);
 
 		public static DamageReport GetDamageReport(Thing thing, Listing_Collapsible collapsible = null)
 		{
@@ -151,10 +150,7 @@ namespace CombatAI
 			{
 				return Mathf.Clamp01(2f * Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f), damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
 			}
-			else
-			{
-				return Mathf.Clamp01(Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f), damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
-			}
+			return Mathf.Clamp01(Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f), damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
 		}
 
 		public static void ClearCache()

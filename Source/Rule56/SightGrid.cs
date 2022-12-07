@@ -1,214 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
 using CombatAI.Comps;
 using RimWorld;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Verse;
 using Verse.AI;
-
 namespace CombatAI
 {
 	public class SightGrid
 	{
-		private readonly List<Vector3> buffer       = new List<Vector3>(1024);
-		private readonly List<Thing>   thingBuffer1 = new List<Thing>(256);
-		private readonly List<Thing>   thingBuffer2 = new List<Thing>(256);
 
-		private const int COVERCARRYLIMIT = 6;
-
-		public struct ISightRadius
-		{
-			/// <summary>
-			/// Scan radius. Used while scanning for enemies.
-			/// </summary>
-			public int scan;
-			/// <summary>
-			/// Sight radius. Determine the radius of the thing's influence map.
-			/// </summary>
-			public int sight;
-			/// <summary>
-			/// Fog radius. Determine how far this thing will reveal fog of war.
-			/// </summary>
-			public int fog;
-			/// <summary>
-			/// Creation tick timestamp.
-			/// </summary>
-			public int createdAt;
-			/// <summary>
-			/// Whether this is a valid report.
-			/// </summary>
-			public bool IsValid
-			{
-				get => createdAt != 0 && GenTicks.TicksGame - createdAt < 600;
-			}
-		}
-
-		private struct ISpotRecord
-		{
-			/// <summary>
-			/// Spotted flag.
-			/// </summary>
-			public ulong flag;
-			/// <summary>
-			/// Cell at which the spotting occured.
-			/// </summary>
-			public IntVec3 cell;
-			/// <summary>
-			/// Cell visibility.
-			/// </summary>
-			public float visibility;
-		}
-
-		private class IBucketableThing : IBucketable
-		{
-			private int bucketIndex;
-			/// <summary>
-			/// Current sight grid.
-			/// </summary>
-			public readonly SightGrid grid;
-			/// <summary>
-			/// Thing.
-			/// </summary>
-			public readonly Thing thing;
-			/// <summary>
-			/// Thing.
-			/// </summary>
-			public readonly Pawn pawn;
-			/// <summary>
-			/// Thing.
-			/// </summary>
-			public readonly Building_TurretGun turretGun;
-			/// <summary>
-			/// Thing.
-			/// </summary>
-			public readonly bool isPlayer;
-			/// <summary>
-			/// Thing's faction on IBucketableThing instance creation.
-			/// </summary>
-			public readonly Faction faction;
-			/// <summary>
-			/// Sighting component.
-			/// </summary>
-			public readonly ThingComp_Sighter sighter;
-			/// <summary>
-			/// Dormant comp.
-			/// </summary>
-			public readonly CompCanBeDormant dormant;
-			/// <summary>
-			/// Dormant comp.
-			/// </summary>
-			public readonly ThingComp_CombatAI ai;
-			/// <summary>
-			/// Last cycle.
-			/// </summary>
-			public int lastCycle;
-			/// <summary>
-			/// Pawn pawn
-			/// </summary>
-			public readonly List<IntVec3> path = new List<IntVec3>(16);
-			/// <summary>
-			/// Contains spotting records that are to be processed on the main thread once the scan is finished.
-			/// </summary>
-			public readonly List<ISpotRecord> spottings = new List<ISpotRecord>(64);
-			/// <summary>
-			/// Last tick this pawn scanned for enemies
-			/// </summary>
-			public int lastScannedForEnemies;
-			/// <summary>
-			/// Thing potential damage report.
-			/// </summary>
-			public DamageReport cachedDamage;
-			/// <summary>
-			/// Cached sight radius report.
-			/// </summary>
-			public ISightRadius cachedSightRadius;
-			/// <summary>
-			/// Bucket index.
-			/// </summary>
-			public int BucketIndex
-			{
-				get => bucketIndex;
-			}
-			/// <summary>
-			/// Thing id number.
-			/// </summary>
-			public int UniqueIdNumber
-			{
-				get => thing.thingIDNumber;
-			}
-
-			public IBucketableThing(SightGrid grid, Thing thing, int bucketIndex)
-			{
-				this.grid         = grid;
-				this.thing        = thing;
-				pawn              = thing as Pawn;
-				turretGun         = thing as Building_TurretGun;
-				isPlayer          = thing.Faction.IsPlayerSafe();
-				dormant           = thing.GetComp_Fast<CompCanBeDormant>();
-				ai                = thing.GetComp_Fast<ThingComp_CombatAI>();
-				sighter           = thing.GetComp_Fast<ThingComp_Sighter>();
-				faction           = thing.Faction;
-				this.bucketIndex  = bucketIndex;
-				cachedDamage      = DamageUtility.GetDamageReport(thing);
-				cachedSightRadius = SightUtility.GetSightRadius(thing);
-			}
-		}
-
-		private          WallGrid                   _walls;
-		private          int                        ticksUntilUpdate;
-		private          bool                       wait = false;
-		private          AsyncActions               asyncActions;
-		private          IBuckets<IBucketableThing> buckets;
-		private readonly Dictionary<Faction, int>   numsByFaction          = new Dictionary<Faction, int>();
-		private readonly List<IBucketableThing>     tmpDeRegisterList      = new List<IBucketableThing>(64);
-		private readonly List<IBucketableThing>     tmpInvalidRecords      = new List<IBucketableThing>(64);
-		private readonly List<IBucketableThing>     tmpInconsistentRecords = new List<IBucketableThing>(64);
-
+		private const    int           COVERCARRYLIMIT = 6;
+		private readonly List<Vector3> buffer          = new List<Vector3>(1024);
 		/// <summary>
-		/// Parent map.
-		/// </summary>
-		public readonly Map map;
-		/// <summary>
-		/// Sight grid contains all sight data.
+		///     Sight grid contains all sight data.
 		/// </summary>
 		public readonly ITSignalGrid grid;
+
 		/// <summary>
-		/// Performance settings.
+		///     Parent map.
+		/// </summary>
+		public readonly Map map;
+		private readonly Dictionary<Faction, int> numsByFaction = new Dictionary<Faction, int>();
+		/// <summary>
+		///     Performance settings.
 		/// </summary>
 		public readonly Settings.SightPerformanceSettings settings;
 		/// <summary>
-		/// Parent map sight tracker.
+		///     Parent map sight tracker.
 		/// </summary>
 		public readonly SightTracker sightTracker;
+		private readonly List<Thing>            thingBuffer1           = new List<Thing>(256);
+		private readonly List<Thing>            thingBuffer2           = new List<Thing>(256);
+		private readonly List<IBucketableThing> tmpDeRegisterList      = new List<IBucketableThing>(64);
+		private readonly List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>(64);
+		private readonly List<IBucketableThing> tmpInvalidRecords      = new List<IBucketableThing>(64);
+
+		private          WallGrid                   _walls;
+		private readonly AsyncActions               asyncActions;
+		private readonly IBuckets<IBucketableThing> buckets;
 		/// <summary>
-		/// Whether this is the player grid
-		/// </summary>
-		public bool playerAlliance = false;
-		/// <summary>
-		/// Whether this is the player grid
-		/// </summary>
-		public bool trackFactions = false;
-		/// <summary>
-		/// Fog of war grid. Can be null.
+		///     Fog of war grid. Can be null.
 		/// </summary>
 		public ITFloatGrid gridFog;
 		/// <summary>
-		/// Tracks the number of factions tracked.
-		/// </summary>        
-		public int FactionNum
-		{
-			get => numsByFaction.Count;
-		}
+		///     Whether this is the player grid
+		/// </summary>
+		public bool playerAlliance = false;
+		private int ticksUntilUpdate;
 		/// <summary>
-		/// The map's wallgrid.
-		/// </summary>                
-		public WallGrid Walls
-		{
-			get => _walls != null ? _walls : _walls = sightTracker.map.GetComp_Fast<WallGrid>();
-		}
+		///     Whether this is the player grid
+		/// </summary>
+		public bool trackFactions = false;
+		private bool wait;
 
 		public SightGrid(SightTracker sightTracker, Settings.SightPerformanceSettings settings)
 		{
@@ -219,6 +63,20 @@ namespace CombatAI
 			asyncActions      = new AsyncActions(1);
 			ticksUntilUpdate  = Rand.Int % this.settings.interval;
 			buckets           = new IBuckets<IBucketableThing>(settings.buckets);
+		}
+		/// <summary>
+		///     Tracks the number of factions tracked.
+		/// </summary>
+		public int FactionNum
+		{
+			get => numsByFaction.Count;
+		}
+		/// <summary>
+		///     The map's wallgrid.
+		/// </summary>
+		public WallGrid Walls
+		{
+			get => _walls != null ? _walls : _walls = sightTracker.map.GetComp_Fast<WallGrid>();
 		}
 
 		public void FinalizeInit()
@@ -268,7 +126,7 @@ namespace CombatAI
 				}
 				tmpInconsistentRecords.Clear();
 			}
-			ticksUntilUpdate = (int)settings.interval + Mathf.CeilToInt(settings.interval * (1.0f - Finder.P50));
+			ticksUntilUpdate = settings.interval + Mathf.CeilToInt(settings.interval * (1.0f - Finder.P50));
 			buckets.Next();
 			if (buckets.Index == 0)
 			{
@@ -573,9 +431,143 @@ namespace CombatAI
 				}
 				return thing.Position;
 			}
-			else
+			return thing.Position;
+		}
+
+		public struct ISightRadius
+		{
+			/// <summary>
+			///     Scan radius. Used while scanning for enemies.
+			/// </summary>
+			public int scan;
+			/// <summary>
+			///     Sight radius. Determine the radius of the thing's influence map.
+			/// </summary>
+			public int sight;
+			/// <summary>
+			///     Fog radius. Determine how far this thing will reveal fog of war.
+			/// </summary>
+			public int fog;
+			/// <summary>
+			///     Creation tick timestamp.
+			/// </summary>
+			public int createdAt;
+			/// <summary>
+			///     Whether this is a valid report.
+			/// </summary>
+			public bool IsValid
 			{
-				return thing.Position;
+				get => createdAt != 0 && GenTicks.TicksGame - createdAt < 600;
+			}
+		}
+
+		private struct ISpotRecord
+		{
+			/// <summary>
+			///     Spotted flag.
+			/// </summary>
+			public ulong flag;
+			/// <summary>
+			///     Cell at which the spotting occured.
+			/// </summary>
+			public IntVec3 cell;
+			/// <summary>
+			///     Cell visibility.
+			/// </summary>
+			public float visibility;
+		}
+
+		private class IBucketableThing : IBucketable
+		{
+			/// <summary>
+			///     Dormant comp.
+			/// </summary>
+			public readonly ThingComp_CombatAI ai;
+			/// <summary>
+			///     Dormant comp.
+			/// </summary>
+			public readonly CompCanBeDormant dormant;
+			/// <summary>
+			///     Thing's faction on IBucketableThing instance creation.
+			/// </summary>
+			public readonly Faction faction;
+			/// <summary>
+			///     Current sight grid.
+			/// </summary>
+			public readonly SightGrid grid;
+			/// <summary>
+			///     Thing.
+			/// </summary>
+			public readonly bool isPlayer;
+			/// <summary>
+			///     Pawn pawn
+			/// </summary>
+			public readonly List<IntVec3> path = new List<IntVec3>(16);
+			/// <summary>
+			///     Thing.
+			/// </summary>
+			public readonly Pawn pawn;
+			/// <summary>
+			///     Sighting component.
+			/// </summary>
+			public readonly ThingComp_Sighter sighter;
+			/// <summary>
+			///     Contains spotting records that are to be processed on the main thread once the scan is finished.
+			/// </summary>
+			public readonly List<ISpotRecord> spottings = new List<ISpotRecord>(64);
+			/// <summary>
+			///     Thing.
+			/// </summary>
+			public readonly Thing thing;
+			/// <summary>
+			///     Thing.
+			/// </summary>
+			public readonly Building_TurretGun turretGun;
+			/// <summary>
+			///     Thing potential damage report.
+			/// </summary>
+			public DamageReport cachedDamage;
+			/// <summary>
+			///     Cached sight radius report.
+			/// </summary>
+			public ISightRadius cachedSightRadius;
+			/// <summary>
+			///     Last cycle.
+			/// </summary>
+			public int lastCycle;
+			/// <summary>
+			///     Last tick this pawn scanned for enemies
+			/// </summary>
+			public int lastScannedForEnemies;
+
+			public IBucketableThing(SightGrid grid, Thing thing, int bucketIndex)
+			{
+				this.grid         = grid;
+				this.thing        = thing;
+				pawn              = thing as Pawn;
+				turretGun         = thing as Building_TurretGun;
+				isPlayer          = thing.Faction.IsPlayerSafe();
+				dormant           = thing.GetComp_Fast<CompCanBeDormant>();
+				ai                = thing.GetComp_Fast<ThingComp_CombatAI>();
+				sighter           = thing.GetComp_Fast<ThingComp_Sighter>();
+				faction           = thing.Faction;
+				BucketIndex       = bucketIndex;
+				cachedDamage      = DamageUtility.GetDamageReport(thing);
+				cachedSightRadius = SightUtility.GetSightRadius(thing);
+			}
+			/// <summary>
+			///     Bucket index.
+			/// </summary>
+			public int BucketIndex
+			{
+				get;
+			}
+			/// <summary>
+			///     Thing id number.
+			/// </summary>
+			public int UniqueIdNumber
+			{
+				get => thing.thingIDNumber;
 			}
 		}
 	}

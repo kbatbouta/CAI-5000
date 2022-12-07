@@ -1,22 +1,20 @@
 ﻿using System;
-using RimWorld;
-using Verse;
-using System.Collections.Generic;
+using System.Text;
 using CombatAI.Comps;
 using RimWorld.Planet;
-using System.Reflection;
-using System.Text;
-using UnityEngine;
-
 namespace CombatAI.Statistics
 {
 	public class WorldComponent_Statistics : WorldComponent
 	{
-		private StringBuilder builder                         = new StringBuilder();
-		private int[]         visibleEnemiesTicks             = new int[10];
-		private int[]         visibleEnemiesInjuries          = new int[10];
-		private float[]       visibleEnemiesInjuryProbability = new float[10];
-		private float[]       temp                            = new float[10];
+		private          StringBuilder builder                         = new StringBuilder();
+		private readonly float[]       temp                            = new float[10];
+		private          int[]         visibleEnemiesInjuries          = new int[10];
+		private readonly float[]       visibleEnemiesInjuryProbability = new float[10];
+		private          int[]         visibleEnemiesTicks             = new int[10];
+
+		public WorldComponent_Statistics(World world) : base(world)
+		{
+		}
 
 		public float[] VisibleEnemiesInjuryProbability
 		{
@@ -25,10 +23,6 @@ namespace CombatAI.Statistics
 				Array.Copy(visibleEnemiesInjuryProbability, temp, 10);
 				return temp;
 			}
-		}
-
-		public WorldComponent_Statistics(World world) : base(world)
-		{
 		}
 
 		public override void WorldComponentTick()

@@ -1,7 +1,5 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using Verse;
-
 namespace CombatAI
 {
 	public static class MortarUtility

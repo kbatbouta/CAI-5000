@@ -1,14 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Reflection;
+﻿using System.Diagnostics;
 using System.Threading;
-using RimWorld;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Verse;
-using Verse.Noise;
-using static UnityEngine.SpookyHash;
-
 namespace CombatAI
 {
 	[StaticConstructorOnStartup]
@@ -16,148 +10,33 @@ namespace CombatAI
 	{
 		private const int SECTION_SIZE = 16;
 
-		private class ISection
-		{
-			public           float[]              cells;
-			public           Rect                 rect;
-			public           bool                 dirty = true;
-			public           float                s_color;
-			private readonly Material             mat;
-			private readonly Mesh                 mesh;
-			private readonly Vector3              pos;
-			private readonly MapComponent_FogGrid comp;
-
-			public void ApplyColor()
-			{
-				mat.SetVector("_Color", new Vector4(0.1f, 0.1f, 0.1f, s_color = Finder.Settings.FogOfWar_FogColor));
-			}
-
-			public void ApplyFogged()
-			{
-				mat.SetFloatArray("_Fog", cells);
-				dirty = false;
-			}
-
-			public void Update()
-			{
-				CellIndices indices = comp.map?.cellIndices;
-				if (indices == null)
-				{
-					return;
-				}
-				int         numGridCells = indices.NumGridCells;
-				WallGrid    walls        = comp.walls;
-				ITFloatGrid fogGrid      = comp.sight.gridFog;
-				IntVec3     pos          = this.pos.ToIntVec3();
-				IntVec3     loc;
-
-				ColorInt[] glowGrid = comp.glow.glowGrid;
-				float      glowSky  = comp.SkyGlow;
-				bool       changed  = false;
-				if (fogGrid != null)
-				{
-					for (int x = 0; x < SECTION_SIZE; x++)
-					{
-						for (int z = 0; z < SECTION_SIZE; z++)
-						{
-							int index = indices.CellToIndex(loc = pos + new IntVec3(x, 0, z));
-							if (index >= 0 && index < numGridCells)
-							{
-								float val;
-								float old = cells[x * SECTION_SIZE + z];
-								if (!walls.CanBeSeenOver(index))
-								{
-									val              = 0.5f;
-									comp.grid[index] = false;
-								}
-								else
-								{
-									float visRLimit  = 0;
-									float visibility = fogGrid.Get(index);
-									if (glowSky < 1)
-									{
-										ColorInt glow = glowGrid[index];
-										visRLimit = Mathf.Lerp(0, 0.5f, 1 - Maths.Max(Mathf.Clamp01((float)Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f), glowSky));
-									}
-									if (visibility <= visRLimit + 1e-3f)
-									{
-										comp.grid[index] = true;
-									}
-									else
-									{
-										comp.grid[index] = false;
-									}
-									val = Maths.Max(1 - visibility, 0);
-								}
-								if (old != val)
-								{
-									changed = true;
-								}
-								cells[x * SECTION_SIZE + z] = val;
-							}
-							else
-							{
-								cells[x * SECTION_SIZE + z] = 0f;
-							}
-						}
-					}
-				}
-				dirty = changed;
-			}
-
-			public ISection(MapComponent_FogGrid comp, Rect rect, Rect mapRect, Mesh mesh, Texture2D tex, Shader shader)
-			{
-				this.comp = comp;
-				this.rect = rect;
-				this.mesh = mesh;
-				pos       = new Vector3(rect.position.x, 8, rect.position.y);
-				mat       = new Material(shader);
-				mat.SetVector("_Color", new Vector4(0.1f, 0.1f, 0.1f, 0.8f));
-				mat.SetTexture("_Tex", tex);
-				cells = new float[256];
-				cells.Initialize();
-				mat.SetFloatArray("_Fog", cells);
-			}
-
-			public void Draw(Rect screenRect)
-			{
-				GenDraw.DrawMeshNowOrLater(mesh, pos, Quaternion.identity, mat, false);
-			}
-		}
-
 		private static          float     zoom;
 		private static readonly Texture2D fogTex;
 		private static readonly Mesh      mesh;
+		private static readonly Shader    fogShader;
+		private readonly        Rect      mapRect;
+		private                 bool      alive;
 
-		private Rect  mapScreenRect;
-		private bool  initialized;
-		private bool  alive;
-		private bool  ready;
-		private int   updateNum;
-		private float glowSky;
+		private readonly AsyncActions asyncActions;
+		public           CellIndices  cellIndices;
+		public           GlowGrid     glow;
 
-		private          AsyncActions asyncActions;
-		private          ISection[][] grid2d;
-		private static   Shader       fogShader;
-		private readonly Rect         mapRect;
+		public           bool[]       grid;
+		private readonly ISection[][] grid2d;
+		private          bool         initialized;
 
-		public bool[]      grid;
-		public SightGrid   sight;
-		public GlowGrid    glow;
-		public WallGrid    walls;
-		public CellIndices cellIndices;
-
-		public float SkyGlow
-		{
-			get => glowSky;
-		}
+		private Rect      mapScreenRect;
+		private bool      ready;
+		public  SightGrid sight;
+		private int       updateNum;
+		public  WallGrid  walls;
 
 
 		static MapComponent_FogGrid()
 		{
 			fogTex = new Texture2D(SECTION_SIZE, SECTION_SIZE, TextureFormat.RGBAFloat, true);
 			fogTex.Apply();
-			mesh      = CombatAI_MeshMaker.NewPlaneMesh(Vector2.zero, Vector2.one * SECTION_SIZE, 0);
+			mesh      = CombatAI_MeshMaker.NewPlaneMesh(Vector2.zero, Vector2.one * SECTION_SIZE);
 			fogShader = AssetBundleDatabase.Get<Shader>("assets/fogshader.shader");
 			Assert.IsNotNull(fogShader);
 		}
@@ -170,6 +49,12 @@ namespace CombatAI
 			mapRect      = new Rect(0, 0, cellIndices.mapSizeX, cellIndices.mapSizeZ);
 			grid         = new bool[map.cellIndices.NumGridCells];
 			grid2d       = new ISection[Mathf.CeilToInt(cellIndices.mapSizeX / (float)SECTION_SIZE)][];
+		}
+
+		public float SkyGlow
+		{
+			get;
+			private set;
 		}
 
 		public override void FinalizeInit()
@@ -232,7 +117,7 @@ namespace CombatAI
 			base.MapComponentUpdate();
 			if (ready)
 			{
-				glowSky = map.skyManager.CurSkyGlow;
+				SkyGlow = map.skyManager.CurSkyGlow;
 				Rect     rect     = new Rect();
 				CellRect cellRect = Find.CameraDriver.CurrentViewRect;
 				rect.xMin     = Mathf.Clamp(cellRect.minX - SECTION_SIZE, 0, cellIndices.mapSizeX);
@@ -311,6 +196,115 @@ namespace CombatAI
 				{
 					Thread.Sleep(Mathf.CeilToInt(t * 1000));
 				}
+			}
+		}
+
+		private class ISection
+		{
+			private readonly MapComponent_FogGrid comp;
+			private readonly Material             mat;
+			private readonly Mesh                 mesh;
+			private readonly Vector3              pos;
+			public readonly  float[]              cells;
+			public           bool                 dirty = true;
+			public           Rect                 rect;
+			public           float                s_color;
+
+			public ISection(MapComponent_FogGrid comp, Rect rect, Rect mapRect, Mesh mesh, Texture2D tex, Shader shader)
+			{
+				this.comp = comp;
+				this.rect = rect;
+				this.mesh = mesh;
+				pos       = new Vector3(rect.position.x, 8, rect.position.y);
+				mat       = new Material(shader);
+				mat.SetVector("_Color", new Vector4(0.1f, 0.1f, 0.1f, 0.8f));
+				mat.SetTexture("_Tex", tex);
+				cells = new float[256];
+				cells.Initialize();
+				mat.SetFloatArray("_Fog", cells);
+			}
+
+			public void ApplyColor()
+			{
+				mat.SetVector("_Color", new Vector4(0.1f, 0.1f, 0.1f, s_color = Finder.Settings.FogOfWar_FogColor));
+			}
+
+			public void ApplyFogged()
+			{
+				mat.SetFloatArray("_Fog", cells);
+				dirty = false;
+			}
+
+			public void Update()
+			{
+				CellIndices indices = comp.map?.cellIndices;
+				if (indices == null)
+				{
+					return;
+				}
+				int         numGridCells = indices.NumGridCells;
+				WallGrid    walls        = comp.walls;
+				ITFloatGrid fogGrid      = comp.sight.gridFog;
+				IntVec3     pos          = this.pos.ToIntVec3();
+				IntVec3     loc;
+
+				ColorInt[] glowGrid = comp.glow.glowGrid;
+				float      glowSky  = comp.SkyGlow;
+				bool       changed  = false;
+				if (fogGrid != null)
+				{
+					for (int x = 0; x < SECTION_SIZE; x++)
+					{
+						for (int z = 0; z < SECTION_SIZE; z++)
+						{
+							int index = indices.CellToIndex(loc = pos + new IntVec3(x, 0, z));
+							if (index >= 0 && index < numGridCells)
+							{
+								float val;
+								float old = cells[x * SECTION_SIZE + z];
+								if (!walls.CanBeSeenOver(index))
+								{
+									val              = 0.5f;
+									comp.grid[index] = false;
+								}
+								else
+								{
+									float visRLimit  = 0;
+									float visibility = fogGrid.Get(index);
+									if (glowSky < 1)
+									{
+										ColorInt glow = glowGrid[index];
+										visRLimit = Mathf.Lerp(0, 0.5f, 1 - Maths.Max(Mathf.Clamp01(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f), glowSky));
+									}
+									if (visibility <= visRLimit + 1e-3f)
+									{
+										comp.grid[index] = true;
+									}
+									else
+									{
+										comp.grid[index] = false;
+									}
+									val = Maths.Max(1 - visibility, 0);
+								}
+								if (old != val)
+								{
+									changed = true;
+								}
+								cells[x * SECTION_SIZE + z] = val;
+							}
+							else
+							{
+								cells[x * SECTION_SIZE + z] = 0f;
+							}
+						}
+					}
+				}
+				dirty = changed;
+			}
+
+			public void Draw(Rect screenRect)
+			{
+				GenDraw.DrawMeshNowOrLater(mesh, pos, Quaternion.identity, mat, false);
 			}
 		}
 	}

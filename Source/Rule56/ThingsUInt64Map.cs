@@ -1,10 +1,6 @@
-﻿using System;
-using Verse;
-using System.Collections.Generic;
-using Verse.Noise;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-
+using Verse;
 namespace CombatAI
 {
 	public class IThingsUInt64Map
@@ -12,25 +8,7 @@ namespace CombatAI
 		private const ulong BOT = 0x00000000FFFFFFFF;
 		private const ulong TOP = 0xFFFFFFFF00000000;
 
-		private struct IBucketableThing : IBucketable
-		{
-			public Thing thing;
-			public int BucketIndex
-			{
-				get => thing.GetThingFlagsIndex();
-			}
-			public int UniqueIdNumber
-			{
-				get => thing.thingIDNumber;
-			}
-
-			public IBucketableThing(Thing thing)
-			{
-				this.thing = thing;
-			}
-		}
-
-		private IBuckets<IBucketableThing> buckets;
+		private readonly IBuckets<IBucketableThing> buckets;
 
 		public IThingsUInt64Map()
 		{
@@ -183,6 +161,24 @@ namespace CombatAI
 					}
 					c = c << 8;
 				}
+			}
+		}
+
+		private struct IBucketableThing : IBucketable
+		{
+			public readonly Thing thing;
+			public int BucketIndex
+			{
+				get => thing.GetThingFlagsIndex();
+			}
+			public int UniqueIdNumber
+			{
+				get => thing.thingIDNumber;
+			}
+
+			public IBucketableThing(Thing thing)
+			{
+				this.thing = thing;
 			}
 		}
 	}

@@ -1,20 +1,4 @@
-﻿using System;
-using HarmonyLib;
-using RimWorld;
-using System.Collections.Generic;
-using System.Diagnostics;
-using UnityEngine;
-using Verse;
-using Verse.AI;
-using System.Linq;
-using UnityEngine.SocialPlatforms;
-using UnityEngine.UIElements;
-using static CombatAI.SightTracker;
-using static CombatAI.CellFlooder;
-using System.Reflection.Emit;
-using System.Reflection;
-
-namespace CombatAI.Patches
+﻿namespace CombatAI.Patches
 {
 	//public static class LordJob_AssaultColony_Patch
 	//{

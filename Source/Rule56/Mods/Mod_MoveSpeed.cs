@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection;
-using RimWorld;
-
+﻿using System.Reflection;
 namespace CombatAI
 {
 	[LoadIf("Murmur.OOCMoveSpeedBoost")]

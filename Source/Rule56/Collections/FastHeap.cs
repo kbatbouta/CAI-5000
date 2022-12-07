@@ -1,38 +1,19 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-
 namespace CombatAI
 {
 	/// <summary>
-	/// A faster implementation of a Queue based on arrays.
-	/// </summary>    
+	///     A faster implementation of a Queue based on arrays.
+	/// </summary>
 	public class FastHeap<T> where T : IComparable<T>
 	{
+		private int end;
 		private T[] nodes;
 		private int start;
-		private int end;
-		private int count;
-
-		/// <summary>
-		/// Wether the queue is empty
-		/// </summary>
-		public bool IsEmpty
-		{
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => count == 0;
-		}
-
-		/// <summary>
-		/// Number of elements queued.
-		/// </summary>
-		public int Count
-		{
-			get => count;
-		}
 
 		private FastHeap() { }
 		/// <summary>
-		/// Constructor for FastQueue.
+		///     Constructor for FastQueue.
 		/// </summary>
 		/// <param name="initialSize">The starting size of the internal array.</param>
 		public FastHeap(int initialSize = 64)
@@ -41,14 +22,38 @@ namespace CombatAI
 		}
 
 		/// <summary>
-		/// Enqueue new elements into the queue.
+		///     Wether the queue is empty
+		/// </summary>
+		public bool IsEmpty
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => Count == 0;
+		}
+
+		/// <summary>
+		///     Number of elements queued.
+		/// </summary>
+		public int Count
+		{
+			get;
+			private set;
+		}
+
+		private T this[int index]
+		{
+			get => nodes[(index + start) % nodes.Length];
+			set => nodes[(index + start) % nodes.Length] = value;
+		}
+
+		/// <summary>
+		///     Enqueue new elements into the queue.
 		/// </summary>
 		/// <param name="element"></param>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Enqueue(T element)
 		{
 			T   node = nodes[end] = element, parentNode;
-			int k    = count;
+			int k    = Count;
 			while (k > 0)
 			{
 				int parentIndex = (k - 1) / 2;
@@ -62,7 +67,7 @@ namespace CombatAI
 				break;
 			}
 			end++;
-			count++;
+			Count++;
 			if (end == start)
 			{
 				Expand();
@@ -74,15 +79,15 @@ namespace CombatAI
 		}
 
 		/// <summary>
-		/// Dequeue new elements from the queue.
+		///     Dequeue new elements from the queue.
 		/// </summary>
 		/// <param name="element"></param>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public T Dequeue()
 		{
-			count--;
+			Count--;
 			T val = nodes[start++];
-			if (count > 0)
+			if (Count > 0)
 			{
 				T   curNode = this[0];
 				int k       = 0;
@@ -92,12 +97,12 @@ namespace CombatAI
 					int first       = 2 * k + 1;
 					int second      = first + 1;
 					T   tempNode;
-					if (first < count && (tempNode = this[first]).CompareTo(curNode) > 0)
+					if (first < Count && (tempNode = this[first]).CompareTo(curNode) > 0)
 					{
 						k       = first;
 						curNode = tempNode;
 					}
-					if (second < count && (tempNode = this[second]).CompareTo(curNode) > 0)
+					if (second < Count && (tempNode = this[second]).CompareTo(curNode) > 0)
 					{
 						k       = second;
 						curNode = tempNode;
@@ -118,24 +123,18 @@ namespace CombatAI
 			return val;
 		}
 
-		private T this[int index]
-		{
-			get => nodes[(index + start) % nodes.Length];
-			set => nodes[(index + start) % nodes.Length] = value;
-		}
-
 		/// <summary>
-		/// Clear all elements in the queue.
+		///     Clear all elements in the queue.
 		/// </summary>
 		public void Clear()
 		{
 			start = 0;
 			end   = 0;
-			count = 0;
+			Count = 0;
 		}
 
 		/// <summary>
-		/// Will expand the node array so more items can be added
+		///     Will expand the node array so more items can be added
 		/// </summary>
 		private void Expand()
 		{

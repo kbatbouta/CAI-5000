@@ -1,6 +1,4 @@
-﻿using System;
-using Verse;
-
+﻿using Verse;
 namespace CombatAI.Comps
 {
 	public class CompProperties_CombatAI : CompProperties

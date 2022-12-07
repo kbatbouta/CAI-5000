@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI.Gui
 {
 	public abstract class ISelector_GenericSelection<T> : ISelector
 	{
 		public IEnumerable<T> items;
 
-		public Action<T> selectionAction;
-
 		public string searchString = "";
+
+		public Action<T> selectionAction;
 
 		public bool useSearchBar = true;
 
@@ -47,7 +45,7 @@ namespace CombatAI.Gui
 			try
 			{
 				GUIUtility.ScrollView(inRect, ref scrollPosition, items,
-				                      (item) => !searchString.NullOrEmpty() ? ItemMatchSearchString(item) ? RowHeight : -1f : RowHeight,
+				                      item => !searchString.NullOrEmpty() ? ItemMatchSearchString(item) ? RowHeight : -1f : RowHeight,
 				                      (rect, item) =>
 				                      {
 					                      DoSingleItem(rect, item);

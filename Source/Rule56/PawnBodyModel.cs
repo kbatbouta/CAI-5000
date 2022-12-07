@@ -1,35 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using RimWorld;
-using Steamworks;
+﻿using System.Collections.Generic;
 using Verse;
-
 namespace CombatAI
 {
 	public class PawnBodyModel
 	{
-		private static List<BodyPartInfo> _temp       = new List<BodyPartInfo>();
-		private static List<BodyPartInfo> _majorParts = new List<BodyPartInfo>(32);
-
-		private struct BodyPartInfo
-		{
-			public readonly BodyPartRecord part;
-			public readonly float          weightedCoverage;
-
-			public List<BodyPartRecord> Parts
-			{
-				get => part.parts;
-			}
-
-			public BodyPartInfo(BodyPartRecord part, float weightCoverage)
-			{
-				this.part        = part;
-				weightedCoverage = weightCoverage;
-			}
-		}
+		private static readonly List<BodyPartInfo> _temp       = new List<BodyPartInfo>();
+		private static readonly List<BodyPartInfo> _majorParts = new List<BodyPartInfo>(32);
+		public readonly         BodyDef            body;
 
 		public readonly Dictionary<BodyPartGroupDef, float> coverageByPartGroup = new Dictionary<BodyPartGroupDef, float>(32);
-		public readonly BodyDef                             body;
 
 		public PawnBodyModel(BodyDef body)
 		{
@@ -96,6 +75,23 @@ namespace CombatAI
 			coverageByPartGroup.Clear();
 			_temp.Clear();
 			_majorParts.Clear();
+		}
+
+		private struct BodyPartInfo
+		{
+			public readonly BodyPartRecord part;
+			public readonly float          weightedCoverage;
+
+			public List<BodyPartRecord> Parts
+			{
+				get => part.parts;
+			}
+
+			public BodyPartInfo(BodyPartRecord part, float weightCoverage)
+			{
+				this.part        = part;
+				weightedCoverage = weightCoverage;
+			}
 		}
 	}
 }

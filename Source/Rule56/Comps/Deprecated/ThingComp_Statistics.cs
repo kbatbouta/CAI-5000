@@ -1,21 +1,8 @@
-﻿using System;
-using RimWorld;
-using System.Collections.Generic;
-using System.Linq;
-using Verse;
-using UnityEngine;
-using Verse.AI;
-using System.Threading;
-using CombatAI.Statistics;
-using System.Text;
-
+﻿using Verse;
 namespace CombatAI.Comps
 {
 	public class ThingComp_Statistics : ThingComp
 	{
-		public ThingComp_Statistics()
-		{
-		}
 
 		public override void PostSpawnSetup(bool respawningAfterLoad)
 		{

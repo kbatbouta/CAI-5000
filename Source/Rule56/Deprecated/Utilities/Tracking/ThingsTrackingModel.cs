@@ -1,91 +1,22 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.PerformanceData;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI.Utilities
 {
 #if DEBUG_REACTION
 	public class ThingsTrackingModel
 	{
-		[StructLayout(LayoutKind.Sequential)]
-		private struct ThingPositionInfo : IComparable<ThingPositionInfo>
-		{
-			public Thing thing;
-			public int   createdOn;
-
-			public int Age
-			{
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				get => GenTicks.TicksGame - createdOn;
-			}
-
-			public bool IsValid
-			{
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				get => thing != null && thing.Spawned && thing.Position.InBounds(thing.Map);
-			}
-
-			public ThingPositionInfo(Thing thing)
-			{
-				this.thing = thing;
-				createdOn  = GenTicks.TicksGame;
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public override int GetHashCode()
-			{
-				return thing.thingIDNumber;
-			}
-
-			public override bool Equals(object obj)
-			{
-				return obj.GetHashCode() == GetHashCode();
-			}
-
-			public override string ToString()
-			{
-				return $"{thing.ToString()}:{thing.Position.ToString()}:{createdOn.ToString()}";
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public int CompareTo(ThingPositionInfo other)
-			{
-				return thing.Position.x.CompareTo(other.thing.Position.x);
-			}
-
-			public static bool operator >(ThingPositionInfo operand1, ThingPositionInfo operand2)
-			{
-				return operand1.CompareTo(operand2) == 1;
-			}
-
-			public static bool operator <(ThingPositionInfo operand1, ThingPositionInfo operand2)
-			{
-				return operand1.CompareTo(operand2) == -1;
-			}
-
-			public static bool operator >=(ThingPositionInfo operand1, ThingPositionInfo operand2)
-			{
-				return operand1.CompareTo(operand2) >= 0;
-			}
-
-			public static bool operator <=(ThingPositionInfo operand1, ThingPositionInfo operand2)
-			{
-				return operand1.CompareTo(operand2) <= 0;
-			}
-		}
 
 		public readonly ThingDef      def;
-		public readonly ThingsTracker parent;
 		public readonly Map           map;
+		public readonly ThingsTracker parent;
 
-		private int                    count        = 0;
-		private Dictionary<Thing, int> indexByThing = new Dictionary<Thing, int>();
-		private ThingPositionInfo[]    sortedThings = new ThingPositionInfo[100];
+		private          int                    count;
+		private readonly Dictionary<Thing, int> indexByThing = new Dictionary<Thing, int>();
+		private          ThingPositionInfo[]    sortedThings = new ThingPositionInfo[100];
 
 		public ThingsTrackingModel(ThingDef def, Map map, ThingsTracker parent)
 		{
@@ -116,7 +47,7 @@ namespace CombatAI.Utilities
 			int index = count - 1;
 			while (index - 1 >= 0 && sortedThings[index] < sortedThings[index - 1])
 			{
-				Swap<ThingPositionInfo>(index - 1, index, sortedThings);
+				Swap(index - 1, index, sortedThings);
 				indexByThing[sortedThings[index].thing]     = index;
 				indexByThing[sortedThings[index - 1].thing] = index - 1;
 				index--;
@@ -143,7 +74,7 @@ namespace CombatAI.Utilities
 			int i = index;
 			while (i + 1 < count && sortedThings[i] > sortedThings[i + 1])
 			{
-				Swap<ThingPositionInfo>(i + 1, i, sortedThings);
+				Swap(i + 1, i, sortedThings);
 				indexByThing[sortedThings[i].thing]     = i;
 				indexByThing[sortedThings[i + 1].thing] = i + 1;
 				i++;
@@ -151,7 +82,7 @@ namespace CombatAI.Utilities
 			i = index;
 			while (i - 1 >= 0 && sortedThings[i] < sortedThings[i - 1])
 			{
-				Swap<ThingPositionInfo>(i - 1, i, sortedThings);
+				Swap(i - 1, i, sortedThings);
 				indexByThing[sortedThings[i].thing]     = i;
 				indexByThing[sortedThings[i - 1].thing] = i - 1;
 				i--;
@@ -422,6 +353,73 @@ namespace CombatAI.Utilities
 			T temp = list[a];
 			list[a] = list[b];
 			list[b] = temp;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		private struct ThingPositionInfo : IComparable<ThingPositionInfo>
+		{
+			public          Thing thing;
+			public readonly int   createdOn;
+
+			public int Age
+			{
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				get => GenTicks.TicksGame - createdOn;
+			}
+
+			public bool IsValid
+			{
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				get => thing != null && thing.Spawned && thing.Position.InBounds(thing.Map);
+			}
+
+			public ThingPositionInfo(Thing thing)
+			{
+				this.thing = thing;
+				createdOn  = GenTicks.TicksGame;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public override int GetHashCode()
+			{
+				return thing.thingIDNumber;
+			}
+
+			public override bool Equals(object obj)
+			{
+				return obj.GetHashCode() == GetHashCode();
+			}
+
+			public override string ToString()
+			{
+				return $"{thing}:{thing.Position.ToString()}:{createdOn.ToString()}";
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public int CompareTo(ThingPositionInfo other)
+			{
+				return thing.Position.x.CompareTo(other.thing.Position.x);
+			}
+
+			public static bool operator >(ThingPositionInfo operand1, ThingPositionInfo operand2)
+			{
+				return operand1.CompareTo(operand2) == 1;
+			}
+
+			public static bool operator <(ThingPositionInfo operand1, ThingPositionInfo operand2)
+			{
+				return operand1.CompareTo(operand2) == -1;
+			}
+
+			public static bool operator >=(ThingPositionInfo operand1, ThingPositionInfo operand2)
+			{
+				return operand1.CompareTo(operand2) >= 0;
+			}
+
+			public static bool operator <=(ThingPositionInfo operand1, ThingPositionInfo operand2)
+			{
+				return operand1.CompareTo(operand2) <= 0;
+			}
 		}
 	}
 #endif

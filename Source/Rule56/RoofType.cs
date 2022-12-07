@@ -1,7 +1,6 @@
-﻿using System;
-namespace CombatAI
+﻿namespace CombatAI
 {
-	public enum RoofType : int
+	public enum RoofType
 	{
 		None        = 0,
 		Constructed = 1,

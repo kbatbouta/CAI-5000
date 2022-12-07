@@ -1,31 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using Verse;
-using RimWorld;
 using System.Threading;
-using System.Runtime.InteropServices;
-
+using Verse;
 namespace CombatAI
 {
 	public class AsyncActions
 	{
-		private bool alive                      = true;
-		private bool mainThreadActionQueueEmpty = false;
 
-		private readonly int    hashOffset;
-		private readonly Thread thread;
+		private readonly int hashOffset;
+
+		public readonly  object locker_Main    = new object();
+		public readonly  object locker_offMain = new object();
+		private readonly int    mainLoopTickInterval;
 
 		private readonly List<Action> queuedMainThreadActions = new List<Action>();
 		private readonly List<Action> queuedOffThreadActions  = new List<Action>();
-		private readonly int          mainLoopTickInterval;
-
-		public readonly object locker_Main    = new object();
-		public readonly object locker_offMain = new object();
-
-		public bool Alive
-		{
-			get => alive;
-		}
+		private readonly Thread       thread;
+		private          bool         mainThreadActionQueueEmpty;
 
 		public AsyncActions(int mainLoopTickInterval = 5)
 		{
@@ -33,6 +24,12 @@ namespace CombatAI
 			hashOffset                = Rand.Int % 128;
 			thread                    = new Thread(OffMainThreadActionLoop);
 		}
+
+		public bool Alive
+		{
+			get;
+			private set;
+		} = true;
 
 		public void Start()
 		{
@@ -46,7 +43,7 @@ namespace CombatAI
 
 		public void Kill()
 		{
-			alive = false;
+			Alive = false;
 			try
 			{
 				lock (locker_Main)
@@ -138,7 +135,7 @@ namespace CombatAI
 
 		private void OffMainThreadActionLoop()
 		{
-			while (alive)
+			while (Alive)
 			{
 				Action action = DequeueOffThreadAction();
 				if (action != null)

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-
 namespace CombatAI
 {
 	public static class PawnPathUtility

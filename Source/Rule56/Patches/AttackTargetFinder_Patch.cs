@@ -1,13 +1,11 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
 using HarmonyLib;
 using RimWorld;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using System.Linq;
-
 namespace CombatAI.Patches
 {
 	internal static class AttackTargetFinder_Patch
@@ -97,7 +95,7 @@ namespace CombatAI.Patches
 					{
 						if (damageReport.IsValid)
 						{
-							ArmorReport armorReport = ArmorUtility.GetArmorReport(enemy);
+							ArmorReport armorReport = enemy.GetArmorReport();
 							float       diff        = 0f;
 							if (Mod_CE.active)
 							{

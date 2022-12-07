@@ -1,10 +1,6 @@
-﻿using System;
+﻿using Verse;
 using static CombatAI.AvoidanceTracker;
-using Verse;
-using UnityEngine;
-using Verse.AI;
 using static CombatAI.SightTracker;
-using static CombatAI.CellFlooder;
 
 namespace CombatAI
 {
@@ -21,7 +17,7 @@ namespace CombatAI
 			}
 			Map  map    = request.caster.Map;
 			Pawn caster = request.caster;
-			sightReader.armor = ArmorUtility.GetArmorReport(caster);
+			sightReader.armor = caster.GetArmorReport();
 			if (request.locus == IntVec3.Zero)
 			{
 				request.locus             = request.caster.Position;
@@ -42,7 +38,7 @@ namespace CombatAI
 			float              bestCellScore      = 1e8f;
 			bool               tpsLow             = Finder.Performance.TpsCriticallyLow;
 			flooder.Flood(request.locus,
-			              (node) =>
+			              node =>
 			              {
 				              if (request.verb != null && !request.verb.CanHitTargetFrom(node.cell, enemyLoc) || maxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
 				              {
@@ -64,11 +60,11 @@ namespace CombatAI
 				              //    map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
 				              //}
 			              },
-			              (cell) =>
+			              cell =>
 			              {
 				              return (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - interceptors.grid.Get(cell);
 			              },
-			              (cell) =>
+			              cell =>
 			              {
 				              return (request.validator == null || request.validator(cell)) && cell.WalkableBy(map, caster);
 			              },
@@ -89,7 +85,7 @@ namespace CombatAI
 			}
 			Map  map    = request.caster.Map;
 			Pawn caster = request.caster;
-			sightReader.armor = ArmorUtility.GetArmorReport(caster);
+			sightReader.armor = caster.GetArmorReport();
 			if (request.locus == IntVec3.Zero)
 			{
 				request.locus             = request.caster.Position;
@@ -110,7 +106,7 @@ namespace CombatAI
 			float              bestCellDist      = request.locus.DistanceToSquared(enemyLoc);
 			float              bestCellScore     = 1e8f;
 			flooder.Flood(request.locus,
-			              (node) =>
+			              node =>
 			              {
 				              if (maxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
 				              {
@@ -129,11 +125,11 @@ namespace CombatAI
 				              }
 				              //map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
 			              },
-			              (cell) =>
+			              cell =>
 			              {
 				              return (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (rootVisFriendlies - sightReader.GetVisibilityToFriendlies(cell)) - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
 			              },
-			              (cell) =>
+			              cell =>
 			              {
 				              return (request.validator == null || request.validator(cell)) && cell.WalkableBy(map, caster);
 			              },

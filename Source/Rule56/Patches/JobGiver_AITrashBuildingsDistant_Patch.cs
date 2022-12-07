@@ -1,20 +1,18 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
-using System.Collections.Generic;
-using System.Reflection.Emit;
-using UnityEngine;
 using Verse;
 using Verse.AI;
-using System.Linq;
-using System.Reflection;
-
-
 namespace CombatAI.Patches
 {
 	public static class JobGiver_AITrashBuildingsDistant_Patch
 	{
-		private static Dictionary<int, int> lastGaveById = new Dictionary<int, int>();
+		private static readonly Dictionary<int, int> lastGaveById = new Dictionary<int, int>();
+
+		public static void ClearCache()
+		{
+			lastGaveById.Clear();
+		}
 
 		[HarmonyPatch(typeof(JobGiver_AITrashBuildingsDistant), nameof(JobGiver_AITrashBuildingsDistant.TryGiveJob))]
 		private static class JobGiver_AITrashBuildingsDistant_TryGiveJob_Patch
@@ -39,11 +37,6 @@ namespace CombatAI.Patches
 					lastGaveById[pawn.thingIDNumber] = GenTicks.TicksGame + 20;
 				}
 			}
-		}
-
-		public static void ClearCache()
-		{
-			lastGaveById.Clear();
 		}
 	}
 }

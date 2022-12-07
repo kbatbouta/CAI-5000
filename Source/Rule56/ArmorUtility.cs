@@ -1,51 +1,15 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Security.Policy;
+﻿using System.Collections.Generic;
 using CombatAI.Gui;
 using RimWorld;
-using TMPro;
 using UnityEngine;
-using UnityEngine.TestTools;
 using Verse;
-
 namespace CombatAI
 {
 	public static class ArmorUtility
 	{
-		private static Dictionary<ThingDef, bool>           shields = new Dictionary<ThingDef, bool>(128);
-		private static Dictionary<int, ArmorReport>         reports = new Dictionary<int, ArmorReport>(128);
-		private static Dictionary<BodyDef, BodyDefApparels> models  = new Dictionary<BodyDef, BodyDefApparels>();
-
-		private class BodyDefApparels
-		{
-			public readonly BodyDef       bodyDef;
-			public readonly PawnBodyModel model;
-
-			private readonly Dictionary<ApparelProperties, float> apparels = new Dictionary<ApparelProperties, float>();
-
-			public BodyDefApparels(BodyDef body)
-			{
-				bodyDef = body;
-				model   = new PawnBodyModel(body);
-			}
-
-			public float Coverage(ApparelProperties apparel)
-			{
-				if (!apparels.TryGetValue(apparel, out float coverage))
-				{
-					coverage = 0;
-					List<BodyPartGroupDef> groups = apparel.bodyPartGroups;
-					for (int i = 0; i < groups.Count; i++)
-					{
-						BodyPartGroupDef group = groups[i];
-						coverage = Maths.Max(model.Coverage(group), coverage);
-					}
-					apparels[apparel] = coverage;
-				}
-				return coverage;
-			}
-		}
+		private static readonly Dictionary<ThingDef, bool>           shields = new Dictionary<ThingDef, bool>(128);
+		private static readonly Dictionary<int, ArmorReport>         reports = new Dictionary<int, ArmorReport>(128);
+		private static readonly Dictionary<BodyDef, BodyDefApparels> models  = new Dictionary<BodyDef, BodyDefApparels>();
 
 		public static void Initialize()
 		{
@@ -166,6 +130,36 @@ namespace CombatAI
 		public static void ClearCache()
 		{
 			reports.Clear();
+		}
+
+		private class BodyDefApparels
+		{
+
+			private readonly Dictionary<ApparelProperties, float> apparels = new Dictionary<ApparelProperties, float>();
+			public readonly  BodyDef                              bodyDef;
+			public readonly  PawnBodyModel                        model;
+
+			public BodyDefApparels(BodyDef body)
+			{
+				bodyDef = body;
+				model   = new PawnBodyModel(body);
+			}
+
+			public float Coverage(ApparelProperties apparel)
+			{
+				if (!apparels.TryGetValue(apparel, out float coverage))
+				{
+					coverage = 0;
+					List<BodyPartGroupDef> groups = apparel.bodyPartGroups;
+					for (int i = 0; i < groups.Count; i++)
+					{
+						BodyPartGroupDef group = groups[i];
+						coverage = Maths.Max(model.Coverage(group), coverage);
+					}
+					apparels[apparel] = coverage;
+				}
+				return coverage;
+			}
 		}
 	}
 }

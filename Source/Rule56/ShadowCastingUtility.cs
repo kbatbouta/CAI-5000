@@ -1,20 +1,13 @@
 ﻿using System;
-using RimWorld;
-using Verse;
-using UnityEngine;
-using RimWorld.BaseGen;
-using System.Linq;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
-using Verse.Noise;
-
+using UnityEngine;
+using Verse;
 namespace CombatAI
 {
 	/// <summary>
-	/// TL;DR Cast shadows.
-	/// 
-	/// The algorithem used is a modified version of   
-	/// https://www.albertford.com/shadowcasting/
+	///     TL;DR Cast shadows.
+	///     The algorithem used is a modified version of
+	///     https://www.albertford.com/shadowcasting/
 	/// </summary>
 	public static partial class ShadowCastingUtility
 	{
@@ -28,164 +21,76 @@ namespace CombatAI
 
 		private static readonly Vector3 InvalidOffset = new Vector3(0, -1, 0);
 
-		private class CastRequest
-		{
-			public VisibleRow                       firstRow;
-			public int                              carryLimit = 5;
-			public IntVec3                          source;
-			public Map                              map;
-			public WallGrid                         grid;
-			public Action<IntVec3, int, int, float> setAction;
-			public List<Vector3>                    buffer;
-		}
-
 		static ShadowCastingUtility()
 		{
 			_transformationFuncs = new Func<IntVec3, IntVec3>[4];
-			_transformationFuncs[0] = (cell) =>
+			_transformationFuncs[0] = cell =>
 			{
 				return cell;
 			};
-			_transformationFuncs[1] = (cell) =>
+			_transformationFuncs[1] = cell =>
 			{
 				return new IntVec3(cell.z, 0, -1 * cell.x);
 			};
-			_transformationFuncs[2] = (cell) =>
+			_transformationFuncs[2] = cell =>
 			{
 				return new IntVec3(-1 * cell.x, 0, -1 * cell.z);
 			};
-			_transformationFuncs[3] = (cell) =>
+			_transformationFuncs[3] = cell =>
 			{
 				return new IntVec3(-1 * cell.z, 0, cell.x);
 			};
 			_transformationInverseFuncs = new Func<IntVec3, IntVec3>[4];
-			_transformationInverseFuncs[0] = (cell) =>
+			_transformationInverseFuncs[0] = cell =>
 			{
 				return cell;
 			};
-			_transformationInverseFuncs[1] = (cell) =>
+			_transformationInverseFuncs[1] = cell =>
 			{
 				return new IntVec3(-1 * cell.z, 0, cell.x);
 			};
-			_transformationInverseFuncs[2] = (cell) =>
+			_transformationInverseFuncs[2] = cell =>
 			{
 				return new IntVec3(-1 * cell.x, 0, -1 * cell.z);
 			};
-			_transformationInverseFuncs[3] = (cell) =>
+			_transformationInverseFuncs[3] = cell =>
 			{
 				return new IntVec3(cell.z, 0, -1 * cell.x);
 			};
 			_transformationFuncsV3 = new Func<Vector3, Vector3>[4];
-			_transformationFuncsV3[0] = (cell) =>
+			_transformationFuncsV3[0] = cell =>
 			{
 				return cell;
 			};
-			_transformationFuncsV3[1] = (cell) =>
+			_transformationFuncsV3[1] = cell =>
 			{
 				return new Vector3(cell.z, 0, -1 * cell.x);
 			};
-			_transformationFuncsV3[2] = (cell) =>
+			_transformationFuncsV3[2] = cell =>
 			{
 				return new Vector3(-1 * cell.x, 0, -1 * cell.z);
 			};
-			_transformationFuncsV3[3] = (cell) =>
+			_transformationFuncsV3[3] = cell =>
 			{
 				return new Vector3(-1 * cell.z, 0, cell.x);
 			};
 			_transformationInverseFuncsV3 = new Func<Vector3, Vector3>[4];
-			_transformationInverseFuncsV3[0] = (cell) =>
+			_transformationInverseFuncsV3[0] = cell =>
 			{
 				return cell;
 			};
-			_transformationInverseFuncsV3[1] = (cell) =>
+			_transformationInverseFuncsV3[1] = cell =>
 			{
 				return new Vector3(-1 * cell.z, 0, cell.x);
 			};
-			_transformationInverseFuncsV3[2] = (cell) =>
+			_transformationInverseFuncsV3[2] = cell =>
 			{
 				return new Vector3(-1 * cell.x, 0, -1 * cell.z);
 			};
-			_transformationInverseFuncsV3[3] = (cell) =>
+			_transformationInverseFuncsV3[3] = cell =>
 			{
 				return new Vector3(cell.z, 0, -1 * cell.x);
 			};
-		}
-
-		private struct VisibleRow
-		{
-			public float startSlope;
-			public float endSlope;
-
-			public int   visibilityCarry;
-			public int   depth;
-			public int   quartor;
-			public int   maxDepth;
-			public float blockChance;
-
-			public void Tiles(List<Vector3> buffer)
-			{
-				int min = (int)Mathf.Floor(startSlope * depth + 0.5f);
-				int max = (int)Mathf.Ceil(endSlope * depth - 0.5f);
-
-				buffer.Clear();
-				for (int i = min; i <= max; i++)
-				{
-					buffer.Add(new Vector3(depth, 0, i));
-				}
-			}
-
-			public void DebugFlash(Map map, IntVec3 root)
-			{
-				float   startSlope = this.startSlope;
-				float   endSlope   = this.endSlope;
-				int     min        = (int)Mathf.Floor(startSlope * this.depth + 0.5f);
-				int     max        = (int)Mathf.Ceil(endSlope * this.depth - 0.5f);
-				IntVec3 left       = root + _transformationFuncs[quartor](new IntVec3(this.depth, 0, min));
-				IntVec3 right      = root + _transformationFuncs[quartor](new IntVec3(this.depth, 0, max));
-				int     depth      = this.depth;
-				map.GetComponent<MapComponent_CombatAI>().EnqueueMainThreadAction(() =>
-				{
-					if (left.InBounds(map))
-					{
-						map.debugDrawer.FlashCell(left, 0.99f, $"{Math.Round(startSlope, 3)}");
-					}
-					if (right.InBounds(map))
-					{
-						map.debugDrawer.FlashCell(right, 0.01f, $"{Math.Round(endSlope, 3)}");
-					}
-				});
-			}
-
-			public IntVec3 Transform(IntVec3 oldOffset)
-			{
-				return _transformationFuncs[quartor](oldOffset);
-			}
-
-			public VisibleRow Next()
-			{
-				VisibleRow row = new VisibleRow();
-				row.endSlope        = endSlope;
-				row.startSlope      = startSlope;
-				row.depth           = depth + 1;
-				row.maxDepth        = maxDepth;
-				row.quartor         = quartor;
-				row.visibilityCarry = visibilityCarry;
-				row.blockChance     = blockChance;
-				return row;
-			}
-
-			public static VisibleRow First
-			{
-				get
-				{
-					VisibleRow row = new VisibleRow();
-					row.startSlope      = -1;
-					row.endSlope        = 1;
-					row.depth           = 1;
-					row.visibilityCarry = 1;
-					return row;
-				}
-			}
 		}
 
 		private static bool IsValid(Vector3 point)
@@ -205,11 +110,11 @@ namespace CombatAI
 			{
 				return 0;
 			}
-			else if (x < 0 && Math.Abs(z) < Math.Abs(x))
+			if (x < 0 && Math.Abs(z) < Math.Abs(x))
 			{
 				return 2;
 			}
-			else if (z > 0 && Math.Abs(x) <= z)
+			if (z > 0 && Math.Abs(x) <= z)
 			{
 				return 3;
 			}
@@ -532,6 +437,94 @@ namespace CombatAI
 				request.setAction   = setAction;
 				request.buffer      = buffer;
 				castAction(request);
+			}
+		}
+
+		private class CastRequest
+		{
+			public List<Vector3>                    buffer;
+			public int                              carryLimit = 5;
+			public VisibleRow                       firstRow;
+			public WallGrid                         grid;
+			public Map                              map;
+			public Action<IntVec3, int, int, float> setAction;
+			public IntVec3                          source;
+		}
+
+		private struct VisibleRow
+		{
+			public float startSlope;
+			public float endSlope;
+
+			public int   visibilityCarry;
+			public int   depth;
+			public int   quartor;
+			public int   maxDepth;
+			public float blockChance;
+
+			public void Tiles(List<Vector3> buffer)
+			{
+				int min = (int)Mathf.Floor(startSlope * depth + 0.5f);
+				int max = (int)Mathf.Ceil(endSlope * depth - 0.5f);
+
+				buffer.Clear();
+				for (int i = min; i <= max; i++)
+				{
+					buffer.Add(new Vector3(depth, 0, i));
+				}
+			}
+
+			public void DebugFlash(Map map, IntVec3 root)
+			{
+				float   startSlope = this.startSlope;
+				float   endSlope   = this.endSlope;
+				int     min        = (int)Mathf.Floor(startSlope * this.depth + 0.5f);
+				int     max        = (int)Mathf.Ceil(endSlope * this.depth - 0.5f);
+				IntVec3 left       = root + _transformationFuncs[quartor](new IntVec3(this.depth, 0, min));
+				IntVec3 right      = root + _transformationFuncs[quartor](new IntVec3(this.depth, 0, max));
+				int     depth      = this.depth;
+				map.GetComponent<MapComponent_CombatAI>().EnqueueMainThreadAction(() =>
+				{
+					if (left.InBounds(map))
+					{
+						map.debugDrawer.FlashCell(left, 0.99f, $"{Math.Round(startSlope, 3)}");
+					}
+					if (right.InBounds(map))
+					{
+						map.debugDrawer.FlashCell(right, 0.01f, $"{Math.Round(endSlope, 3)}");
+					}
+				});
+			}
+
+			public IntVec3 Transform(IntVec3 oldOffset)
+			{
+				return _transformationFuncs[quartor](oldOffset);
+			}
+
+			public VisibleRow Next()
+			{
+				VisibleRow row = new VisibleRow();
+				row.endSlope        = endSlope;
+				row.startSlope      = startSlope;
+				row.depth           = depth + 1;
+				row.maxDepth        = maxDepth;
+				row.quartor         = quartor;
+				row.visibilityCarry = visibilityCarry;
+				row.blockChance     = blockChance;
+				return row;
+			}
+
+			public static VisibleRow First
+			{
+				get
+				{
+					VisibleRow row = new VisibleRow();
+					row.startSlope      = -1;
+					row.endSlope        = 1;
+					row.depth           = 1;
+					row.visibilityCarry = 1;
+					return row;
+				}
 			}
 		}
 	}

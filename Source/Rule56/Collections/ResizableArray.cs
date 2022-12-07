@@ -2,13 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-
-
 namespace CombatAI
 {
 	public class ResizableArray<T> : IEnumerable<T>
 	{
 		private T[] array;
+
+		public ResizableArray(int initialSize)
+		{
+			array = new T[initialSize];
+		}
 
 		public int Length
 		{
@@ -27,20 +30,12 @@ namespace CombatAI
 				{
 					throw new ArgumentNullException();
 				}
-				else if (index < -Length || index >= Length)
+				if (index < -Length || index >= Length)
 				{
 					throw new IndexOutOfRangeException();
 				}
-				else
-				{
-					array[TransformIndex(index)] = value;
-				}
+				array[TransformIndex(index)] = value;
 			}
-		}
-
-		public ResizableArray(int initialSize)
-		{
-			array = new T[initialSize];
 		}
 
 		public IEnumerator<T> GetEnumerator()
@@ -72,9 +67,14 @@ namespace CombatAI
 
 		private class ResizableArrayEnum : IEnumerator<T>
 		{
-			private int position = -1;
 
 			private readonly ResizableArray<T> _array;
+			private          int               position = -1;
+
+			public ResizableArrayEnum(ResizableArray<T> resizableArray)
+			{
+				_array = resizableArray;
+			}
 
 			public object Current
 			{
@@ -94,11 +94,6 @@ namespace CombatAI
 			T IEnumerator<T>.Current
 			{
 				get => (T)Current;
-			}
-
-			public ResizableArrayEnum(ResizableArray<T> resizableArray)
-			{
-				_array = resizableArray;
 			}
 
 			public bool MoveNext()

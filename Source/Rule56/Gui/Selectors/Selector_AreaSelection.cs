@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI.Gui
 {
 	public class Selector_AreaSelection : ISelector_GenericSelection<Area>

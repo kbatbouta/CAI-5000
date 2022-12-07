@@ -1,39 +1,27 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using RimWorld;
-using UnityEngine;
+﻿using System.Runtime.CompilerServices;
 using Verse;
-
 namespace CombatAI
 {
 	public class ITFloatGrid
 	{
-		private struct ITCell
-		{
-			public float  value;
-			public float  valuePrev;
-			public ushort sig;
-			public ushort cycleNum;
-		}
-
-		private          ushort      sig      = 13;
-		private          ushort      cycleNum = 19;
 		private readonly CellIndices cellIndices;
 		private readonly ITCell[]    grid;
 
-		public readonly int mapCellNum;
+		public readonly int    mapCellNum;
+		private         ushort cycleNum = 19;
 
-		public int CycleNum
-		{
-			get => cycleNum;
-		}
+		private ushort sig = 13;
 
 		public ITFloatGrid(Map map)
 		{
 			cellIndices = map.cellIndices;
 			grid        = new ITCell[cellIndices.NumGridCells];
 			mapCellNum  = cellIndices.NumGridCells;
+		}
+
+		public int CycleNum
+		{
+			get => cycleNum;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -111,6 +99,14 @@ namespace CombatAI
 			{
 				sig = 13;
 			}
+		}
+
+		private struct ITCell
+		{
+			public float  value;
+			public float  valuePrev;
+			public ushort sig;
+			public ushort cycleNum;
 		}
 	}
 }

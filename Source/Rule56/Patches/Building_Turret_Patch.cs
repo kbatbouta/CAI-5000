@@ -5,7 +5,6 @@ using System.Reflection;
 using HarmonyLib;
 using RimWorld;
 using Verse;
-
 namespace CombatAI.Patches
 {
 	public static class Building_Turret_Patch

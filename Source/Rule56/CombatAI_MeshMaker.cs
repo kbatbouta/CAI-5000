@@ -1,7 +1,5 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using Verse;
-
 namespace CombatAI
 {
 	[StaticConstructorOnStartup]
@@ -25,7 +23,7 @@ namespace CombatAI
 		static CombatAI_MeshMaker()
 		{
 			plane10Super = NewPlaneMesh(Vector2.zero, Vector2.one, 0.01f);
-			plane10Top   = NewPlaneMesh(Vector2.zero, Vector2.one, 0.00f);
+			plane10Top   = NewPlaneMesh(Vector2.zero, Vector2.one);
 			plane10Mid   = NewPlaneMesh(Vector2.zero, Vector2.one, -0.01f);
 			plane10Bot   = NewPlaneMesh(Vector2.zero, Vector2.one, -0.02f);
 

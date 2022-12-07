@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
-using System.IO.Ports;
-using System.Linq;
-using RimWorld;
+using CombatAI.R;
 using UnityEngine;
 using Verse;
 using GUILambda = System.Action<UnityEngine.Rect>;
@@ -12,38 +9,21 @@ namespace CombatAI.Gui
 {
 	public class Listing_Collapsible : IListing_Custom
 	{
+
+		private bool              expanded;
 		private Group_Collapsible group;
 
-		private bool expanded = false;
-
-		public class Group_Collapsible
+		public Listing_Collapsible(bool expanded = false, bool scrollViewOnOverflow = true) : base(scrollViewOnOverflow)
 		{
-			private List<Listing_Collapsible> collapsibles;
+			this.expanded = expanded;
+			group         = new Group_Collapsible();
+		}
 
-			public List<Listing_Collapsible> AllCollapsibles
-			{
-				get => collapsibles != null ? collapsibles : collapsibles = new List<Listing_Collapsible>();
-			}
-
-			public bool AnyExpanded
-			{
-				get => collapsibles.Any(c => c.expanded);
-			}
-
-			public void CollapseAll()
-			{
-				foreach (Listing_Collapsible collapsible in AllCollapsibles)
-				{
-					collapsible.expanded = false;
-				}
-			}
-
-			public void Register(Listing_Collapsible collapsible)
-			{
-				AllCollapsibles.Add(collapsible);
-
-				collapsible.expanded = false;
-			}
+		public Listing_Collapsible(Group_Collapsible group, bool expanded = false, bool scrollViewOnOverflow = true) : base(scrollViewOnOverflow)
+		{
+			this.expanded = expanded;
+			this.group    = group;
+			this.group.Register(this);
 		}
 
 		public Group_Collapsible Group
@@ -67,19 +47,6 @@ namespace CombatAI.Gui
 			}
 		}
 
-		public Listing_Collapsible(bool expanded = false, bool scrollViewOnOverflow = true) : base(scrollViewOnOverflow)
-		{
-			this.expanded = expanded;
-			group         = new Group_Collapsible();
-		}
-
-		public Listing_Collapsible(Group_Collapsible group, bool expanded = false, bool scrollViewOnOverflow = true) : base(scrollViewOnOverflow)
-		{
-			this.expanded = expanded;
-			this.group    = group;
-			this.group.Register(this);
-		}
-
 		public virtual void Begin(Rect inRect, TaggedString title, bool drawInfo = true, bool drawIcon = true, bool hightlightIfMouseOver = true)
 		{
 			base.Begin(inRect);
@@ -99,7 +66,7 @@ namespace CombatAI.Gui
 				{
 					GUIFont.Font   = GUIFontSize.Tiny;
 					GUIFont.Anchor = TextAnchor.MiddleRight;
-					Widgets.Label(titleRect, expanded ? R.Keyed.CombatAI_Hide : R.Keyed.CombatAI_Expand);
+					Widgets.Label(titleRect, expanded ? Keyed.CombatAI_Hide : Keyed.CombatAI_Expand);
 				}
 				GUIFont.Font                   = GUIFontSize.Smaller;
 				GUIFont.CurFontStyle.fontStyle = FontStyle.Normal;
@@ -116,7 +83,7 @@ namespace CombatAI.Gui
 					Expanded = !Expanded;
 				}
 				GUI.color = CollapsibleBGBorderColor;
-				Widgets.DrawBox(slice.outside, 1);
+				Widgets.DrawBox(slice.outside);
 			});
 			if (Expanded)
 			{
@@ -195,6 +162,36 @@ namespace CombatAI.Gui
 		protected override RectSlice Slice(float height, bool includeMargins = true)
 		{
 			return base.Slice(height, includeMargins);
+		}
+
+		public class Group_Collapsible
+		{
+			private List<Listing_Collapsible> collapsibles;
+
+			public List<Listing_Collapsible> AllCollapsibles
+			{
+				get => collapsibles != null ? collapsibles : collapsibles = new List<Listing_Collapsible>();
+			}
+
+			public bool AnyExpanded
+			{
+				get => collapsibles.Any(c => c.expanded);
+			}
+
+			public void CollapseAll()
+			{
+				foreach (Listing_Collapsible collapsible in AllCollapsibles)
+				{
+					collapsible.expanded = false;
+				}
+			}
+
+			public void Register(Listing_Collapsible collapsible)
+			{
+				AllCollapsibles.Add(collapsible);
+
+				collapsible.expanded = false;
+			}
 		}
 	}
 }

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Verse;
+﻿using System.Collections.Generic;
 using RimWorld;
-using Verse.AI;
-using System.Diagnostics;
-using UnityEngine;
-
+using Verse;
 namespace CombatAI
 {
 	public class TurretTracker : MapComponent

@@ -1,135 +1,16 @@
 ﻿using System;
-using Verse;
 using System.Collections.Generic;
-using System.Drawing;
-using HarmonyLib;
 using System.Reflection;
+using HarmonyLib;
 using RimWorld.Planet;
-using static HarmonyLib.Code;
-using UnityEngine;
-
+using Verse;
 namespace CombatAI
 {
 	public static class CompCache
 	{
-		private static List<Action<Map>>                             mapComponents_removeActions     = null;
-		private static Dictionary<Type, Action<ThingWithComps>>      thingComps_removeActions        = new Dictionary<Type, Action<ThingWithComps>>();
-		private static Dictionary<int, List<Action<ThingWithComps>>> thingComps_removeActionsByThing = new Dictionary<int, List<Action<ThingWithComps>>>();
-
-		private static class ThingComp_Cache<T> where T : ThingComp
-		{
-			public static readonly Dictionary<int, T> compsById = new Dictionary<int, T>(1024);
-
-			public static void Remove(ThingWithComps thing)
-			{
-				if (compsById.ContainsKey(thing.thingIDNumber))
-				{
-					compsById.Remove(thing.thingIDNumber);
-				}
-			}
-
-			public static void Clear()
-			{
-				compsById.Clear();
-			}
-		}
-
-		private static class MapComponent_Cache<T> where T : MapComponent
-		{
-			public static int count = 0;
-			public static T[] comps = new T[16];
-
-			public static void Add(T comp)
-			{
-				if (count == comps.Length)
-				{
-					Expand();
-				}
-				comps[count++] = comp;
-			}
-
-			public static void Remove(Map map)
-			{
-				for (int i = 0; i < count; i++)
-				{
-					if (comps[i].map == map)
-					{
-						comps[i] = null;
-						for (int j = i + 1; j < count; j++)
-						{
-							comps[j - 1] = comps[j];
-						}
-						break;
-					}
-				}
-				count--;
-			}
-
-			public static void Clear()
-			{
-				count = 0;
-				comps = new T[16];
-			}
-
-			private static void Expand(int targetSize = -1)
-			{
-				if (targetSize == -1)
-				{
-					targetSize = comps.Length * 2;
-				}
-				T[] temp = new T[targetSize];
-				Array.Copy(comps, temp, comps.Length);
-				for (int i = 0; i < comps.Length; i++)
-				{
-					comps[i] = null;
-				}
-				comps = temp;
-			}
-		}
-
-		private static class WorldComponent_Cache<T> where T : WorldComponent
-		{
-			private static T value = null;
-
-			public static T Comp
-			{
-				get
-				{
-					if (value == null)
-					{
-						value = Find.World.GetComponent<T>();
-					}
-					return value;
-				}
-			}
-
-			public static void Clear()
-			{
-				value = null;
-			}
-		}
-
-		private static class GameComponent_Cache<T> where T : GameComponent
-		{
-			private static T value = null;
-
-			public static T Comp
-			{
-				get
-				{
-					if (value == null)
-					{
-						value = Current.Game.GetComponent<T>();
-					}
-					return value;
-				}
-			}
-
-			public static void Clear()
-			{
-				value = null;
-			}
-		}
+		private static          List<Action<Map>>                             mapComponents_removeActions;
+		private static readonly Dictionary<Type, Action<ThingWithComps>>      thingComps_removeActions        = new Dictionary<Type, Action<ThingWithComps>>();
+		private static readonly Dictionary<int, List<Action<ThingWithComps>>> thingComps_removeActionsByThing = new Dictionary<int, List<Action<ThingWithComps>>>();
 
 		public static T GetComp_Fast<T>(this Thing thing, bool allowFallback = true) where T : ThingComp
 		{
@@ -152,11 +33,8 @@ namespace CombatAI
 			}
 			if (!thingComps_removeActions.TryGetValue(typeof(T), out Action<ThingWithComps> removeAction))
 			{
-				MethodInfo info = AccessTools.Method(typeof(ThingComp_Cache<>).MakeGenericType(new Type[]
-				{
-					typeof(T)
-				}), "Remove");
-				thingComps_removeActions.Add(typeof(T), removeAction = (t) =>
+				MethodInfo info = AccessTools.Method(typeof(ThingComp_Cache<>).MakeGenericType(typeof(T)), "Remove");
+				thingComps_removeActions.Add(typeof(T), removeAction = t =>
 				{
 					info.Invoke(null, new[]
 					{
@@ -251,11 +129,8 @@ namespace CombatAI
 
 				foreach (Type compType in typeof(MapComponent).AllSubclassesNonAbstract())
 				{
-					MethodInfo info = AccessTools.Method(typeof(MapComponent_Cache<>).MakeGenericType(new Type[]
-					{
-						compType
-					}), "Remove");
-					mapComponents_removeActions.Add((t) =>
+					MethodInfo info = AccessTools.Method(typeof(MapComponent_Cache<>).MakeGenericType(compType), "Remove");
+					mapComponents_removeActions.Add(t =>
 					{
 						info.Invoke(null, new[]
 						{
@@ -274,35 +149,138 @@ namespace CombatAI
 		{
 			foreach (Type compType in typeof(MapComponent).AllSubclassesNonAbstract())
 			{
-				MethodInfo info = AccessTools.Method(typeof(MapComponent_Cache<>).MakeGenericType(new Type[]
-				{
-					compType
-				}), "Clear");
+				MethodInfo info = AccessTools.Method(typeof(MapComponent_Cache<>).MakeGenericType(compType), "Clear");
 				info.Invoke(null, new object[0]);
 			}
 			foreach (Type compType in typeof(ThingComp).AllSubclassesNonAbstract())
 			{
-				MethodInfo info = AccessTools.Method(typeof(ThingComp_Cache<>).MakeGenericType(new Type[]
-				{
-					compType
-				}), "Clear");
+				MethodInfo info = AccessTools.Method(typeof(ThingComp_Cache<>).MakeGenericType(compType), "Clear");
 				info.Invoke(null, new object[0]);
 			}
 			foreach (Type compType in typeof(GameComponent).AllSubclassesNonAbstract())
 			{
-				MethodInfo info = AccessTools.Method(typeof(GameComponent_Cache<>).MakeGenericType(new Type[]
-				{
-					compType
-				}), "Clear");
+				MethodInfo info = AccessTools.Method(typeof(GameComponent_Cache<>).MakeGenericType(compType), "Clear");
 				info.Invoke(null, new object[0]);
 			}
 			foreach (Type compType in typeof(WorldComponent).AllSubclassesNonAbstract())
 			{
-				MethodInfo info = AccessTools.Method(typeof(WorldComponent_Cache<>).MakeGenericType(new Type[]
-				{
-					compType
-				}), "Clear");
+				MethodInfo info = AccessTools.Method(typeof(WorldComponent_Cache<>).MakeGenericType(compType), "Clear");
 				info.Invoke(null, new object[0]);
+			}
+		}
+
+		private static class ThingComp_Cache<T> where T : ThingComp
+		{
+			public static readonly Dictionary<int, T> compsById = new Dictionary<int, T>(1024);
+
+			public static void Remove(ThingWithComps thing)
+			{
+				if (compsById.ContainsKey(thing.thingIDNumber))
+				{
+					compsById.Remove(thing.thingIDNumber);
+				}
+			}
+
+			public static void Clear()
+			{
+				compsById.Clear();
+			}
+		}
+
+		private static class MapComponent_Cache<T> where T : MapComponent
+		{
+			public static int count;
+			public static T[] comps = new T[16];
+
+			public static void Add(T comp)
+			{
+				if (count == comps.Length)
+				{
+					Expand();
+				}
+				comps[count++] = comp;
+			}
+
+			public static void Remove(Map map)
+			{
+				for (int i = 0; i < count; i++)
+				{
+					if (comps[i].map == map)
+					{
+						comps[i] = null;
+						for (int j = i + 1; j < count; j++)
+						{
+							comps[j - 1] = comps[j];
+						}
+						break;
+					}
+				}
+				count--;
+			}
+
+			public static void Clear()
+			{
+				count = 0;
+				comps = new T[16];
+			}
+
+			private static void Expand(int targetSize = -1)
+			{
+				if (targetSize == -1)
+				{
+					targetSize = comps.Length * 2;
+				}
+				T[] temp = new T[targetSize];
+				Array.Copy(comps, temp, comps.Length);
+				for (int i = 0; i < comps.Length; i++)
+				{
+					comps[i] = null;
+				}
+				comps = temp;
+			}
+		}
+
+		private static class WorldComponent_Cache<T> where T : WorldComponent
+		{
+			private static T value;
+
+			public static T Comp
+			{
+				get
+				{
+					if (value == null)
+					{
+						value = Find.World.GetComponent<T>();
+					}
+					return value;
+				}
+			}
+
+			public static void Clear()
+			{
+				value = null;
+			}
+		}
+
+		private static class GameComponent_Cache<T> where T : GameComponent
+		{
+			private static T value;
+
+			public static T Comp
+			{
+				get
+				{
+					if (value == null)
+					{
+						value = Current.Game.GetComponent<T>();
+					}
+					return value;
+				}
+			}
+
+			public static void Clear()
+			{
+				value = null;
 			}
 		}
 	}

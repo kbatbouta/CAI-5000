@@ -1,25 +1,21 @@
 ﻿using System;
-using RimWorld;
-using Verse;
-using Verse.AI;
-using System.Collections.Generic;
-using UnityEngine;
 using System.Runtime.CompilerServices;
-
+using UnityEngine;
+using Verse;
 namespace CombatAI
 {
 	public class IHeatGrid
 	{
-		private readonly int   ticksPerUnit;
-		private readonly int   maxHeat;
-		private readonly int   maxTicks;
-		private readonly int[] grid;
+		private readonly float       f1;
+		private readonly int[]       grid;
+		private readonly CellIndices indices;
+		private readonly int         maxHeat;
+		private readonly int         maxTicks;
 		//private readonly Pair<int, int>[] grid_cache;
 		//private readonly int[] grid_ticks;
 		private readonly int         numGridCells;
-		private readonly float       f1;
-		private readonly CellIndices indices;
 		private readonly TickManager tickManager;
+		private readonly int         ticksPerUnit;
 
 		public IHeatGrid(Map map, int ticksPerUnit, int maxHeat, float f1)
 		{
@@ -74,10 +70,7 @@ namespace CombatAI
 					{
 						return value - f1 + 1;
 					}
-					else
-					{
-						return value / f1;
-					}
+					return value / f1;
 				}
 			}
 			return 0f;

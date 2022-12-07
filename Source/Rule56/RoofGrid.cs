@@ -1,9 +1,5 @@
-﻿using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using RimWorld;
+﻿using System.Runtime.CompilerServices;
 using Verse;
-
 namespace CombatAI
 {
 	public class RoofGrid : MapComponent
@@ -15,6 +11,20 @@ namespace CombatAI
 		{
 			cellIndices = map.cellIndices;
 			grid        = new RoofType[cellIndices.NumGridCells];
+		}
+
+		public RoofType this[IntVec3 c]
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => this[cellIndices.CellToIndex(c)];
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			set => this[cellIndices.CellToIndex(c)] = value;
+		}
+
+		public RoofType this[int index]
+		{
+			get => grid[index];
+			set => grid[index] = value;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -74,20 +84,6 @@ namespace CombatAI
 		public bool Roofed(int index)
 		{
 			return GetRoofType(index) != RoofType.None;
-		}
-
-		public RoofType this[IntVec3 c]
-		{
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => this[cellIndices.CellToIndex(c)];
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			set => this[cellIndices.CellToIndex(c)] = value;
-		}
-
-		public RoofType this[int index]
-		{
-			get => grid[index];
-			set => grid[index] = value;
 		}
 	}
 }

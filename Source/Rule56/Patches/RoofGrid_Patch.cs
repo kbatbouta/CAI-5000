@@ -1,7 +1,5 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Verse;
-
 namespace CombatAI.Patches
 {
 	public static class RoofGrid_Patch

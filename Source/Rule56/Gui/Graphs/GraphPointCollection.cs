@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing.Drawing2D;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Steamworks;
 using UnityEngine;
 using static CombatAI.Gui.Grapher;
 
@@ -10,9 +7,15 @@ namespace CombatAI.Gui
 {
 	public class GraphPointCollection
 	{
-		private float timeWindow = 250;
 
 		private readonly List<GraphPoint> points = new List<GraphPoint>();
+
+		private int _maxAge;
+
+		private int _minAge;
+
+		private int   _streak;
+		private float timeWindow = 250;
 
 		public bool Ready
 		{
@@ -37,19 +40,17 @@ namespace CombatAI.Gui
 			}
 		}
 
-		private float _minY = float.MaxValue;
-
 		public float MinY
 		{
-			get => _minY;
-		}
-
-		private float _maxY = float.MinValue;
+			get;
+			private set;
+		} = float.MaxValue;
 
 		public float MaxY
 		{
-			get => _maxY;
-		}
+			get;
+			private set;
+		} = float.MinValue;
 
 		public float MinT
 		{
@@ -86,14 +87,6 @@ namespace CombatAI.Gui
 			get => points;
 		}
 
-		public GraphPointCollection()
-		{
-		}
-
-		private int _maxAge = 0;
-		private int _minAge = 0;
-		private int _streak = 0;
-
 		public void Add(GraphPoint point)
 		{
 			if (Count < 16)
@@ -108,15 +101,15 @@ namespace CombatAI.Gui
 			if (Last.t == point.t)
 			{
 				point.y += Last.y;
-				if (point.y > _maxY)
+				if (point.y > MaxY)
 				{
 					_maxAge = Maths.Min(15, points.Count);
-					_maxY   = point.y;
+					MaxY    = point.y;
 				}
-				if (point.y < _minY)
+				if (point.y < MinY)
 				{
 					_minAge = Maths.Min(15, points.Count);
-					_minY   = point.y;
+					MinY    = point.y;
 				}
 				points[points.Count - 1] = point;
 				return;
@@ -198,15 +191,15 @@ namespace CombatAI.Gui
 		private void Commit(GraphPoint point)
 		{
 			points.Add(point);
-			if (point.y > _maxY)
+			if (point.y > MaxY)
 			{
 				_maxAge = Maths.Min(15, points.Count);
-				_maxY   = point.y;
+				MaxY    = point.y;
 			}
-			if (point.y < _minY)
+			if (point.y < MinY)
 			{
 				_minAge = Maths.Min(15, points.Count);
-				_minY   = point.y;
+				MinY    = point.y;
 			}
 		}
 
@@ -214,21 +207,21 @@ namespace CombatAI.Gui
 		{
 			GraphPoint last = Last;
 
-			_minY = last.y;
-			_maxY = last.y;
+			MinY = last.y;
+			MaxY = last.y;
 
 			for (int i = 0; i < Count; i++)
 			{
 				GraphPoint point = points[i];
-				if (_minY > point.y)
+				if (MinY > point.y)
 				{
 					_minAge = Maths.Min(i, 15);
-					_minY   = point.y;
+					MinY    = point.y;
 				}
-				if (_maxY < point.y)
+				if (MaxY < point.y)
 				{
 					_maxAge = Maths.Min(i, 15);
-					_maxY   = point.y;
+					MaxY    = point.y;
 				}
 			}
 		}

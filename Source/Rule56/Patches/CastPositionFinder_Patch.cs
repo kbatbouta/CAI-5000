@@ -1,18 +1,13 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using HarmonyLib;
 using RimWorld;
-using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using System.Linq;
-using UnityEngine.SocialPlatforms;
-using UnityEngine.UIElements;
 using static CombatAI.SightTracker;
-using static CombatAI.CellFlooder;
-using System.Reflection.Emit;
-using System.Reflection;
 
 namespace CombatAI.Patches
 {
@@ -46,7 +41,7 @@ namespace CombatAI.Patches
 		[HarmonyPatch(typeof(CastPositionFinder), nameof(CastPositionFinder.TryFindCastPosition))]
 		public static class CastPositionFinder_TryFindCastPosition_Patch
 		{
-			private static FieldInfo fBestSpotPref = AccessTools.Field(typeof(CastPositionFinder), nameof(CastPositionFinder.bestSpotPref));
+			private static readonly FieldInfo fBestSpotPref = AccessTools.Field(typeof(CastPositionFinder), nameof(CastPositionFinder.bestSpotPref));
 
 			public static void Prefix(ref CastPositionRequest newReq)
 			{
@@ -73,7 +68,7 @@ namespace CombatAI.Patches
 							newReq.caster.TryGetSightReader(out sightReader);
 							if (sightReader != null)
 							{
-								sightReader.armor          = ArmorUtility.GetArmorReport(pawn);
+								sightReader.armor          = pawn.GetArmorReport();
 								request                    = newReq;
 								interceptors               = map.GetComp_Fast<MapComponent_CombatAI>().interceptors;
 								warmupTime                 = verb?.verbProps.warmupTime ?? 1;
@@ -149,11 +144,11 @@ namespace CombatAI.Patches
 					float   rootVis    = sightReader.GetVisibilityToEnemies(root);
 					float   rootThreat = sightReader.GetThreat(request.locus);
 					map.GetCellFlooder().Flood(root,
-					                           (node) =>
+					                           node =>
 					                           {
 						                           grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + (sightReader.GetVisibilityToEnemies(node.cell) - rootVis) * 0.25f + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;
 					                           },
-					                           (cell) =>
+					                           cell =>
 					                           {
 						                           //Vector2 dir = sightReader.GetEnemyDirection(cell);
 						                           //IntVec3 adjustedLoc;
@@ -167,7 +162,7 @@ namespace CombatAI.Patches
 						                           //}
 						                           return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
 					                           },
-					                           (cell) =>
+					                           cell =>
 					                           {
 						                           return rect.Contains(cell) && cell.WalkableBy(map, pawn) && map.reservationManager.CanReserve(pawn, cell);
 					                           }

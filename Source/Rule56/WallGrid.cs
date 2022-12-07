@@ -1,9 +1,6 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using System.Collections.Generic;
-using Verse;
+﻿using System.Runtime.CompilerServices;
 using RimWorld;
-
+using Verse;
 namespace CombatAI
 {
 	public class WallGrid : MapComponent
@@ -15,6 +12,18 @@ namespace CombatAI
 		{
 			cellIndices = map.cellIndices;
 			grid        = new float[cellIndices.NumGridCells];
+		}
+
+		public float this[IntVec3 cell]
+		{
+			get => this[cellIndices.CellToIndex(cell)];
+			set => this[cellIndices.CellToIndex(cell)] = value;
+		}
+
+		public float this[int index]
+		{
+			get => grid[index];
+			set => grid[index] = value;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,14 +39,11 @@ namespace CombatAI
 			{
 				return FillCategory.None;
 			}
-			else if (f < 1f)
+			if (f < 1f)
 			{
 				return FillCategory.Partial;
 			}
-			else
-			{
-				return FillCategory.Full;
-			}
+			return FillCategory.Full;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -91,18 +97,6 @@ namespace CombatAI
 			{
 				grid[index] = 0;
 			}
-		}
-
-		public float this[IntVec3 cell]
-		{
-			get => this[cellIndices.CellToIndex(cell)];
-			set => this[cellIndices.CellToIndex(cell)] = value;
-		}
-
-		public float this[int index]
-		{
-			get => grid[index];
-			set => grid[index] = value;
 		}
 	}
 }

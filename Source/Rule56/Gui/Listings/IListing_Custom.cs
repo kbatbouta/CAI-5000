@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using RimWorld;
 using UnityEngine;
 using Verse;
 using GUILambda = System.Action<UnityEngine.Rect>;
@@ -12,46 +11,39 @@ namespace CombatAI.Gui
 	{
 		public const float ScrollViewWidthDelta = 25f;
 
-		protected Vector2 margins = new Vector2(8, 4);
-
-		protected float inXMin = 0f;
-
-		protected float inXMax = 0f;
-
-		protected float curYMin = 0f;
-
-		protected float inYMin = 0f;
-
-		protected float inYMax = 0f;
-
-		protected float previousHeight = 0f;
-
-		protected bool isOverflowing = false;
-
-		protected Rect contentRect;
-
-		private Rect inRect;
-
-		private bool started = false;
-
 		public readonly bool ScrollViewOnOverflow;
-
-		public Vector2 ScrollPosition = Vector2.zero;
-
-		public Color CollapsibleBGColor = Widgets.MenuSectionBGFillColor;
 
 		public Color CollapsibleBGBorderColor = Widgets.MenuSectionBGBorderColor;
 
-		protected struct RectSlice
-		{
-			public Rect inside;
-			public Rect outside;
+		public Color CollapsibleBGColor = Widgets.MenuSectionBGFillColor;
 
-			public RectSlice(Rect inside, Rect outside)
-			{
-				this.outside = outside;
-				this.inside  = inside;
-			}
+		protected Rect contentRect;
+
+		protected float curYMin;
+
+		private Rect inRect;
+
+		protected float inXMax;
+
+		protected float inXMin;
+
+		protected float inYMax;
+
+		protected float inYMin;
+
+		protected bool isOverflowing;
+
+		protected Vector2 margins = new Vector2(8, 4);
+
+		protected float previousHeight;
+
+		public Vector2 ScrollPosition = Vector2.zero;
+
+		private bool started;
+
+		public IListing_Custom(bool scrollViewOnOverflow = true)
+		{
+			ScrollViewOnOverflow = scrollViewOnOverflow;
 		}
 
 		protected virtual bool Overflowing
@@ -80,11 +72,6 @@ namespace CombatAI.Gui
 				inYMin  = value.yMin;
 				inYMax  = value.yMax;
 			}
-		}
-
-		public IListing_Custom(bool scrollViewOnOverflow = true)
-		{
-			ScrollViewOnOverflow = scrollViewOnOverflow;
 		}
 
 		protected virtual void Begin(Rect inRect, bool scrollViewOnOverflow = true)
@@ -184,7 +171,7 @@ namespace CombatAI.Gui
 			GUIFont.CurFontStyle.fontStyle = fontStyle;
 
 			Rect   rect    = Slice(selectedText.GetTextHeight(insideWidth - 23f)).inside;
-			Rect[] columns = rect.Columns(2, 5);
+			Rect[] columns = rect.Columns(2);
 
 			Widgets.Label(columns[0], text);
 
@@ -257,6 +244,18 @@ namespace CombatAI.Gui
 			curYMin += includeMargins ? height + margins.y : height;
 			Widgets.DrawBoxSolid(outside, CollapsibleBGColor);
 			return new RectSlice(inside, outside);
+		}
+
+		protected struct RectSlice
+		{
+			public Rect inside;
+			public Rect outside;
+
+			public RectSlice(Rect inside, Rect outside)
+			{
+				this.outside = outside;
+				this.inside  = inside;
+			}
 		}
 	}
 }

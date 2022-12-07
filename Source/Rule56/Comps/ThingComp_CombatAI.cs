@@ -1,82 +1,46 @@
 ﻿using System;
-using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
-using Verse;
-using UnityEngine;
-using Verse.AI;
 using System.Threading;
-using System.Net.NetworkInformation;
-using UnityEngine.Analytics;
-using Unity.Baselib.LowLevel;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-
+using CombatAI.Utilities;
+using RimWorld;
+using UnityEngine;
+using Verse;
+using Verse.AI;
+using GUIUtility = CombatAI.Gui.GUIUtility;
 namespace CombatAI.Comps
 {
 	public class ThingComp_CombatAI : ThingComp
 	{
-		//Whether a scan is occuring.
-		private bool scanning;
-
-		#region TimeStamps
 
 		/// <summary>
-		/// When the pawn was last order to move by CAI.
-		/// </summary>
-		private int lastMoved;
-		/// <summary>
-		/// When the last injury occured/damage. 
-		/// </summary>
-		private int lastTookDamage;
-		/// <summary>
-		/// When the last scan occured. SightGrid is responisble for these scan cycles.
-		/// </summary>
-		private int lastScanned;
-		/// <summary>
-		/// When did this comp last interupt the parent pawn. IE: reacted, retreated, etc.
-		/// </summary>
-		private int lastInterupted;
-		/// <summary>
-		/// When the pawn was last order to retreat by CAI.
-		/// </summary>
-		private int lastRetreated;
-		/// <summary>
-		/// Last tick any enemies where reported in a scan.
-		/// </summary>
-		private int lastSawEnemies;
-		/// <summary>
-		/// The general direction of enemies last time the pawn reacted.
-		/// </summary>
-		private Vector2 prevEnemyDir = Vector2.zero;
-
-		#endregion
-
-		/// <summary>
-		/// Parent armor report.
+		///     Parent armor report.
 		/// </summary>
 		private ArmorReport armor;
 		/// <summary>
-		/// Set of visible enemies. A queue for visible enemies during scans.
-		/// </summary>
-		private HashSet<Thing> visibleEnemies;
-
-		/// <summary>
-		/// Move job started by this comp.
-		/// </summary>
-		public Job moveJob;
-		/// <summary>
-		/// Wait job started/queued by this comp.
-		/// </summary>
-		public Job waitJob;
-		/// <summary>
-		/// Custom pawn duty tracker. Allows the execution of new duties then going back to the old one once the new one is finished.
+		///     Custom pawn duty tracker. Allows the execution of new duties then going back to the old one once the new one is
+		///     finished.
 		/// </summary>
 		public Pawn_CustomDutyTracker duties;
+
 		/// <summary>
-		/// Parent sight reader.
+		///     Move job started by this comp.
+		/// </summary>
+		public Job moveJob;
+		//Whether a scan is occuring.
+		private bool scanning;
+		/// <summary>
+		///     Parent sight reader.
 		/// </summary>
 		public SightTracker.SightReader sightReader;
+		/// <summary>
+		///     Set of visible enemies. A queue for visible enemies during scans.
+		/// </summary>
+		private readonly HashSet<Thing> visibleEnemies;
+		/// <summary>
+		///     Wait job started/queued by this comp.
+		/// </summary>
+		public Job waitJob;
 
 		public ThingComp_CombatAI()
 		{
@@ -88,7 +52,7 @@ namespace CombatAI.Comps
 			base.PostSpawnSetup(respawningAfterLoad);
 			if (parent is Pawn pawn)
 			{
-				armor  = ArmorUtility.GetArmorReport(pawn);
+				armor  = pawn.GetArmorReport();
 				duties = new Pawn_CustomDutyTracker(pawn);
 			}
 		}
@@ -111,12 +75,12 @@ namespace CombatAI.Comps
 			base.CompTickLong();
 			if (parent is Pawn pawn)
 			{
-				armor = ArmorUtility.GetArmorReport(pawn);
+				armor = pawn.GetArmorReport();
 			}
 		}
 
 		/// <summary>
-		/// Returns whether the parent has retreated in the last number of ticks. 
+		///     Returns whether the parent has retreated in the last number of ticks.
 		/// </summary>
 		/// <param name="ticks">The number of ticks</param>
 		/// <returns>Whether the pawn retreated in the last number of ticks</returns>
@@ -125,7 +89,7 @@ namespace CombatAI.Comps
 			return GenTicks.TicksGame - lastRetreated <= ticks;
 		}
 		/// <summary>
-		/// Returns whether the parent has took damage in the last number of ticks. 
+		///     Returns whether the parent has took damage in the last number of ticks.
 		/// </summary>
 		/// <param name="ticks">The number of ticks</param>
 		/// <returns>Whether the pawn took damage in the last number of ticks</returns>
@@ -134,7 +98,7 @@ namespace CombatAI.Comps
 			return GenTicks.TicksGame - lastTookDamage <= ticks;
 		}
 		/// <summary>
-		/// Returns whether the parent has reacted in the last number of ticks. 
+		///     Returns whether the parent has reacted in the last number of ticks.
 		/// </summary>
 		/// <param name="ticks">The number of ticks</param>
 		/// <returns>Whether the reacted in the last number of ticks</returns>
@@ -144,14 +108,15 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Called when a scan for enemies starts. Will clear the visible enemy queue. If not called, calling OnScanFinished or Notify_VisibleEnemy(s) will result in an error.
-		/// Should only be called from the main thread.
+		///     Called when a scan for enemies starts. Will clear the visible enemy queue. If not called, calling OnScanFinished or
+		///     Notify_VisibleEnemy(s) will result in an error.
+		///     Should only be called from the main thread.
 		/// </summary>
 		public void OnScanStarted()
 		{
 			if (visibleEnemies.Count != 0)
 			{
-				if (scanning == true)
+				if (scanning)
 				{
 					Log.Warning($"ISMA: OnScanStarted called while scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
 					return;
@@ -163,9 +128,9 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Called a scan is finished. This will process enemies queued in visibleEnemies. Responsible for parent reacting.
-		/// If OnScanStarted is not called before then this will result in an error.
-		/// Should only be called from the main thread.
+		///     Called a scan is finished. This will process enemies queued in visibleEnemies. Responsible for parent reacting.
+		///     If OnScanStarted is not called before then this will result in an error.
+		///     Should only be called from the main thread.
 		/// </summary>
 		public void OnScanFinished()
 		{
@@ -476,7 +441,7 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Called When the parent takes damage.
+		///     Called When the parent takes damage.
 		/// </summary>
 		/// <param name="dInfo">Damage info</param>
 		public void Notify_TookDamage(DamageInfo dInfo)
@@ -527,7 +492,7 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Enqueue enemies for reaction processing.
+		///     Enqueue enemies for reaction processing.
 		/// </summary>
 		/// <param name="things">Spotted enemies</param>
 		public void Notify_EnemiesVisible(IEnumerable<Thing> things)
@@ -541,7 +506,7 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Enqueue enemy for reaction processing.
+		///     Enqueue enemy for reaction processing.
 		/// </summary>
 		/// <param name="things">Spotted enemy</param>
 		public void Notify_EnemyVisible(Thing thing)
@@ -555,7 +520,7 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Called to notify a wait job started by reaction has ended. Will reduce the reaction cooldown.
+		///     Called to notify a wait job started by reaction has ended. Will reduce the reaction cooldown.
 		/// </summary>
 		public void Notify_WaitJobEnded()
 		{
@@ -563,8 +528,8 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Called when the parent sightreader group has changed.
-		/// Should only be called from SighTracker/SightGrid.
+		///     Called when the parent sightreader group has changed.
+		///     Should only be called from SighTracker/SightGrid.
 		/// </summary>
 		/// <param name="reader">The new sightReader</param>
 		public void Notify_SightReaderChanged(SightTracker.SightReader reader)
@@ -586,6 +551,39 @@ namespace CombatAI.Comps
 			}
 		}
 
+		#region TimeStamps
+
+		/// <summary>
+		///     When the pawn was last order to move by CAI.
+		/// </summary>
+		private int lastMoved;
+		/// <summary>
+		///     When the last injury occured/damage.
+		/// </summary>
+		private int lastTookDamage;
+		/// <summary>
+		///     When the last scan occured. SightGrid is responisble for these scan cycles.
+		/// </summary>
+		private int lastScanned;
+		/// <summary>
+		///     When did this comp last interupt the parent pawn. IE: reacted, retreated, etc.
+		/// </summary>
+		private int lastInterupted;
+		/// <summary>
+		///     When the pawn was last order to retreat by CAI.
+		/// </summary>
+		private int lastRetreated;
+		/// <summary>
+		///     Last tick any enemies where reported in a scan.
+		/// </summary>
+		private int lastSawEnemies;
+		/// <summary>
+		///     The general direction of enemies last time the pawn reacted.
+		/// </summary>
+		private Vector2 prevEnemyDir = Vector2.zero;
+
+		#endregion
+
 #if DEBUG_REACTION
 
 		/*
@@ -604,13 +602,13 @@ namespace CombatAI.Comps
 				{
 					Vector3 drawPos    = pawn.DrawPos;
 					IntVec3 shiftedPos = PawnPathUtility.GetMovingShiftedPosition(pawn, 30);
-					List<Pawn> nearbyVisiblePawns = GenClosest.ThingsInRange(pawn.Position, pawn.Map, Utilities.TrackedThingsRequestCategory.Pawns, sightRange)
+					List<Pawn> nearbyVisiblePawns = pawn.Position.ThingsInRange(pawn.Map, TrackedThingsRequestCategory.Pawns, sightRange)
 						.Select(t => t as Pawn)
 						.Where(p => !p.Dead && !p.Downed && PawnPathUtility.GetMovingShiftedPosition(p, 60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, PawnPathUtility.GetMovingShiftedPosition(p, 60)) && p.HostileTo(pawn))
 						.ToList();
-					Gui.GUIUtility.ExecuteSafeGUIAction(() =>
+					GUIUtility.ExecuteSafeGUIAction(() =>
 					{
-						Vector2 drawPosUI = UI.MapToUIPosition(drawPos);
+						Vector2 drawPosUI = drawPos.MapToUIPosition();
 						Text.Font = GameFont.Tiny;
 						string state = GenTicks.TicksGame - lastInterupted > 120 ? "<color=blue>O</color>" : "<color=yellow>X</color>";
 						Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}");
@@ -619,12 +617,12 @@ namespace CombatAI.Comps
 					if (bugged)
 					{
 						Rect    rect;
-						Vector2 a = UI.MapToUIPosition(drawPos);
+						Vector2 a = drawPos.MapToUIPosition();
 						Vector2 b;
 						Vector2 mid;
 						foreach (Pawn other in nearbyVisiblePawns.Where(p => !_visibleEnemies.Contains(p)))
 						{
-							b = UI.MapToUIPosition(other.DrawPos);
+							b = other.DrawPos.MapToUIPosition();
 							Widgets.DrawLine(a, b, Color.red, 1);
 
 							mid  = (a + b) / 2;
@@ -643,25 +641,25 @@ namespace CombatAI.Comps
 					{
 						for (int i = 1; i < _path.Count; i++)
 						{
-							Widgets.DrawBoxSolid(new Rect(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)) - new Vector2(5, 5), new Vector2(10, 10)), _colors[i]);
-							Widgets.DrawLine(UI.MapToUIPosition(_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), UI.MapToUIPosition(_path[i].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), Color.white, 1);
+							Widgets.DrawBoxSolid(new Rect((_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)).MapToUIPosition() - new Vector2(5, 5), new Vector2(10, 10)), _colors[i]);
+							Widgets.DrawLine((_path[i - 1].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)).MapToUIPosition(), (_path[i].ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)).MapToUIPosition(), Color.white, 1);
 						}
 						if (_path.Count > 0)
 						{
-							Vector2 v = UI.MapToUIPosition(pawn.DrawPos.Yto0());
-							Widgets.DrawLine(UI.MapToUIPosition(_path.Last().ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)), v, _colors.Last(), 1);
+							Vector2 v = pawn.DrawPos.Yto0().MapToUIPosition();
+							Widgets.DrawLine((_path.Last().ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)).MapToUIPosition(), v, _colors.Last(), 1);
 							Widgets.DrawBoxSolid(new Rect(v - new Vector2(5, 5), new Vector2(10, 10)), _colors.Last());
 						}
 						if (!_visibleEnemies.EnumerableNullOrEmpty())
 						{
-							Vector2 a = UI.MapToUIPosition(pawn.DrawPos);
+							Vector2 a = pawn.DrawPos.MapToUIPosition();
 							Vector2 b;
 							Vector2 mid;
 							Rect    rect;
 							int     index = 0;
 							foreach (Pawn other in _visibleEnemies)
 							{
-								b = UI.MapToUIPosition(other.DrawPos);
+								b = other.DrawPos.MapToUIPosition();
 								Widgets.DrawLine(a, b, Color.blue, 1);
 
 								mid  = (a + b) / 2;
@@ -676,9 +674,9 @@ namespace CombatAI.Comps
 			}
 		}
 
-		private HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
-		private List<IntVec3> _path           = new List<IntVec3>();
-		private List<Color>   _colors         = new List<Color>();
+		private readonly HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
+		private readonly List<IntVec3> _path           = new List<IntVec3>();
+		private readonly List<Color>   _colors         = new List<Color>();
 #endif
 	}
 }

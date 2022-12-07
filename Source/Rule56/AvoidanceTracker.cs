@@ -1,101 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.CompilerServices;
-using HarmonyLib;
-using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using Verse.Noise;
-using static CombatAI.SightTracker;
-
 namespace CombatAI
 {
 	public class AvoidanceTracker : MapComponent
 	{
-		private HashSet<IntVec3> _drawnCells = new HashSet<IntVec3>();
-
-		private struct IBucketablePawn : IBucketable
-		{
-			public Pawn pawn;
-			public int  bucketIndex;
-
-			public int BucketIndex
-			{
-				get => bucketIndex;
-			}
-			public int UniqueIdNumber
-			{
-				get => pawn.thingIDNumber;
-			}
-
-			public IBucketablePawn(Pawn pawn, int bucketIndex)
-			{
-				this.pawn        = pawn;
-				this.bucketIndex = bucketIndex;
-			}
-		}
-
-		public class AvoidanceReader
-		{
-			private readonly CellIndices indices;
-			private readonly ulong       iflags;
-
-			public ITByteGrid path;
-			public ITByteGrid proximity;
-			public IHeatGrid  affliction_dmg;
-			public IHeatGrid  affliction_pen;
-
-			public AvoidanceReader(AvoidanceTracker tracker, ulong iflags)
-			{
-				;
-				indices     = tracker.map.cellIndices;
-				this.iflags = iflags;
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public float GetDanger(IntVec3 cell)
-			{
-				return GetDanger(indices.CellToIndex(cell));
-			}
-			public float GetDanger(int index)
-			{
-				return affliction_dmg.Get(index) + affliction_pen.Get(index);
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public int GetProximity(IntVec3 cell)
-			{
-				return GetProximity(indices.CellToIndex(cell));
-			}
-			public int GetProximity(int index)
-			{
-				return Maths.Max(proximity.Get(index) - ((proximity.GetFlags(index) & iflags) != 0 ? 1 : 0), 0);
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public int GetPath(IntVec3 cell)
-			{
-				return GetPath(indices.CellToIndex(cell));
-			}
-			public int GetPath(int index)
-			{
-				return Maths.Max(path.Get(index) - ((path.GetFlags(index) & iflags) != 0 ? 1 : 0), 0);
-			}
-		}
-
-		private          bool                      wait = false;
+		private readonly List<Pawn>                _removalList = new List<Pawn>();
 		private readonly AsyncActions              asyncActions;
 		private readonly IBuckets<IBucketablePawn> buckets;
-		private readonly List<Pawn>                _removalList = new List<Pawn>();
 		private readonly CellFlooder               flooder;
+		private readonly HashSet<IntVec3>          _drawnCells = new HashSet<IntVec3>();
 
 		public IHeatGrid  affliction_dmg;
 		public IHeatGrid  affliction_pen;
-		public ITByteGrid shootLine;
-		public ITByteGrid proximity;
 		public ITByteGrid path;
+		public ITByteGrid proximity;
+		public ITByteGrid shootLine;
+
+		private bool wait;
 
 		public AvoidanceTracker(Map map) : base(map)
 		{
@@ -140,7 +65,7 @@ namespace CombatAI
 				TryCastProximity(item.pawn, IntVec3.Invalid);
 				if (item.pawn.pather?.MovingNow ?? false)
 				{
-					TryCastPath(item.pawn, null);
+					TryCastPath(item.pawn);
 				}
 			}
 			for (int i = 0; i < _removalList.Count; i++)
@@ -281,7 +206,7 @@ namespace CombatAI
 			IntVec3 loc = pawn.Position;
 			asyncActions.EnqueueOffThreadAction(() =>
 			{
-				flooder.Flood(loc, (node) =>
+				flooder.Flood(loc, node =>
 				{
 					float f = Maths.Max(1 - node.dist / 5.65685424949f, 0.25f);
 					affliction_dmg.Push(node.cell, dinfo.Amount * f);
@@ -312,11 +237,11 @@ namespace CombatAI
 				asyncActions.EnqueueOffThreadAction(() =>
 				{
 					proximity.Next();
-					flooder.Flood(orig, (node) =>
+					flooder.Flood(orig, node =>
 					{
 						proximity.Set(node.cell, 1, flags);
 					}, maxDist: 2);
-					flooder.Flood(dest, (node) =>
+					flooder.Flood(dest, node =>
 					{
 						proximity.Set(node.cell, 1, flags);
 					}, maxDist: 2);
@@ -327,7 +252,7 @@ namespace CombatAI
 				asyncActions.EnqueueOffThreadAction(() =>
 				{
 					proximity.Next();
-					flooder.Flood(orig, (node) =>
+					flooder.Flood(orig, node =>
 					{
 						proximity.Set(node.cell, 1, flags);
 					}, maxDist: 2);
@@ -392,6 +317,75 @@ namespace CombatAI
 		private bool Valid(Pawn pawn)
 		{
 			return !pawn.Destroyed && pawn.Spawned && !pawn.Dead && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid);
+		}
+
+		private struct IBucketablePawn : IBucketable
+		{
+			public readonly Pawn pawn;
+			public readonly int  bucketIndex;
+
+			public int BucketIndex
+			{
+				get => bucketIndex;
+			}
+			public int UniqueIdNumber
+			{
+				get => pawn.thingIDNumber;
+			}
+
+			public IBucketablePawn(Pawn pawn, int bucketIndex)
+			{
+				this.pawn        = pawn;
+				this.bucketIndex = bucketIndex;
+			}
+		}
+
+		public class AvoidanceReader
+		{
+			private readonly ulong       iflags;
+			private readonly CellIndices indices;
+			public           IHeatGrid   affliction_dmg;
+			public           IHeatGrid   affliction_pen;
+
+			public ITByteGrid path;
+			public ITByteGrid proximity;
+
+			public AvoidanceReader(AvoidanceTracker tracker, ulong iflags)
+			{
+				;
+				indices     = tracker.map.cellIndices;
+				this.iflags = iflags;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public float GetDanger(IntVec3 cell)
+			{
+				return GetDanger(indices.CellToIndex(cell));
+			}
+			public float GetDanger(int index)
+			{
+				return affliction_dmg.Get(index) + affliction_pen.Get(index);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public int GetProximity(IntVec3 cell)
+			{
+				return GetProximity(indices.CellToIndex(cell));
+			}
+			public int GetProximity(int index)
+			{
+				return Maths.Max(proximity.Get(index) - ((proximity.GetFlags(index) & iflags) != 0 ? 1 : 0), 0);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public int GetPath(IntVec3 cell)
+			{
+				return GetPath(indices.CellToIndex(cell));
+			}
+			public int GetPath(int index)
+			{
+				return Maths.Max(path.Get(index) - ((path.GetFlags(index) & iflags) != 0 ? 1 : 0), 0);
+			}
 		}
 	}
 }

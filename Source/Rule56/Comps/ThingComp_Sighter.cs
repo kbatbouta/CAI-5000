@@ -1,17 +1,15 @@
-﻿using System;
-using RimWorld;
+﻿using RimWorld;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI.Comps
 {
 	public class ThingComp_Sighter : ThingComp
 	{
-		private CompPowerTrader _compPower;
 		private CompMannable    _compMannable;
+		private CompPowerTrader _compPower;
 
 		/// <summary>
-		/// Parent sight radius.
+		///     Parent sight radius.
 		/// </summary>
 		public int SightRadius
 		{
@@ -19,7 +17,7 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Source CompProperties_Sighter.
+		///     Source CompProperties_Sighter.
 		/// </summary>
 		public CompProperties_Sighter Props
 		{
@@ -27,7 +25,7 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Parent power trader.
+		///     Parent power trader.
 		/// </summary>
 		public CompPowerTrader CompPower
 		{
@@ -35,7 +33,7 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Parent mannable.
+		///     Parent mannable.
 		/// </summary>
 		public CompMannable CompMannable
 		{
@@ -43,7 +41,7 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		/// Whether this sighter is active. Used by SightGrid to check if the parent should be skipped or not.
+		///     Whether this sighter is active. Used by SightGrid to check if the parent should be skipped or not.
 		/// </summary>
 		public bool Active
 		{
@@ -61,10 +59,6 @@ namespace CombatAI.Comps
 				}
 				return true;
 			}
-		}
-
-		public ThingComp_Sighter()
-		{
 		}
 
 		public override void PostSpawnSetup(bool respawningAfterLoad)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-
 namespace CombatAI
 {
 	/*
@@ -14,17 +13,27 @@ namespace CombatAI
 	 */
 	public class FlagArray
 	{
-		private int[] map;
 
 		private const int Bit = 1;
 
 		/// <summary>
-		/// The length of the data type used for storing the bits in a bitmap
+		///     The length of the data type used for storing the bits in a bitmap
 		/// </summary>
 		private const int ChunkSize = 32;
+		private int[] map;
 
 		/// <summary>
-		/// Used to access the size of the internel flag array
+		///     Create an instant of FlagArray (int32 bitmap). Make sure that the size is large enough.
+		///     No need to worry about memory since this will be 1 bit per bool.
+		/// </summary>
+		/// <param name="size">The maximum size of this array (bool count)</param>
+		public FlagArray(int size)
+		{
+			map = new int[size / ChunkSize + ChunkSize];
+		}
+
+		/// <summary>
+		///     Used to access the size of the internel flag array
 		/// </summary>
 		/// <returns>Current array length</returns>
 		public int Length
@@ -34,17 +43,7 @@ namespace CombatAI
 		}
 
 		/// <summary>
-		/// Create an instant of FlagArray (int32 bitmap). Make sure that the size is large enough.
-		/// No need to worry about memory since this will be 1 bit per bool.
-		/// </summary>
-		/// <param name="size">The maximum size of this array (bool count)</param>
-		public FlagArray(int size)
-		{
-			map = new int[size / ChunkSize + ChunkSize];
-		}
-
-		/// <summary>
-		/// Used to communicate with the flag array as an array
+		///     Used to communicate with the flag array as an array
 		/// </summary>
 		/// <param name="key">Flag index</param>
 		/// <returns>Flag value</returns>
@@ -57,7 +56,7 @@ namespace CombatAI
 		}
 
 		/// <summary>
-		/// Used to access flags values.
+		///     Used to access flags values.
 		/// </summary>
 		/// <param name="key">Flag index</param>
 		/// <returns>Return if the flag is set</returns>
@@ -67,7 +66,7 @@ namespace CombatAI
 			return (map[key / ChunkSize] & GetOp(key)) != 0;
 		}
 		/// <summary>
-		/// Used to set flags values.
+		///     Used to set flags values.
 		/// </summary>
 		/// <param name="key">Flag index</param>
 		/// <param name="value">Flag value</param>
@@ -82,7 +81,7 @@ namespace CombatAI
 		}
 
 		/// <summary>
-		/// Used to expand the size of the flag array.
+		///     Used to expand the size of the flag array.
 		/// </summary>
 		/// <param name="targetLength">The new target length</param>
 		public void Expand(int targetLength)

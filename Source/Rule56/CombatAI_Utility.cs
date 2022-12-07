@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using RimWorld;
-using UnityEngine;
+﻿using RimWorld;
 using Verse;
-using Verse.AI;
 using static CombatAI.AvoidanceTracker;
 using static CombatAI.SightTracker;
 
@@ -54,7 +50,7 @@ namespace CombatAI
 		{
 			if (pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out reader) && reader != null)
 			{
-				reader.armor = ArmorUtility.GetArmorReport(pawn);
+				reader.armor = pawn.GetArmorReport();
 				return true;
 			}
 			return false;

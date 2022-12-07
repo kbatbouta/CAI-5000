@@ -1,33 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿using System.Collections.Generic;
 namespace CombatAI
 {
 	public class IBuckets<T> where T : IBucketable
 	{
-		private int curIndex = 0;
-
-		private readonly List<T>[] buckets;
 
 		private readonly Dictionary<int, int> bucketIndexByIds = new Dictionary<int, int>();
 
+		private readonly List<T>[] buckets;
+
 		public readonly int numBuckets;
-
-		public int Index
-		{
-			get => curIndex;
-		}
-
-		public int Count
-		{
-			get => bucketIndexByIds.Count;
-		}
-
-		public List<T> Current
-		{
-			get => buckets[curIndex];
-		}
 
 		public IBuckets(int numBuckets)
 		{
@@ -37,6 +18,22 @@ namespace CombatAI
 			{
 				buckets[i] = new List<T>();
 			}
+		}
+
+		public int Index
+		{
+			get;
+			private set;
+		}
+
+		public int Count
+		{
+			get => bucketIndexByIds.Count;
+		}
+
+		public List<T> Current
+		{
+			get => buckets[Index];
 		}
 
 		public void Add(T item)
@@ -93,14 +90,14 @@ namespace CombatAI
 
 		public List<T> Next()
 		{
-			int index = curIndex;
-			curIndex = (curIndex + 1) % numBuckets;
+			int index = Index;
+			Index = (Index + 1) % numBuckets;
 			return buckets[index];
 		}
 
 		public void Reset()
 		{
-			curIndex = 0;
+			Index = 0;
 		}
 
 		public void Release()

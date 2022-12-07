@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Verse;
-
 namespace CombatAI.Gui
 {
 	public class Grapher
@@ -14,37 +10,52 @@ namespace CombatAI.Gui
 
 		public const int Scales = 4;
 
-		public struct GraphPoint
-		{
-			public float t;
-
-			public float y;
-
-			public Color color;
-
-			public GraphPoint(float t, float y, Color color)
-			{
-				this.t     = t;
-				this.y     = y;
-				this.color = color;
-			}
-		}
-
-		private List<GraphPoint> pointsQueue = new List<GraphPoint>();
-
-		private GraphPointCollection points = new GraphPointCollection();
-
-		private Listing_Collapsible collapsible = new Listing_Collapsible(scrollViewOnOverflow: false);
-
-		private GraphPoint mouseIsOverPoint = new GraphPoint(0, 0, Color.white);
-
-		private bool mouseIsOver = false;
-
-		private List<Action<Rect>> header;
+		private readonly Listing_Collapsible collapsible = new Listing_Collapsible(scrollViewOnOverflow: false);
 
 		public string description = string.Empty;
 
+		private readonly List<Action<Rect>> header;
+
+		private bool mouseIsOver;
+
+		private GraphPoint mouseIsOverPoint = new GraphPoint(0, 0, Color.white);
+
+		private readonly GraphPointCollection points = new GraphPointCollection();
+
+		private readonly List<GraphPoint> pointsQueue = new List<GraphPoint>();
+
 		public string title = string.Empty;
+
+		public Grapher(string title, string description = null)
+		{
+			this.title       = title;
+			this.description = description ?? string.Empty;
+			header = new List<Action<Rect>>
+			{
+				rect =>
+				{
+					GUIFont.Font   =  GUIFontSize.Tiny;
+					GUIFont.Anchor =  TextAnchor.MiddleLeft;
+					rect.xMin      += 25;
+					Widgets.Label(rect, $"Min T:<color=cyan>{Math.Round(MinT, 4)}</color>");
+				},
+				rect =>
+				{
+					if (mouseIsOver)
+					{
+						GUIFont.Font   = GUIFontSize.Tiny;
+						GUIFont.Anchor = TextAnchor.MiddleCenter;
+						Widgets.Label(rect, $"Current:(<color=cyan>{Math.Round(mouseIsOverPoint.t, 4)}</color>,<color=cyan>{Math.Round(mouseIsOverPoint.y, 4)}</color>)");
+					}
+				},
+				rect =>
+				{
+					GUIFont.Font   = GUIFontSize.Tiny;
+					GUIFont.Anchor = TextAnchor.MiddleRight;
+					Widgets.Label(rect, $"Max T:<color=cyan>{Math.Round(MinT + RangeT, 4)}</color>");
+				}
+			};
+		}
 
 		private IEnumerable<GraphPoint> Range
 		{
@@ -91,37 +102,6 @@ namespace CombatAI.Gui
 		{
 			get => collapsible.Group;
 			set => collapsible.Group = value;
-		}
-
-		public Grapher(string title, string description = null)
-		{
-			this.title       = title;
-			this.description = description ?? string.Empty;
-			header = new List<Action<Rect>>()
-			{
-				(rect) =>
-				{
-					GUIFont.Font   =  GUIFontSize.Tiny;
-					GUIFont.Anchor =  TextAnchor.MiddleLeft;
-					rect.xMin      += 25;
-					Widgets.Label(rect, $"Min T:<color=cyan>{Math.Round(MinT, 4)}</color>");
-				},
-				(rect) =>
-				{
-					if (mouseIsOver)
-					{
-						GUIFont.Font   = GUIFontSize.Tiny;
-						GUIFont.Anchor = TextAnchor.MiddleCenter;
-						Widgets.Label(rect, $"Current:(<color=cyan>{Math.Round(mouseIsOverPoint.t, 4)}</color>,<color=cyan>{Math.Round(mouseIsOverPoint.y, 4)}</color>)");
-					}
-				},
-				(rect) =>
-				{
-					GUIFont.Font   = GUIFontSize.Tiny;
-					GUIFont.Anchor = TextAnchor.MiddleRight;
-					Widgets.Label(rect, $"Max T:<color=cyan>{Math.Round(MinT + RangeT, 4)}</color>");
-				}
-			};
 		}
 
 		public float this[float t]
@@ -237,6 +217,22 @@ namespace CombatAI.Gui
 					mouseIsOver      = true;
 				}
 				v0 = v1;
+			}
+		}
+
+		public struct GraphPoint
+		{
+			public float t;
+
+			public float y;
+
+			public Color color;
+
+			public GraphPoint(float t, float y, Color color)
+			{
+				this.t     = t;
+				this.y     = y;
+				this.color = color;
 			}
 		}
 	}

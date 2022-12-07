@@ -1,9 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using UnityEngine;
-using Verse;
-
+﻿using System.Runtime.CompilerServices;
 namespace CombatAI
 {
 	public static class Maths
@@ -168,7 +163,7 @@ namespace CombatAI
 				{
 					return mid / 32f;
 				}
-				else if (midSqr < a)
+				if (midSqr < a)
 				{
 					bot = mid;
 				}
@@ -221,7 +216,7 @@ namespace CombatAI
 				{
 					return mid;
 				}
-				else if (midSqr < a)
+				if (midSqr < a)
 				{
 					bot = mid;
 				}

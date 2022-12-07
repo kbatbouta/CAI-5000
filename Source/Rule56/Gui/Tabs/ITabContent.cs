@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using Verse;
-
 namespace CombatAI.Gui.Tabs
 {
 	public abstract class ITabContent

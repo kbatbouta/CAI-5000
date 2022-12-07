@@ -1,80 +1,78 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using RimWorld;
 using Verse;
-
 namespace CombatAI
 {
 	public struct DamageReport
 	{
-		private static Dictionary<ToolCapacityDef, List<ManeuverDef>> _maneuvers = new Dictionary<ToolCapacityDef, List<ManeuverDef>>(128);
+		private static readonly Dictionary<ToolCapacityDef, List<ManeuverDef>> _maneuvers = new Dictionary<ToolCapacityDef, List<ManeuverDef>>(128);
 
 		private int  _createdAt;
 		private bool _finalized;
 
 		/// <summary>
-		/// Report thing.
+		///     Report thing.
 		/// </summary>
 		public Thing thing;
 		/// <summary>
-		/// Ranged blunt damage potential per second.
+		///     Ranged blunt damage potential per second.
 		/// </summary>
 		public float rangedBlunt;
 		/// <summary>
-		/// Ranged sharp damage potential per second.
+		///     Ranged sharp damage potential per second.
 		/// </summary>
 		public float rangedSharp;
 		/// <summary>
-		/// Ranged blunt armor penetration potential.
+		///     Ranged blunt armor penetration potential.
 		/// </summary>
 		public float rangedBluntAp;
 		/// <summary>
-		/// Ranged sharp armor penetration potential.
+		///     Ranged sharp armor penetration potential.
 		/// </summary>
 		public float rangedSharpAp;
 		/// <summary>
-		/// Whether report thing can melee.
+		///     Whether report thing can melee.
 		/// </summary>
 		public bool canMelee;
 		/// <summary>
-		/// Melee blunt damage potential per second.
+		///     Melee blunt damage potential per second.
 		/// </summary>
 		public float meleeBlunt;
 		/// <summary>
-		/// Melee sharp damage potential per second.
+		///     Melee sharp damage potential per second.
 		/// </summary>
 		public float meleeSharp;
 		/// <summary>
-		/// Melee blunt armor penetration potential.
+		///     Melee blunt armor penetration potential.
 		/// </summary>
 		public float meleeBluntAp;
 		/// <summary>
-		/// Melee sharp armor penetration potential.
+		///     Melee sharp armor penetration potential.
 		/// </summary>
 		public float meleeSharpAp;
 		/// <summary>
-		/// Report meta flags.
+		///     Report meta flags.
 		/// </summary>
 		public MetaCombatAttribute attributes;
 		/// <summary>
-		/// Whether the primary damage model is ranged.
+		///     Whether the primary damage model is ranged.
 		/// </summary>
 		public bool primaryIsRanged;
 		/// <summary>
-		/// The combined and the adjusted sharp value. 
+		///     The combined and the adjusted sharp value.
 		/// </summary>
 		public float adjustedSharp;
 		/// <summary>
-		/// The combined and the adjusted blunr value. 
+		///     The combined and the adjusted blunr value.
 		/// </summary>
 		public float adjustedBlunt;
 		/// <summary>
-		/// Primary verb properties.
+		///     Primary verb properties.
 		/// </summary>
 		public VerbProperties primaryVerbProps;
 		/// <summary>
-		/// Whether this is valid report or not.
-		/// </summary>		
+		///     Whether this is valid report or not.
+		/// </summary>
 		public bool IsValid
 		{
 			get => _finalized && GenTicks.TicksGame - _createdAt < 1800;
@@ -86,14 +84,11 @@ namespace CombatAI
 			{
 				return adjustedSharp * 0.6f + adjustedBlunt * 0.4f;
 			}
-			else if (def == DamageArmorCategoryDefOf.Sharp)
+			if (def == DamageArmorCategoryDefOf.Sharp)
 			{
 				return adjustedSharp;
 			}
-			else
-			{
-				return adjustedBlunt;
-			}
+			return adjustedBlunt;
 		}
 
 		public void Finalize(float rangedMul, float meleeMul)
@@ -203,17 +198,11 @@ namespace CombatAI
 			{
 				return dmg / 18f + ap;
 			}
-			else
+			if (ap != 0)
 			{
-				if (ap != 0)
-				{
-					return dmg / 12f * ap;
-				}
-				else
-				{
-					return dmg / 18f;
-				}
+				return dmg / 12f * ap;
 			}
+			return dmg / 18f;
 		}
 
 		private float AdjustedSharp()
@@ -234,17 +223,11 @@ namespace CombatAI
 			{
 				return damage / 12f + ap;
 			}
-			else
+			if (ap != 0)
 			{
-				if (ap != 0)
-				{
-					return damage / 12f * ap;
-				}
-				else
-				{
-					return damage / 18f;
-				}
+				return damage / 12f * ap;
 			}
+			return damage / 18f;
 		}
 
 		private float AdjustedBlunt()
@@ -265,17 +248,11 @@ namespace CombatAI
 			{
 				return damage / 12f + ap;
 			}
-			else
+			if (ap != 0)
 			{
-				if (ap != 0)
-				{
-					return damage / 12f * ap;
-				}
-				else
-				{
-					return damage / 18f;
-				}
+				return damage / 12f * ap;
 			}
+			return damage / 18f;
 		}
 
 		private float GetArmorPenetration(ProjectileProperties projectile)

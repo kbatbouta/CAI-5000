@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using RimWorld;
-using UnityEngine;
-using Verse;
-
-namespace CombatAI.Gui
+﻿namespace CombatAI.Gui
 {
 	// TODO update to 1.3
 	// public class Selector_PawnSelection : ISelector_GenericSelection<Pawn>

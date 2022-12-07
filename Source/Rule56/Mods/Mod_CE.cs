@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using RimWorld;
 using Verse;
-
 namespace CombatAI
 {
 	[LoadIf("CETeam.CombatExtended")]
@@ -67,10 +65,7 @@ namespace CombatAI
 			{
 				return (float)ProjectilePropertiesCE_ArmorPenetrationSharp.GetValue(props);
 			}
-			else
-			{
-				return (float)ProjectilePropertiesCE_ArmorPenetrationBlunt.GetValue(props);
-			}
+			return (float)ProjectilePropertiesCE_ArmorPenetrationBlunt.GetValue(props);
 		}
 
 

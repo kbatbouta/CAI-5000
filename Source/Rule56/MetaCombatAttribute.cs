@@ -1,7 +1,6 @@
-﻿using System;
-namespace CombatAI
+﻿namespace CombatAI
 {
-	public enum MetaCombatAttribute : int
+	public enum MetaCombatAttribute
 	{
 		None       = 0,
 		Ranged     = 1,

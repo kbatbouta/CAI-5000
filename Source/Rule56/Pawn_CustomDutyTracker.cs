@@ -1,57 +1,15 @@
-﻿using System;
-using Verse;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using RimWorld;
+using Verse;
 using Verse.AI;
-
 namespace CombatAI
 {
 	public class Pawn_CustomDutyTracker : IExposable
 	{
-		public class CustomPawnDuty : IExposable
-		{
-			public PawnDuty duty;
-			public int      expireAfter;
-			public int      startAfter;
-			public int      expiresAt = -1;
-			public int      startsAt  = -1;
-			public bool     failOnFocusDeath;
-			public bool     failOnFocusDowned;
-			public bool     failOnFocusDestroyed;
-			public bool     canFlee    = true;
-			public bool     canExitMap = true;
-			public int      failOnDistanceToFocus;
-			public DutyDef  failOnFocusDutyNot;
-
-			public CustomPawnDuty()
-			{
-			}
-
-			public void ExposeData()
-			{
-				Scribe_Deep.Look(ref duty, "duty");
-				Scribe_Values.Look(ref expireAfter, "expireAfter");
-				Scribe_Values.Look(ref startAfter, "startAfter");
-				Scribe_Values.Look(ref startsAt, "startsAt", -1);
-				Scribe_Values.Look(ref expiresAt, "expiresAt", -1);
-				Scribe_Values.Look(ref failOnDistanceToFocus, "failOnDistanceToFocus");
-				Scribe_Values.Look(ref failOnFocusDeath, "failOnFocusDeath");
-				Scribe_Values.Look(ref failOnFocusDowned, "failOnFocusDowned");
-				Scribe_Values.Look(ref failOnFocusDestroyed, "failOnFocusDestroyed");
-				Scribe_Values.Look(ref canFlee, "canFlee", true);
-				Scribe_Values.Look(ref canExitMap, "canExitMap", true);
-				Scribe_Defs.Look(ref failOnFocusDutyNot, "failOnFocusDutyNot");
-			}
-		}
+		public CustomPawnDuty curCustomDuty;
 
 		public Pawn                 pawn;
 		public List<CustomPawnDuty> queue = new List<CustomPawnDuty>();
-		public CustomPawnDuty       curCustomDuty;
-
-		public DutyDef CurDutyDef
-		{
-			get => curCustomDuty?.duty?.def ?? pawn.mindState?.duty?.def ?? null;
-		}
 
 		public Pawn_CustomDutyTracker()
 		{
@@ -60,6 +18,22 @@ namespace CombatAI
 		public Pawn_CustomDutyTracker(Pawn pawn)
 		{
 			this.pawn = pawn;
+		}
+
+		public DutyDef CurDutyDef
+		{
+			get => curCustomDuty?.duty?.def ?? pawn.mindState?.duty?.def ?? null;
+		}
+
+		public void ExposeData()
+		{
+			Scribe_References.Look(ref pawn, "pawn");
+			Scribe_Deep.Look(ref curCustomDuty, "curCustomDuty3");
+			Scribe_Collections.Look(ref queue, "queue4", LookMode.Deep);
+			if (queue == null)
+			{
+				queue = new List<CustomPawnDuty>();
+			}
 		}
 
 		public void TickRare()
@@ -130,10 +104,7 @@ namespace CombatAI
 						curCustomDuty = next;
 						break;
 					}
-					else
-					{
-						queue.RemoveAt(0);
-					}
+					queue.RemoveAt(0);
 				}
 			}
 			if (curCustomDuty != null && pawn.mindState.duty != curCustomDuty.duty && !IsForcedDuty(pawn.mindState.duty?.def ?? null))
@@ -207,17 +178,6 @@ namespace CombatAI
 			return curCustomDuty?.duty.def == def || queue.Any(d => d.duty.def == def);
 		}
 
-		public void ExposeData()
-		{
-			Scribe_References.Look(ref pawn, "pawn");
-			Scribe_Deep.Look(ref curCustomDuty, "curCustomDuty3", new object[0]);
-			Scribe_Collections.Look(ref queue, "queue4", LookMode.Deep);
-			if (queue == null)
-			{
-				queue = new List<CustomPawnDuty>();
-			}
-		}
-
 		private bool IsExitDuty(DutyDef def)
 		{
 			return def != null && (def == DutyDefOf.ExitMapBest || def == DutyDefOf.ExitMapRandom || def == DutyDefOf.ExitMapNearDutyTarget || def == DutyDefOf.ExitMapBestAndDefendSelf || def == DutyDefOf.TravelOrLeave || def == DutyDefOf.TravelOrWait);
@@ -226,6 +186,38 @@ namespace CombatAI
 		private bool IsForcedDuty(DutyDef def)
 		{
 			return def != null && (IsExitDuty(def) || def == DutyDefOf.PrisonerEscape || def == DutyDefOf.PrisonerEscapeSapper || def == DutyDefOf.PrisonerAssaultColony || def == DutyDefOf.Kidnap || def == DutyDefOf.Steal);
+		}
+
+		public class CustomPawnDuty : IExposable
+		{
+			public bool     canExitMap = true;
+			public bool     canFlee    = true;
+			public PawnDuty duty;
+			public int      expireAfter;
+			public int      expiresAt = -1;
+			public int      failOnDistanceToFocus;
+			public bool     failOnFocusDeath;
+			public bool     failOnFocusDestroyed;
+			public bool     failOnFocusDowned;
+			public DutyDef  failOnFocusDutyNot;
+			public int      startAfter;
+			public int      startsAt = -1;
+
+			public void ExposeData()
+			{
+				Scribe_Deep.Look(ref duty, "duty");
+				Scribe_Values.Look(ref expireAfter, "expireAfter");
+				Scribe_Values.Look(ref startAfter, "startAfter");
+				Scribe_Values.Look(ref startsAt, "startsAt", -1);
+				Scribe_Values.Look(ref expiresAt, "expiresAt", -1);
+				Scribe_Values.Look(ref failOnDistanceToFocus, "failOnDistanceToFocus");
+				Scribe_Values.Look(ref failOnFocusDeath, "failOnFocusDeath");
+				Scribe_Values.Look(ref failOnFocusDowned, "failOnFocusDowned");
+				Scribe_Values.Look(ref failOnFocusDestroyed, "failOnFocusDestroyed");
+				Scribe_Values.Look(ref canFlee, "canFlee", true);
+				Scribe_Values.Look(ref canExitMap, "canExitMap", true);
+				Scribe_Defs.Look(ref failOnFocusDutyNot, "failOnFocusDutyNot");
+			}
 		}
 	}
 }

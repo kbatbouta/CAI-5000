@@ -1,42 +1,29 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using RimWorld;
+﻿using System.Runtime.CompilerServices;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI
 {
 
 	public class ITByteGrid
 	{
-		private struct ITCell
-		{
-			public byte   value;
-			public byte   valuePrev;
-			public ushort sig;
-			public ushort cycleNum;
-			public ulong  flags;
-			public ulong  flagsPrev;
-		}
-
-		private          ushort      sig      = 13;
-		private          ushort      cycleNum = 19;
 		private readonly CellIndices cellIndices;
 		private readonly ITCell[]    grid;
 
-		public readonly int mapCellNum;
+		public readonly int    mapCellNum;
+		private         ushort cycleNum = 19;
 
-		public int CycleNum
-		{
-			get => cycleNum;
-		}
+		private ushort sig = 13;
 
 		public ITByteGrid(Map map)
 		{
 			cellIndices = map.cellIndices;
 			grid        = new ITCell[cellIndices.NumGridCells];
 			mapCellNum  = cellIndices.NumGridCells;
+		}
+
+		public int CycleNum
+		{
+			get => cycleNum;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -142,6 +129,16 @@ namespace CombatAI
 			{
 				sig = 13;
 			}
+		}
+
+		private struct ITCell
+		{
+			public byte   value;
+			public byte   valuePrev;
+			public ushort sig;
+			public ushort cycleNum;
+			public ulong  flags;
+			public ulong  flagsPrev;
 		}
 	}
 }

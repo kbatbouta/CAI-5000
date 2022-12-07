@@ -1,14 +1,9 @@
 ﻿<#@ template language="C#" #>
 <#@ assembly name="System.Core.dll" #>
 <#@ assembly name="System.Xml.dll" #>
-<#@ import namespace="System.IO" #>
-<#@ import namespace="System.Linq" #>
-<#@ import namespace="System.Xml" #>
-<#@ import namespace="System.Text.RegularExpressions" #>
-<#@ import namespace="System.Text" #>
-<#@ import namespace="System.Collections.Generic" #>
 <#@ template debug="true" hostspecific="true" language="C#" #>
 <#@ output extension=".cs" #>
+<#@ import namespace="System.IO" #>
 <#
     string texturesPath = "$(SolutionDir)/../../../1.4/Textures/Isma";
 #>

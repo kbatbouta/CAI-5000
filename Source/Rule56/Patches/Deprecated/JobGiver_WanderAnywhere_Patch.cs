@@ -1,10 +1,4 @@
-﻿using System;
-using HarmonyLib;
-using UnityEngine;
-using Verse;
-using Verse.AI;
-
-namespace CombatAI.Patches
+﻿namespace CombatAI.Patches
 {
 	public class JobGiver_WanderAnywhere_Patch
 	{

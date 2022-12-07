@@ -1,7 +1,4 @@
-﻿using System;
-using Verse;
-using RimWorld;
-
+﻿using RimWorld;
 namespace CombatAI
 {
 	[DefOf]

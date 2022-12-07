@@ -5,14 +5,21 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
-
 namespace CombatAI.Gui
 {
 	public static partial class GUIUtility
 	{
+
+		private static          bool    _scrolling;
+		private static readonly Color   _altGray = new Color(0.2f, 0.2f, 0.2f);
+		private static          float[] _heights = new float[5000];
+
+		private static readonly Dictionary<string, Vector2> _scrollPositions = new Dictionary<string, Vector2>();
 		/// <summary>
-		/// Execute the provided function safely by saving and restoring GUI states regardless of whether the function exited normally or not.
-		/// This allows for a safe stack like behavior where GUI states like color, font and wordwarp are always restored to their original state. 
+		///     Execute the provided function safely by saving and restoring GUI states regardless of whether the function exited
+		///     normally or not.
+		///     This allows for a safe stack like behavior where GUI states like color, font and wordwarp are always restored to
+		///     their original state.
 		/// </summary>
 		/// <param name="function">Function to be executed safely</param>
 		/// <param name="fallbackAction">Fallback function</param>
@@ -50,10 +57,6 @@ namespace CombatAI.Gui
 			}
 			return exception;
 		}
-
-		private static          bool    _scrolling = false;
-		private static readonly Color   _altGray   = new Color(0.2f, 0.2f, 0.2f);
-		private static          float[] _heights   = new float[5000];
 
 		public static void ScrollView<T>(Rect rect, ref Vector2 scrollPosition, IEnumerable<T> elements, Func<T, float> heightLambda, Action<Rect, T> elementLambda, Func<T, IComparable> orderByLambda = null, bool drawBackground = true, bool showScrollbars = true, bool catchExceptions = false, bool drawMouseOverHighlights = true)
 		{
@@ -144,8 +147,6 @@ namespace CombatAI.Gui
 			}
 		}
 
-		private static readonly Dictionary<string, Vector2> _scrollPositions = new Dictionary<string, Vector2>();
-
 		public static void ScrollView<T>(Rect rect, string id, IEnumerable<T> elements, Func<T, float> heightLambda, Action<Rect, T> elementLambda, Func<T, IComparable> orderByLambda = null, bool drawBackground = true, bool showScrollbars = true, bool catchExceptions = false, bool drawMouseOverHighlights = true)
 		{
 			if (!_scrollPositions.TryGetValue(id, out Vector2 scrollPosition))
@@ -209,11 +210,11 @@ namespace CombatAI.Gui
 			{
 				Text.Font = GameFont.Small;
 				FloatMenuUtility.MakeMenu(options,
-				                          (option) =>
+				                          option =>
 				                          {
 					                          return labelLambda(option);
 				                          },
-				                          (option) =>
+				                          option =>
 				                          {
 					                          return () => selectedLambda(option);
 				                          }

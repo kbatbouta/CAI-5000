@@ -1,75 +1,73 @@
-﻿using System;
-using RimWorld;
+﻿using RimWorld;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI
 {
 	public struct ArmorReport
 	{
 		/// <summary>
-		/// Report pawn.
+		///     Report pawn.
 		/// </summary>
 		public Pawn pawn;
 		/// <summary>
-		/// Pawn natural blunt armor rating.
+		///     Pawn natural blunt armor rating.
 		/// </summary>
 		public float bodyBlunt;
 		/// <summary>
-		/// Pawn natural sharp armor rating.
+		///     Pawn natural sharp armor rating.
 		/// </summary>
 		public float bodySharp;
 		/// <summary>
-		/// Apparel blunt armor rating.
+		///     Apparel blunt armor rating.
 		/// </summary>
 		public float apparelBlunt;
 		/// <summary>
-		/// Apparel sharp armor rating.
+		///     Apparel sharp armor rating.
 		/// </summary>
 		public float apparelSharp;
 		/// <summary>
-		/// Pawn bodysize.
+		///     Pawn bodysize.
 		/// </summary>
 		public float bodySize;
 		/// <summary>
-		/// Whether the pawn has a shield belt.
+		///     Whether the pawn has a shield belt.
 		/// </summary>
 		public bool hasShieldBelt;
 		/// <summary>
-		/// Whether the can die.
+		///     Whether the can die.
 		/// </summary>
 		public bool immortal;
 		/// <summary>
-		/// Creation tick.
+		///     Creation tick.
 		/// </summary>
 		public int createdAt;
 		/// <summary>
-		/// Weak attributes.
+		///     Weak attributes.
 		/// </summary>
 		public MetaCombatAttribute weaknessAttributes;
 		/// <summary>
-		/// Total sharp armor.
-		/// </summary>		
+		///     Total sharp armor.
+		/// </summary>
 		public float Sharp
 		{
 			get => bodySharp + apparelSharp;
 		}
 		/// <summary>
-		/// Total blunt armor.
+		///     Total blunt armor.
 		/// </summary>
 		public float Blunt
 		{
 			get => bodyBlunt + apparelBlunt;
 		}
 		/// <summary>
-		/// How tanky is this pawn.
+		///     How tanky is this pawn.
 		/// </summary>
 		public float TankInt
 		{
 			get => Mathf.Lerp(0f, 1f, (bodyBlunt * 0.5f + bodySharp * 0.5f + apparelBlunt * 0.5f + apparelSharp * 0.5f) / 38f);
 		}
 		/// <summary>
-		/// Whether this is a valid report.
+		///     Whether this is a valid report.
 		/// </summary>
 		public bool IsValid
 		{
@@ -77,7 +75,7 @@ namespace CombatAI
 		}
 
 		/// <summary>
-		/// Get the appropriate armor for a damage def.
+		///     Get the appropriate armor for a damage def.
 		/// </summary>
 		/// <param name="damage">Damage def</param>
 		/// <returns>Armor value</returns>

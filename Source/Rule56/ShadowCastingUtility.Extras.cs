@@ -1,11 +1,7 @@
 ﻿using System;
-using RimWorld;
-using Verse;
-using UnityEngine;
-using RimWorld.BaseGen;
-using System.Linq;
 using System.Collections.Generic;
-
+using UnityEngine;
+using Verse;
 namespace CombatAI
 {
 	public static partial class ShadowCastingUtility
@@ -29,19 +25,19 @@ namespace CombatAI
 		}
 
 		/// <summary>
-		/// Evaluate all cells around the source for visibility (float value).
-		/// Note: this is a slower but more accurate version of CastVisibility.
+		///     Evaluate all cells around the source for visibility (float value).
+		///     Note: this is a slower but more accurate version of CastVisibility.
 		/// </summary>
 		/// <param name="map">Map</param>
 		/// <param name="source">Source cell</param>
-		/// <param name="radius">Radius</param>        
+		/// <param name="radius">Radius</param>
 		public static void CastWeighted(Map map, IntVec3 source, Action<IntVec3, int, int, float> setAction, int radius, List<Vector3> buffer)
 		{
 			Cast(map, TryCastWeighted, setAction, source, radius, VISIBILITY_CARRY_MAX, buffer);
 		}
 		/// <summary>
-		/// Evaluate all cells around the source for visibility (float value).
-		/// Note: this is a slower but more accurate version of CastVisibility.
+		///     Evaluate all cells around the source for visibility (float value).
+		///     Note: this is a slower but more accurate version of CastVisibility.
 		/// </summary>
 		/// <param name="map">Map</param>
 		/// <param name="source">Source cell</param>
@@ -53,12 +49,12 @@ namespace CombatAI
 		}
 
 		/// <summary>
-		/// Evaluate all cells around the source for visibility (on/off).
-		/// Note: this is a faster but less accurate version of CastVisibility.
+		///     Evaluate all cells around the source for visibility (on/off).
+		///     Note: this is a faster but less accurate version of CastVisibility.
 		/// </summary>
 		/// <param name="map">Map</param>
 		/// <param name="source">Source cell</param>
-		/// <param name="radius">Radius</param>        
+		/// <param name="radius">Radius</param>
 		public static void CastVisibility(Map map, IntVec3 source, Action<IntVec3, int> action, int radius, List<Vector3> buffer)
 		{
 			Cast(map, TryCastVisibility, (cell, _, dist, ignore) => action(cell, dist), source, radius, VISIBILITY_CARRY_MAX, buffer);
@@ -66,7 +62,7 @@ namespace CombatAI
 
 		private static void Cast(Map map, Action<float, float, int, int, int, IntVec3, Map, Action<IntVec3, int, int, float>, List<Vector3>> castingAction, Action<IntVec3, int, int, float> action, IntVec3 source, int radius, int carryLimit, List<Vector3> buffer)
 		{
-			int maxDepth = (int)radius;
+			int maxDepth = radius;
 			for (int i = 0; i < 4; i++)
 			{
 				castingAction(-1f, 1f, i, maxDepth, carryLimit, source, map, action, buffer);
@@ -74,25 +70,27 @@ namespace CombatAI
 		}
 
 		/// <summary>
-		/// Evaluate visible cells from the source in the direction of target. Will result in storing the cover visiblity (on/off) for each each cell in the ShadowGrid
+		///     Evaluate visible cells from the source in the direction of target. Will result in storing the cover visiblity
+		///     (on/off) for each each cell in the ShadowGrid
 		/// </summary>
 		/// <param name="map">Map</param>
 		/// <param name="source">Source cell</param>
 		/// <param name="direction">Direction</param>
-		/// <param name="baseWidth">What is the maximum amount of cells (width) to be scanned</param>        
+		/// <param name="baseWidth">What is the maximum amount of cells (width) to be scanned</param>
 		public static void CastVisibility(Map map, IntVec3 source, Vector3 direction, Action<IntVec3, int> action, float radius, float baseWidth, List<Vector3> buffer)
 		{
 			Cast(map, TryCastVisibility, (cell, _, dist, ignore) => action(cell, dist), source, (source.ToVector3() + direction.normalized * radius).ToIntVec3(), baseWidth, VISIBILITY_CARRY_MAX, buffer);
 		}
 
 		/// <summary>
-		/// Evaluate visible cells from the source in the direction of target. Will result in storing the cover visiblity (float value) scoring for each each cell in the ShadowGrid
+		///     Evaluate visible cells from the source in the direction of target. Will result in storing the cover visiblity
+		///     (float value) scoring for each each cell in the ShadowGrid
 		/// </summary>
 		/// <param name="map">Map</param>
 		/// <param name="source">Source cell</param>
 		/// <param name="direction">Direction</param>
-		/// <param name="action">Set action (x, z, current_ray_value)</param> 
-		/// <param name="baseWidth">What is the maximum amount of cells (width) to be scanned</param>          
+		/// <param name="action">Set action (x, z, current_ray_value)</param>
+		/// <param name="baseWidth">What is the maximum amount of cells (width) to be scanned</param>
 		public static void CastWeighted(Map map, IntVec3 source, Vector3 direction, Action<IntVec3, int, int, float> action, float radius, float baseWidth, int carryLimit, List<Vector3> buffer)
 		{
 			Cast(map, TryCastWeighted, action, source, (source.ToVector3() + direction.normalized * radius).ToIntVec3(), baseWidth, carryLimit, buffer);

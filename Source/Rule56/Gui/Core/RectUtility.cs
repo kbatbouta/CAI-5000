@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
-
 namespace CombatAI.Gui
 {
 	public static class RectUtility

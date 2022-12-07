@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Verse;
-
 namespace CombatAI
 {
 	public static class MetaCombatAttributeUtility
 	{
-		private static Dictionary<ThingDef, MetaCombatAttribute>    w_race = new Dictionary<ThingDef, MetaCombatAttribute>();
-		private static Dictionary<PawnKindDef, MetaCombatAttribute> w_kind = new Dictionary<PawnKindDef, MetaCombatAttribute>();
-		private static Dictionary<int, MetaCombatAttribute>         w_pawn = new Dictionary<int, MetaCombatAttribute>();
-		private static Dictionary<ThingDef, MetaCombatAttribute>    s_race = new Dictionary<ThingDef, MetaCombatAttribute>();
-		private static Dictionary<PawnKindDef, MetaCombatAttribute> s_kind = new Dictionary<PawnKindDef, MetaCombatAttribute>();
-		private static Dictionary<int, MetaCombatAttribute>         s_pawn = new Dictionary<int, MetaCombatAttribute>();
+		private static readonly Dictionary<ThingDef, MetaCombatAttribute>    w_race = new Dictionary<ThingDef, MetaCombatAttribute>();
+		private static readonly Dictionary<PawnKindDef, MetaCombatAttribute> w_kind = new Dictionary<PawnKindDef, MetaCombatAttribute>();
+		private static readonly Dictionary<int, MetaCombatAttribute>         w_pawn = new Dictionary<int, MetaCombatAttribute>();
+		private static readonly Dictionary<ThingDef, MetaCombatAttribute>    s_race = new Dictionary<ThingDef, MetaCombatAttribute>();
+		private static readonly Dictionary<PawnKindDef, MetaCombatAttribute> s_kind = new Dictionary<PawnKindDef, MetaCombatAttribute>();
+		private static readonly Dictionary<int, MetaCombatAttribute>         s_pawn = new Dictionary<int, MetaCombatAttribute>();
 
 		public static MetaCombatAttribute GetWeaknessAttributes(this Pawn pawn)
 		{

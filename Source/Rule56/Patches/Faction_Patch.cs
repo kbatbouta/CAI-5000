@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using CombatAI.Comps;
+﻿using CombatAI.Comps;
 using HarmonyLib;
 using RimWorld;
-using UnityEngine;
 using Verse;
-
 namespace CombatAI.Patches
 {
 	public static class Faction_Patch

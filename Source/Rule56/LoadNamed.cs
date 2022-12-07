@@ -1,6 +1,4 @@
 ﻿using System;
-using HarmonyLib;
-
 namespace CombatAI
 {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Field)]

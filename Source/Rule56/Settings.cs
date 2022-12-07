@@ -1,49 +1,40 @@
-﻿using System;
-using Verse;
-using RimWorld;
-using System.Reflection;
-using HarmonyLib;
-
+﻿using Verse;
 namespace CombatAI
 {
 	public class Settings : ModSettings
 	{
-		/*                 
-		 * -- * -- * -- * -- * -- * -- * -- * -- * --
-		 */
+
+		private const int version                             = 2;
+		public        int Advanced_SightThreadIdleSleepTimeMS = 1;
 
 		/*
 		 * 
-		 * -- Sub --
+		 * -- Advanced --
 		 * 
 		 */
 
-		public class SightPerformanceSettings : IExposable
-		{
-			public int interval;
-			public int buckets;
-			public int carryLimit;
+		public bool AdvancedUser;
+		public bool Caster_Enabled = true;
 
-			public SightPerformanceSettings()
-			{
-			}
+		/*
+		 * 
+		 * --  Debug  --
+		 * 
+		 */
 
-			public SightPerformanceSettings(int interval, int buckets, int carryLimit)
-			{
-				this.interval   = interval;
-				this.buckets    = buckets;
-				this.carryLimit = carryLimit;
-			}
-
-			public void ExposeData()
-			{
-				Scribe_Values.Look(ref interval, $"frequency.{version}");
-				Scribe_Values.Look(ref buckets, $"buckets.{version}");
-				Scribe_Values.Look(ref carryLimit, $"carryLimit.{version}");
-			}
-		}
-
-		private const int version = 2;
+		public bool  Debug;
+		public bool  Debug_DebugDumpData               = false;
+		public bool  Debug_DebugThingsTracker          = false;
+		public bool  Debug_DrawAvoidanceGrid_Danger    = false;
+		public bool  Debug_DrawAvoidanceGrid_Proximity = false;
+		public bool  Debug_DrawShadowCasts;
+		public bool  Debug_DrawShadowCastsVectors = false;
+		public bool  Debug_DrawThreatCasts        = false;
+		public bool  Debug_ValidateSight;
+		public bool  FogOfWar_Enabled;
+		public float FogOfWar_FogColor            = 0.35f;
+		public float FogOfWar_RangeFadeMultiplier = 0.5f;
+		public float FogOfWar_RangeMultiplier     = 1.0f;
 
 		/*                 
 		 * -- * -- * -- * -- * -- * -- * -- * -- * --
@@ -55,48 +46,18 @@ namespace CombatAI
 		 * 
 		 */
 
-		public bool  LeanCE_Enabled               = false;
-		public bool  Pather_Enabled               = true;
-		public bool  Caster_Enabled               = true;
-		public bool  Targeter_Enabled             = true;
-		public bool  FogOfWar_Enabled             = false;
-		public bool  PerformanceOpt_Enabled       = true;
-		public bool  Pather_DisableL1L2           = false;
-		public bool  Pather_KillboxKiller         = true;
-		public float Pathfinding_DestWeight       = 0.85f;
-		public float FogOfWar_FogColor            = 0.35f;
-		public float FogOfWar_RangeMultiplier     = 1.0f;
-		public float FogOfWar_RangeFadeMultiplier = 0.5f;
+		public bool  LeanCE_Enabled;
+		public bool  Pather_DisableL1L2     = false;
+		public bool  Pather_Enabled         = true;
+		public bool  Pather_KillboxKiller   = true;
+		public float Pathfinding_DestWeight = 0.85f;
+		public bool  PerformanceOpt_Enabled = true;
 
 		public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(3, 5, 12);
 		public SightPerformanceSettings SightSettings_MechsAndInsects      = new SightPerformanceSettings(3, 10, 6);
-		public SightPerformanceSettings SightSettings_Wildlife             = new SightPerformanceSettings(6, 5, 4);
 		public SightPerformanceSettings SightSettings_SettlementTurrets    = new SightPerformanceSettings(8, 15, 12);
-
-		/*
-		 * 
-		 * -- Advanced --
-		 * 
-		 */
-
-		public bool AdvancedUser                        = false;
-		public int  Advanced_SightThreadIdleSleepTimeMS = 1;
-
-		/*
-		 * 
-		 * --  Debug  --
-		 * 
-		 */
-
-		public bool Debug                             = false;
-		public bool Debug_ValidateSight               = false;
-		public bool Debug_DrawShadowCasts             = false;
-		public bool Debug_DrawShadowCastsVectors      = false;
-		public bool Debug_DrawThreatCasts             = false;
-		public bool Debug_DrawAvoidanceGrid_Proximity = false;
-		public bool Debug_DrawAvoidanceGrid_Danger    = false;
-		public bool Debug_DebugThingsTracker          = false;
-		public bool Debug_DebugDumpData               = false;
+		public SightPerformanceSettings SightSettings_Wildlife             = new SightPerformanceSettings(6, 5, 4);
+		public bool                     Targeter_Enabled                   = true;
 
 		/*                 
 		 * -- * -- * -- * -- * -- * -- * -- * -- * --
@@ -144,11 +105,45 @@ namespace CombatAI
 			Scribe_Values.Look(ref FogOfWar_RangeMultiplier, $"FogOfWar_RangeMultiplier.{version}", 1.0f);
 			Scribe_Values.Look(ref Pather_KillboxKiller, $"Pather_KillboxKiller.{version}", true);
 			Scribe_Values.Look(ref PerformanceOpt_Enabled, $"PerformanceOpt_Enabled.{version}", true);
-			Scribe_Values.Look(ref FogOfWar_Enabled, $"FogOfWar_Enabled.{version}", false);
+			Scribe_Values.Look(ref FogOfWar_Enabled, $"FogOfWar_Enabled.{version}");
 			Scribe_Values.Look(ref Debug, $"Debug.{version}");
 			Scribe_Values.Look(ref Debug_ValidateSight, $"Debug_ValidateSight.{version}");
 			Scribe_Values.Look(ref Debug_DrawShadowCasts, $"Debug_DrawShadowCasts.{version}");
 			//ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
+		}
+		/*                 
+		 * -- * -- * -- * -- * -- * -- * -- * -- * --
+		 */
+
+		/*
+		 * 
+		 * -- Sub --
+		 * 
+		 */
+
+		public class SightPerformanceSettings : IExposable
+		{
+			public int buckets;
+			public int carryLimit;
+			public int interval;
+
+			public SightPerformanceSettings()
+			{
+			}
+
+			public SightPerformanceSettings(int interval, int buckets, int carryLimit)
+			{
+				this.interval   = interval;
+				this.buckets    = buckets;
+				this.carryLimit = carryLimit;
+			}
+
+			public void ExposeData()
+			{
+				Scribe_Values.Look(ref interval, $"frequency.{version}");
+				Scribe_Values.Look(ref buckets, $"buckets.{version}");
+				Scribe_Values.Look(ref carryLimit, $"carryLimit.{version}");
+			}
 		}
 
 		//private void ScribeValues()

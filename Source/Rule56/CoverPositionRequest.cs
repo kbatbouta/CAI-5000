@@ -1,6 +1,5 @@
 ﻿using System;
 using Verse;
-
 namespace CombatAI
 {
 	public struct CoverPositionRequest

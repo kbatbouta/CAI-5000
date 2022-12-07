@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI.Gui
 {
 	public class Selector_TypeSelection : ISelector_GenericSelection<Type>
@@ -35,7 +33,7 @@ namespace CombatAI.Gui
 			try
 			{
 				GUIUtility.ScrollView(inRect, ref scrollPosition, types,
-				                      (type) => !searchString.NullOrEmpty() ? ItemMatchSearchString(type) ? -1f : RowHeight : RowHeight,
+				                      type => !searchString.NullOrEmpty() ? ItemMatchSearchString(type) ? -1f : RowHeight : RowHeight,
 				                      (rect, type) =>
 				                      {
 					                      DoSingleItem(rect, type);

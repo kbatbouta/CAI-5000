@@ -1,10 +1,8 @@
-﻿using System;
-using CombatAI.Comps;
+﻿using CombatAI.Comps;
 using HarmonyLib;
 using RimWorld;
 using Verse;
 using Verse.AI;
-
 namespace CombatAI.Patches
 {
 	public static class JobDriver_Wait_Patch

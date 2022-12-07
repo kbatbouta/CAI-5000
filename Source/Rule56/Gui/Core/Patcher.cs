@@ -1,8 +1,6 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI.Gui
 {
 	public static class Patcher

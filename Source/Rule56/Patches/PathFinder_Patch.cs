@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
 using CombatAI.Comps;
@@ -9,40 +7,35 @@ using CombatAI.Statistics;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
-using UnityEngine.UI;
 using Verse;
 using Verse.AI;
-
 namespace CombatAI.Patches
 {
 	public static class PathFinder_Patch
 	{
 
-		[HarmonyPatch(typeof(PathFinder), nameof(PathFinder.FindPath), new[]
-		{
-			typeof(IntVec3), typeof(LocalTargetInfo), typeof(TraverseParms), typeof(PathEndMode), typeof(PathFinderCostTuning)
-		})]
+		[HarmonyPatch(typeof(PathFinder), nameof(PathFinder.FindPath), typeof(IntVec3), typeof(LocalTargetInfo), typeof(TraverseParms), typeof(PathEndMode), typeof(PathFinderCostTuning))]
 		private static class PathFinder_FindPath_Patch
 		{
 			//private static IGridBufferedWriter gridWriter;
-			private static ThingComp_CombatAI               comp;
-			private static DataWriter_Path                  pathWriter;
-			private static bool                             dump;
-			private static bool                             dig;
-			private static Pawn                             pawn;
-			private static Map                              map;
-			private static PathFinder                       instance;
-			private static SightTracker.SightReader         sightReader;
-			private static AvoidanceTracker.AvoidanceReader avoidanceReader;
-			private static bool                             raiders;
-			private static int                              counter;
-			private static ArmorReport                      armor;
-			private static bool                             isPlayer;
-			private static float                            threatAtDest;
-			private static float                            visibilityAtDest;
-			private static float                            multiplier   = 1.0f;
-			private static List<IntVec3>                    blocked      = new List<IntVec3>(128);
-			private static bool                             fallbackCall = false;
+			private static          ThingComp_CombatAI               comp;
+			private static          DataWriter_Path                  pathWriter;
+			private static          bool                             dump;
+			private static          bool                             dig;
+			private static          Pawn                             pawn;
+			private static          Map                              map;
+			private static          PathFinder                       instance;
+			private static          SightTracker.SightReader         sightReader;
+			private static          AvoidanceTracker.AvoidanceReader avoidanceReader;
+			private static          bool                             raiders;
+			private static          int                              counter;
+			private static          ArmorReport                      armor;
+			private static          bool                             isPlayer;
+			private static          float                            threatAtDest;
+			private static          float                            visibilityAtDest;
+			private static          float                            multiplier = 1.0f;
+			private static readonly List<IntVec3>                    blocked    = new List<IntVec3>(128);
+			private static          bool                             fallbackCall;
 
 			private static TraverseParms original_traverseParms;
 			private static PathEndMode   origina_peMode;
@@ -77,7 +70,7 @@ namespace CombatAI.Patches
 						multiplier = 0.25f;
 					}
 					// make tankier pawns unless affect.
-					armor = ArmorUtility.GetArmorReport(pawn);
+					armor = pawn.GetArmorReport();
 					if (armor.createdAt != 0)
 					{
 						multiplier = Maths.Max(multiplier, 1 - armor.TankInt, 0.25f);
@@ -193,7 +186,7 @@ namespace CombatAI.Patches
 								}
 								catch (Exception er)
 								{
-									Log.Error($"ISMA: Error occured in FindPath fallback call {er.ToString()}");
+									Log.Error($"ISMA: Error occured in FindPath fallback call {er}");
 								}
 								finally
 								{
@@ -215,7 +208,7 @@ namespace CombatAI.Patches
 										int     count       = 0;
 										int     countTarget = Rand.Int % 6 + 4 + Maths.Min(blocked.Count, 10);
 										Faction faction     = pawn.Faction;
-										Predicate<Thing> validator = (t) =>
+										Predicate<Thing> validator = t =>
 										{
 											if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
 											    && !ally.CurJobDef.Is(JobDefOf.Mine)
@@ -226,11 +219,11 @@ namespace CombatAI.Patches
 												ThingComp_CombatAI comp = ally.GetComp_Fast<ThingComp_CombatAI>();
 												if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false)
 												{
-													Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 300 * blocked.Count + Rand.Int % 1000, 0, true, null);
+													Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 300 * blocked.Count + Rand.Int % 1000);
 													if (custom != null)
 													{
 														custom.duty.locomotion = LocomotionUrgency.Sprint;
-														comp.duties.StartDuty(custom, true);
+														comp.duties.StartDuty(custom);
 													}
 												}
 												count++;
@@ -360,7 +353,7 @@ namespace CombatAI.Patches
 						//}
 						if (pathWriter != null)
 						{
-							pathWriter.Push(new DataWriter_Path.PathCell()
+							pathWriter.Push(new DataWriter_Path.PathCell
 							{
 								pref  = value,
 								enRel = sightReader.GetVisibilityToEnemies(index),

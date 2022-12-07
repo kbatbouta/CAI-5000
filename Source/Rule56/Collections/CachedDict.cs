@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Verse;
-
 namespace CombatAI
 {
 	[StructLayout(LayoutKind.Sequential)]
@@ -36,18 +35,18 @@ namespace CombatAI
 		private readonly bool                         autoCleanUp;
 		private readonly Dictionary<A, CachedUnit<B>> cache;
 
+		public CachedDict(int initialSize, bool autoCleanUp = true)
+		{
+			cache            = new Dictionary<A, CachedUnit<B>>(initialSize);
+			this.autoCleanUp = autoCleanUp;
+		}
+
 		public B this[A key]
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get => cache[key].value;
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			set => AddPair(key, value);
-		}
-
-		public CachedDict(int initialSize, bool autoCleanUp = true)
-		{
-			cache            = new Dictionary<A, CachedUnit<B>>(initialSize);
-			this.autoCleanUp = autoCleanUp;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

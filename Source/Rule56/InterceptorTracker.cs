@@ -1,51 +1,21 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using RimWorld;
-using Verse;
-using System.Collections.Generic;
 using UnityEngine;
-
+using Verse;
 namespace CombatAI
 {
 	public class InterceptorTracker
 	{
-		private HashSet<IntVec3>             _drawnCells  = new HashSet<IntVec3>(256);
-		private List<IBucketableInterceptor> _removalList = new List<IBucketableInterceptor>();
-
-		private struct IBucketableInterceptor : IBucketable
-		{
-			public ThingWithComps            parent;
-			public CompProjectileInterceptor interceptor;
-			public int                       bucketIndex;
-
-			public int BucketIndex
-			{
-				get => bucketIndex;
-			}
-			public int UniqueIdNumber
-			{
-				get => parent.thingIDNumber;
-			}
-
-			public IBucketableInterceptor(CompProjectileInterceptor interceptor, int bucketIndex)
-			{
-				this.interceptor = interceptor;
-				parent           = interceptor.parent;
-				this.bucketIndex = bucketIndex;
-			}
-		}
-
-		public readonly ITByteGrid            grid;
-		public readonly Map                   map;
-		public readonly MapComponent_CombatAI combatAI;
 
 		private readonly IBuckets<IBucketableInterceptor> buckets;
+		public readonly  MapComponent_CombatAI            combatAI;
 		private readonly CellFlooder                      flooder;
-		private          bool                             wait = false;
 
-		public int Count
-		{
-			get => buckets.Count;
-		}
+		public readonly  ITByteGrid                   grid;
+		public readonly  Map                          map;
+		private readonly HashSet<IntVec3>             _drawnCells  = new HashSet<IntVec3>(256);
+		private readonly List<IBucketableInterceptor> _removalList = new List<IBucketableInterceptor>();
+		private          bool                         wait;
 
 		public InterceptorTracker(MapComponent_CombatAI combatAI)
 		{
@@ -54,6 +24,11 @@ namespace CombatAI
 			grid          = new ITByteGrid(map);
 			buckets       = new IBuckets<IBucketableInterceptor>(30);
 			flooder       = new CellFlooder(map);
+		}
+
+		public int Count
+		{
+			get => buckets.Count;
 		}
 
 		public void Tick()
@@ -148,8 +123,31 @@ namespace CombatAI
 			grid.Next();
 			combatAI.EnqueueOffThreadAction(() =>
 			{
-				flooder.Flood(root, (node) => grid.Set(node.cell, 1, flags), null, null, Mathf.CeilToInt(interceptor.Props.radius) - 1);
+				flooder.Flood(root, node => grid.Set(node.cell, 1, flags), null, null, Mathf.CeilToInt(interceptor.Props.radius) - 1);
 			});
+		}
+
+		private struct IBucketableInterceptor : IBucketable
+		{
+			public readonly ThingWithComps            parent;
+			public readonly CompProjectileInterceptor interceptor;
+			public readonly int                       bucketIndex;
+
+			public int BucketIndex
+			{
+				get => bucketIndex;
+			}
+			public int UniqueIdNumber
+			{
+				get => parent.thingIDNumber;
+			}
+
+			public IBucketableInterceptor(CompProjectileInterceptor interceptor, int bucketIndex)
+			{
+				this.interceptor = interceptor;
+				parent           = interceptor.parent;
+				this.bucketIndex = bucketIndex;
+			}
 		}
 	}
 }

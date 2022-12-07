@@ -1,17 +1,15 @@
-﻿using System;
-using Verse;
-
+﻿using Verse;
 namespace CombatAI.Comps
 {
 	public class CompProperties_Sighter : CompProperties
 	{
-		public int radius;
-
-		public int? radiusNight;
-
-		public bool powered;
 
 		public bool mannable;
+
+		public bool powered;
+		public int  radius;
+
+		public int? radiusNight;
 
 		public CompProperties_Sighter()
 		{

@@ -1,7 +1,4 @@
-﻿using System;
-using HarmonyLib;
-using UnityEngine;
-
+﻿using HarmonyLib;
 namespace CombatAI
 {
 	public static class Finder
@@ -14,6 +11,8 @@ namespace CombatAI
 
 		public static PerformanceTracker Performance;
 
+		public static int MainThreadId;
+
 		public static float P75
 		{
 			get => Maths.Max(Performance.Performance, 0.75f);
@@ -23,7 +22,5 @@ namespace CombatAI
 		{
 			get => Maths.Max(Performance.Performance, 0.50f);
 		}
-
-		public static int MainThreadId;
 	}
 }

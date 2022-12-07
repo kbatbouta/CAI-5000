@@ -1,7 +1,7 @@
 ﻿using System;
+using CombatAI.R;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI.Gui
 {
 	public abstract class ISelector : Window
@@ -23,7 +23,7 @@ namespace CombatAI.Gui
 			integrated = false;
 			GUIUtility.ExecuteSafeGUIAction(() =>
 			{
-				if (Widgets.ButtonText(inRect.BottomPartPixels(30), R.Keyed.CombatAI_Close))
+				if (Widgets.ButtonText(inRect.BottomPartPixels(30), Keyed.CombatAI_Close))
 				{
 					Close();
 				}

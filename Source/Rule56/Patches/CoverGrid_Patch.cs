@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
-using UnityEngine;
 using Verse;
-
 namespace CombatAI.Patches
 {
 	public static class CoverGrid_Patch
@@ -20,6 +17,14 @@ namespace CombatAI.Patches
 		{
 			typeof(int), typeof(int)
 		});
+
+		public static void Set(IntVec3 cell, Thing t)
+		{
+			if (grid != null)
+			{
+				grid.RecalculateCell(cell, t);
+			}
+		}
 
 		[HarmonyPatch(typeof(CoverGrid), nameof(CoverGrid.Register))]
 		public static class CoverGrid_Register_Patch
@@ -72,14 +77,6 @@ namespace CombatAI.Patches
 					}
 					yield return codes[i];
 				}
-			}
-		}
-
-		public static void Set(IntVec3 cell, Thing t)
-		{
-			if (grid != null)
-			{
-				grid.RecalculateCell(cell, t);
 			}
 		}
 	}

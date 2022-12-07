@@ -5,19 +5,18 @@ using System.Runtime.CompilerServices;
 using RimWorld;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI.Utilities
 {
 #if DEBUG_REACTION
 	public class ThingsTracker : MapComponent
 	{
-		public ThingsTrackingModel pawnsTracker;
-		public ThingsTrackingModel weaponsTracker;
 		public ThingsTrackingModel apparelTracker;
-		public ThingsTrackingModel medicineTracker;
 		public ThingsTrackingModel interceptorsTracker;
+		public ThingsTrackingModel medicineTracker;
+		public ThingsTrackingModel pawnsTracker;
 
-		private Dictionary<ThingDef, ThingsTrackingModel> trackersByDef = new Dictionary<ThingDef, ThingsTrackingModel>();
+		private readonly Dictionary<ThingDef, ThingsTrackingModel> trackersByDef = new Dictionary<ThingDef, ThingsTrackingModel>();
+		public           ThingsTrackingModel                       weaponsTracker;
 
 		public ThingsTracker(Map map) : base(map)
 		{
@@ -71,14 +70,14 @@ namespace CombatAI.Utilities
 				others = model.ThingsInRangeOf(thing.Position, 25);
 				if (others != null)
 				{
-					Vector2 a = UI.MapToUIPosition(thing.DrawPos);
+					Vector2 a = thing.DrawPos.MapToUIPosition();
 					Vector2 b;
 					Vector2 mid;
 					Rect    rect;
 					int     index = 0;
 					foreach (Thing other in others)
 					{
-						b = UI.MapToUIPosition(other.DrawPos);
+						b = other.DrawPos.MapToUIPosition();
 						Widgets.DrawLine(a, b, Color.red, 1);
 
 						mid  = (a + b) / 2;

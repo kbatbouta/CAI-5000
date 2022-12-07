@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Lifetime;
 using HarmonyLib;
-using RimWorld;
 using Verse;
-
 namespace CombatAI
 {
 	public class CompatibilityManager

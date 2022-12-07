@@ -4,10 +4,18 @@ namespace CombatAI
 {
 	public class ValWatcher<T> where T : struct, IComparable<T>, IEquatable<T>
 	{
-		private T                 value;
-		private int               changedTimestamp;
-		private int               minChangedInterval;
-		private Action<T, T, int> onChangedAction;
+		private          int               changedTimestamp;
+		private readonly int               minChangedInterval;
+		private readonly Action<T, T, int> onChangedAction;
+		private          T                 value;
+
+		public ValWatcher(T value, Action<T, T, int> onChangedAction, int minChangedInterval)
+		{
+			this.value              = value;
+			changedTimestamp        = GenTicks.TicksGame;
+			this.minChangedInterval = minChangedInterval;
+			this.onChangedAction    = onChangedAction;
+		}
 
 		public T Current
 		{
@@ -29,14 +37,6 @@ namespace CombatAI
 		public int TicksSinceLastChanged
 		{
 			get => GenTicks.TicksGame - changedTimestamp;
-		}
-
-		public ValWatcher(T value, Action<T, T, int> onChangedAction, int minChangedInterval)
-		{
-			this.value              = value;
-			changedTimestamp        = GenTicks.TicksGame;
-			this.minChangedInterval = minChangedInterval;
-			this.onChangedAction    = onChangedAction;
 		}
 
 		public void ResetTimeStamp()

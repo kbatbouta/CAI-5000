@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using HarmonyLib;
-using RimWorld;
 using UnityEngine;
-using UnityEngine.Assertions;
 using Verse;
-using static System.Net.WebRequestMethods;
-
 namespace CombatAI
 {
 	/*
@@ -21,27 +14,6 @@ namespace CombatAI
 	public static class AssetBundleDatabase
 	{
 		private static readonly List<AssetBundle> bundles = new List<AssetBundle>(10);
-
-		private static string GetCurrentSystemPath
-		{
-			get
-			{
-				string pathPart = "";
-				if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-				{
-					pathPart = "StandaloneOSX";
-				}
-				else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-				{
-					pathPart = "StandaloneWindows";
-				}
-				else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-				{
-					pathPart = "StandaloneLinux64";
-				}
-				return Path.Combine(Finder.Mod.Content.RootDir, $@"Resources/Bundles/{pathPart}");
-			}
-		}
 
 		static AssetBundleDatabase()
 		{
@@ -73,7 +45,33 @@ namespace CombatAI
 			}
 		}
 
-		private static class AssetCache<T> where T : UnityEngine.Object
+		private static string GetCurrentSystemPath
+		{
+			get
+			{
+				string pathPart = "";
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+				{
+					pathPart = "StandaloneOSX";
+				}
+				else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				{
+					pathPart = "StandaloneWindows";
+				}
+				else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+				{
+					pathPart = "StandaloneLinux64";
+				}
+				return Path.Combine(Finder.Mod.Content.RootDir, $@"Resources/Bundles/{pathPart}");
+			}
+		}
+
+		public static T Get<T>(string name) where T : Object
+		{
+			return AssetCache<T>.Get(name);
+		}
+
+		private static class AssetCache<T> where T : Object
 		{
 			private static readonly Dictionary<string, T> assetByName = new Dictionary<string, T>();
 
@@ -97,11 +95,6 @@ namespace CombatAI
 				}
 				return asset;
 			}
-		}
-
-		public static T Get<T>(string name) where T : UnityEngine.Object
-		{
-			return AssetCache<T>.Get(name);
 		}
 	}
 }

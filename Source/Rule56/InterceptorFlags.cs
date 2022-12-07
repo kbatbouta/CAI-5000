@@ -1,5 +1,4 @@
-﻿using System;
-namespace CombatAI
+﻿namespace CombatAI
 {
 	public enum InterceptorFlags
 	{

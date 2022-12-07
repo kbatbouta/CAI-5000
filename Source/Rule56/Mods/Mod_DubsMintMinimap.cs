@@ -1,9 +1,6 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using HarmonyLib;
-using UnityEngine;
 using Verse;
-
 namespace CombatAI
 {
 	[LoadIf("dubwise.dubsmintminimap")]
@@ -14,7 +11,7 @@ namespace CombatAI
 		[Unsaved]
 		private static MapComponent_FogGrid fogGrid;
 
-		[LoadNamed("DubsMintMinimap.MainTabWindow_MiniMap:Fogged", LoadableType.Method, new Type[]
+		[LoadNamed("DubsMintMinimap.MainTabWindow_MiniMap:Fogged", LoadableType.Method, new[]
 		{
 			typeof(Thing)
 		})]

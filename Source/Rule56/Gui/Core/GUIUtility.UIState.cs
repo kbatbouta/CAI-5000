@@ -1,39 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using RimWorld;
 using UnityEngine;
 using Verse;
-using Verse.Sound;
-
 namespace CombatAI.Gui
 {
 	public static partial class GUIUtility
 	{
-		[StructLayout(LayoutKind.Auto)]
-		private struct GUIState
-		{
-			public GameFont   font;
-			public FontStyle  curStyle;
-			public FontStyle  curTextAreaReadOnlyStyle;
-			public FontStyle  curTextAreaStyle;
-			public FontStyle  curTextFieldStyle;
-			public TextAnchor anchor;
-			public Color      color;
-			public Color      contentColor;
-			public Color      backgroundColor;
-			public bool       wordWrap;
-			public bool       useCustomFonts;
-		}
 
 		private static readonly List<GUIState> stack = new List<GUIState>();
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void StashGUIState()
 		{
-			stack.Add(new GUIState()
+			stack.Add(new GUIState
 			{
 				font                     = Text.Font,
 				curStyle                 = Text.CurFontStyle.fontStyle,
@@ -100,6 +81,22 @@ namespace CombatAI.Gui
 			Text.CurTextAreaReadOnlyStyle.fontStyle = config.curTextAreaReadOnlyStyle;
 			Text.CurTextAreaStyle.fontStyle         = config.curTextAreaStyle;
 			Text.CurTextFieldStyle.fontStyle        = config.curTextFieldStyle;
+		}
+
+		[StructLayout(LayoutKind.Auto)]
+		private struct GUIState
+		{
+			public GameFont   font;
+			public FontStyle  curStyle;
+			public FontStyle  curTextAreaReadOnlyStyle;
+			public FontStyle  curTextAreaStyle;
+			public FontStyle  curTextFieldStyle;
+			public TextAnchor anchor;
+			public Color      color;
+			public Color      contentColor;
+			public Color      backgroundColor;
+			public bool       wordWrap;
+			public bool       useCustomFonts;
 		}
 	}
 }

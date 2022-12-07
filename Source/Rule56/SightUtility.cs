@@ -1,18 +1,16 @@
 ﻿using System;
-using Verse;
-using RimWorld;
-using System.Linq;
 using System.Collections.Generic;
-using UnityEngine;
-using Verse.AI;
-using NAudio.Utils;
-using UnityEngine.UI;
+using System.Linq;
 using CombatAI.Comps;
-
+using RimWorld;
+using UnityEngine;
+using Verse;
 namespace CombatAI
 {
 	public static class SightUtility
 	{
+
+		private static readonly Dictionary<int, Pair<int, int>> rangeCache = new Dictionary<int, Pair<int, int>>(256);
 		public static SightGrid.ISightRadius GetSightRadius(Thing thing)
 		{
 			SightGrid.ISightRadius result;
@@ -89,19 +87,16 @@ namespace CombatAI
 				}
 				return result;
 			}
-			else
+			result.scan  = Mathf.CeilToInt(verb.EffectiveRange);
+			result.sight = Mathf.CeilToInt(verb.EffectiveRange * 0.75f);
+			SkillRecord shooting = pawn.skills?.GetSkill(SkillDefOf.Shooting) ?? null;
+			float       skill    = 5;
+			if (shooting != null)
 			{
-				result.scan  = Mathf.CeilToInt(verb.EffectiveRange);
-				result.sight = Mathf.CeilToInt(verb.EffectiveRange * 0.75f);
-				SkillRecord shooting = pawn.skills?.GetSkill(SkillDefOf.Shooting) ?? null;
-				float       skill    = 5;
-				if (shooting != null)
-				{
-					skill = shooting.Level;
-				}
-				result.sight = Mathf.CeilToInt(Maths.Max(result.sight * Mathf.Clamp(skill / 7.5f, 0.778f, 1.425f), 4));
-				return result;
+				skill = shooting.Level;
 			}
+			result.sight = Mathf.CeilToInt(Maths.Max(result.sight * Mathf.Clamp(skill / 7.5f, 0.778f, 1.425f), 4));
+			return result;
 		}
 
 		private static SightGrid.ISightRadius GetSightRadius_Turret(Building_Turret turret)
@@ -149,8 +144,6 @@ namespace CombatAI
 			}
 			return sightRadius;
 		}
-
-		private static readonly Dictionary<int, Pair<int, int>> rangeCache = new Dictionary<int, Pair<int, int>>(256);
 
 		//public static int GetSightRange(Thing thing)
 		//{
@@ -228,32 +221,26 @@ namespace CombatAI
 			{
 				return (int)Mathf.Clamp(pawn.BodySize * multiplier * 10f, 10, 30);
 			}
-			else
+			Verb verb = pawn.CurrentEffectiveVerb;
+			if (verb == null)
 			{
-				Verb verb = pawn.CurrentEffectiveVerb;
-				if (verb == null)
-				{
-					return (int)Maths.Max(15 * multiplier, 12);
-				}
-				if (verb.IsMeleeAttack)
-				{
-					SkillRecord melee = pawn.skills?.GetSkill(SkillDefOf.Melee) ?? null;
-					if (melee != null && melee.Level > 5)
-					{
-						multiplier += melee.Level / 20f;
-					}
-					return (int)Maths.Max(20 * multiplier, 12);
-				}
-				else
-				{
-					SkillRecord ranged = pawn.skills?.GetSkill(SkillDefOf.Shooting) ?? null;
-					if (ranged != null && ranged.Level > 5)
-					{
-						multiplier += (ranged.Level - 5f) / 15f;
-					}
-					return (int)Maths.Max(verb.EffectiveRange * multiplier, 20f * multiplier, verb.EffectiveRange * 0.8f);
-				}
+				return (int)Maths.Max(15 * multiplier, 12);
 			}
+			if (verb.IsMeleeAttack)
+			{
+				SkillRecord melee = pawn.skills?.GetSkill(SkillDefOf.Melee) ?? null;
+				if (melee != null && melee.Level > 5)
+				{
+					multiplier += melee.Level / 20f;
+				}
+				return (int)Maths.Max(20 * multiplier, 12);
+			}
+			SkillRecord ranged = pawn.skills?.GetSkill(SkillDefOf.Shooting) ?? null;
+			if (ranged != null && ranged.Level > 5)
+			{
+				multiplier += (ranged.Level - 5f) / 15f;
+			}
+			return (int)Maths.Max(verb.EffectiveRange * multiplier, 20f * multiplier, verb.EffectiveRange * 0.8f);
 		}
 
 		//private static int GetSightRange(Pawn pawn)

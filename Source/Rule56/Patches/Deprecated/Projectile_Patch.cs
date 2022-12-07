@@ -1,8 +1,4 @@
-﻿using System;
-using HarmonyLib;
-using Verse;
-
-namespace CombatAI.Patches
+﻿namespace CombatAI.Patches
 {
 	public static class Projectile_Patch
 	{

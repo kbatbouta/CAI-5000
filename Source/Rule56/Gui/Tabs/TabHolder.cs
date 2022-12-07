@@ -3,21 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Verse;
-using CombatAI.Gui;
-
 namespace CombatAI.Gui.Tabs
 {
 	public class TabHolder
 	{
-		public ITabContent       curTab;
-		public List<ITabContent> tabs;
-
-		private int     curTabIndex;
-		private Vector2 scrollPosition = Vector2.zero;
-		private Rect    tabBarRect;
 
 		private readonly List<TabRecord> tabsRecord;
 		private readonly bool            useSidebar = true;
+		public           ITabContent     curTab;
+
+		private int               curTabIndex;
+		private Vector2           scrollPosition = Vector2.zero;
+		private Rect              tabBarRect;
+		public  List<ITabContent> tabs;
 
 		public TabHolder(List<ITabContent> tabs, bool useSidebar = false)
 		{
@@ -121,7 +119,7 @@ namespace CombatAI.Gui.Tabs
 					// -----------------------
 					throw new InvalidOperationException("RocketEngine.Gui: this is an outdated API!");
 				}
-			}, null, false);
+			});
 		}
 
 		public void AddTab(ITabContent newTab)

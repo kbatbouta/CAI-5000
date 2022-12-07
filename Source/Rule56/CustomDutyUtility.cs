@@ -1,9 +1,7 @@
-﻿using System;
-using Verse.AI;
-using Verse;
+﻿using CombatAI.Comps;
 using RimWorld;
-using CombatAI.Comps;
-
+using Verse;
+using Verse.AI;
 namespace CombatAI
 {
 	public static class CustomDutyUtility

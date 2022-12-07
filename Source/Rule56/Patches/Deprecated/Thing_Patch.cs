@@ -1,12 +1,9 @@
-﻿using System;
-using HarmonyLib;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using Verse;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
-
+using HarmonyLib;
+using Verse;
 #if DEBUG_REACTION
 using CombatAI.Utilities;
 #endif
@@ -19,7 +16,7 @@ namespace CombatAI.Patches
 		[HarmonyPatch(typeof(Thing), nameof(Thing.Position), MethodType.Setter)]
 		public static class Thing_Position_Patch
 		{
-			private static MethodInfo mRegister = AccessTools.Method(typeof(ThingGrid), nameof(ThingGrid.Register));
+			private static readonly MethodInfo mRegister = AccessTools.Method(typeof(ThingGrid), nameof(ThingGrid.Register));
 
 			public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
 			{

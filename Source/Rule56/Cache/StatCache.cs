@@ -1,13 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Security.Policy;
 using RimWorld;
 using Verse;
-
 namespace CombatAI
 {
 	public static class StatCache
 	{
+
+		private static readonly CachedDict<ICacheKey, float> cache = new CachedDict<ICacheKey, float>(1024);
+
+		public static float GetStatValue_Fast(this Thing thing, StatDef stat, int expiry, bool applyPostProcess = true)
+		{
+			if (thing == null)
+			{
+				return stat.defaultBaseValue;
+			}
+			ICacheKey key = ICacheKey.For(thing, stat, applyPostProcess);
+			if (cache.TryGetValue(key, out float value, expiry))
+			{
+				return value;
+			}
+			return cache[key] = thing.GetStatValue(stat, applyPostProcess);
+		}
+
+		public static void ClearCache()
+		{
+			cache.Clear();
+		}
+
 		private struct ICacheKey : IEquatable<ICacheKey>
 		{
 			public int  thingIdNumber;
@@ -61,27 +80,6 @@ namespace CombatAI
 				       && statDefIndex == other.statDefIndex
 				       && applyPostProcess == other.applyPostProcess;
 			}
-		}
-
-		private static readonly CachedDict<ICacheKey, float> cache = new CachedDict<ICacheKey, float>(1024);
-
-		public static float GetStatValue_Fast(this Thing thing, StatDef stat, int expiry, bool applyPostProcess = true)
-		{
-			if (thing == null)
-			{
-				return stat.defaultBaseValue;
-			}
-			ICacheKey key = ICacheKey.For(thing, stat, applyPostProcess);
-			if (cache.TryGetValue(key, out float value, expiry))
-			{
-				return value;
-			}
-			return cache[key] = thing.GetStatValue(stat, applyPostProcess);
-		}
-
-		public static void ClearCache()
-		{
-			cache.Clear();
 		}
 	}
 }
