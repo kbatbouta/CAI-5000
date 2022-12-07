@@ -336,7 +336,7 @@ namespace CombatAI.Patches
                         {
                             value += 23;
                         }
-                        value += Mathf.CeilToInt(danger);
+                        value += (int)danger;
                     }
                     if (dump)
                     {
