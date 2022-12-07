@@ -79,7 +79,7 @@ namespace CombatAI
 										ColorInt glow = glowGrid[index];
 										visRLimit = Mathf.Lerp(0, 0.5f, 1 - Maths.Max( Mathf.Clamp01((float)Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f), glowSky));
 									}
-									if (visibility < visRLimit)
+									if (visibility <= visRLimit + 1e-3f)
 									{
 										comp.grid[index] = true;
 									}
