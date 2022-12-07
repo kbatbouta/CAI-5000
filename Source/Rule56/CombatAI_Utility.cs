@@ -30,12 +30,8 @@ namespace CombatAI
         {
             if (thing is Pawn pawn)
             {
-                if (pawn.equipment != null && pawn.equipment.Primary != null && pawn.equipment.PrimaryEq.PrimaryVerb.Available())
-                {
-                    return pawn.equipment.PrimaryEq.PrimaryVerb;
-                }
-                return pawn.meleeVerbs?.curMeleeVerb ?? null;
-            }
+				return pawn.CurrentEffectiveVerb;
+			}
             if (thing is Building_Turret turret)
             {
                 return turret.AttackVerb;

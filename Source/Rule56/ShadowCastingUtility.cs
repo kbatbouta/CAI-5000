@@ -221,8 +221,9 @@ namespace CombatAI
             }
             List<VisibleRow> rowQueue = new List<VisibleRow>();            
             rowQueue.Add(request.firstRow);
-            float coverMinDist = Maths.Min(Maths.Max(request.firstRow.maxDepth / 3f, 4f), 12f);
-            while (rowQueue.Count > 0)
+            float coverMinDist = Maths.Min(Maths.Max(request.firstRow.maxDepth / 3f, 4f), 8f);
+            float coverBlockInc = 1f / Maths.Max(request.firstRow.maxDepth, 1);
+			while (rowQueue.Count > 0)
             {                
                 VisibleRow nextRow;                
                 VisibleRow row = rowQueue.Pop();
@@ -237,7 +238,7 @@ namespace CombatAI
                 var lastIsCover = false;
                 var lastFill = 0f;
                 var lastFillNum = 0;
-                var lastNextIndex = 0;
+                var lastNextIndex = 0;                
                 row.Tiles(request.buffer);                
                 //row.DebugFlash(request.map, request.source);                
                 for (int i = 0; i < request.buffer.Count;i++)                
@@ -298,10 +299,17 @@ namespace CombatAI
                             {
                                 nextRow = row.Next();
                                 nextRow.endSlope = GetSlope(offset);
-                                if (lastIsCover && row.depth > coverMinDist)
+                                if (row.depth > coverMinDist)
                                 {
-                                    nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - coverMinDist) / coverMinDist), row.blockChance);
-                                    nextRow.visibilityCarry += 1;
+                                    if (lastIsCover)
+                                    {
+										nextRow.blockChance += Maths.Min((1 - row.blockChance) * lastFill / lastFillNum, 1.0f);
+										nextRow.visibilityCarry += 1;
+                                    }
+                                    else
+                                    {
+										nextRow.blockChance = Maths.Max(nextRow.blockChance - coverBlockInc, 0);
+									}
                                 }
                                 rowQueue.Add(nextRow);
                                 lastNextIndex = i;
@@ -316,10 +324,17 @@ namespace CombatAI
                         {
                             nextRow = row.Next();
                             nextRow.endSlope = GetSlope(offset);
-                            if (lastIsCover && row.depth > coverMinDist)
+                            if (row.depth > coverMinDist)
                             {
-                                nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - coverMinDist) / coverMinDist), row.blockChance);
-                                nextRow.visibilityCarry += 1;
+                                if (lastIsCover)
+                                {
+									nextRow.blockChance += Maths.Min((1 - row.blockChance) * lastFill / lastFillNum, 1.0f);
+									nextRow.visibilityCarry += 1;
+                                }
+                                else
+                                {
+									nextRow.blockChance = Maths.Max(nextRow.blockChance - coverBlockInc, 0);
+								}
                             }
 							lastNextIndex = i;
 							rowQueue.Add(nextRow);							
@@ -333,11 +348,18 @@ namespace CombatAI
                 if (lastCell.y >= 0 && !lastIsWall)
                 {
                     nextRow = row.Next();
-                    if (lastIsCover && row.depth > coverMinDist)
-                    {                        
-                        nextRow.blockChance = Maths.Max((1 - row.blockChance) * lastFill / lastFillNum * Mathf.Lerp(0, 1f, (row.depth - coverMinDist) / coverMinDist), row.blockChance);
-                        nextRow.visibilityCarry += 1;
-                    }					
+                    if (row.depth > coverMinDist)
+                    {
+                        if (lastIsCover)
+                        {
+							nextRow.blockChance += Maths.Min((1 - row.blockChance) * lastFill / lastFillNum, 1.0f);
+							nextRow.visibilityCarry += 1;
+                        }
+                        else
+                        {
+                            nextRow.blockChance = Maths.Max(nextRow.blockChance - coverBlockInc, 0);
+						}
+                    }
 					rowQueue.Add(nextRow);					
 				}
             }

@@ -135,7 +135,7 @@ namespace CombatAI
 						IntVec3 next = path.nodes[i];
 						if (home.innerGrid[next])
 						{
-							map.debugDrawer.FlashCell(next, 0.9f, "X", 200);
+							//map.debugDrawer.FlashCell(next, 0.9f, "X", 200);
 							enemiesAhead = true;
 							break;
 						}					

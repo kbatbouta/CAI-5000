@@ -151,21 +151,21 @@ namespace CombatAI.Patches
 					map.GetCellFlooder().Flood(root,
                         (node) =>
                         {
-                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + sightReader.GetVisibilityToEnemies(node.cell) * 2 + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;                            
+                            grid[node.cell] = (node.dist - node.distAbs) / (node.distAbs + 1f) + (sightReader.GetVisibilityToEnemies(node.cell) - rootVis) * 0.25f + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;                            
                         },
                         (cell) =>
                         {
-                            Vector2 dir = sightReader.GetEnemyDirection(cell);
-                            IntVec3 adjustedLoc;
-                            if (dir.sqrMagnitude < 4)
-                            {
-                                adjustedLoc = targetPosition;
-                            }
-                            else
-                            {
-                                adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);                                
-                            }                            
-                            return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - Verse.CoverUtility.CalculateOverallBlockChance(adjustedLoc, cell, map) - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
+                            //Vector2 dir = sightReader.GetEnemyDirection(cell);
+                            //IntVec3 adjustedLoc;
+                            //if (dir.sqrMagnitude < 4)
+                            //{
+                            //    adjustedLoc = targetPosition;
+                            //}
+                            //else
+                            //{
+                            //    adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);  
+                            //}
+                            return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
                         },
                         (cell) =>
                         {

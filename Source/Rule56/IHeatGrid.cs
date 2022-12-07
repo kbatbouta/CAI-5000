@@ -14,12 +14,14 @@ namespace CombatAI
         private readonly int maxHeat;
         private readonly int maxTicks;
         private readonly int[] grid;
-		//private readonly Pair<int, int>[] grid_cache;
+        //private readonly Pair<int, int>[] grid_cache;
         //private readonly int[] grid_ticks;
+        private readonly int numGridCells;
         private readonly float f1;
         private readonly CellIndices indices;
+        private readonly TickManager tickManager;
 
-        public IHeatGrid(Map map, int ticksPerUnit, int maxHeat, float f1)
+		public IHeatGrid(Map map, int ticksPerUnit, int maxHeat, float f1)
         {
             this.indices = map.cellIndices;
             this.grid = new int[indices.NumGridCells];
@@ -27,22 +29,27 @@ namespace CombatAI
 			this.ticksPerUnit = ticksPerUnit;
             this.maxHeat = maxHeat;
             this.maxTicks = maxHeat * ticksPerUnit;
-            this.f1 = f1;            
+            this.tickManager = Current.Game.tickManager;
+            if(tickManager == null)
+            {
+                throw new Exception("TickManager cannot be null.");
+            }
+            this.numGridCells = indices.NumGridCells;
+			this.f1 = f1;            
         }
 
         public void Push(IntVec3 cell, float amount) => Push(indices.CellToIndex(cell), amount);
         public void Push(int index, float amount)
         {
-            if(index >= 0 && index < indices.NumGridCells)
+            if(index >= 0 && index < numGridCells)
             {               
                 if (amount >= maxHeat)
                 {
                     grid[index] = GenTicks.TicksGame + maxTicks;
                 }
                 else
-                {
-                    int ticks = GenTicks.TicksGame;
-                    grid[index] = Maths.Min(Maths.Max(grid[index], ticks) + Mathf.CeilToInt(amount * ticksPerUnit), ticks + maxTicks);
+                {                    
+                    grid[index] = Maths.Min(Maths.Max(grid[index], tickManager.ticksGameInt) + Mathf.CeilToInt(amount * ticksPerUnit), tickManager.ticksGameInt + maxTicks);
                 }
             }
         }
@@ -51,9 +58,9 @@ namespace CombatAI
         public float Get(IntVec3 cell) => Get(indices.CellToIndex(cell));
         public float Get(int index)
         {
-            if (index >= 0 && index < indices.NumGridCells)
+            if (index >= 0 && index < numGridCells)
             {
-                float dt = grid[index] - GenTicks.TicksGame;
+                float dt = grid[index] - tickManager.ticksGameInt;
                 if (dt > 0)
                 {                    
                     float value = Maths.Max(dt / ticksPerUnit, 0f);

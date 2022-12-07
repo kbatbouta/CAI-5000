@@ -47,15 +47,14 @@ namespace CombatAI
 				}				
 				int numGridCells = indices.NumGridCells;		
 				WallGrid walls = comp.walls;
-				ITSignalGrid pawns = comp.sight.grid;				
+				ITFloatGrid fogGrid = comp.sight.gridFog;				
 				IntVec3 pos = this.pos.ToIntVec3();
 				IntVec3 loc;
 			
-				ColorInt[] glowGrid = comp.glow.glowGrid;
-				float glowCell;
+				ColorInt[] glowGrid = comp.glow.glowGrid;				
 				float glowSky = comp.SkyGlow;
 				bool changed = false;
-				if (pawns != null)
+				if (fogGrid != null)
 				{
 					for (int x = 0; x < SECTION_SIZE; x++)
 					{
@@ -72,26 +71,23 @@ namespace CombatAI
 									comp.grid[index] = false;
 								}
 								else
-								{
-									float visibility = pawns.GetRawSignalStrengthAt(index);
-									float visRLimit = 0.03f;
+								{									
+									float visRLimit = 0;
+									float visibility = fogGrid.Get(index);									
 									if (glowSky < 1)
 									{
 										ColorInt glow = glowGrid[index];
-										glowCell = Maths.Min(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f, 0.5f);
-										visibility = visibility - (1 - Maths.Max(glowCell, glowSky)) * 0.015f;
-										visRLimit = Mathf.Lerp(0.02f, 0.03f, glowSky);
+										visRLimit = Mathf.Lerp(0, 0.5f, 1 - Maths.Max( Mathf.Clamp01((float)Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f), glowSky));
 									}
-									if (visibility > 0)
+									if (visibility <= visRLimit + 1e-3f)
 									{
-										val = Maths.Max(cells[x * SECTION_SIZE + z] - 0.3f, (visRLimit - visibility) / visRLimit, 0f);
-										comp.grid[index] = false;
+										comp.grid[index] = true;
 									}
 									else
 									{
-										val = Maths.Min(cells[x * SECTION_SIZE + z] + 0.3f, 1.0f);
-										comp.grid[index] = true;
+										comp.grid[index] = false;
 									}
+									val = Maths.Max(1 - visibility, 0);
 								}
 								if (old != val)
 								{
@@ -128,12 +124,13 @@ namespace CombatAI
 				GenDraw.DrawMeshNowOrLater(mesh, pos, Quaternion.identity, mat, false);
 			}
 		}
-
+		
 		private static float zoom;
 		private static readonly Texture2D fogTex;
 		private static readonly Mesh mesh;		
 
 		private Rect mapScreenRect;
+		private bool initialized;
 		private bool alive;
 		private bool ready;
 		private int updateNum;
@@ -172,19 +169,7 @@ namespace CombatAI
 			this.cellIndices = map.cellIndices;
 			this.mapRect = new Rect(0, 0, cellIndices.mapSizeX, cellIndices.mapSizeZ);
 			this.grid = new bool[map.cellIndices.NumGridCells];
-			grid2d = new ISection[Mathf.CeilToInt(cellIndices.mapSizeX / (float)SECTION_SIZE)][];
-			for (int i = 0; i < grid2d.Length; i++)
-			{
-				grid2d[i] = new ISection[Mathf.CeilToInt(cellIndices.mapSizeZ / (float)SECTION_SIZE)];
-				for (int j = 0; j < grid2d[i].Length; j++)
-				{
-					grid2d[i][j] = new ISection(this, new Rect(new Vector2(i * SECTION_SIZE, j * SECTION_SIZE), Vector2.one * SECTION_SIZE), mapRect, mesh, fogTex, fogShader);
-				}
-			}
-			this.asyncActions.EnqueueOffThreadAction(() =>
-			{
-				OffThreadLoop(0, 0, grid2d.Length, grid2d[0].Length);
-			});
+			grid2d = new ISection[Mathf.CeilToInt(cellIndices.mapSizeX / (float)SECTION_SIZE)][];			
 		}
 
 		public override void FinalizeInit()
@@ -209,6 +194,22 @@ namespace CombatAI
 
 		public override void MapComponentUpdate()
 		{
+			if (!initialized)
+			{
+				initialized = true;
+				for (int i = 0; i < grid2d.Length; i++)
+				{
+					grid2d[i] = new ISection[Mathf.CeilToInt(cellIndices.mapSizeZ / (float)SECTION_SIZE)];
+					for (int j = 0; j < grid2d[i].Length; j++)
+					{
+						grid2d[i][j] = new ISection(this, new Rect(new Vector2(i * SECTION_SIZE, j * SECTION_SIZE), Vector2.one * SECTION_SIZE), mapRect, mesh, fogTex, fogShader);
+					}
+				}
+				this.asyncActions.EnqueueOffThreadAction(() =>
+				{
+					OffThreadLoop(0, 0, grid2d.Length, grid2d[0].Length);
+				});
+			}
 			if (!alive || !Finder.Settings.FogOfWar_Enabled)
 			{
 				return;
@@ -263,8 +264,8 @@ namespace CombatAI
 			minU = Mathf.Clamp(minU - 1, 0, grid2d.Length - 1);
 			maxV = Mathf.Clamp(Maths.Max(maxV, minV + 1), 0, grid2d[0].Length - 1);
 			minV = Mathf.Clamp(minV - 1, 0, grid2d[0].Length - 1);
-			bool update = updateNum % 4 == 0;
-			bool updateForced = updateNum % 8 == 0;
+			bool update = updateNum % 2 == 0;
+			bool updateForced = updateNum % 4 == 0;
 			float color = Finder.Settings.FogOfWar_FogColor;
 			for (int u = minU; u <= maxU; u++)
 			{
@@ -302,7 +303,7 @@ namespace CombatAI
 					}
 				}				
 				stopwatch.Stop();
-				float t = 0.021f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
+				float t = 0.016f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
 				if (t > 0f)
 				{
 					Thread.Sleep(Mathf.CeilToInt(t * 1000));

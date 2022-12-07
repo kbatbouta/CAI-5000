@@ -53,8 +53,8 @@ namespace CombatAI
 		private readonly IField<float>[]	cells_strength;
 		private readonly IField<Vector2>[]	cells_dir;
 		private readonly IField<UInt64>[]	cells_flags;
-		private readonly IField<float>[] cells_blunt;
-		private readonly IField<float>[] cells_sharp;
+		private readonly IField<float>[]	cells_blunt;
+		private readonly IField<float>[]	cells_sharp;		
 		private readonly IField<MetaCombatAttribute>[] cells_meta;
 
 

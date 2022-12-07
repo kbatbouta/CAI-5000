@@ -54,8 +54,7 @@ namespace CombatAI
 		public static bool IsTurretActiveCE(Building_Turret turret)
 		{
 			bool manable;
-			return turretsCE[turret.def.index]				
-				&& (((manable = (bool)Building_TurretGunCE_IsMannable.Invoke(turret, new object[0])) && (bool)Building_TurretGunCE_MannedByColonist.Invoke(turret, new object[0])) || (!manable && (bool)Building_TurretGunCE_Active.Invoke(turret, new object[0]))); ;
+			return turretsCE[turret.def.index] && (((manable = (bool)Building_TurretGunCE_IsMannable.Invoke(turret, Array.Empty<object>())) && (bool)Building_TurretGunCE_MannedByColonist.Invoke(turret, Array.Empty<object>())) || (!manable && (bool)Building_TurretGunCE_Active.Invoke(turret, Array.Empty<object>())));
 		}
 
 		public static float GetProjectileArmorPenetration(ProjectileProperties props)

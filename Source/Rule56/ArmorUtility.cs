@@ -147,7 +147,7 @@ namespace CombatAI
 				if (debug)
 				{
 					collapsible.Line(1);
-					collapsible.Label($"b:{report.apparelBlunt}\ts:{report.apparelSharp}");
+					collapsible.Label($"b:{report.apparelBlunt}\ts:{report.apparelSharp}\tt:{report.TankInt}");
 					collapsible.Line(1);
 				}
 			}			
