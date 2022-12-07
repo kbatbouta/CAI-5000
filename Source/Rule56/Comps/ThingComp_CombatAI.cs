@@ -369,13 +369,15 @@ namespace CombatAI.Comps
                     if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell) && cell != pawnPosition)
                     {
                         Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-                        job_goto.locomotionUrgency = LocomotionUrgency.Sprint;                        
-                        pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);                        
+                        job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
+						pawn.jobs.ClearQueuedJobs();
+						pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);                        
                     }
                     else if(warmup == null)
                     {
-                        Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);                        
-                        pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
+                        Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
+						pawn.jobs.ClearQueuedJobs();
+						pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
                     }
                     lastRetreated = GenTicks.TicksGame - Rand.Int % 50;
                 }
@@ -403,27 +405,27 @@ namespace CombatAI.Comps
                             request.maxRangeFromTarget = 9999;
 							request.maxRangeFromCaster = Rand.Chance(Finder.P50 - 0.1f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 4, 10) : 4;
                             request.wantCoverFromTarget = true;
-                            if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && (cell != pawnPosition || warmup == null))
-                            {
-                                Vector2 curDir = sightReader.GetEnemyDirection(cell).normalized;
-								if (prevEnemyDir == Vector2.zero || Rand.Chance(Mathf.Abs(1 - Vector2.Dot(prevEnemyDir, curDir))) || Rand.Chance(sightReader.GetVisibilityToEnemies(pawn.Position) - sightReader.GetVisibilityToEnemies(cell)))
-								{
+                            if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell))
+                            {                                
+								if (cell != pawnPosition && (prevEnemyDir == Vector2.zero || Rand.Chance(Mathf.Abs(1 - Vector2.Dot(prevEnemyDir, sightReader.GetEnemyDirection(cell).normalized))) || Rand.Chance(sightReader.GetVisibilityToEnemies(pawn.Position) - sightReader.GetVisibilityToEnemies(cell))))
+                                {                                                                      
                                     Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
                                     job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
                                     Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                                     job_waitCombat.checkOverrideOnExpire = true;
-                                    pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
-                                    pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
-                                    changedPos = true;
-                                    prevEnemyDir = sightReader.GetEnemyDirection(cell).normalized;
-									//parent.Map.debugDrawer.FlashCell(pawn.Position, 0.9f, "s", duration: 100);
-								}
-								else if(warmup == null)
-								{
-									waitJob = null;
+                                    pawn.jobs.ClearQueuedJobs();
+									pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
+                                    pawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);
+                                    changedPos = true;										
+									prevEnemyDir = sightReader.GetEnemyDirection(cell).normalized;									
+                                }
+								else if (warmup == null)
+								{									
 									pawn.mindState.enemyTarget = bestEnemy;
 									Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
-									pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
+									job_waitCombat.checkOverrideOnExpire = true;
+									pawn.jobs.ClearQueuedJobs();
+									pawn.jobs.StartJob(waitJob = job_waitCombat, JobCondition.InterruptForced);									
 								}
 							}                    
                         }
@@ -436,20 +438,19 @@ namespace CombatAI.Comps
                             request.verb = verb;
                             request.maxRangeFromCaster = Rand.Chance(Finder.P50 - 0.1f) ? Mathf.Clamp(moveSpeed * 2 / (pawn.BodySize + 0.01f), 4, 10) : 4;
 							request.checkBlockChance = true;
-                            if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && (cell != pawnPosition || warmup == null))
-                            {
-								Vector2 curDir = sightReader.GetEnemyDirection(cell).normalized;
-								if (prevEnemyDir == Vector2.zero || Rand.Chance(Mathf.Abs(1 - Vector2.Dot(prevEnemyDir, curDir))) || Rand.Chance(sightReader.GetVisibilityToEnemies(pawn.Position) - sightReader.GetVisibilityToEnemies(cell)))
+                            if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && cell != pawnPosition)
+                            {								
+								if (prevEnemyDir == Vector2.zero || Rand.Chance(Mathf.Abs(1 - Vector2.Dot(prevEnemyDir, sightReader.GetEnemyDirection(cell).normalized))) || Rand.Chance(sightReader.GetVisibilityToEnemies(pawn.Position) - sightReader.GetVisibilityToEnemies(cell)))
 								{
 									Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
 									job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
 									Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
 									job_waitCombat.checkOverrideOnExpire = true;
+									pawn.jobs.ClearQueuedJobs();
 									pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
-									pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
+									pawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);
 									changedPos = true;
-									prevEnemyDir = sightReader.GetEnemyDirection(cell).normalized;
-									//parent.Map.debugDrawer.FlashCell(pawn.Position, 0.9f, "s", duration: 100);
+									prevEnemyDir = sightReader.GetEnemyDirection(cell).normalized;									
 								}                               
                             }                          
                         }
@@ -458,7 +459,8 @@ namespace CombatAI.Comps
                     {
 						waitJob = null;
 						pawn.mindState.enemyTarget = bestEnemy;
-                        Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);						
+                        Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
+						pawn.jobs.ClearQueuedJobs();
 						pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
                     }
                     if (changedPos)
@@ -512,7 +514,8 @@ namespace CombatAI.Comps
                                     job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
                                     Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, expiryInterval: Rand.Int % 100 + 100);
                                     pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
-                                    pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
+									pawn.jobs.ClearQueuedJobs();
+									pawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
                                 }								
 								lastRetreated = GenTicks.TicksGame - Rand.Int % 50;
                             }

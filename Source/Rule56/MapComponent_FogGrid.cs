@@ -129,12 +129,13 @@ namespace CombatAI
 				GenDraw.DrawMeshNowOrLater(mesh, pos, Quaternion.identity, mat, false);
 			}
 		}
-
+		
 		private static float zoom;
 		private static readonly Texture2D fogTex;
 		private static readonly Mesh mesh;		
 
 		private Rect mapScreenRect;
+		private bool initialized;
 		private bool alive;
 		private bool ready;
 		private int updateNum;
@@ -173,19 +174,7 @@ namespace CombatAI
 			this.cellIndices = map.cellIndices;
 			this.mapRect = new Rect(0, 0, cellIndices.mapSizeX, cellIndices.mapSizeZ);
 			this.grid = new bool[map.cellIndices.NumGridCells];
-			grid2d = new ISection[Mathf.CeilToInt(cellIndices.mapSizeX / (float)SECTION_SIZE)][];
-			for (int i = 0; i < grid2d.Length; i++)
-			{
-				grid2d[i] = new ISection[Mathf.CeilToInt(cellIndices.mapSizeZ / (float)SECTION_SIZE)];
-				for (int j = 0; j < grid2d[i].Length; j++)
-				{
-					grid2d[i][j] = new ISection(this, new Rect(new Vector2(i * SECTION_SIZE, j * SECTION_SIZE), Vector2.one * SECTION_SIZE), mapRect, mesh, fogTex, fogShader);
-				}
-			}
-			this.asyncActions.EnqueueOffThreadAction(() =>
-			{
-				OffThreadLoop(0, 0, grid2d.Length, grid2d[0].Length);
-			});
+			grid2d = new ISection[Mathf.CeilToInt(cellIndices.mapSizeX / (float)SECTION_SIZE)][];			
 		}
 
 		public override void FinalizeInit()
@@ -210,6 +199,22 @@ namespace CombatAI
 
 		public override void MapComponentUpdate()
 		{
+			if (!initialized)
+			{
+				initialized = true;
+				for (int i = 0; i < grid2d.Length; i++)
+				{
+					grid2d[i] = new ISection[Mathf.CeilToInt(cellIndices.mapSizeZ / (float)SECTION_SIZE)];
+					for (int j = 0; j < grid2d[i].Length; j++)
+					{
+						grid2d[i][j] = new ISection(this, new Rect(new Vector2(i * SECTION_SIZE, j * SECTION_SIZE), Vector2.one * SECTION_SIZE), mapRect, mesh, fogTex, fogShader);
+					}
+				}
+				this.asyncActions.EnqueueOffThreadAction(() =>
+				{
+					OffThreadLoop(0, 0, grid2d.Length, grid2d[0].Length);
+				});
+			}
 			if (!alive || !Finder.Settings.FogOfWar_Enabled)
 			{
 				return;
