@@ -72,12 +72,12 @@ namespace CombatAI
 								}
 								else
 								{									
-									float visRLimit = Mathf.Lerp(0, 0.15f, 1 - glowSky);
+									float visRLimit = 0;
 									float visibility = fogGrid.Get(index);									
 									if (glowSky < 1)
 									{
-										ColorInt glow = glowGrid[index];										
-										visRLimit = Maths.Max(Mathf.Lerp(0, 0.15f, 1 - Maths.Min(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f, 1.0f)), visRLimit);
+										ColorInt glow = glowGrid[index];
+										visRLimit = Mathf.Lerp(0, 0.5f, 1 - Maths.Max( Mathf.Clamp01((float)Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f), glowSky));
 									}
 									if (visibility < visRLimit)
 									{

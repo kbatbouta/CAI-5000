@@ -33,6 +33,11 @@ namespace CombatAI
 			{
 				throw new Exception($"ISMA: GetSightRadius got an object that is niether a pawn, turret nor does it have sighter. {thing}");
 			}
+			Faction f = thing.Faction;
+			if (f != null && (f.IsPlayerSafe() || f.HostileTo(Faction.OfPlayer)))
+			{
+				result.fog = Mathf.CeilToInt(GetFogRadius(thing, result.sight));
+			}
 			result.fog = Mathf.CeilToInt(result.sight * Finder.Settings.FogOfWar_RangeMultiplier);
 			result.createdAt = GenTicks.TicksGame;
 			return result;
@@ -120,6 +125,32 @@ namespace CombatAI
 			return result;
 		}
 
+		private static float GetFogRadius(Thing thing, float sightRadius)
+		{
+			Pawn  pawn = thing as Pawn;
+			if (pawn == null)
+			{
+				CompMannable mannable = thing.GetComp_Fast<CompMannable>();
+				if (mannable != null)
+				{
+					pawn = mannable.ManningPawn;
+				}
+			}
+			if(pawn != null)
+			{
+				if (pawn.Downed)
+				{
+					return 3;
+				}
+				float vision  = pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Sight) ?? 1f;
+				float hearing = pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Hearing) ?? 1f;
+				float rest    = Mathf.Lerp(0.65f, 1f, pawn.needs?.rest?.curLevelInt ?? 1f);
+				float mul     = Mathf.Clamp(Maths.Min(vision, hearing, rest) * 0.6f + Maths.Max(vision, hearing, rest) * 0.4f, 0.5f, 1.5f);
+				return sightRadius * mul;
+			}
+			return sightRadius;
+		}
+
 		private static readonly Dictionary<int, Pair<int, int>> rangeCache = new Dictionary<int, Pair<int, int>>(256);
 
 		//public static int GetSightRange(Thing thing)
@@ -176,55 +207,55 @@ namespace CombatAI
 		//	return range;
 		//}		
 
-		//private static int GetSightRangePlayer(Pawn pawn, bool checkCapcities)
-		//{
-		//	bool downed = pawn.Downed;
-		//	float multiplier = 1.0f;
-		//	if (checkCapcities)
-		//	{
-		//		float vision = !downed ? (pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Sight) ?? 1f) : 0.2f;
-		//		float hearing = !downed ? (pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Hearing) ?? 1f) : 1.0f;
-		//		multiplier = Maths.Max(vision * hearing, 0.3f);
-		//	}
-		//	if (downed)
-		//	{
-		//		return (int)Maths.Max(5 * multiplier, 3);
-		//	}
-		//	if (GenTicks.TicksGame - pawn.needs?.rest?.lastRestTick < 30)
-		//	{
-		//		return (int)Maths.Max(10 * multiplier, 4);
-		//	}
-		//	if (pawn.RaceProps.Animal || pawn.RaceProps.Insect)
-		//	{
-		//		return (int)Mathf.Clamp(pawn.BodySize * multiplier * 10f, 10, 30);
-		//	}
-		//	else
-		//	{
-		//		Verb verb = pawn.CurrentEffectiveVerb;
-		//		if (verb == null)
-		//		{
-		//			return (int)Maths.Max(15 * multiplier, 12);
-		//		}
-		//		if (verb.IsMeleeAttack)
-		//		{
-		//			SkillRecord melee = pawn.skills?.GetSkill(SkillDefOf.Melee) ?? null;
-		//			if (melee != null && melee.Level > 5)
-		//			{
-		//				multiplier += melee.Level / 20f;
-		//			}
-		//			return (int)Maths.Max(20 * multiplier, 12);
-		//		}
-		//		else
-		//		{
-		//			SkillRecord ranged = pawn.skills?.GetSkill(SkillDefOf.Shooting) ?? null;
-		//			if (ranged != null && ranged.Level > 5)
-		//			{
-		//				multiplier += (ranged.Level - 5f) / 15f;
-		//			}
-		//			return (int)Maths.Max(verb.EffectiveRange * multiplier, 20f * multiplier, verb.EffectiveRange * 0.8f);
-		//		}
-		//	}
-		//}
+		private static int GetSightRangePlayer(Pawn pawn, bool checkCapcities)
+		{
+			bool downed = pawn.Downed;
+			float multiplier = 1.0f;
+			if (checkCapcities)
+			{
+				float vision = !downed ? (pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Sight) ?? 1f) : 0.2f;
+				float hearing = !downed ? (pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Hearing) ?? 1f) : 1.0f;
+				multiplier = Maths.Max(vision * hearing, 0.3f);
+			}
+			if (downed)
+			{
+				return (int)Maths.Max(5 * multiplier, 3);
+			}
+			if (GenTicks.TicksGame - pawn.needs?.rest?.lastRestTick < 30)
+			{
+				return (int)Maths.Max(10 * multiplier, 4);
+			}
+			if (pawn.RaceProps.Animal || pawn.RaceProps.Insect)
+			{
+				return (int)Mathf.Clamp(pawn.BodySize * multiplier * 10f, 10, 30);
+			}
+			else
+			{
+				Verb verb = pawn.CurrentEffectiveVerb;
+				if (verb == null)
+				{
+					return (int)Maths.Max(15 * multiplier, 12);
+				}
+				if (verb.IsMeleeAttack)
+				{
+					SkillRecord melee = pawn.skills?.GetSkill(SkillDefOf.Melee) ?? null;
+					if (melee != null && melee.Level > 5)
+					{
+						multiplier += melee.Level / 20f;
+					}
+					return (int)Maths.Max(20 * multiplier, 12);
+				}
+				else
+				{
+					SkillRecord ranged = pawn.skills?.GetSkill(SkillDefOf.Shooting) ?? null;
+					if (ranged != null && ranged.Level > 5)
+					{
+						multiplier += (ranged.Level - 5f) / 15f;
+					}
+					return (int)Maths.Max(verb.EffectiveRange * multiplier, 20f * multiplier, verb.EffectiveRange * 0.8f);
+				}
+			}
+		}
 
 		//private static int GetSightRange(Pawn pawn)
 		//{

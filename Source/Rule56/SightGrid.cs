@@ -460,16 +460,6 @@ namespace CombatAI
                         gridFog.Set(item.path[i], 1.0f);                    
                     }
                 }
-                //float r = range * 1.13f;
-                // used in fog of war calcs
-                //float rHafledSqr = Maths.Sqr(r * Finder.Settings.FogOfWar_RangeFadeMultiplier);
-                //if (scanForEnemies)
-                //{
-                //    // we do this because we want raiders to react to stuff slightly outside their range.
-                //    // The reason we placed this here is because rHafledSqr is used for fog of war and needs the actucal value while rSqr is used for casting in general.
-                //    r += 10;
-                //}
-                //float rSqr = Maths.Sqr(r);
                 float r_fade        = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
                 float d_fade        = sightRadius.fog - r_fade;
 				float rSqr_sight    = Maths.Sqr(sightRadius.sight);
@@ -478,30 +468,35 @@ namespace CombatAI
 				float rSqr_fade     = Maths.Sqr(r_fade);                
 				ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
                 {
-                    float d = pos.DistanceToSquared(cell);
+                    float d2         = pos.DistanceToSquared(cell);
+                    float d          = -1;
                     float visibility = 0f;		
-					if (d < rSqr_sight)
+					if (d2 < rSqr_sight)
                     {
-						visibility = (float)(sightRadius.sight - dist) / sightRadius.sight * (1 - coverRating);
+						visibility = (float)(sightRadius.sight - (d = Maths.Sqrt_Fast(d2, 5))) / sightRadius.sight * (1 - coverRating);
 						if (visibility > 0f)
                         {                           
                             grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
                         }
 					}
-                    if (playerAlliance && d < rSqr_fog)
+                    if (playerAlliance && d2 < rSqr_fog)
                     {
                         float val;
-                        if (d < rSqr_fade)
+                        if (d2 < rSqr_fade)
                         {
                             val = 1f;
                         }
                         else
                         {
-                            val = 1f - Mathf.Clamp01((dist - r_fade) / d_fade);
+	                        if (d < 0)
+	                        {
+		                        d = Maths.Sqrt_Fast(d2, 5);
+	                        }
+                            val = 1f - Mathf.Clamp01((d - r_fade) / d_fade);
                         }
                         gridFog?.Set(cell, val);
 					}
-					if (scanForEnemies && d < rSqr_scan)
+					if (scanForEnemies && d2 < rSqr_scan)
 					{                    
                         UInt64 flag = reader.GetEnemyFlags(cell);
                         if (flag != 0)
