@@ -1,20 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using Steamworks;
+﻿using System.Collections.Generic;
 using Verse;
-
 namespace CombatAI
 {
 	public class Pawn_CustomThreatTracker
 	{
+
+		public Pawn                 pawn;
+		public CustomThreatVector[] threatVectors = new CustomThreatVector[4];
+
+		public Pawn_CustomThreatTracker(Pawn pawn)
+		{
+			this.pawn = pawn;
+		}
+
 		public class CustomThreatVector
 		{
-			private int oldCount;
-			private float curDistSqr;
-			private float oldDistSqr;
+			public readonly Thing parent;
 
 			public readonly List<Thing> things = new List<Thing>(64);
-			public readonly Thing parent;
+			private         int         oldCount;
+
+			public CustomThreatVector(Thing parent)
+			{
+				this.parent = parent;
+			}
 
 			public int NewNum
 			{
@@ -28,41 +37,29 @@ namespace CombatAI
 
 			public float CurDistSqr
 			{
-				get => curDistSqr;
+				get;
+				private set;
 			}
 
 			public float OldDistSqr
 			{
-				get => oldDistSqr;
+				get;
+				private set;
 			}
-
-			public CustomThreatVector(Thing parent)
-			{
-				this.parent = parent;
-			}						
 
 			public void Push(Thing thing)
 			{
 				things.Add(thing);
-				curDistSqr = Maths.Min(thing.Position.DistanceToSquared(thing.Position), curDistSqr);
+				CurDistSqr = Maths.Min(thing.Position.DistanceToSquared(thing.Position), CurDistSqr);
 			}
 
 			public void Clear()
 			{
-				oldDistSqr = curDistSqr;
-				curDistSqr = 1e6f;
-				oldCount = things.Count;
+				OldDistSqr = CurDistSqr;
+				CurDistSqr = 1e6f;
+				oldCount   = things.Count;
 				things.Clear();
-			}			
+			}
 		}
-
-		public Pawn pawn;
-		public CustomThreatVector[] threatVectors = new CustomThreatVector[4];	
-
-		public Pawn_CustomThreatTracker(Pawn pawn)
-		{
-			this.pawn = pawn;
-		}		
 	}
 }
-

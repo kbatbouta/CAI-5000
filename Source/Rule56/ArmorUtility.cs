@@ -1,51 +1,15 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Security.Policy;
+﻿using System.Collections.Generic;
 using CombatAI.Gui;
 using RimWorld;
-using TMPro;
 using UnityEngine;
-using UnityEngine.TestTools;
 using Verse;
-
 namespace CombatAI
 {
 	public static class ArmorUtility
 	{
-		private static Dictionary<ThingDef, bool> shields			= new Dictionary<ThingDef, bool>(128);
-		private static Dictionary<int, ArmorReport> reports			= new Dictionary<int, ArmorReport>(128);		
-		private static Dictionary<BodyDef, BodyDefApparels> models	= new Dictionary<BodyDef, BodyDefApparels>();
-
-		private class BodyDefApparels
-		{
-			public readonly BodyDef bodyDef;
-			public readonly PawnBodyModel model;
-
-			private readonly Dictionary<ApparelProperties, float> apparels = new Dictionary<ApparelProperties, float>();
-
-			public BodyDefApparels(BodyDef body)
-			{
-				this.bodyDef = body;
-				this.model = new PawnBodyModel(body);
-			}
-
-			public float Coverage(ApparelProperties apparel)
-			{
-				if (!apparels.TryGetValue(apparel, out float coverage))
-				{
-					coverage = 0;
-					List<BodyPartGroupDef> groups = apparel.bodyPartGroups;
-					for(int i = 0; i < groups.Count; i++)
-					{
-						BodyPartGroupDef group = groups[i];
-						coverage = Maths.Max(model.Coverage(group), coverage);
-					}		
-					apparels[apparel] = coverage;
-				}
-				return coverage;
-			}
-		}
+		private static readonly Dictionary<ThingDef, bool>           shields = new Dictionary<ThingDef, bool>(128);
+		private static readonly Dictionary<int, ArmorReport>         reports = new Dictionary<int, ArmorReport>(128);
+		private static readonly Dictionary<BodyDef, BodyDefApparels> models  = new Dictionary<BodyDef, BodyDefApparels>();
 
 		public static void Initialize()
 		{
@@ -67,10 +31,10 @@ namespace CombatAI
 		private static ArmorReport CreateReport(Pawn pawn, Listing_Collapsible collapsible)
 		{
 			ArmorReport report = new ArmorReport();
-			report.pawn = pawn;
-			report.bodySize = pawn.BodySize;			
+			report.pawn      = pawn;
+			report.bodySize  = pawn.BodySize;
 			report.bodyBlunt = pawn.GetStatValue_Fast(StatDefOf.ArmorRating_Blunt, 900);
-			report.bodySharp = pawn.GetStatValue_Fast(StatDefOf.ArmorRating_Sharp, 900);			
+			report.bodySharp = pawn.GetStatValue_Fast(StatDefOf.ArmorRating_Sharp, 900);
 			FillApparel(ref report, collapsible);
 			if (pawn.health?.hediffSet != null && !pawn.RaceProps.IsMechanoid)
 			{
@@ -84,11 +48,11 @@ namespace CombatAI
 					}
 					report.apparelBlunt *= painInt;
 					report.apparelSharp *= painInt;
-					report.bodyBlunt *= painInt;
-					report.bodySharp *= painInt;
+					report.bodyBlunt    *= painInt;
+					report.bodySharp    *= painInt;
 				}
 			}
-			report.createdAt = GenTicks.TicksGame;
+			report.createdAt          = GenTicks.TicksGame;
 			report.weaknessAttributes = pawn.GetWeaknessAttributes();
 			return report;
 		}
@@ -110,13 +74,13 @@ namespace CombatAI
 			BodyDefApparels bodyApparels = GetBodyApparels(pawn.RaceProps.body);
 			if (bodyApparels != null)
 			{
-				float armor_blunt = 0;
-				float armor_sharp = 0;
-				float coverage = 0;
-				List<Apparel> apparels = pawn.apparel.WornApparel;
+				float         armor_blunt = 0;
+				float         armor_sharp = 0;
+				float         coverage    = 0;
+				List<Apparel> apparels    = pawn.apparel.WornApparel;
 				for (int i = 0; i < apparels.Count; i++)
 				{
-					Apparel apparel = apparels[i];					
+					Apparel apparel = apparels[i];
 					if (!shields.TryGetValue(apparel.def, out bool isShield))
 					{
 						isShield = shields[apparel.def] = apparel.def.HasComp(typeof(CompShield));
@@ -125,7 +89,7 @@ namespace CombatAI
 					if (apparel != null && apparel.def.apparel != null)
 					{
 						float c = bodyApparels.Coverage(apparel.def.apparel);
-						coverage += c;
+						coverage    += c;
 						armor_blunt += c * apparel.GetStatValue_Fast(StatDefOf.ArmorRating_Blunt, 2700);
 						armor_sharp += c * apparel.GetStatValue_Fast(StatDefOf.ArmorRating_Sharp, 2700);
 						if (debug)
@@ -135,13 +99,13 @@ namespace CombatAI
 					}
 				}
 				if (coverage != 0)
-				{					
+				{
 					report.apparelBlunt = armor_blunt;
 					report.apparelSharp = armor_sharp;
 					if (report.hasShieldBelt)
 					{
 						report.apparelBlunt *= 4;
-						report.apparelSharp *= 4; 
+						report.apparelSharp *= 4;
 					}
 				}
 				if (debug)
@@ -150,7 +114,7 @@ namespace CombatAI
 					collapsible.Label($"b:{report.apparelBlunt}\ts:{report.apparelSharp}\tt:{report.TankInt}");
 					collapsible.Line(1);
 				}
-			}			
+			}
 		}
 
 
@@ -165,8 +129,37 @@ namespace CombatAI
 
 		public static void ClearCache()
 		{
-			reports.Clear();			
+			reports.Clear();
+		}
+
+		private class BodyDefApparels
+		{
+
+			private readonly Dictionary<ApparelProperties, float> apparels = new Dictionary<ApparelProperties, float>();
+			public readonly  BodyDef                              bodyDef;
+			public readonly  PawnBodyModel                        model;
+
+			public BodyDefApparels(BodyDef body)
+			{
+				bodyDef = body;
+				model   = new PawnBodyModel(body);
+			}
+
+			public float Coverage(ApparelProperties apparel)
+			{
+				if (!apparels.TryGetValue(apparel, out float coverage))
+				{
+					coverage = 0;
+					List<BodyPartGroupDef> groups = apparel.bodyPartGroups;
+					for (int i = 0; i < groups.Count; i++)
+					{
+						BodyPartGroupDef group = groups[i];
+						coverage = Maths.Max(model.Coverage(group), coverage);
+					}
+					apparels[apparel] = coverage;
+				}
+				return coverage;
+			}
 		}
 	}
 }
-

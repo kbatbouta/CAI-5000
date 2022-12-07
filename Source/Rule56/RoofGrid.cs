@@ -1,30 +1,43 @@
-﻿using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using RimWorld;
+﻿using System.Runtime.CompilerServices;
 using Verse;
-
 namespace CombatAI
 {
 	public class RoofGrid : MapComponent
 	{
 		private readonly CellIndices cellIndices;
-		private readonly RoofType[] grid;
+		private readonly RoofType[]  grid;
 
 		public RoofGrid(Map map) : base(map)
 		{
-			this.cellIndices = map.cellIndices;
-			this.grid = new RoofType[cellIndices.NumGridCells];
+			cellIndices = map.cellIndices;
+			grid        = new RoofType[cellIndices.NumGridCells];
+		}
+
+		public RoofType this[IntVec3 c]
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => this[cellIndices.CellToIndex(c)];
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			set => this[cellIndices.CellToIndex(c)] = value;
+		}
+
+		public RoofType this[int index]
+		{
+			get => grid[index];
+			set => grid[index] = value;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void SetRoof(IntVec3 c, RoofDef def) => SetRoof(cellIndices.CellToIndex(c), def);
+		public void SetRoof(IntVec3 c, RoofDef def)
+		{
+			SetRoof(cellIndices.CellToIndex(c), def);
+		}
 		public void SetRoof(int index, RoofDef def)
 		{
 			if (index >= 0 && index < cellIndices.NumGridCells)
 			{
 				if (def == null)
-				{					
+				{
 					grid[index] = RoofType.None;
 				}
 				else
@@ -48,7 +61,10 @@ namespace CombatAI
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public RoofType GetRoofType(IntVec3 c) => GetRoofType(cellIndices.CellToIndex(c));
+		public RoofType GetRoofType(IntVec3 c)
+		{
+			return GetRoofType(cellIndices.CellToIndex(c));
+		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public RoofType GetRoofType(int index)
 		{
@@ -60,29 +76,14 @@ namespace CombatAI
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool Roofed(IntVec3 c) => Roofed(cellIndices.CellToIndex(c));
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool Roofed(int index) => GetRoofType(index) != RoofType.None;		
-
-		public RoofType this[IntVec3 c]
+		public bool Roofed(IntVec3 c)
 		{
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => this[cellIndices.CellToIndex(c)];
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			set => this[cellIndices.CellToIndex(c)] = value;
+			return Roofed(cellIndices.CellToIndex(c));
 		}
-
-		public RoofType this[int index]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool Roofed(int index)
 		{
-			get
-			{				
-				return grid[index];
-			}
-			set
-			{
-				grid[index] = value;
-			}
+			return GetRoofType(index) != RoofType.None;
 		}
 	}
 }
-

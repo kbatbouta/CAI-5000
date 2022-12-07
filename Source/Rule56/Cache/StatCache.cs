@@ -1,66 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Security.Policy;
 using RimWorld;
 using Verse;
-
 namespace CombatAI
 {
 	public static class StatCache
 	{
-		private struct ICacheKey : IEquatable<ICacheKey>
-		{
-			public int thingIdNumber;
-			public int statDefIndex;
-			public bool applyPostProcess;
-
-			public static ICacheKey For(Thing thing, StatDef stat, bool applyPostProcess)
-			{
-				ICacheKey key = new ICacheKey();
-				key.thingIdNumber = thing.thingIDNumber;
-				key.statDefIndex = stat.index;
-				key.applyPostProcess = applyPostProcess;
-				return key;
-
-			}
-
-			public static ICacheKey For(int thingIdNumber, int statDefIndex, bool applyPostProcess)
-			{
-				ICacheKey key = new ICacheKey();
-				key.thingIdNumber = thingIdNumber;
-				key.statDefIndex = statDefIndex;
-				key.applyPostProcess = applyPostProcess;
-				return key;
-			}				
-
-			public override int GetHashCode()
-			{
-				unchecked
-				{
-					int hash = 17;
-					hash = hash * 23 + thingIdNumber.GetHashCode();
-					hash = hash * 23 + statDefIndex.GetHashCode();
-					hash = hash * 23 + (applyPostProcess ? 17 : 0);
-					return hash;
-				}
-			}
-
-			public override bool Equals(object obj)
-			{				
-				return obj is ICacheKey && Equals((ICacheKey)obj);
-			}
-
-			public int GetHashCode(ICacheKey obj)
-			{
-				return obj.GetHashCode();
-			}
-
-			public bool Equals(ICacheKey other) {
-				return this.thingIdNumber		== other.thingIdNumber
-					&& this.statDefIndex		== other.statDefIndex
-					&& this.applyPostProcess	== other.applyPostProcess;
-			}
-		}
 
 		private static readonly CachedDict<ICacheKey, float> cache = new CachedDict<ICacheKey, float>(1024);
 
@@ -82,6 +26,60 @@ namespace CombatAI
 		{
 			cache.Clear();
 		}
+
+		private struct ICacheKey : IEquatable<ICacheKey>
+		{
+			public int  thingIdNumber;
+			public int  statDefIndex;
+			public bool applyPostProcess;
+
+			public static ICacheKey For(Thing thing, StatDef stat, bool applyPostProcess)
+			{
+				ICacheKey key = new ICacheKey();
+				key.thingIdNumber    = thing.thingIDNumber;
+				key.statDefIndex     = stat.index;
+				key.applyPostProcess = applyPostProcess;
+				return key;
+
+			}
+
+			public static ICacheKey For(int thingIdNumber, int statDefIndex, bool applyPostProcess)
+			{
+				ICacheKey key = new ICacheKey();
+				key.thingIdNumber    = thingIdNumber;
+				key.statDefIndex     = statDefIndex;
+				key.applyPostProcess = applyPostProcess;
+				return key;
+			}
+
+			public override int GetHashCode()
+			{
+				unchecked
+				{
+					int hash = 17;
+					hash = hash * 23 + thingIdNumber.GetHashCode();
+					hash = hash * 23 + statDefIndex.GetHashCode();
+					hash = hash * 23 + (applyPostProcess ? 17 : 0);
+					return hash;
+				}
+			}
+
+			public override bool Equals(object obj)
+			{
+				return obj is ICacheKey && Equals((ICacheKey)obj);
+			}
+
+			public int GetHashCode(ICacheKey obj)
+			{
+				return obj.GetHashCode();
+			}
+
+			public bool Equals(ICacheKey other)
+			{
+				return thingIdNumber == other.thingIdNumber
+				       && statDefIndex == other.statDefIndex
+				       && applyPostProcess == other.applyPostProcess;
+			}
+		}
 	}
 }
-

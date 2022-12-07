@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using HarmonyLib;
-using RimWorld;
-using UnityEngine;
-using Verse;
-
-namespace CombatAI.Patches
+﻿namespace CombatAI.Patches
 {
 	//public static class JobGiver_AIGotoNearestHostile_Patch
 	//{
@@ -115,4 +105,3 @@ namespace CombatAI.Patches
 	//	}
 	//}
 }
-

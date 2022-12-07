@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Lifetime;
 using HarmonyLib;
-using RimWorld;
 using Verse;
-
 namespace CombatAI
 {
 	public class CompatibilityManager
@@ -20,16 +17,16 @@ namespace CombatAI
 				.Where(t => t.HasAttribute<LoadIf>())
 				.ToList();
 			// start processing
-			LoadIf attr;
+			LoadIf    attr;
 			LoadNamed named;
-			RunIf runned;
+			RunIf     runned;
 			foreach (Type type in types)
-			{				
+			{
 				if ((attr = type.TryGetAttribute<LoadIf>()) != null && attr.packageId != null)
 				{
 					bool loaded = LoadedModManager.RunningMods.Any(m => m.packageIdPlayerFacingInt.ToLower() == attr.packageId || m.PackageId == attr.packageId);
 					if (loaded)
-					{						
+					{
 						Log.Message($"CAI: attempting LoadIf for {attr.packageId}");
 						// start loading defs
 						foreach (FieldInfo field in AccessTools.GetDeclaredFields(type))
@@ -37,15 +34,18 @@ namespace CombatAI
 							// check if the field is static and doesn't have unsaved attribute
 							if (field.IsStatic && !field.HasAttribute<UnsavedAttribute>())
 							{
-								bool success = false;
+								bool success   = false;
 								Type fieldType = field.FieldType;
 								if (typeof(Def).IsAssignableFrom(fieldType))
 								{
-									field.SetValue(null, AccessTools.Method(typeof(DefDatabase<>).MakeGenericType(fieldType), "GetNamed").Invoke(null, new object[] { field.Name, false }));
+									field.SetValue(null, AccessTools.Method(typeof(DefDatabase<>).MakeGenericType(fieldType), "GetNamed").Invoke(null, new object[]
+									{
+										field.Name, false
+									}));
 									success = true;
 								}
 								else if (field.HasAttribute<LoadNamed>() && (named = field.TryGetAttribute<LoadNamed>())?.name != null)
-								{									
+								{
 									switch (named.type)
 									{
 										case LoadableType.Unspecified:
@@ -61,7 +61,7 @@ namespace CombatAI
 											}
 											else if (typeof(MethodInfo).IsAssignableFrom(fieldType))
 											{
-												field.SetValue(null, AccessTools.Method(named.name, parameters: named.prams));
+												field.SetValue(null, AccessTools.Method(named.name, named.prams));
 												success = true;
 											}
 											break;
@@ -74,7 +74,7 @@ namespace CombatAI
 											success = true;
 											break;
 										case LoadableType.Constructor:
-											field.SetValue(null, AccessTools.Constructor(AccessTools.TypeByName(named.name), parameters: named.prams));
+											field.SetValue(null, AccessTools.Constructor(AccessTools.TypeByName(named.name), named.prams));
 											success = true;
 											break;
 										case LoadableType.Setter:
@@ -86,12 +86,12 @@ namespace CombatAI
 											success = true;
 											break;
 										case LoadableType.Method:
-											field.SetValue(null, AccessTools.Method(named.name, parameters: named.prams));
+											field.SetValue(null, AccessTools.Method(named.name, named.prams));
 											success = true;
 											break;
-									}									
+									}
 								}
-								else if (typeof(Boolean).IsAssignableFrom(fieldType) && field.Name == "active")
+								else if (typeof(bool).IsAssignableFrom(fieldType) && field.Name == "active")
 								{
 									field.SetValue(null, true);
 									success = true;
@@ -110,12 +110,14 @@ namespace CombatAI
 					foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
 					{
 						if (method.HasAttribute<RunIf>() && (runned = method.TryGetAttribute<RunIf>()) != null && loaded == runned.loaded)
-						{							
-							method.Invoke(null, new object[] {});
+						{
+							method.Invoke(null, new object[]
+							{
+							});
 						}
 					}
 				}
-			}			
+			}
 		}
 
 		private static T GetDef<T>(string name) where T : Def
@@ -124,4 +126,3 @@ namespace CombatAI
 		}
 	}
 }
-

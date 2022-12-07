@@ -1,61 +1,47 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Verse;
-
 namespace CombatAI
 {
 	public class CellFlooder
 	{
-		public struct Node : IComparable<Node>
-		{
-			public IntVec3 cell;
-			public IntVec3 parent;
-			public float dist;
-			public float distAbs;
-
-			public int CompareTo(Node other)
-			{
-				return dist.CompareTo(other.dist) * -1;
-			}
-		}
 
 		private static readonly IntVec3[] offsets = new IntVec3[4]
 		{
-			new IntVec3(-1, 0, 0),
-			new IntVec3(0, 0, 1),
-			new IntVec3(1, 0, 0),
-			new IntVec3(0, 0, -1),
+			new IntVec3(-1, 0, 0), new IntVec3(0, 0, 1), new IntVec3(1, 0, 0), new IntVec3(0, 0, -1)
 		};
+		private readonly FastHeap<Node> floodQueue = new FastHeap<Node>();
+		private readonly int[]          sigArray;
 
 		public Map map;
 
-		private int sig;
+		private int      sig;
 		private WallGrid walls;
-		private readonly FastHeap<Node> floodQueue = new FastHeap<Node>();
-		private readonly int[] sigArray;
 		//
 		// private readonly List<Node> floodedCells = new List<Node>();
 
 		public CellFlooder(Map map)
 		{
-			this.sig = 13;
+			sig      = 13;
 			this.map = map;
-			this.walls = map.GetComponent<WallGrid>();
-			this.sigArray = new int[map.cellIndices.NumGridCells];
+			walls    = map.GetComponent<WallGrid>();
+			sigArray = new int[map.cellIndices.NumGridCells];
 		}
 
-		public void Flood(IntVec3 center, Action<IntVec3, IntVec3, float> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25) => Flood(center, (node) => action(node.cell, node.parent, node.dist), costFunction, validator, maxDist);
+		public void Flood(IntVec3 center, Action<IntVec3, IntVec3, float> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
+		{
+			Flood(center, node => action(node.cell, node.parent, node.dist), costFunction, validator, maxDist);
+		}
 
-		public void  Flood(IntVec3 center, Action<Node> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
+		public void Flood(IntVec3 center, Action<Node> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
 		{
 			sig++;
 			Func<IntVec3, bool> blocked = GetBlockedTestFunc(validator);
-			this.walls = map.GetComponent<WallGrid>();
+			walls = map.GetComponent<WallGrid>();
 			Node node = GetIntialFloodedCell(center);
-			node.dist = costFunction != null ? costFunction(node.cell) : 0;			
-			Node nextNode;
-			int cellIndex;
+			node.dist = costFunction != null ? costFunction(node.cell) : 0;
+			Node    nextNode;
+			int     cellIndex;
 			IntVec3 nextCell;
 			IntVec3 offset;
 			//
@@ -79,7 +65,7 @@ namespace CombatAI
 				}
 				for (int i = 0; i < 4; i++)
 				{
-					offset = offsets[i];
+					offset   = offsets[i];
 					nextCell = node.cell + offset;
 					if (nextCell.InBounds(map))
 					{
@@ -88,20 +74,20 @@ namespace CombatAI
 							sigArray[cellIndex] = sig;
 							if (!blocked(nextCell))
 							{
-								nextNode = new Node();
+								nextNode      = new Node();
 								nextNode.cell = nextCell;
 								// TODO improve this.
 								// this is not perfectly accurate but it does result in consistant result.
 								if (Mathf.Abs(nextCell.x - node.parent.x) == 1 && Mathf.Abs(nextCell.z - node.parent.z) == 1)
 								{
-									nextNode.parent = node.parent;
-									nextNode.dist = node.dist + 0.4123f;
+									nextNode.parent  = node.parent;
+									nextNode.dist    = node.dist + 0.4123f;
 									nextNode.distAbs = node.distAbs + 0.4123f;
 								}
 								else
 								{
-									nextNode.parent = node.cell;
-									nextNode.dist = node.dist + 1;
+									nextNode.parent  = node.cell;
+									nextNode.dist    = node.dist + 1;
 									nextNode.distAbs = node.distAbs + 1;
 								}
 								if (costFunction != null)
@@ -122,22 +108,31 @@ namespace CombatAI
 		{
 			if (validator == null)
 			{
-				return (cell) => walls.GetFillCategory(cell) == FillCategory.Full;
+				return cell => walls.GetFillCategory(cell) == FillCategory.Full;
 			}
-			else
-			{
-				return (cell) => walls.GetFillCategory(cell) == FillCategory.Full || !validator(cell);
-			}
+			return cell => walls.GetFillCategory(cell) == FillCategory.Full || !validator(cell);
 		}
 
 		private Node GetIntialFloodedCell(IntVec3 center)
 		{
 			Node cell = new Node();
-			cell.cell = center;
+			cell.cell   = center;
 			cell.parent = center;
-			cell.dist = 0;
+			cell.dist   = 0;
 			return cell;
+		}
+
+		public struct Node : IComparable<Node>
+		{
+			public IntVec3 cell;
+			public IntVec3 parent;
+			public float   dist;
+			public float   distAbs;
+
+			public int CompareTo(Node other)
+			{
+				return dist.CompareTo(other.dist) * -1;
+			}
 		}
 	}
 }
-
