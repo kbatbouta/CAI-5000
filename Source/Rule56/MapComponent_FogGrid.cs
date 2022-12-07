@@ -269,8 +269,8 @@ namespace CombatAI
 			minU = Mathf.Clamp(minU - 1, 0, grid2d.Length - 1);
 			maxV = Mathf.Clamp(Maths.Max(maxV, minV + 1), 0, grid2d[0].Length - 1);
 			minV = Mathf.Clamp(minV - 1, 0, grid2d[0].Length - 1);
-			bool update = updateNum % 4 == 0;
-			bool updateForced = updateNum % 8 == 0;
+			bool update = updateNum % 2 == 0;
+			bool updateForced = updateNum % 4 == 0;
 			float color = Finder.Settings.FogOfWar_FogColor;
 			for (int u = minU; u <= maxU; u++)
 			{
@@ -308,7 +308,7 @@ namespace CombatAI
 					}
 				}				
 				stopwatch.Stop();
-				float t = 0.021f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
+				float t = 0.016f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
 				if (t > 0f)
 				{
 					Thread.Sleep(Mathf.CeilToInt(t * 1000));
