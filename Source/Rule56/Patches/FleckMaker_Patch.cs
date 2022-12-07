@@ -20,7 +20,7 @@ namespace CombatAI.Patches
 			{
 				return !Finder.Settings.FogOfWar_Enabled || !(map.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(cell) ?? false);
 			}
-		}		
+		}
 
 		[HarmonyPatch(typeof(FleckMaker), nameof(FleckMaker.PlaceFootprint))]
 		private static class FleckMaker_PlaceFootprint_Patch
@@ -41,4 +41,3 @@ namespace CombatAI.Patches
 		}
 	}
 }
-

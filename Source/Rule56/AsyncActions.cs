@@ -9,34 +9,34 @@ namespace CombatAI
 {
 	public class AsyncActions
 	{
-		private bool alive = true;
+		private bool alive                      = true;
 		private bool mainThreadActionQueueEmpty = false;
 
-		private readonly int hashOffset;
+		private readonly int    hashOffset;
 		private readonly Thread thread;
 
 		private readonly List<Action> queuedMainThreadActions = new List<Action>();
-		private readonly List<Action> queuedOffThreadActions = new List<Action>();
-		private readonly int mainLoopTickInterval;
+		private readonly List<Action> queuedOffThreadActions  = new List<Action>();
+		private readonly int          mainLoopTickInterval;
 
-		public readonly object locker_Main = new object();
+		public readonly object locker_Main    = new object();
 		public readonly object locker_offMain = new object();
 
 		public bool Alive
 		{
 			get => alive;
-		}		
+		}
 
 		public AsyncActions(int mainLoopTickInterval = 5)
 		{
 			this.mainLoopTickInterval = mainLoopTickInterval;
-			this.hashOffset = Rand.Int % 128;
-			this.thread = new Thread(OffMainThreadActionLoop);			
+			hashOffset                = Rand.Int % 128;
+			thread                    = new Thread(OffMainThreadActionLoop);
 		}
 
 		public void Start()
 		{
-			this.thread.Start();
+			thread.Start();
 		}
 
 		public void ExecuteMainThreadActions()
@@ -112,7 +112,7 @@ namespace CombatAI
 
 		private void MainThreadActionLoop()
 		{
-			if (!mainThreadActionQueueEmpty || (GenTicks.TicksGame + this.hashOffset) % mainLoopTickInterval == 0)
+			if (!mainThreadActionQueueEmpty || (GenTicks.TicksGame + hashOffset) % mainLoopTickInterval == 0)
 			{
 				while (true)
 				{
@@ -160,4 +160,3 @@ namespace CombatAI
 		}
 	}
 }
-

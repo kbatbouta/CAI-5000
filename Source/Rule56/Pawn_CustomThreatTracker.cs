@@ -9,12 +9,12 @@ namespace CombatAI
 	{
 		public class CustomThreatVector
 		{
-			private int oldCount;
+			private int   oldCount;
 			private float curDistSqr;
 			private float oldDistSqr;
 
 			public readonly List<Thing> things = new List<Thing>(64);
-			public readonly Thing parent;
+			public readonly Thing       parent;
 
 			public int NewNum
 			{
@@ -39,7 +39,7 @@ namespace CombatAI
 			public CustomThreatVector(Thing parent)
 			{
 				this.parent = parent;
-			}						
+			}
 
 			public void Push(Thing thing)
 			{
@@ -51,18 +51,17 @@ namespace CombatAI
 			{
 				oldDistSqr = curDistSqr;
 				curDistSqr = 1e6f;
-				oldCount = things.Count;
+				oldCount   = things.Count;
 				things.Clear();
-			}			
+			}
 		}
 
-		public Pawn pawn;
-		public CustomThreatVector[] threatVectors = new CustomThreatVector[4];	
+		public Pawn                 pawn;
+		public CustomThreatVector[] threatVectors = new CustomThreatVector[4];
 
 		public Pawn_CustomThreatTracker(Pawn pawn)
 		{
 			this.pawn = pawn;
-		}		
+		}
 	}
 }
-

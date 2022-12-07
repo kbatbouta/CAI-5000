@@ -13,7 +13,7 @@ namespace CombatAI
 		[Unsaved(allowLoading: false)]
 		private bool _inited;
 
-		private List<MetaCombatAttribute> weakAttributes = new List<MetaCombatAttribute>();
+		private List<MetaCombatAttribute> weakAttributes   = new List<MetaCombatAttribute>();
 		private List<MetaCombatAttribute> strongAttributes = new List<MetaCombatAttribute>();
 
 		public MetaCombatAttribute WeakCombatAttribute
@@ -42,10 +42,9 @@ namespace CombatAI
 
 		private void Init()
 		{
-			_inited = true;
+			_inited   = true;
 			_weakness = weakAttributes.Sum();
 			_strength = strongAttributes.Sum();
 		}
 	}
 }
-

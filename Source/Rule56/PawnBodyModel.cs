@@ -8,13 +8,13 @@ namespace CombatAI
 {
 	public class PawnBodyModel
 	{
-		private static List<BodyPartInfo> _temp = new List<BodyPartInfo>();		
+		private static List<BodyPartInfo> _temp       = new List<BodyPartInfo>();
 		private static List<BodyPartInfo> _majorParts = new List<BodyPartInfo>(32);
 
 		private struct BodyPartInfo
 		{
 			public readonly BodyPartRecord part;
-			public readonly float weightedCoverage;
+			public readonly float          weightedCoverage;
 
 			public List<BodyPartRecord> Parts
 			{
@@ -23,13 +23,13 @@ namespace CombatAI
 
 			public BodyPartInfo(BodyPartRecord part, float weightCoverage)
 			{
-				this.part = part;
-				this.weightedCoverage = weightCoverage;
+				this.part        = part;
+				weightedCoverage = weightCoverage;
 			}
-		}		
+		}
 
-		public readonly Dictionary<BodyPartGroupDef, float> coverageByPartGroup = new Dictionary<BodyPartGroupDef, float>(32);		
-		public readonly BodyDef body;
+		public readonly Dictionary<BodyPartGroupDef, float> coverageByPartGroup = new Dictionary<BodyPartGroupDef, float>(32);
+		public readonly BodyDef                             body;
 
 		public PawnBodyModel(BodyDef body)
 		{
@@ -41,11 +41,11 @@ namespace CombatAI
 			_majorParts.Add(_temp[0]);
 			// start.
 			List<BodyPartRecord> parts;
-			BodyPartInfo partInfo;
+			BodyPartInfo         partInfo;
 			while (_temp.Count > 0)
 			{
 				partInfo = _temp.Pop();
-				parts = partInfo.Parts;
+				parts    = partInfo.Parts;
 				for (int i = 0; i < parts.Count; i++)
 				{
 					BodyPartRecord subPart = parts[i];
@@ -74,17 +74,17 @@ namespace CombatAI
 						BodyPartGroupDef group = groups[j];
 						if (!coverageByPartGroup.ContainsKey(group))
 						{
-							coverageByPartGroup[group] = partInfo.weightedCoverage * (partInfo.part.height == BodyPartHeight.Top ? 4: 1);
-						}						
+							coverageByPartGroup[group] = partInfo.weightedCoverage * (partInfo.part.height == BodyPartHeight.Top ? 4 : 1);
+						}
 					}
 				}
 			}
 			_majorParts.Clear();
 		}
-	
+
 		public float Coverage(BodyPartGroupDef groupDef)
 		{
-			if(coverageByPartGroup.TryGetValue(groupDef, out float coverage))
+			if (coverageByPartGroup.TryGetValue(groupDef, out float coverage))
 			{
 				return coverage;
 			}
@@ -99,4 +99,3 @@ namespace CombatAI
 		}
 	}
 }
-

@@ -26,7 +26,7 @@ namespace CombatAI
 		/// <summary>
 		/// Apparel sharp armor rating.
 		/// </summary>
-		public float apparelSharp;		
+		public float apparelSharp;
 		/// <summary>
 		/// Pawn bodysize.
 		/// </summary>
@@ -74,7 +74,7 @@ namespace CombatAI
 		public bool IsValid
 		{
 			get => createdAt != 0;
-		}		
+		}
 
 		/// <summary>
 		/// Get the appropriate armor for a damage def.
@@ -83,8 +83,7 @@ namespace CombatAI
 		/// <returns>Armor value</returns>
 		public float GetArmor(DamageDef damage)
 		{
-			return damage != null ? (damage.armorCategory == DamageArmorCategoryDefOf.Sharp ? Sharp : Blunt) : 0f;
+			return damage != null ? damage.armorCategory == DamageArmorCategoryDefOf.Sharp ? Sharp : Blunt : 0f;
 		}
 	}
 }
-

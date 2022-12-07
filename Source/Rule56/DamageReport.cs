@@ -9,7 +9,7 @@ namespace CombatAI
 	{
 		private static Dictionary<ToolCapacityDef, List<ManeuverDef>> _maneuvers = new Dictionary<ToolCapacityDef, List<ManeuverDef>>(128);
 
-		private int _createdAt;
+		private int  _createdAt;
 		private bool _finalized;
 
 		/// <summary>
@@ -67,7 +67,7 @@ namespace CombatAI
 		/// <summary>
 		/// The combined and the adjusted blunr value. 
 		/// </summary>
-		public float adjustedBlunt;		
+		public float adjustedBlunt;
 		/// <summary>
 		/// Primary verb properties.
 		/// </summary>
@@ -77,10 +77,7 @@ namespace CombatAI
 		/// </summary>		
 		public bool IsValid
 		{
-			get
-			{
-				return _finalized && GenTicks.TicksGame - _createdAt < 1800;
-			}
+			get => _finalized && GenTicks.TicksGame - _createdAt < 1800;
 		}
 
 		public float GetAdjustedDamage(DamageArmorCategoryDef def)
@@ -100,7 +97,7 @@ namespace CombatAI
 		}
 
 		public void Finalize(float rangedMul, float meleeMul)
-		{			
+		{
 			float mainSharp;
 			float mainBlunt;
 			float weakSharp;
@@ -121,8 +118,8 @@ namespace CombatAI
 			}
 			adjustedSharp = mainSharp * 0.95f + weakSharp * 0.05f;
 			adjustedBlunt = mainBlunt * 0.95f + weakBlunt * 0.05f;
-			_createdAt = GenTicks.TicksGame;
-			_finalized = true;
+			_createdAt    = GenTicks.TicksGame;
+			_finalized    = true;
 		}
 
 		public void AddVerb(Verb verb)
@@ -134,10 +131,10 @@ namespace CombatAI
 					attributes |= MetaCombatAttribute.Emp;
 				}
 				if (!verb.IsMeleeAttack)
-				{					
+				{
 					ProjectileProperties projectile = verb.GetProjectile()?.projectile ?? null;
 					if (projectile != null)
-					{						
+					{
 						if (projectile.explosionRadius > 0)
 						{
 							attributes |= MetaCombatAttribute.AOE;
@@ -146,18 +143,18 @@ namespace CombatAI
 								attributes |= MetaCombatAttribute.AOELarge;
 							}
 						}
-						float warmupTime = Maths.Max(verb.verbProps.warmupTime, 0.5f);
+						float warmupTime     = Maths.Max(verb.verbProps.warmupTime, 0.5f);
 						float burstShotCount = verb.verbProps.burstShotCount;
-						float output = (1f / warmupTime) * burstShotCount;						
+						float output         = 1f / warmupTime * burstShotCount;
 						if (projectile.damageDef.armorCategory == DamageArmorCategoryDefOf.Sharp)
 						{
-							rangedSharp = (rangedSharp + output * projectile.damageAmountBase) / 2f;
-							rangedSharpAp = rangedSharpAp != 0 ? ((rangedSharpAp + Maths.Max(GetArmorPenetration(projectile), 0f)) / 2f) : Maths.Max(GetArmorPenetration(projectile), 0f);
+							rangedSharp   = (rangedSharp + output * projectile.damageAmountBase) / 2f;
+							rangedSharpAp = rangedSharpAp != 0 ? (rangedSharpAp + Maths.Max(GetArmorPenetration(projectile), 0f)) / 2f : Maths.Max(GetArmorPenetration(projectile), 0f);
 						}
 						else
 						{
-							rangedBlunt = (rangedBlunt + output * projectile.damageAmountBase) / 2f;
-							rangedBluntAp = rangedBluntAp != 0 ? ((rangedBluntAp + Maths.Max(GetArmorPenetration(projectile), 0f)) / 2f) : Maths.Max(GetArmorPenetration(projectile), 0f);
+							rangedBlunt   = (rangedBlunt + output * projectile.damageAmountBase) / 2f;
+							rangedBluntAp = rangedBluntAp != 0 ? (rangedBluntAp + Maths.Max(GetArmorPenetration(projectile), 0f)) / 2f : Maths.Max(GetArmorPenetration(projectile), 0f);
 						}
 					}
 				}
@@ -175,7 +172,7 @@ namespace CombatAI
 				for (int i = 0; i < tool.capacities.Count; i++)
 				{
 					ToolCapacityDef def = tool.capacities[i];
-					if(!_maneuvers.TryGetValue(def, out List<ManeuverDef> maneuvers))
+					if (!_maneuvers.TryGetValue(def, out List<ManeuverDef> maneuvers))
 					{
 						_maneuvers[def] = maneuvers = new List<ManeuverDef>(def.Maneuvers);
 					}
@@ -183,15 +180,15 @@ namespace CombatAI
 					{
 						ManeuverDef maneuver = maneuvers[j];
 						if (maneuver.verb != null)
-						{							
+						{
 							if (maneuver.verb.meleeDamageDef == DamageDefOf.Blunt)
 							{
-								meleeBlunt = (meleeBlunt + tool.power) / 2f;
+								meleeBlunt   = (meleeBlunt + tool.power) / 2f;
 								meleeBluntAp = (meleeBluntAp + Maths.Max(maneuver.verb.meleeArmorPenetrationBase, tool.armorPenetration, 0)) / 2f;
 							}
 							else
 							{
-								meleeSharp = (meleeSharp + tool.power) / 2f;
+								meleeSharp   = (meleeSharp + tool.power) / 2f;
 								meleeSharpAp = (meleeSharpAp + Maths.Max(maneuver.verb.meleeArmorPenetrationBase, tool.armorPenetration, 0)) / 2f;
 							}
 						}
@@ -215,10 +212,10 @@ namespace CombatAI
 				else
 				{
 					return dmg / 18f;
-				}	
+				}
 			}
 		}
-		
+
 		private float AdjustedSharp()
 		{
 			float damage;
@@ -226,12 +223,12 @@ namespace CombatAI
 			if (primaryIsRanged)
 			{
 				damage = rangedSharp;
-				ap = rangedSharpAp;
+				ap     = rangedSharpAp;
 			}
 			else
 			{
 				damage = meleeSharp;
-				ap = meleeSharpAp;
+				ap     = meleeSharpAp;
 			}
 			if (Mod_CE.active)
 			{
@@ -249,7 +246,7 @@ namespace CombatAI
 				}
 			}
 		}
-		
+
 		private float AdjustedBlunt()
 		{
 			float damage;
@@ -257,12 +254,12 @@ namespace CombatAI
 			if (primaryIsRanged)
 			{
 				damage = rangedBlunt;
-				ap = rangedBluntAp;
+				ap     = rangedBluntAp;
 			}
 			else
 			{
 				damage = meleeBlunt;
-				ap = meleeBluntAp;
+				ap     = meleeBluntAp;
 			}
 			if (Mod_CE.active)
 			{
@@ -287,4 +284,3 @@ namespace CombatAI
 		}
 	}
 }
-

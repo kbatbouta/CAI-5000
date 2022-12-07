@@ -20,9 +20,9 @@ namespace CombatAI.Patches
 		private static class JobGiver_AITrashBuildingsDistant_TryGiveJob_Patch
 		{
 			public static bool Prefix(Pawn pawn)
-			{				
-                if (lastGaveById.TryGetValue(pawn.thingIDNumber, out int ticks) && GenTicks.TicksGame - ticks < 30)
-				{	
+			{
+				if (lastGaveById.TryGetValue(pawn.thingIDNumber, out int ticks) && GenTicks.TicksGame - ticks < 30)
+				{
 					return false;
 				}
 				return true;
@@ -30,7 +30,7 @@ namespace CombatAI.Patches
 
 			public static void Postfix(Pawn pawn, Job __result)
 			{
-				if(__result != null)
+				if (__result != null)
 				{
 					lastGaveById[pawn.thingIDNumber] = GenTicks.TicksGame;
 				}
@@ -43,8 +43,7 @@ namespace CombatAI.Patches
 
 		public static void ClearCache()
 		{
-            lastGaveById.Clear();
-        }
-    }
+			lastGaveById.Clear();
+		}
+	}
 }
-

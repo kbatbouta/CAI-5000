@@ -19,7 +19,7 @@ namespace CombatAI.Patches
 					if (__instance.job.targetC.IsValid)
 					{
 						__instance.rotateToFace = TargetIndex.C;
-					}					
+					}
 					__instance.AddEndCondition(() =>
 					{
 						if (!__instance.pawn.IsHashIntervalTick(30) || GenTicks.TicksGame - __instance.startTick < 30)
@@ -27,7 +27,7 @@ namespace CombatAI.Patches
 							return JobCondition.Ongoing;
 						}
 						if (__instance.pawn.mindState?.enemyTarget is Pawn enemy)
-						{							
+						{
 							ThingComp_CombatAI comp = __instance.pawn.GetComp_Fast<ThingComp_CombatAI>();
 							if (comp?.waitJob == __instance.job)
 							{
@@ -44,9 +44,9 @@ namespace CombatAI.Patches
 									if (__instance.job.verbToUse.CanHitTarget(PawnPathUtility.GetMovingShiftedPosition(enemy, 80)))
 									{
 										return JobCondition.Ongoing;
-									}									
+									}
 								}
-								comp.Notify_WaitJobEnded();								
+								comp.Notify_WaitJobEnded();
 								comp.waitJob = null;
 								return JobCondition.Succeeded;
 							}
@@ -58,4 +58,3 @@ namespace CombatAI.Patches
 		}
 	}
 }
-

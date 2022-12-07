@@ -11,16 +11,16 @@ namespace CombatAI
 	{
 		private struct ITCell
 		{
-			public float value;
-			public float valuePrev;
+			public float  value;
+			public float  valuePrev;
 			public ushort sig;
-			public ushort cycleNum;			
+			public ushort cycleNum;
 		}
 
-		private ushort sig = 13;
-		private ushort cycleNum = 19;
+		private          ushort      sig      = 13;
+		private          ushort      cycleNum = 19;
 		private readonly CellIndices cellIndices;
-		private readonly ITCell[] grid;
+		private readonly ITCell[]    grid;
 
 		public readonly int mapCellNum;
 
@@ -31,13 +31,16 @@ namespace CombatAI
 
 		public ITFloatGrid(Map map)
 		{
-			this.cellIndices = map.cellIndices;
-			this.grid = new ITCell[cellIndices.NumGridCells];
-			this.mapCellNum = cellIndices.NumGridCells;
+			cellIndices = map.cellIndices;
+			grid        = new ITCell[cellIndices.NumGridCells];
+			mapCellNum  = cellIndices.NumGridCells;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Set(IntVec3 cell, float value) => Set(cellIndices.CellToIndex(cell), value);
+		public void Set(IntVec3 cell, float value)
+		{
+			Set(cellIndices.CellToIndex(cell), value);
+		}
 		public void Set(int index, float value)
 		{
 			if (index >= 0 && index < mapCellNum)
@@ -48,35 +51,38 @@ namespace CombatAI
 					int dc = cycleNum - cell.cycleNum;
 					if (dc == 0)
 					{
-						cell.value += value;						
+						cell.value += value;
 					}
 					else
 					{
 						if (dc == 1)
 						{
-							cell.valuePrev = cell.value;						
+							cell.valuePrev = cell.value;
 						}
 						else
 						{
-							cell.valuePrev = 0;							
+							cell.valuePrev = 0;
 						}
 						cell.cycleNum = cycleNum;
-						cell.value = value;						
+						cell.value    = value;
 					}
-					cell.sig = sig;
+					cell.sig    = sig;
 					grid[index] = cell;
 				}
 			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public float Get(IntVec3 cell) => Get(cellIndices.CellToIndex(cell));
+		public float Get(IntVec3 cell)
+		{
+			return Get(cellIndices.CellToIndex(cell));
+		}
 		public float Get(int index)
 		{
 			if (index >= 0 && index < mapCellNum)
 			{
 				ITCell cell = grid[index];
-				int dc = cycleNum - cell.cycleNum;
+				int    dc   = cycleNum - cell.cycleNum;
 				switch (dc)
 				{
 					case 0:
@@ -88,7 +94,7 @@ namespace CombatAI
 				}
 			}
 			return 0;
-		}		
+		}
 
 		public void Next()
 		{
@@ -108,4 +114,3 @@ namespace CombatAI
 		}
 	}
 }
-

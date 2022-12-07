@@ -21,11 +21,10 @@ namespace CombatAI
 			get => 1f;
 		}
 
-		[RunIf(loaded:true)]
+		[RunIf(loaded: true)]
 		private static void OnActive()
 		{
 			active = boostToggle != null && S != null;
 		}
 	}
 }
-

@@ -10,15 +10,15 @@ namespace CombatAI
 	{
 		private struct ICacheKey : IEquatable<ICacheKey>
 		{
-			public int thingIdNumber;
-			public int statDefIndex;
+			public int  thingIdNumber;
+			public int  statDefIndex;
 			public bool applyPostProcess;
 
 			public static ICacheKey For(Thing thing, StatDef stat, bool applyPostProcess)
 			{
 				ICacheKey key = new ICacheKey();
-				key.thingIdNumber = thing.thingIDNumber;
-				key.statDefIndex = stat.index;
+				key.thingIdNumber    = thing.thingIDNumber;
+				key.statDefIndex     = stat.index;
 				key.applyPostProcess = applyPostProcess;
 				return key;
 
@@ -27,11 +27,11 @@ namespace CombatAI
 			public static ICacheKey For(int thingIdNumber, int statDefIndex, bool applyPostProcess)
 			{
 				ICacheKey key = new ICacheKey();
-				key.thingIdNumber = thingIdNumber;
-				key.statDefIndex = statDefIndex;
+				key.thingIdNumber    = thingIdNumber;
+				key.statDefIndex     = statDefIndex;
 				key.applyPostProcess = applyPostProcess;
 				return key;
-			}				
+			}
 
 			public override int GetHashCode()
 			{
@@ -46,7 +46,7 @@ namespace CombatAI
 			}
 
 			public override bool Equals(object obj)
-			{				
+			{
 				return obj is ICacheKey && Equals((ICacheKey)obj);
 			}
 
@@ -55,10 +55,11 @@ namespace CombatAI
 				return obj.GetHashCode();
 			}
 
-			public bool Equals(ICacheKey other) {
-				return this.thingIdNumber		== other.thingIdNumber
-					&& this.statDefIndex		== other.statDefIndex
-					&& this.applyPostProcess	== other.applyPostProcess;
+			public bool Equals(ICacheKey other)
+			{
+				return thingIdNumber == other.thingIdNumber
+				       && statDefIndex == other.statDefIndex
+				       && applyPostProcess == other.applyPostProcess;
 			}
 		}
 
@@ -84,4 +85,3 @@ namespace CombatAI
 		}
 	}
 }
-
