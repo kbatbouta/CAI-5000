@@ -469,11 +469,10 @@ namespace CombatAI
 				ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
                 {
                     float d2         = pos.DistanceToSquared(cell);
-                    float d          = -1;
                     float visibility = 0f;		
 					if (d2 < rSqr_sight)
                     {
-						visibility = (float)(sightRadius.sight - (d = Maths.Sqrt_Fast(d2, 5))) / sightRadius.sight * (1 - coverRating);
+						visibility = (float)(sightRadius.sight - dist) / sightRadius.sight * (1 - coverRating);
 						if (visibility > 0f)
                         {                           
                             grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
@@ -488,11 +487,7 @@ namespace CombatAI
                         }
                         else
                         {
-	                        if (d < 0)
-	                        {
-		                        d = Maths.Sqrt_Fast(d2, 5);
-	                        }
-                            val = 1f - Mathf.Clamp01((d - r_fade) / d_fade);
+	                        val = 1f - Mathf.Clamp01((Maths.Sqrt_Fast(d2, 5) - r_fade) / d_fade);
                         }
                         gridFog?.Set(cell, val);
 					}
