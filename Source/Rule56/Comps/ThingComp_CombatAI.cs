@@ -449,7 +449,7 @@ namespace CombatAI.Comps
 			// if the pawn is tanky enough skip.
 			if (parent.Spawned && GenTicks.TicksGame - lastScanned < 90 && parent is Pawn pawn && !pawn.Dead && !pawn.Downed && armor.TankInt < 0.4f)
 			{
-				if (dInfo.Def != null && dInfo.Instigator != null)
+				if (!pawn.RaceProps.IsMechanoid && dInfo.Def != null && dInfo.Instigator != null)
 				{
 					if (pawn.CurJobDef.Is(JobDefOf.Mine))
 					{
