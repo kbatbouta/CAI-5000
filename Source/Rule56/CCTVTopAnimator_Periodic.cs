@@ -4,13 +4,13 @@ using System;
 
 namespace CombatAI
 {
-	public class SighterTurretAnimator_Periodic : SighterTurretAnimator
+	public class CCTVTopAnimator_Periodic : CCTVTopAnimator
 	{
 		private          float curRotationInt;
 		private          bool  idleTurnClockwise;
 		private          int   ticksUntilIdleTurn;
 		
-		public SighterTurretAnimator_Periodic(ThingComp_SighterTurret comp) : base(comp)
+		public CCTVTopAnimator_Periodic(ThingComp_CCTVTop comp) : base(comp)
 		{
 		}
 

@@ -212,7 +212,7 @@ namespace CombatAI
 			{
 				return false;
 			}
-			return (thing is Pawn pawn && !pawn.Dead) || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter)) || thing.def.HasComp(typeof(ThingComp_SighterTurret));
+			return (thing is Pawn pawn && !pawn.Dead) || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter)) || thing.def.HasComp(typeof(ThingComp_CCTVTop));
 		}
 
 		private bool Valid(IBucketableThing item)
@@ -360,13 +360,13 @@ namespace CombatAI
 						}
 					}
 				};
-				if (item.sighterTurret == null)
+				if (item.CctvTop == null)
 				{
 					ShadowCastingUtility.CastWeighted(map, pos, setAction, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), settings.carryLimit, buffer);
 				}
 				else
 				{
-					ShadowCastingUtility.CastWeighted(map, pos, item.sighterTurret.LookDirection, setAction, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), item.sighterTurret.BaseWidth, settings.carryLimit, buffer);
+					ShadowCastingUtility.CastWeighted(map, pos, item.CctvTop.LookDirection, setAction, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), item.CctvTop.BaseWidth, settings.carryLimit, buffer);
 				}
 				if (scanForEnemies)
 				{
@@ -522,7 +522,7 @@ namespace CombatAI
 			/// <summary>
 			///     Sighting component.
 			/// </summary>
-			public readonly ThingComp_SighterTurret sighterTurret;
+			public readonly ThingComp_CCTVTop CctvTop;
 			/// <summary>
 			///     Contains spotting records that are to be processed on the main thread once the scan is finished.
 			/// </summary>
@@ -566,7 +566,7 @@ namespace CombatAI
 				BucketIndex       = bucketIndex;
 				cachedDamage      = DamageUtility.GetDamageReport(thing);
 				cachedSightRadius = SightUtility.GetSightRadius(thing);
-				sighterTurret     = thing.GetComp_Fast<ThingComp_SighterTurret>();
+				CctvTop     = thing.GetComp_Fast<ThingComp_CCTVTop>();
 			}
 			/// <summary>
 			///     Bucket index.

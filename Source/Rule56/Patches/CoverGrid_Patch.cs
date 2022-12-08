@@ -8,7 +8,7 @@ namespace CombatAI.Patches
 {
 	public static class CoverGrid_Patch
 	{
-		public static WallGrid grid;
+		public static WallGrid        grid;
 		public static MethodBase mCellToIndex = AccessTools.Method(typeof(CellIndices), nameof(CellIndices.CellToIndex), new[]
 		{
 			typeof(IntVec3)
@@ -44,15 +44,20 @@ namespace CombatAI.Patches
 		[HarmonyPatch(typeof(CoverGrid), nameof(CoverGrid.DeRegister))]
 		public static class CoverGrid_DeRegister_Patch
 		{
-			public static void Prefix(CoverGrid __instance, Thing t)
+			public static void Prefix(CoverGrid __instance, Thing t, out IntVec3 __state)
 			{
 				grid = t.def.fillPercent > 0 ?
 					__instance.map.GetComp_Fast<WallGrid>() : null;
+				__state = t.Position;
 			}
 
-			public static void Postfix()
+			public static void Postfix(CoverGrid __instance, Thing t, IntVec3 __state)
 			{
 				grid = null;
+				if (t.def.passability == Traversability.Impassable)
+				{
+					__instance.map.GetComp_Fast<WallCCTVTracker>().Notify_CellChanged(__state);
+				}
 			}
 		}
 

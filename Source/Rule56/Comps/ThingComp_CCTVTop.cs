@@ -4,10 +4,10 @@ using UnityEngine;
 using Verse;
 namespace CombatAI.Comps
 {
-	public class ThingComp_SighterTurret : ThingComp_Sighter
+	public class ThingComp_CCTVTop : ThingComp_Sighter
 	{
 		private bool                  cachedActive;
-		public  SighterTurretAnimator animator;
+		public  CCTVTopAnimator animator;
 
 		/// <summary>
 		///     Current turret top rotation.
@@ -33,9 +33,9 @@ namespace CombatAI.Comps
 		/// <summary>
 		///     Source CompProperties_SighterTurret.
 		/// </summary>
-		public new CompProperties_SighterTurret Props
+		public new CompProperties_CCTVTop Props
 		{
-			get => props as CompProperties_SighterTurret;
+			get => props as CompProperties_CCTVTop;
 		}
 
 		/// <summary>
@@ -54,10 +54,16 @@ namespace CombatAI.Comps
 			}
 		}
 
+		public override void PostSpawnSetup(bool respawningAfterLoad)
+		{
+			base.PostSpawnSetup(respawningAfterLoad);
+			parent.Map.GetComp_Fast<WallCCTVTracker>().Register(this);
+		}
+
 		public override void Initialize(CompProperties props)
 		{
 			base.Initialize(props);
-			animator = (SighterTurretAnimator) Activator.CreateInstance((props as CompProperties_SighterTurret).animator, new object[]{this});
+			animator = (CCTVTopAnimator) Activator.CreateInstance((props as CompProperties_CCTVTop).animator, new object[]{this});
 		}
 
 		/// <summary>
@@ -66,7 +72,7 @@ namespace CombatAI.Comps
 		public override void PostDraw()
 		{
 			base.PostDraw();
-			CompProperties_SighterTurret props    = Props;
+			CompProperties_CCTVTop props    = Props;
 			float                        rot      = CurRotation;
 			Vector3                      position = props.graphicData.drawOffset.RotatedBy(rot);
 			Matrix4x4                    matrix   = default;

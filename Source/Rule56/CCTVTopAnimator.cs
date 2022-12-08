@@ -2,9 +2,9 @@ using CombatAI.Comps;
 using Verse;
 namespace CombatAI
 {
-	public abstract class SighterTurretAnimator
+	public abstract class CCTVTopAnimator
 	{
-		public ThingComp_SighterTurret comp;
+		public ThingComp_CCTVTop comp;
 
 		public abstract float CurRotation
 		{
@@ -12,7 +12,7 @@ namespace CombatAI
 			set;
 		}
 
-		public SighterTurretAnimator(ThingComp_SighterTurret comp)
+		public CCTVTopAnimator(ThingComp_CCTVTop comp)
 		{
 			this.comp = comp;
 		}

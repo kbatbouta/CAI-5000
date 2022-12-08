@@ -4,19 +4,20 @@ using System;
 
 namespace CombatAI.Comps
 {
-	public class CompProperties_SighterTurret : CompProperties_Sighter
+	public class CompProperties_CCTVTop : CompProperties_Sighter
 	{
 		public GraphicData graphicData;
 		public float       fieldOfView;
 		public Type        animator;
+		public bool        wallMounted;
 		[Unsaved(allowLoading:false)]
 		public float baseWidth;
 		[Unsaved(allowLoading: false)]
 		public Material turretTopMat;
 		
-		public CompProperties_SighterTurret()
+		public CompProperties_CCTVTop()
 		{
-			compClass = typeof(ThingComp_SighterTurret);
+			compClass = typeof(ThingComp_CCTVTop);
 		}
 
 		public override void ResolveReferences(ThingDef parentDef)
