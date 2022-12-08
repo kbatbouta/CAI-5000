@@ -212,7 +212,7 @@ namespace CombatAI
 			{
 				return false;
 			}
-			return thing is Pawn pawn && !pawn.Dead || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter));
+			return (thing is Pawn pawn && !pawn.Dead) || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter)) || thing.def.HasComp(typeof(ThingComp_SighterTurret));
 		}
 
 		private bool Valid(IBucketableThing item)
@@ -322,7 +322,7 @@ namespace CombatAI
 				float rSqr_scan  = Maths.Sqr(sightRadius.scan);
 				float rSqr_fog   = Maths.Sqr(sightRadius.fog);
 				float rSqr_fade  = Maths.Sqr(r_fade);
-				ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
+				Action<IntVec3, int, int, float> setAction = (cell, carry, dist, coverRating) =>
 				{
 					float d2         = pos.DistanceToSquared(cell);
 					float visibility = 0f;
@@ -359,7 +359,15 @@ namespace CombatAI
 							item.spottings.Add(spotting);
 						}
 					}
-				}, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), settings.carryLimit, buffer);
+				};
+				if (item.sighterTurret == null)
+				{
+					ShadowCastingUtility.CastWeighted(map, pos, setAction, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), settings.carryLimit, buffer);
+				}
+				else
+				{
+					ShadowCastingUtility.CastWeighted(map, pos, item.sighterTurret.LookDirection, setAction, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), item.sighterTurret.BaseWidth, settings.carryLimit, buffer);
+				}
 				if (scanForEnemies)
 				{
 					if (item.spottings.Count > 0 || Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
@@ -512,6 +520,10 @@ namespace CombatAI
 			/// </summary>
 			public readonly ThingComp_Sighter sighter;
 			/// <summary>
+			///     Sighting component.
+			/// </summary>
+			public readonly ThingComp_SighterTurret sighterTurret;
+			/// <summary>
 			///     Contains spotting records that are to be processed on the main thread once the scan is finished.
 			/// </summary>
 			public readonly List<ISpotRecord> spottings = new List<ISpotRecord>(64);
@@ -554,6 +566,7 @@ namespace CombatAI
 				BucketIndex       = bucketIndex;
 				cachedDamage      = DamageUtility.GetDamageReport(thing);
 				cachedSightRadius = SightUtility.GetSightRadius(thing);
+				sighterTurret     = thing.GetComp_Fast<ThingComp_SighterTurret>();
 			}
 			/// <summary>
 			///     Bucket index.

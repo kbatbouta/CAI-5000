@@ -47,15 +47,21 @@ namespace CombatAI.Comps
 		{
 			get
 			{
-				CompPowerTrader power = CompPower;
-				if (power != null && !power.PowerOn)
+				if (Props.powered)
 				{
-					return false;
+					CompPowerTrader power = CompPower;
+					if (power != null && !power.PowerOn)
+					{
+						return false;
+					}
 				}
-				CompMannable mannable = CompMannable;
-				if (mannable != null && !mannable.MannedNow)
+				if (Props.mannable)
 				{
-					return false;
+					CompMannable mannable = CompMannable;
+					if (mannable != null && !mannable.MannedNow)
+					{
+						return false;
+					}
 				}
 				return true;
 			}
