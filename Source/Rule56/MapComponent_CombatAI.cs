@@ -9,7 +9,6 @@ namespace CombatAI
 {
 	public class MapComponent_CombatAI : MapComponent
 	{
-		private HashSet<IntVec3> _drawnCells = new HashSet<IntVec3>(256);
 
 		/*      Threading
          * ----- ----- ----- -----
@@ -17,6 +16,7 @@ namespace CombatAI
 
 		private readonly AsyncActions        asyncActions;
 		private readonly Listing_Collapsible collapsible = new Listing_Collapsible();
+		private          HashSet<IntVec3>    _drawnCells = new HashSet<IntVec3>(256);
 		public           ISGrid<float>       f_grid;
 
 		/*   ISMA map elements

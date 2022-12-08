@@ -10,12 +10,12 @@ namespace CombatAI.Utilities
 #if DEBUG_REACTION
 	public class ThingsTracker : MapComponent
 	{
-		public ThingsTrackingModel apparelTracker;
-		public ThingsTrackingModel interceptorsTracker;
-		public ThingsTrackingModel medicineTracker;
-		public ThingsTrackingModel pawnsTracker;
 
 		private readonly Dictionary<ThingDef, ThingsTrackingModel> trackersByDef = new Dictionary<ThingDef, ThingsTrackingModel>();
+		public           ThingsTrackingModel                       apparelTracker;
+		public           ThingsTrackingModel                       interceptorsTracker;
+		public           ThingsTrackingModel                       medicineTracker;
+		public           ThingsTrackingModel                       pawnsTracker;
 		public           ThingsTrackingModel                       weaponsTracker;
 
 		public ThingsTracker(Map map) : base(map)

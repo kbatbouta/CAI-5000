@@ -12,6 +12,10 @@ namespace CombatAI.Comps
 {
 	public class ThingComp_CombatAI : ThingComp
 	{
+		/// <summary>
+		///     Set of visible enemies. A queue for visible enemies during scans.
+		/// </summary>
+		private readonly HashSet<Thing> visibleEnemies;
 
 		/// <summary>
 		///     Parent armor report.
@@ -33,10 +37,6 @@ namespace CombatAI.Comps
 		///     Parent sight reader.
 		/// </summary>
 		public SightTracker.SightReader sightReader;
-		/// <summary>
-		///     Set of visible enemies. A queue for visible enemies during scans.
-		/// </summary>
-		private readonly HashSet<Thing> visibleEnemies;
 		/// <summary>
 		///     Wait job started/queued by this comp.
 		/// </summary>

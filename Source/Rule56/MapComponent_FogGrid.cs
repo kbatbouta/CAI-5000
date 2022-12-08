@@ -14,16 +14,16 @@ namespace CombatAI
 		private static readonly Texture2D fogTex;
 		private static readonly Mesh      mesh;
 		private static readonly Shader    fogShader;
-		private readonly        Rect      mapRect;
-		private                 bool      alive;
 
 		private readonly AsyncActions asyncActions;
+		private readonly ISection[][] grid2d;
+		private readonly Rect         mapRect;
+		private          bool         alive;
 		public           CellIndices  cellIndices;
 		public           GlowGrid     glow;
 
-		public           bool[]       grid;
-		private readonly ISection[][] grid2d;
-		private          bool         initialized;
+		public  bool[] grid;
+		private bool   initialized;
 
 		private Rect      mapScreenRect;
 		private bool      ready;
@@ -201,11 +201,11 @@ namespace CombatAI
 
 		private class ISection
 		{
+			public readonly  float[]              cells;
 			private readonly MapComponent_FogGrid comp;
 			private readonly Material             mat;
 			private readonly Mesh                 mesh;
 			private readonly Vector3              pos;
-			public readonly  float[]              cells;
 			public           bool                 dirty = true;
 			public           Rect                 rect;
 			public           float                s_color;

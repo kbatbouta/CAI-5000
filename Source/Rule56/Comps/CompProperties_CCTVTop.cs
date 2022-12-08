@@ -1,20 +1,19 @@
+using System;
 using UnityEngine;
 using Verse;
-using System;
-
 namespace CombatAI.Comps
 {
 	public class CompProperties_CCTVTop : CompProperties_Sighter
 	{
-		public GraphicData graphicData;
-		public float       fieldOfView;
-		public Type        animator;
-		public bool        wallMounted;
-		[Unsaved(allowLoading:false)]
+		public Type animator;
+		[Unsaved(allowLoading: false)]
 		public float baseWidth;
+		public float       fieldOfView;
+		public GraphicData graphicData;
 		[Unsaved(allowLoading: false)]
 		public Material turretTopMat;
-		
+		public bool wallMounted;
+
 		public CompProperties_CCTVTop()
 		{
 			compClass = typeof(ThingComp_CCTVTop);
@@ -23,7 +22,7 @@ namespace CombatAI.Comps
 		public override void ResolveReferences(ThingDef parentDef)
 		{
 			base.ResolveReferences(parentDef);
-			baseWidth = Mathf.Sin(0.5f * fieldOfView * Mathf.PI / 180f) * radius * 2; 
+			baseWidth = Mathf.Sin(0.5f * fieldOfView * Mathf.PI / 180f) * radius * 2;
 			LongEventHandler.ExecuteWhenFinished(delegate
 			{
 				turretTopMat = MaterialPool.MatFrom(graphicData.texPath);

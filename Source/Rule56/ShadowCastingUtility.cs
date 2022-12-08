@@ -357,7 +357,7 @@ namespace CombatAI
 		{
 			TryCast(TryWeightedScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction, buffer);
 		}
-		
+
 		private static void TryCastVisibilitySimple(float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer)
 		{
 			TryCastSimple(TryVisibilityScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction, buffer);
@@ -448,7 +448,7 @@ namespace CombatAI
 				castAction(request);
 			}
 		}
-		
+
 		private static void TryCastSimple(Action<CastRequest> castAction, float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer)
 		{
 			WallGrid grid = map.GetComponent<WallGrid>();

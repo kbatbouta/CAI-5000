@@ -1,13 +1,12 @@
 using System;
-using System.Reflection;
 using UnityEngine;
 using Verse;
 namespace CombatAI.Comps
 {
 	public class ThingComp_CCTVTop : ThingComp_Sighter
 	{
-		private bool                  cachedActive;
 		public  CCTVTopAnimator animator;
+		private bool            cachedActive;
 
 		/// <summary>
 		///     Current turret top rotation.
@@ -63,7 +62,7 @@ namespace CombatAI.Comps
 		public override void Initialize(CompProperties props)
 		{
 			base.Initialize(props);
-			animator = (CCTVTopAnimator) Activator.CreateInstance((props as CompProperties_CCTVTop).animator, new object[]{this});
+			animator = (CCTVTopAnimator)Activator.CreateInstance((props as CompProperties_CCTVTop).animator, this);
 		}
 
 		/// <summary>
@@ -73,9 +72,9 @@ namespace CombatAI.Comps
 		{
 			base.PostDraw();
 			CompProperties_CCTVTop props    = Props;
-			float                        rot      = CurRotation;
-			Vector3                      position = props.graphicData.drawOffset.RotatedBy(rot);
-			Matrix4x4                    matrix   = default;
+			float                  rot      = CurRotation;
+			Vector3                position = props.graphicData.drawOffset.RotatedBy(rot);
+			Matrix4x4              matrix   = default;
 			matrix.SetTRS(parent.DrawPos + Altitudes.AltIncVect + position, rot.ToQuat(), new Vector3(props.graphicData.drawSize.x, 1, props.graphicData.drawSize.y));
 			Graphics.DrawMesh(MeshPool.plane10, matrix, props.turretTopMat, 0);
 		}

@@ -132,7 +132,7 @@ namespace CombatAI
 			}
 			if (pawn != null)
 			{
-				if (pawn.Downed)
+				if (pawn.Downed || GenTicks.TicksGame - pawn.needs?.rest?.lastRestTick < 120)
 				{
 					return 3;
 				}

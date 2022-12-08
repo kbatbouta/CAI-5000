@@ -10,8 +10,10 @@ namespace CombatAI
 	public class SightGrid
 	{
 
-		private const    int           COVERCARRYLIMIT = 6;
-		private readonly List<Vector3> buffer          = new List<Vector3>(1024);
+		private const    int                        COVERCARRYLIMIT = 6;
+		private readonly AsyncActions               asyncActions;
+		private readonly IBuckets<IBucketableThing> buckets;
+		private readonly List<Vector3>              buffer = new List<Vector3>(1024);
 		/// <summary>
 		///     Sight grid contains all sight data.
 		/// </summary>
@@ -36,9 +38,7 @@ namespace CombatAI
 		private readonly List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>(64);
 		private readonly List<IBucketableThing> tmpInvalidRecords      = new List<IBucketableThing>(64);
 
-		private          WallGrid                   _walls;
-		private readonly AsyncActions               asyncActions;
-		private readonly IBuckets<IBucketableThing> buckets;
+		private WallGrid _walls;
 		/// <summary>
 		///     Fog of war grid. Can be null.
 		/// </summary>
@@ -212,7 +212,7 @@ namespace CombatAI
 			{
 				return false;
 			}
-			return (thing is Pawn pawn && !pawn.Dead) || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter)) || thing.def.HasComp(typeof(ThingComp_CCTVTop));
+			return thing is Pawn pawn && !pawn.Dead || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter)) || thing.def.HasComp(typeof(ThingComp_CCTVTop));
 		}
 
 		private bool Valid(IBucketableThing item)
@@ -492,6 +492,10 @@ namespace CombatAI
 			/// </summary>
 			public readonly ThingComp_CombatAI ai;
 			/// <summary>
+			///     Sighting component.
+			/// </summary>
+			public readonly ThingComp_CCTVTop CctvTop;
+			/// <summary>
 			///     Dormant comp.
 			/// </summary>
 			public readonly CompCanBeDormant dormant;
@@ -519,10 +523,6 @@ namespace CombatAI
 			///     Sighting component.
 			/// </summary>
 			public readonly ThingComp_Sighter sighter;
-			/// <summary>
-			///     Sighting component.
-			/// </summary>
-			public readonly ThingComp_CCTVTop CctvTop;
 			/// <summary>
 			///     Contains spotting records that are to be processed on the main thread once the scan is finished.
 			/// </summary>
@@ -566,7 +566,7 @@ namespace CombatAI
 				BucketIndex       = bucketIndex;
 				cachedDamage      = DamageUtility.GetDamageReport(thing);
 				cachedSightRadius = SightUtility.GetSightRadius(thing);
-				CctvTop     = thing.GetComp_Fast<ThingComp_CCTVTop>();
+				CctvTop           = thing.GetComp_Fast<ThingComp_CCTVTop>();
 			}
 			/// <summary>
 			///     Bucket index.

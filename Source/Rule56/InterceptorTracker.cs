@@ -6,16 +6,16 @@ namespace CombatAI
 {
 	public class InterceptorTracker
 	{
+		private readonly HashSet<IntVec3>             _drawnCells  = new HashSet<IntVec3>(256);
+		private readonly List<IBucketableInterceptor> _removalList = new List<IBucketableInterceptor>();
 
 		private readonly IBuckets<IBucketableInterceptor> buckets;
 		public readonly  MapComponent_CombatAI            combatAI;
 		private readonly CellFlooder                      flooder;
 
-		public readonly  ITByteGrid                   grid;
-		public readonly  Map                          map;
-		private readonly HashSet<IntVec3>             _drawnCells  = new HashSet<IntVec3>(256);
-		private readonly List<IBucketableInterceptor> _removalList = new List<IBucketableInterceptor>();
-		private          bool                         wait;
+		public readonly ITByteGrid grid;
+		public readonly Map        map;
+		private         bool       wait;
 
 		public InterceptorTracker(MapComponent_CombatAI combatAI)
 		{

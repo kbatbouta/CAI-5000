@@ -1,15 +1,13 @@
+using System;
 using CombatAI.Comps;
 using Verse;
-using System;
-
 namespace CombatAI
 {
 	public class CCTVTopAnimator_Periodic : CCTVTopAnimator
 	{
-		private          float curRotationInt;
-		private          bool  idleTurnClockwise;
-		private          int   ticksUntilIdleTurn;
-		
+		private bool idleTurnClockwise;
+		private int  ticksUntilIdleTurn;
+
 		public CCTVTopAnimator_Periodic(ThingComp_CCTVTop comp) : base(comp)
 		{
 		}
@@ -19,8 +17,8 @@ namespace CombatAI
 		/// </summary>
 		public override float CurRotation
 		{
-			get => curRotationInt;
-			set => curRotationInt = value;
+			get;
+			set;
 		}
 
 		public override void Tick()
@@ -42,7 +40,7 @@ namespace CombatAI
 			{
 				CurRotation -= 0.26f;
 			}
-			if ( Math.Abs(CurRotation) > 60)
+			if (Math.Abs(CurRotation) > 60)
 			{
 				ticksUntilIdleTurn = Rand.RangeInclusive(30, 100);
 			}

@@ -5,14 +5,14 @@ namespace CombatAI
 {
 	public class WallCCTVTracker : MapComponent
 	{
-		private static List<Thing> _destroyList = new List<Thing>();
-		private FlagArray   grid;
-		private CellIndices indices;
+		private static readonly List<Thing> _destroyList = new List<Thing>();
+		private readonly        FlagArray   grid;
+		private readonly        CellIndices indices;
 
 		public WallCCTVTracker(Map map) : base(map)
 		{
-			indices    = map.cellIndices;
-			grid = new FlagArray(indices.NumGridCells);
+			indices = map.cellIndices;
+			grid    = new FlagArray(indices.NumGridCells);
 		}
 
 		public void Register(Thing thing)

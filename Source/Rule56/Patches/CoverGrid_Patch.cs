@@ -8,7 +8,7 @@ namespace CombatAI.Patches
 {
 	public static class CoverGrid_Patch
 	{
-		public static WallGrid        grid;
+		public static WallGrid grid;
 		public static MethodBase mCellToIndex = AccessTools.Method(typeof(CellIndices), nameof(CellIndices.CellToIndex), new[]
 		{
 			typeof(IntVec3)

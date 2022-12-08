@@ -10,13 +10,13 @@ namespace CombatAI.Utilities
 	public class ThingsTrackingModel
 	{
 
-		public readonly ThingDef      def;
-		public readonly Map           map;
-		public readonly ThingsTracker parent;
-
-		private          int                    count;
+		public readonly  ThingDef               def;
 		private readonly Dictionary<Thing, int> indexByThing = new Dictionary<Thing, int>();
-		private          ThingPositionInfo[]    sortedThings = new ThingPositionInfo[100];
+		public readonly  Map                    map;
+		public readonly  ThingsTracker          parent;
+
+		private int                 count;
+		private ThingPositionInfo[] sortedThings = new ThingPositionInfo[100];
 
 		public ThingsTrackingModel(ThingDef def, Map map, ThingsTracker parent)
 		{
