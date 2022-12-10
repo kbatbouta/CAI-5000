@@ -358,6 +358,15 @@ namespace CombatAI
 			TryCast(TryWeightedScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction, buffer);
 		}
 
+		private static void TryCastVisibilitySimple(float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer)
+		{
+			TryCastSimple(TryVisibilityScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction, buffer);
+		}
+		private static void TryCastWeightedSimple(float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer)
+		{
+			TryCastSimple(TryWeightedScan, startSlope, endSlope, quartor, maxDepth, carryLimit, source, map, setAction, buffer);
+		}
+
 		private static void TryCast(Action<CastRequest> castAction, float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer)
 		{
 			if (endSlope > 1.0f || startSlope < -1 || startSlope > endSlope)
@@ -438,6 +447,32 @@ namespace CombatAI
 				request.buffer      = buffer;
 				castAction(request);
 			}
+		}
+
+		private static void TryCastSimple(Action<CastRequest> castAction, float startSlope, float endSlope, int quartor, int maxDepth, int carryLimit, IntVec3 source, Map map, Action<IntVec3, int, int, float> setAction, List<Vector3> buffer)
+		{
+			WallGrid grid = map.GetComponent<WallGrid>();
+			if (grid == null)
+			{
+				Log.Error($"Wall grid not found for {map} with cast center {source}");
+				return;
+			}
+			buffer.Clear();
+			CastRequest request = new CastRequest();
+			VisibleRow  arc     = VisibleRow.First;
+			arc.startSlope      = startSlope;
+			arc.endSlope        = endSlope;
+			arc.visibilityCarry = 1;
+			arc.maxDepth        = maxDepth;
+			arc.quartor         = quartor;
+			request.firstRow    = arc;
+			request.grid        = grid;
+			request.carryLimit  = carryLimit;
+			request.map         = map;
+			request.source      = source;
+			request.setAction   = setAction;
+			request.buffer      = buffer;
+			castAction(request);
 		}
 
 		private class CastRequest

@@ -10,8 +10,10 @@ namespace CombatAI
 	public class SightGrid
 	{
 
-		private const    int           COVERCARRYLIMIT = 6;
-		private readonly List<Vector3> buffer          = new List<Vector3>(1024);
+		private const    int                        COVERCARRYLIMIT = 6;
+		private readonly AsyncActions               asyncActions;
+		private readonly IBuckets<IBucketableThing> buckets;
+		private readonly List<Vector3>              buffer = new List<Vector3>(1024);
 		/// <summary>
 		///     Sight grid contains all sight data.
 		/// </summary>
@@ -36,9 +38,7 @@ namespace CombatAI
 		private readonly List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>(64);
 		private readonly List<IBucketableThing> tmpInvalidRecords      = new List<IBucketableThing>(64);
 
-		private          WallGrid                   _walls;
-		private readonly AsyncActions               asyncActions;
-		private readonly IBuckets<IBucketableThing> buckets;
+		private WallGrid _walls;
 		/// <summary>
 		///     Fog of war grid. Can be null.
 		/// </summary>
@@ -212,7 +212,7 @@ namespace CombatAI
 			{
 				return false;
 			}
-			return thing is Pawn pawn && !pawn.Dead || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter));
+			return thing is Pawn pawn && !pawn.Dead || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter)) || thing.def.HasComp(typeof(ThingComp_CCTVTop));
 		}
 
 		private bool Valid(IBucketableThing item)
@@ -322,7 +322,7 @@ namespace CombatAI
 				float rSqr_scan  = Maths.Sqr(sightRadius.scan);
 				float rSqr_fog   = Maths.Sqr(sightRadius.fog);
 				float rSqr_fade  = Maths.Sqr(r_fade);
-				ShadowCastingUtility.CastWeighted(map, pos, (cell, carry, dist, coverRating) =>
+				Action<IntVec3, int, int, float> setAction = (cell, carry, dist, coverRating) =>
 				{
 					float d2         = pos.DistanceToSquared(cell);
 					float visibility = 0f;
@@ -359,7 +359,15 @@ namespace CombatAI
 							item.spottings.Add(spotting);
 						}
 					}
-				}, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), settings.carryLimit, buffer);
+				};
+				if (item.CctvTop == null)
+				{
+					ShadowCastingUtility.CastWeighted(map, pos, setAction, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), settings.carryLimit, buffer);
+				}
+				else
+				{
+					ShadowCastingUtility.CastWeighted(map, pos, item.CctvTop.LookDirection, setAction, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), item.CctvTop.BaseWidth, settings.carryLimit, buffer);
+				}
 				if (scanForEnemies)
 				{
 					if (item.spottings.Count > 0 || Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
@@ -484,6 +492,10 @@ namespace CombatAI
 			/// </summary>
 			public readonly ThingComp_CombatAI ai;
 			/// <summary>
+			///     Sighting component.
+			/// </summary>
+			public readonly ThingComp_CCTVTop CctvTop;
+			/// <summary>
 			///     Dormant comp.
 			/// </summary>
 			public readonly CompCanBeDormant dormant;
@@ -554,6 +566,7 @@ namespace CombatAI
 				BucketIndex       = bucketIndex;
 				cachedDamage      = DamageUtility.GetDamageReport(thing);
 				cachedSightRadius = SightUtility.GetSightRadius(thing);
+				CctvTop           = thing.GetComp_Fast<ThingComp_CCTVTop>();
 			}
 			/// <summary>
 			///     Bucket index.

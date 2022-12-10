@@ -6,6 +6,8 @@
     <CombatAI.Open>Open</CombatAI.Open>
     <CombatAI.Hide>Hide</CombatAI.Hide>
     <CombatAI.Expand>Hide</CombatAI.Expand>
+    <CombatAI.PlaceWorker.WallMounted>Needs to be mounted to a wall or a solid structure.
+    </CombatAI.PlaceWorker.WallMounted>
     <CombatAI.Preparing>Preparing Combat AI</CombatAI.Preparing>
     <CombatAI.Settings.Basic>Basic Settings</CombatAI.Settings.Basic>
     <CombatAI.Settings.Basic.FogOfWar>[BETA] Fog of war</CombatAI.Settings.Basic.FogOfWar>

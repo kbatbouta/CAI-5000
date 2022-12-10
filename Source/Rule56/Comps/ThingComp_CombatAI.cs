@@ -12,6 +12,10 @@ namespace CombatAI.Comps
 {
 	public class ThingComp_CombatAI : ThingComp
 	{
+		/// <summary>
+		///     Set of visible enemies. A queue for visible enemies during scans.
+		/// </summary>
+		private readonly HashSet<Thing> visibleEnemies;
 
 		/// <summary>
 		///     Parent armor report.
@@ -33,10 +37,6 @@ namespace CombatAI.Comps
 		///     Parent sight reader.
 		/// </summary>
 		public SightTracker.SightReader sightReader;
-		/// <summary>
-		///     Set of visible enemies. A queue for visible enemies during scans.
-		/// </summary>
-		private readonly HashSet<Thing> visibleEnemies;
 		/// <summary>
 		///     Wait job started/queued by this comp.
 		/// </summary>
@@ -449,7 +449,7 @@ namespace CombatAI.Comps
 			// if the pawn is tanky enough skip.
 			if (parent.Spawned && GenTicks.TicksGame - lastScanned < 90 && parent is Pawn pawn && !pawn.Dead && !pawn.Downed && armor.TankInt < 0.4f)
 			{
-				if (dInfo.Def != null && dInfo.Instigator != null)
+				if (!pawn.RaceProps.IsMechanoid && dInfo.Def != null && dInfo.Instigator != null)
 				{
 					if (pawn.CurJobDef.Is(JobDefOf.Mine))
 					{

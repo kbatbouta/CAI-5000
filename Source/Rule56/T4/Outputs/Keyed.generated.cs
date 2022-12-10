@@ -83,6 +83,16 @@ namespace CombatAI.R
                    _CombatAI_Expand : _CombatAI_Expand = "CombatAI.Expand".Translate();
         }             
                       
+        private static TaggedString _CombatAI_PlaceWorker_WallMounted = null;
+        /// <summary> Keyed string. key=<c>CombatAI.PlaceWorker.WallMounted</c>. inner text:
+        ///
+        /// <code>Needs to be mounted to a wall or a solid structure.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_PlaceWorker_WallMounted {
+            get => _CombatAI_PlaceWorker_WallMounted != null ? 
+                   _CombatAI_PlaceWorker_WallMounted : _CombatAI_PlaceWorker_WallMounted = "CombatAI.PlaceWorker.WallMounted".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Preparing = null;
         /// <summary> Keyed string. key=<c>CombatAI.Preparing</c>. inner text:
         ///

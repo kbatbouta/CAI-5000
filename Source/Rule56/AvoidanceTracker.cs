@@ -8,11 +8,11 @@ namespace CombatAI
 {
 	public class AvoidanceTracker : MapComponent
 	{
+		private readonly HashSet<IntVec3>          _drawnCells  = new HashSet<IntVec3>();
 		private readonly List<Pawn>                _removalList = new List<Pawn>();
 		private readonly AsyncActions              asyncActions;
 		private readonly IBuckets<IBucketablePawn> buckets;
 		private readonly CellFlooder               flooder;
-		private readonly HashSet<IntVec3>          _drawnCells = new HashSet<IntVec3>();
 
 		public IHeatGrid  affliction_dmg;
 		public IHeatGrid  affliction_pen;

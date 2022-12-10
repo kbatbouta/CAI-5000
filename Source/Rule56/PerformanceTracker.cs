@@ -7,13 +7,13 @@ namespace CombatAI
 {
 	public class PerformanceTracker : GameComponent
 	{
+		private readonly Stopwatch stopwatch = new Stopwatch();
 
 		/// <summary>
 		///     The mod perfomance level. A float ranging from 0 to 1.0f. the lower the value the worse is the current performance.
 		///     Used to help maintian sustained performance.
 		/// </summary>
 		private float performance = 1.0f;
-		private readonly Stopwatch stopwatch = new Stopwatch();
 
 		private bool tpsCriticallyLow;
 

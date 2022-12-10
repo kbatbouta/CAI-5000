@@ -79,7 +79,7 @@ namespace CombatAI
 		/// <param name="baseWidth">What is the maximum amount of cells (width) to be scanned</param>
 		public static void CastVisibility(Map map, IntVec3 source, Vector3 direction, Action<IntVec3, int> action, float radius, float baseWidth, List<Vector3> buffer)
 		{
-			Cast(map, TryCastVisibility, (cell, _, dist, ignore) => action(cell, dist), source, (source.ToVector3() + direction.normalized * radius).ToIntVec3(), baseWidth, VISIBILITY_CARRY_MAX, buffer);
+			Cast(map, TryCastVisibilitySimple, (cell, _, dist, ignore) => action(cell, dist), source, (source.ToVector3() + direction.normalized * radius).ToIntVec3(), baseWidth, VISIBILITY_CARRY_MAX, buffer);
 		}
 
 		/// <summary>
@@ -91,24 +91,19 @@ namespace CombatAI
 		/// <param name="direction">Direction</param>
 		/// <param name="action">Set action (x, z, current_ray_value)</param>
 		/// <param name="baseWidth">What is the maximum amount of cells (width) to be scanned</param>
-		public static void CastWeighted(Map map, IntVec3 source, Vector3 direction, Action<IntVec3, int, int, float> action, float radius, float baseWidth, int carryLimit, List<Vector3> buffer)
+		public static void CastWeighted(Map map, IntVec3 source, Vector3 direction, Action<IntVec3, int, int, float> action, float range, float baseWidth, int carryLimit, List<Vector3> buffer)
 		{
-			Cast(map, TryCastWeighted, action, source, (source.ToVector3() + direction.normalized * radius).ToIntVec3(), baseWidth, carryLimit, buffer);
+			Cast(map, TryCastWeightedSimple, action, source, (source.ToVector3() + direction.normalized * range).ToIntVec3(), baseWidth, carryLimit, buffer);
 		}
-
 
 		private static void Cast(Map map, Action<float, float, int, int, int, IntVec3, Map, Action<IntVec3, int, int, float>, List<Vector3>> castingAction, Action<IntVec3, int, int, float> setAction, IntVec3 source, IntVec3 target, float baseWidth, int carryLimit, List<Vector3> buffer)
 		{
-			if (target.DistanceTo(source) < 2)
-			{
-				return;
-			}
-			//
 			// get which quartor the target is in.
 			int     quartor    = GetQurator(target - source);
 			Vector3 relTarget  = _transformationInverseFuncsV3[quartor]((target - source).ToVector3());
-			Vector3 relStart   = relTarget + new Vector3(0, 0, -baseWidth / 2f);
-			Vector3 relEnd     = relTarget + new Vector3(0, 0, baseWidth / 2f);
+			Vector3 relDir     = relTarget.normalized;
+			Vector3 relStart   = relTarget + new Vector3(relDir.y, 0, -relDir.x) * baseWidth / 2;
+			Vector3 relEnd     = relTarget - new Vector3(relDir.y, 0, -relDir.x) * baseWidth / 2;
 			int     maxDepth   = (int)source.DistanceTo(target);
 			float   startSlope = GetSlope(relStart);
 			float   endSlope   = GetSlope(relEnd);

@@ -6,10 +6,10 @@ namespace CombatAI.Statistics
 {
 	public class WorldComponent_Statistics : WorldComponent
 	{
-		private          StringBuilder builder                         = new StringBuilder();
 		private readonly float[]       temp                            = new float[10];
-		private          int[]         visibleEnemiesInjuries          = new int[10];
 		private readonly float[]       visibleEnemiesInjuryProbability = new float[10];
+		private          StringBuilder builder                         = new StringBuilder();
+		private          int[]         visibleEnemiesInjuries          = new int[10];
 		private          int[]         visibleEnemiesTicks             = new int[10];
 
 		public WorldComponent_Statistics(World world) : base(world)

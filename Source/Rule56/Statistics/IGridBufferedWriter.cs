@@ -9,6 +9,7 @@ namespace CombatAI.Statistics
 	public class IGridBufferedWriter
 	{
 		private readonly int      blockSize;
+		private readonly byte[]   buffer;
 		public readonly  string[] fields;
 		private readonly string   filePrefix;
 
@@ -18,7 +19,6 @@ namespace CombatAI.Statistics
 		private readonly string name;
 		public readonly  Type[] types;
 		private readonly string writeDir;
-		private readonly byte[] buffer;
 
 		public IGridBufferedWriter(Map map, string name, string filePrefix, string[] fields, Type[] types)
 		{

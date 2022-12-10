@@ -9,16 +9,16 @@ namespace CombatAI
 {
 	public class SightTracker : MapComponent
 	{
+		private readonly HashSet<IntVec3> _drawnCells = new HashSet<IntVec3>();
 
 		public readonly SightGrid        colonistsAndFriendlies;
 		public readonly IThingsUInt64Map factionedUInt64Map;
 
-		public readonly  ITFloatGrid      fogGrid;
-		public readonly  SightGrid        insectsAndMechs;
-		public readonly  SightGrid        raidersAndHostiles;
-		public readonly  SightGrid        wildlife;
-		public readonly  IThingsUInt64Map wildUInt64Map;
-		private readonly HashSet<IntVec3> _drawnCells = new HashSet<IntVec3>();
+		public readonly ITFloatGrid      fogGrid;
+		public readonly SightGrid        insectsAndMechs;
+		public readonly SightGrid        raidersAndHostiles;
+		public readonly SightGrid        wildlife;
+		public readonly IThingsUInt64Map wildUInt64Map;
 
 		public SightTracker(Map map) : base(map)
 		{

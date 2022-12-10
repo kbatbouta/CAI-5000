@@ -4,9 +4,9 @@ namespace CombatAI
 {
 	public class ValWatcher<T> where T : struct, IComparable<T>, IEquatable<T>
 	{
-		private          int               changedTimestamp;
 		private readonly int               minChangedInterval;
 		private readonly Action<T, T, int> onChangedAction;
+		private          int               changedTimestamp;
 		private          T                 value;
 
 		public ValWatcher(T value, Action<T, T, int> onChangedAction, int minChangedInterval)

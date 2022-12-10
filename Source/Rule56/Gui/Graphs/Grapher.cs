@@ -12,17 +12,17 @@ namespace CombatAI.Gui
 
 		private readonly Listing_Collapsible collapsible = new Listing_Collapsible(scrollViewOnOverflow: false);
 
-		public string description = string.Empty;
-
 		private readonly List<Action<Rect>> header;
-
-		private bool mouseIsOver;
-
-		private GraphPoint mouseIsOverPoint = new GraphPoint(0, 0, Color.white);
 
 		private readonly GraphPointCollection points = new GraphPointCollection();
 
 		private readonly List<GraphPoint> pointsQueue = new List<GraphPoint>();
+
+		public string description = string.Empty;
+
+		private bool mouseIsOver;
+
+		private GraphPoint mouseIsOverPoint = new GraphPoint(0, 0, Color.white);
 
 		public string title = string.Empty;
 

@@ -4,15 +4,15 @@ namespace CombatAI
 {
 	public class PawnKindDefExtension : DefModExtension
 	{
+		private readonly List<MetaCombatAttribute> strongAttributes = new List<MetaCombatAttribute>();
+
+		private readonly List<MetaCombatAttribute> weakAttributes = new List<MetaCombatAttribute>();
 		[Unsaved(allowLoading: false)]
 		private bool _inited;
 		[Unsaved(allowLoading: false)]
 		private MetaCombatAttribute _strength;
 		[Unsaved(allowLoading: false)]
 		private MetaCombatAttribute _weakness;
-		private readonly List<MetaCombatAttribute> strongAttributes = new List<MetaCombatAttribute>();
-
-		private readonly List<MetaCombatAttribute> weakAttributes = new List<MetaCombatAttribute>();
 
 		public MetaCombatAttribute WeakCombatAttribute
 		{

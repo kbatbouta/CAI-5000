@@ -27,14 +27,54 @@ namespace CombatAI.R
     public static class Tex
     {     
 
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Buildings/CCTV/cctv_wall_base_east.png</c>:        
+        /// <code>Buildings/CCTV/cctv_wall_base_east.png</code>
+        /// </summary>       
+        public static readonly Texture2D Buildings_CCTV_cctv_wall_base_east = ContentFinder<Texture2D>.Get( "Buildings/CCTV/cctv_wall_base_east", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Buildings/CCTV/cctv_poleBird.png</c>:        
+        /// <code>Buildings/CCTV/cctv_poleBird.png</code>
+        /// </summary>       
+        public static readonly Texture2D Buildings_CCTV_cctv_poleBird = ContentFinder<Texture2D>.Get( "Buildings/CCTV/cctv_poleBird", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Buildings/CCTV/cctv_wall_turret.png</c>:        
+        /// <code>Buildings/CCTV/cctv_wall_turret.png</code>
+        /// </summary>       
+        public static readonly Texture2D Buildings_CCTV_cctv_wall_turret = ContentFinder<Texture2D>.Get( "Buildings/CCTV/cctv_wall_turret", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Buildings/CCTV/cctv_wall_body_north.png</c>:        
+        /// <code>Buildings/CCTV/cctv_wall_body_north.png</code>
+        /// </summary>       
+        public static readonly Texture2D Buildings_CCTV_cctv_wall_body_north = ContentFinder<Texture2D>.Get( "Buildings/CCTV/cctv_wall_body_north", true);      
+
         /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Buildings/CCTV/cctv_sentinel.png</c>:        
         /// <code>Buildings/CCTV/cctv_sentinel.png</code>
         /// </summary>       
         public static readonly Texture2D Buildings_CCTV_cctv_sentinel = ContentFinder<Texture2D>.Get( "Buildings/CCTV/cctv_sentinel", true);      
 
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Buildings/CCTV/cctv_poleADV.png</c>:        
+        /// <code>Buildings/CCTV/cctv_poleADV.png</code>
+        /// </summary>       
+        public static readonly Texture2D Buildings_CCTV_cctv_poleADV = ContentFinder<Texture2D>.Get( "Buildings/CCTV/cctv_poleADV", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Buildings/CCTV/cctvicon.png</c>:        
+        /// <code>Buildings/CCTV/cctvicon.png</code>
+        /// </summary>       
+        public static readonly Texture2D Buildings_CCTV_cctvicon = ContentFinder<Texture2D>.Get( "Buildings/CCTV/cctvicon", true);      
+
         /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Buildings/CCTV/cctv_pole.png</c>:        
         /// <code>Buildings/CCTV/cctv_pole.png</code>
         /// </summary>       
         public static readonly Texture2D Buildings_CCTV_cctv_pole = ContentFinder<Texture2D>.Get( "Buildings/CCTV/cctv_pole", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Buildings/CCTV/cctv_wall_base_south.png</c>:        
+        /// <code>Buildings/CCTV/cctv_wall_base_south.png</code>
+        /// </summary>       
+        public static readonly Texture2D Buildings_CCTV_cctv_wall_base_south = ContentFinder<Texture2D>.Get( "Buildings/CCTV/cctv_wall_base_south", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Buildings/CCTV/cctv_wall_base_north.png</c>:        
+        /// <code>Buildings/CCTV/cctv_wall_base_north.png</code>
+        /// </summary>       
+        public static readonly Texture2D Buildings_CCTV_cctv_wall_base_north = ContentFinder<Texture2D>.Get( "Buildings/CCTV/cctv_wall_base_north", true);      
     }
 }
