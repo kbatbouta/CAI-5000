@@ -4,9 +4,7 @@
     <ThingDef ParentName="BuildingBase">
         <defName>CombatAI_TribalPoleCCTV</defName>
         <label>Parrot in the cage</label>
-        <description>A parrot to keep sight of an area. Does not require power, need food to function. Does not function
-            at night.
-        </description>
+        <description>A parrot to keep sight of an area. Does not require power, need food to function. Does not function at night.</description>
         <thingClass>Building</thingClass>
         <graphicData>
             <graphicClass>Graphic_Single</graphicClass>
@@ -173,9 +171,7 @@
     <ThingDef ParentName="BuildingBase">
         <defName>CombatAI_SpacerPoleCCTV</defName>
         <label>Spacer Camera on Pole Mount</label>
-        <description>An advanced automated camera keep sight of an area.Higher vision range than industrial version and
-            with nightvision optic for night time.
-        </description>
+        <description>An advanced automated camera keep sight of an area.Higher vision range than industrial version and with nightvision optic for night time.</description>
         <thingClass>Building</thingClass>
         <graphicData>
             <graphicClass>Graphic_Single</graphicClass>
@@ -260,9 +256,7 @@
     <ThingDef ParentName="BuildingBase">
         <defName>CombatAI_CCTVTurretIndustrial</defName>
         <label>Industrial Wall Mounted CCTV</label>
-        <description>Wall mounted automated camera. Only provided conal field of vision, swivel around at fixed speed.
-            Has more vision range than Pole Mount version.
-        </description>
+        <description>Wall mounted automated camera. Only provided conal field of vision, swivel around at fixed speed. Has more vision range than Pole Mount version.</description>
         <thingClass>Building</thingClass>
         <graphicData>
             <graphicClass>Graphic_Multi</graphicClass>
@@ -352,10 +346,7 @@
     <ThingDef ParentName="BuildingBase">
         <defName>CombatAI_CCTVTurretSpacer</defName>
         <label>Spacer Wall Mounted CCTV</label>
-        <description>Wall mounted automated camera. Only provided conal field of vision, swivel around at fixed speed.
-            Has more vision range than Pole Mount version. Higher vision range than industrial version and with
-            nightvision optic for night time.
-        </description>
+        <description>Wall mounted automated camera. Only provided conal field of vision, swivel around at fixed speed. Has more vision range than Pole Mount version. Higher vision range than industrial version and with nightvision optic for night time.</description>
         <thingClass>Building</thingClass>
         <graphicData>
             <graphicClass>Graphic_Multi</graphicClass>
@@ -448,9 +439,7 @@
     <ThingDef ParentName="BuildingBase">
         <defName>CombatAI_IndoorCCTV</defName>
         <label>Indoor Automated Camera</label>
-        <description>Omnidirectional Camera, meant to be used indoor. Short range and consume minimal power. Will never
-            breakdown like its outdoor counterpart, but will shortcircuit in rain
-        </description>
+        <description>Omnidirectional Camera, meant to be used indoor. Short range and consume minimal power. Will never breakdown like its outdoor counterpart, but will shortcircuit in rain.</description>
         <thingClass>Building</thingClass>
         <graphicData>
             <graphicClass>Graphic_Single</graphicClass>
