@@ -50,11 +50,14 @@ namespace CombatAI
 				return result;
 			}
 			Verb verb = pawn.equipment?.PrimaryEq?.PrimaryVerb ?? null;
+//			if (verb == null || !verb.Available())
+//			{
+//				if (pawn.verbTracker != null && !pawn.verbTracker.AllVerbs.NullOrEmpty())
+//				{
+//					verb = pawn.verbTracker.AllVerbs.Where(v => v.Available()).MaxBy(v => v.IsMeleeAttack ? 0 : v.EffectiveRange) ?? null;
+//				}
+//			}
 			if (verb == null || !verb.Available())
-			{
-				verb = pawn.verbTracker?.AllVerbs.Where(v => v.Available()).MaxBy(v => v.IsMeleeAttack ? 0 : v.EffectiveRange) ?? null;
-			}
-			if (verb == null)
 			{
 				result.sight = 4;
 				result.scan  = 0;
