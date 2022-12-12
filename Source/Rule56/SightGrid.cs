@@ -38,6 +38,7 @@ namespace CombatAI
 		private readonly List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>(64);
 		private readonly List<IBucketableThing> tmpInvalidRecords      = new List<IBucketableThing>(64);
 
+		private int      ops;
 		private WallGrid _walls;
 		/// <summary>
 		///     Fog of war grid. Can be null.
@@ -47,6 +48,20 @@ namespace CombatAI
 		///     Whether this is the player grid
 		/// </summary>
 		public bool playerAlliance = false;
+		/// <summary>
+		/// Super rect containing all none sighter things casting.
+		/// </summary>
+		private CellRect suRect_Combatant = CellRect.Empty;
+		/// <summary>
+		/// Super rect containing all none sighter things casting from the prev cycle.
+		/// </summary>
+		private CellRect suRectPrev_Combatant = CellRect.Empty;
+
+		private IntVec3 suCentroid;
+		private IntVec3 suCentroidPrev;
+		/// <summary>
+		/// Ticks until update.
+		/// </summary>
 		private int ticksUntilUpdate;
 		/// <summary>
 		///     Whether this is the player grid
@@ -56,13 +71,19 @@ namespace CombatAI
 
 		public SightGrid(SightTracker sightTracker, Settings.SightPerformanceSettings settings)
 		{
-			this.sightTracker = sightTracker;
-			map               = sightTracker.map;
-			this.settings     = settings;
-			grid              = new ITSignalGrid(map);
-			asyncActions      = new AsyncActions(1);
-			ticksUntilUpdate  = Rand.Int % this.settings.interval;
-			buckets           = new IBuckets<IBucketableThing>(settings.buckets);
+			this.sightTracker     = sightTracker;
+			map                   = sightTracker.map;
+			this.settings         = settings;
+			grid                  = new ITSignalGrid(map);
+			asyncActions          = new AsyncActions(1);
+			ticksUntilUpdate      = Rand.Int % this.settings.interval;
+			buckets               = new IBuckets<IBucketableThing>(settings.buckets);
+			suRect_Combatant      = new CellRect();
+			suRect_Combatant.minX = map.cellIndices.mapSizeX;
+			suRect_Combatant.maxX = 0;
+			suRect_Combatant.minZ = map.cellIndices.mapSizeZ;
+			suRect_Combatant.maxZ = 0;
+			suRectPrev_Combatant  = CellRect.Empty;
 		}
 		/// <summary>
 		///     Tracks the number of factions tracked.
@@ -70,6 +91,20 @@ namespace CombatAI
 		public int FactionNum
 		{
 			get => numsByFaction.Count;
+		}
+		/// <summary>
+		/// CellRect containing all combatant pawns.
+		/// </summary>
+		public CellRect SuRect_Combatant
+		{
+			get => suRectPrev_Combatant;
+		}
+		/// <summary>
+		/// Avg position of combatant pawns.
+		/// </summary>
+		public IntVec3 SuCentroid
+		{
+			get => suCentroidPrev;
 		}
 		/// <summary>
 		///     The map's wallgrid.
@@ -188,9 +223,24 @@ namespace CombatAI
 
 		private void Continue()
 		{
+			suRectPrev_Combatant      =  suRect_Combatant;
+			suRect_Combatant.minX     =  map.cellIndices.mapSizeX;
+			suRect_Combatant.maxX     =  0;
+			suRect_Combatant.minZ     =  map.cellIndices.mapSizeZ;
+			suRect_Combatant.maxZ     =  0;
+			suRectPrev_Combatant.minX -= 5;
+			suRectPrev_Combatant.minZ -= 5;
+			suRectPrev_Combatant.maxX += 5;
+			suRectPrev_Combatant.maxZ += 5;
+			suCentroidPrev            =  suCentroid;
 			gridFog?.NextCycle();
 			grid.NextCycle();
-			wait = false;
+			wait             = false;
+			suCentroidPrev   = suCentroid;
+			suCentroidPrev.x = Mathf.CeilToInt(suCentroidPrev.x / (ops + 1e-3f));
+			suCentroidPrev.z = Mathf.CeilToInt(suCentroidPrev.z / (ops + 1e-3f));
+			suCentroid       = IntVec3.Zero;
+			ops              = 0;
 		}
 
 		private bool Consistent(IBucketableThing item)
@@ -299,6 +349,15 @@ namespace CombatAI
 				item.lastScannedForEnemies = ticks;
 				item.ai.OnScanStarted();
 				item.spottings.Clear();
+			}
+			if (scanForEnemies || (item.sighter == null && item.CctvTop == null))
+			{
+				suRect_Combatant.minX = Maths.Min(suRect_Combatant.minX, pos.x);
+				suRect_Combatant.maxX = Maths.Max(suRect_Combatant.maxX, pos.x);
+				suRect_Combatant.minZ = Maths.Min(suRect_Combatant.minZ, pos.z);
+				suRect_Combatant.maxZ = Maths.Max(suRect_Combatant.maxZ, pos.z);
+				ops += 1;
+				suCentroid += pos;
 			}
 			ISightRadius sightRadius = item.cachedSightRadius;
 			Action action = () =>
