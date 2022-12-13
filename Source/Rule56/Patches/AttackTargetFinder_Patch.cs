@@ -77,7 +77,7 @@ namespace CombatAI.Patches
 			public static float GetTargetBaseScore(IAttackTarget target, IAttackTargetSearcher searcher, Verb verb)
 			{
 				float result = 60f;
-				if (sightReader != null && searcherPawn != null)
+				if (Finder.Settings.Targeter_Enabled && sightReader != null && searcherPawn != null)
 				{
 					if (verb.IsMeleeAttack || verb.EffectiveRange <= 15)
 					{
