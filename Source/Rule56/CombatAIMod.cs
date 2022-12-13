@@ -85,6 +85,7 @@ namespace CombatAI
 				{
 					rect =>
 					{
+						GUI.color = Color.green;
 						if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Easy))
 						{
 							Finder.Settings.Pathfinding_DestWeight                      = 0.9f;
@@ -169,7 +170,7 @@ namespace CombatAI
 							Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Hard, MessageTypeDefOf.TaskCompletion);
 						}
 					}
-				});
+				}, drawDivider: false);
 			}, useMargins: true);
 			collapsible.Line(1);
 			if (collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_PerformanceOpt, ref Finder.Settings.PerformanceOpt_Enabled, Keyed.CombatAI_Settings_Basic_PerformanceOpt_Description) && !Finder.Settings.PerformanceOpt_Enabled)
