@@ -94,6 +94,9 @@ namespace CombatAI
 							Finder.Settings.Pather_Enabled                              = true;
 							Finder.Settings.Pather_KillboxKiller                        = false;
 							Finder.Settings.PerformanceOpt_Enabled                      = true;
+							Finder.Settings.React_Enabled                               = false;
+							Finder.Settings.Retreat_Enabled                             = false;
+							Finder.Settings.Flank_Enabled                               = false;
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
 							if (Current.ProgramState != ProgramState.Playing)
 							{
@@ -122,6 +125,9 @@ namespace CombatAI
 							Finder.Settings.Pather_Enabled                              = true;
 							Finder.Settings.Pather_KillboxKiller                        = true;
 							Finder.Settings.PerformanceOpt_Enabled                      = true;
+							Finder.Settings.React_Enabled                               = true;
+							Finder.Settings.Retreat_Enabled                             = false;
+							Finder.Settings.Flank_Enabled                               = true;
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
 							if (Current.ProgramState != ProgramState.Playing)
 							{
@@ -152,6 +158,9 @@ namespace CombatAI
 							Finder.Settings.Pather_KillboxKiller                        = true;
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
 							Finder.Settings.PerformanceOpt_Enabled                      = false;
+							Finder.Settings.React_Enabled                               = true;
+							Finder.Settings.Retreat_Enabled                             = true;
+							Finder.Settings.Flank_Enabled                               = true;
 							if (Current.ProgramState != ProgramState.Playing)
 							{
 								Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 5;
@@ -182,6 +191,9 @@ namespace CombatAI
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Pather, ref Finder.Settings.Pather_Enabled);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Caster, ref Finder.Settings.Caster_Enabled);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Targeter, ref Finder.Settings.Targeter_Enabled);
+			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Reaction, ref Finder.Settings.React_Enabled);
+			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Flanking, ref Finder.Settings.Flank_Enabled);
+			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Retreat, ref Finder.Settings.Retreat_Enabled);
 		}
 
 		private void FillCollapsible_FogOfWar(Listing_Collapsible collapsible)

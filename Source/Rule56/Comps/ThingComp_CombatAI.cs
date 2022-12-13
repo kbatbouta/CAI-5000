@@ -251,7 +251,7 @@ namespace CombatAI.Comps
 				float   bestEnemyScore      = verb.currentTarget.IsValid && verb.currentTarget.Cell.IsValid ? verb.currentTarget.Cell.DistanceToSquared(pawnPosition) : 1e6f;
 				bool    bestEnemyVisibleNow = warmup != null;
 				bool    retreat             = false;
-				bool    canRetreat          = pawn.RaceProps.baseHealthScale <= 2.0f && pawn.RaceProps.baseBodySize <= 2.2f;
+				bool    canRetreat          = Finder.Settings.Retreat_Enabled && pawn.RaceProps.baseHealthScale <= 2.0f && pawn.RaceProps.baseBodySize <= 2.2f;
 				float   retreatDistSqr      = Maths.Max(verb.EffectiveRange * verb.EffectiveRange / 9, 36);
 				foreach (Thing enemy in visibleEnemies)
 				{
@@ -447,7 +447,7 @@ namespace CombatAI.Comps
 		public void Notify_TookDamage(DamageInfo dInfo)
 		{
 			// if the pawn is tanky enough skip.
-			if (parent.Spawned && GenTicks.TicksGame - lastScanned < 90 && parent is Pawn pawn && !pawn.Dead && !pawn.Downed && armor.TankInt < 0.4f)
+			if (Finder.Settings.Retreat_Enabled && parent.Spawned && GenTicks.TicksGame - lastScanned < 90 && parent is Pawn pawn && !pawn.Dead && !pawn.Downed && armor.TankInt < 0.4f)
 			{
 				if (!pawn.RaceProps.IsMechanoid && dInfo.Def != null && dInfo.Instigator != null)
 				{

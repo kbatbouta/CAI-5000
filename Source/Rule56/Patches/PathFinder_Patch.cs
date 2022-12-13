@@ -318,7 +318,7 @@ namespace CombatAI.Patches
 							}
 						}
 					}
-					if (avoidanceReader != null && !isPlayer)
+					if (avoidanceReader != null && !isPlayer && Finder.Settings.Flank_Enabled)
 					{
 						if (value > 3)
 						{

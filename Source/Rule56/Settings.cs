@@ -51,9 +51,12 @@ namespace CombatAI
 		public bool  Pather_Enabled         = true;
 		public bool  Pather_KillboxKiller   = true;
 		public float Pathfinding_DestWeight = 0.85f;
+		public bool  React_Enabled          = true;
+		public bool  Retreat_Enabled        = true;
+		public bool  Flank_Enabled       = true;
 		public bool  PerformanceOpt_Enabled = true;
 
-		public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(3, 5, 12);
+		public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(3, 5, 16);
 		public SightPerformanceSettings SightSettings_MechsAndInsects      = new SightPerformanceSettings(3, 10, 6);
 		public SightPerformanceSettings SightSettings_SettlementTurrets    = new SightPerformanceSettings(8, 15, 12);
 		public SightPerformanceSettings SightSettings_Wildlife             = new SightPerformanceSettings(6, 5, 4);
@@ -69,7 +72,7 @@ namespace CombatAI
 			Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders.{version}");
 			if (SightSettings_FriendliesAndRaiders == null)
 			{
-				SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(3, 5, 12);
+				SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(3, 5, 16);
 			}
 			Scribe_Deep.Look(ref SightSettings_MechsAndInsects, $"CombatAI.SightSettings_MechsAndInsects.{version}");
 			if (SightSettings_MechsAndInsects == null)
@@ -98,6 +101,9 @@ namespace CombatAI
 			Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
 			Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);
 			Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
+			Scribe_Values.Look(ref React_Enabled, $"React_Enabled.{version}", true);
+			Scribe_Values.Look(ref Retreat_Enabled, $"Retreat_Enabled.{version}", true);
+			Scribe_Values.Look(ref Flank_Enabled, $"Flank_Enabled.{version}", true);
 			Scribe_Values.Look(ref Pathfinding_DestWeight, $"Pathfinding_DestWeight.{version}", 0.85f);
 			Scribe_Values.Look(ref AdvancedUser, $"AdvancedUser.{version}");
 			Scribe_Values.Look(ref FogOfWar_FogColor, $"FogOfWar_FogColor.{version}", 0.35f);

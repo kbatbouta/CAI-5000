@@ -343,6 +343,36 @@ namespace CombatAI.R
                    _CombatAI_Settings_Basic_Targeter : _CombatAI_Settings_Basic_Targeter = "CombatAI.Settings.Basic.Targeter".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_Flanking = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Flanking</c>. inner text:
+        ///
+        /// <code>Enable aggressive flanking</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Flanking {
+            get => _CombatAI_Settings_Basic_Flanking != null ? 
+                   _CombatAI_Settings_Basic_Flanking : _CombatAI_Settings_Basic_Flanking = "CombatAI.Settings.Basic.Flanking".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Reaction = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Reaction</c>. inner text:
+        ///
+        /// <code>Enable fast reactions</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Reaction {
+            get => _CombatAI_Settings_Basic_Reaction != null ? 
+                   _CombatAI_Settings_Basic_Reaction : _CombatAI_Settings_Basic_Reaction = "CombatAI.Settings.Basic.Reaction".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Retreat = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Retreat</c>. inner text:
+        ///
+        /// <code>Enable tactical retreat</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Retreat {
+            get => _CombatAI_Settings_Basic_Retreat != null ? 
+                   _CombatAI_Settings_Basic_Retreat : _CombatAI_Settings_Basic_Retreat = "CombatAI.Settings.Basic.Retreat".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic_Pather = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Pather</c>. inner text:
         ///

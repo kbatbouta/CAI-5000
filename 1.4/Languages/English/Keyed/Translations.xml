@@ -32,6 +32,9 @@
     <CombatAI.Settings.Basic.PerformanceOpt.Description>Automatically adjust settings to maintain both a good level of TPS and a good AI.</CombatAI.Settings.Basic.PerformanceOpt.Description>
     <CombatAI.Settings.Basic.Caster>Enable fire position tweaks</CombatAI.Settings.Basic.Caster>
     <CombatAI.Settings.Basic.Targeter>Enable target selection tweaks</CombatAI.Settings.Basic.Targeter>
+    <CombatAI.Settings.Basic.Flanking>Enable aggressive flanking</CombatAI.Settings.Basic.Flanking>
+    <CombatAI.Settings.Basic.Reaction>Enable fast reactions</CombatAI.Settings.Basic.Reaction>
+    <CombatAI.Settings.Basic.Retreat>Enable tactical retreat</CombatAI.Settings.Basic.Retreat>
     <CombatAI.Settings.Basic.Pather>Enable pathfinding tweaks</CombatAI.Settings.Basic.Pather>
     <CombatAI.Settings.Basic.DestWeight>Pathfinding aggressiveness level</CombatAI.Settings.Basic.DestWeight>
     <CombatAI.Settings.Basic.DestWeight.Description>Lower numbers mean pathfinding will be more aggressive at avoiding enemies, flanking and minimizing risk to pawns.</CombatAI.Settings.Basic.DestWeight.Description>
