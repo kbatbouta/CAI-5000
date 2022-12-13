@@ -146,7 +146,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Basic_Presets_Easy = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Easy</c>. inner text:
         ///
-        /// <code>Easy/Performance</code>
+        /// <code>Easy/Perf</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Basic_Presets_Easy {
             get => _CombatAI_Settings_Basic_Presets_Easy != null ? 
@@ -156,7 +156,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Basic_Presets_Normal = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Normal</c>. inner text:
         ///
-        /// <code>Normal/Balanced</code>
+        /// <code>Normal</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Basic_Presets_Normal {
             get => _CombatAI_Settings_Basic_Presets_Normal != null ? 
@@ -171,6 +171,16 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Settings_Basic_Presets_Hard {
             get => _CombatAI_Settings_Basic_Presets_Hard != null ? 
                    _CombatAI_Settings_Basic_Presets_Hard : _CombatAI_Settings_Basic_Presets_Hard = "CombatAI.Settings.Basic.Presets.Hard".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Presets_Deathwish = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Deathwish</c>. inner text:
+        ///
+        /// <code>Deathwish</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Presets_Deathwish {
+            get => _CombatAI_Settings_Basic_Presets_Deathwish != null ? 
+                   _CombatAI_Settings_Basic_Presets_Deathwish : _CombatAI_Settings_Basic_Presets_Deathwish = "CombatAI.Settings.Basic.Presets.Deathwish".Translate();
         }             
                       
         private static TaggedString _CombatAI_Settings_Basic_Presets_Applied = null;

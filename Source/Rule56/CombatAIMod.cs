@@ -148,19 +148,50 @@ namespace CombatAI
 					},
 					rect =>
 					{
-						GUI.color = Color.red;
 						if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Hard))
 						{
-							Finder.Settings.Pathfinding_DestWeight                      = 0.7f;
+							Finder.Settings.Pathfinding_DestWeight                      = 0.75f;
 							Finder.Settings.Caster_Enabled                              = true;
 							Finder.Settings.Targeter_Enabled                            = true;
 							Finder.Settings.Pather_Enabled                              = true;
 							Finder.Settings.Pather_KillboxKiller                        = true;
-							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
-							Finder.Settings.PerformanceOpt_Enabled                      = false;
 							Finder.Settings.React_Enabled                               = true;
 							Finder.Settings.Retreat_Enabled                             = true;
 							Finder.Settings.Flank_Enabled                               = true;
+							Finder.Settings.PerformanceOpt_Enabled                      = true;
+							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 2;
+							if (Current.ProgramState != ProgramState.Playing)
+							{
+								Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 5;
+							}
+							Finder.Settings.SightSettings_Wildlife.interval = 2;
+							if (Current.ProgramState != ProgramState.Playing)
+							{
+								Finder.Settings.SightSettings_Wildlife.buckets = 5;
+							}
+							Finder.Settings.SightSettings_MechsAndInsects.interval = 2;
+							if (Current.ProgramState != ProgramState.Playing)
+							{
+								Finder.Settings.SightSettings_MechsAndInsects.buckets = 5;
+							}
+							Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Hard, MessageTypeDefOf.TaskCompletion);
+						}
+					},
+					rect =>
+					{
+						GUI.color = Color.red;
+						if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Deathwish))
+						{
+							Finder.Settings.Pathfinding_DestWeight                      = 0.6f;
+							Finder.Settings.Caster_Enabled                              = true;
+							Finder.Settings.Targeter_Enabled                            = true;
+							Finder.Settings.Pather_Enabled                              = true;
+							Finder.Settings.Pather_KillboxKiller                        = true;
+							Finder.Settings.React_Enabled                               = true;
+							Finder.Settings.Retreat_Enabled                             = true;
+							Finder.Settings.Flank_Enabled                               = true;
+							Finder.Settings.PerformanceOpt_Enabled                      = false;
+							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
 							if (Current.ProgramState != ProgramState.Playing)
 							{
 								Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 5;
@@ -176,10 +207,10 @@ namespace CombatAI
 								Finder.Settings.SightSettings_MechsAndInsects.buckets = 5;
 							}
 							Messages.Message(Keyed.CombatAI_Settings_Basic_PerformanceOpt_Warning, MessageTypeDefOf.CautionInput);
-							Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Hard, MessageTypeDefOf.TaskCompletion);
+							Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Deathwish, MessageTypeDefOf.TaskCompletion);
 						}
 					}
-				}, drawDivider: false);
+				}, false);
 			}, useMargins: true);
 			collapsible.Line(1);
 			if (collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_PerformanceOpt, ref Finder.Settings.PerformanceOpt_Enabled, Keyed.CombatAI_Settings_Basic_PerformanceOpt_Description) && !Finder.Settings.PerformanceOpt_Enabled)

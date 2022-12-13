@@ -12,9 +12,10 @@
     <CombatAI.Animator.Controller.Description>Hold at the current angle.</CombatAI.Animator.Controller.Description>
     <CombatAI.Settings.Basic>Basic Settings</CombatAI.Settings.Basic>
     <CombatAI.Settings.Basic.Presets>Performance/Difficulty presets</CombatAI.Settings.Basic.Presets>
-    <CombatAI.Settings.Basic.Presets.Easy>Easy/Performance</CombatAI.Settings.Basic.Presets.Easy>
-    <CombatAI.Settings.Basic.Presets.Normal>Normal/Balanced</CombatAI.Settings.Basic.Presets.Normal>
+    <CombatAI.Settings.Basic.Presets.Easy>Easy/Perf</CombatAI.Settings.Basic.Presets.Easy>
+    <CombatAI.Settings.Basic.Presets.Normal>Normal</CombatAI.Settings.Basic.Presets.Normal>
     <CombatAI.Settings.Basic.Presets.Hard>Hard/Complex</CombatAI.Settings.Basic.Presets.Hard>
+    <CombatAI.Settings.Basic.Presets.Deathwish>Deathwish</CombatAI.Settings.Basic.Presets.Deathwish>
     <CombatAI.Settings.Basic.Presets.Applied>Applied preset:</CombatAI.Settings.Basic.Presets.Applied>
     <CombatAI.Settings.Basic.Presets.Description>Performance presets will determine the complexity of AI calculations and their interval. More complex calculations means harder AI but lower performance. Default is normal.</CombatAI.Settings.Basic.Presets.Description>
     <CombatAI.Settings.Basic.FogOfWar>[BETA] Fog of war</CombatAI.Settings.Basic.FogOfWar>
