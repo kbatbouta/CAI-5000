@@ -143,7 +143,7 @@ namespace CombatAI
 				float hearing = pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Hearing) ?? 1f;
 				float rest    = Mathf.Lerp(0.65f, 1f, pawn.needs?.rest?.curLevelInt ?? 1f);
 				float mul     = Mathf.Clamp(Maths.Min(vision, hearing, rest) * 0.6f + Maths.Max(vision, hearing, rest) * 0.4f, 0.5f, 1.5f);
-				return sightRadius * mul;
+				return Maths.Max(Maths.Max(sightRadius, 17) * mul, 10);
 			}
 			return sightRadius;
 		}

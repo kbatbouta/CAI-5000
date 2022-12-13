@@ -197,7 +197,7 @@ namespace CombatAI
 					Finder.Settings.FogOfWar_FogColor = Widgets.HorizontalSlider(rect, Finder.Settings.FogOfWar_FogColor, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_Density_Readouts.Formatted(Finder.Settings.FogOfWar_FogColor.ToString()), roundTo: 0.05f);
 				}, useMargins: true);
 
-				collapsible.Line(1);
+//				collapsible.Line(1);
 
 				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul);
 				collapsible.Lambda(25, rect =>
@@ -205,7 +205,7 @@ namespace CombatAI
 					Finder.Settings.FogOfWar_RangeMultiplier = Widgets.HorizontalSlider(rect, Finder.Settings.FogOfWar_RangeMultiplier, 0.75f, 2.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeMultiplier.ToString()), roundTo: 0.05f);
 				}, useMargins: true);
 
-				collapsible.Line(1);
+//				collapsible.Line(1);
 
 				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul);
 				collapsible.Lambda(25, rect =>

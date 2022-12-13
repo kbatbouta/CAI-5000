@@ -103,6 +103,26 @@ namespace CombatAI.R
                    _CombatAI_Preparing : _CombatAI_Preparing = "CombatAI.Preparing".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Animator_Controller = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Animator.Controller</c>. inner text:
+        ///
+        /// <code>Hold</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Animator_Controller {
+            get => _CombatAI_Animator_Controller != null ? 
+                   _CombatAI_Animator_Controller : _CombatAI_Animator_Controller = "CombatAI.Animator.Controller".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Animator_Controller_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Animator.Controller.Description</c>. inner text:
+        ///
+        /// <code>Hold at the current angle.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Animator_Controller_Description {
+            get => _CombatAI_Animator_Controller_Description != null ? 
+                   _CombatAI_Animator_Controller_Description : _CombatAI_Animator_Controller_Description = "CombatAI.Animator.Controller.Description".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic</c>. inner text:
         ///
