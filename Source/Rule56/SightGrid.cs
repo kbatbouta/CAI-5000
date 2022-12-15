@@ -362,10 +362,6 @@ namespace CombatAI
 			ISightRadius sightRadius = item.cachedSightRadius;
 			Action action = () =>
 			{
-				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
-				grid.Set(flagPos, item.pawn == null || !item.pawn.Downed ? GetFlags(item) : 0);
-				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
-				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
 				if (playerAlliance)
 				{
 					gridFog.Next();
@@ -427,6 +423,10 @@ namespace CombatAI
 				{
 					ShadowCastingUtility.CastWeighted(map, pos, item.CctvTop.LookDirection, setAction, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), item.CctvTop.BaseWidth, settings.carryLimit, buffer);
 				}
+				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
+				grid.Set(pos, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
+				grid.Next(0, 0, item.cachedDamage.attributes);
+				grid.Set(flagPos, item.pawn == null || !item.pawn.Downed ? GetFlags(item) : 0);
 				if (scanForEnemies)
 				{
 					if (item.spottings.Count > 0 || Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
