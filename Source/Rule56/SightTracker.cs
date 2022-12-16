@@ -140,10 +140,15 @@ namespace CombatAI
 								if (cell.InBounds(map) && !_drawnCells.Contains(cell))
 								{
 									_drawnCells.Add(cell);
-									float value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2) + insectsAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4);
-									if (value > 0)
+//									float value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2) + insectsAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4);
+									Region region = cell.GetRegion(map);
+									if (region != null)
 									{
-										map.debugDrawer.FlashCell(cell, Mathf.Clamp(value / 7f, 0.1f, 0.99f), $"{Math.Round(value, 3)} {enemies1 + enemies2}", 15);
+										float value = raidersAndHostiles.grid_regions.GetSignalNumByRegion(region) + colonistsAndFriendlies.grid_regions.GetSignalNumByRegion(region);
+										if (value > 0)
+										{
+											map.debugDrawer.FlashCell(cell, Mathf.Clamp(value / 7f, 0.1f, 0.99f), $"{Math.Round(value, 3)}", 15);
+										}
 									}
 								}
 							}
@@ -427,6 +432,14 @@ namespace CombatAI
 					}
 				}
 			}
+		}
+
+		public void Notify_RegionChanged(IntVec3 cell, Region region)
+		{
+			colonistsAndFriendlies.grid_regions.SetRegionAt(cell, region);
+			raidersAndHostiles.grid_regions.SetRegionAt(cell, region);
+			insectsAndMechs.grid_regions.SetRegionAt(cell, region);
+			wildlife.grid_regions.SetRegionAt(cell, region);
 		}
 
 		public override void MapRemoved()

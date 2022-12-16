@@ -18,6 +18,10 @@ namespace CombatAI
 		///     Sight grid contains all sight data.
 		/// </summary>
 		public readonly ITSignalGrid grid;
+		/// <summary>
+		///		Region grid contains sight data for regions.
+		/// </summary>
+		public readonly ITRegionGrid grid_regions;
 
 		/// <summary>
 		///     Parent map.
@@ -75,6 +79,7 @@ namespace CombatAI
 			map                   = sightTracker.map;
 			this.settings         = settings;
 			grid                  = new ITSignalGrid(map);
+			grid_regions          = new ITRegionGrid(map);
 			asyncActions          = new AsyncActions(1);
 			ticksUntilUpdate      = Rand.Int % this.settings.interval;
 			buckets               = new IBuckets<IBucketableThing>(settings.buckets);
@@ -235,6 +240,7 @@ namespace CombatAI
 			suCentroidPrev            =  suCentroid;
 			gridFog?.NextCycle();
 			grid.NextCycle();
+			grid_regions.NextCycle();
 			wait             = false;
 			suCentroidPrev   = suCentroid;
 			suCentroidPrev.x = Mathf.CeilToInt(suCentroidPrev.x / (ops + 1e-3f));
@@ -371,6 +377,8 @@ namespace CombatAI
 						gridFog.Set(item.path[i], 1.0f);
 					}
 				}
+				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
+				grid_regions.Next();
 				float r_fade     = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
 				float d_fade     = sightRadius.fog - r_fade;
 				float rSqr_sight = Maths.Sqr(sightRadius.sight);
@@ -387,6 +395,7 @@ namespace CombatAI
 						if (visibility > 0f)
 						{
 							grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
+							grid_regions.Set(cell);
 						}
 					}
 					if (playerAlliance && d2 < rSqr_fog)
