@@ -29,6 +29,7 @@
         <OutputPath>..\..\1.4\Assemblies</OutputPath>
         <DefineConstants>DEBUG;TRACE;DEBUG_REACTION;NETFRAMEWORK;NET472;</DefineConstants>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     </PropertyGroup>
     <ItemGroup>
         <Folder Include="T4\" />
@@ -84,7 +85,7 @@
     <!-- ................ -->
     <!--     Packages     -->
     <ItemGroup>
-        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.4.3542" GeneratePathProperty="true" />
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.4.3580-beta" GeneratePathProperty="true" />
         <PackageReference Include="TaskPubliciser" Version="1.0.3" />
         <PackageReference Include="Mono.TextTransform" Version="1.0.0" GeneratePathProperty="true" ExcludeAssets="runtime" />
         <PackageReference Include="Lib.Harmony" Version="2.2.2" ExcludeAssets="runtime" />

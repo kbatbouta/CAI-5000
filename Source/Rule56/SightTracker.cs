@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using CombatAI.Comps;
 using RimWorld;
 using UnityEngine;
@@ -220,6 +221,13 @@ namespace CombatAI
 				                         new[]
 				                         {
 					                         wildlife.grid, colonistsAndFriendlies.grid, raidersAndHostiles.grid
+				                         },
+				                         new ITRegionGrid[]
+				                         {
+				                         },
+				                         new[]
+				                         {
+					                         insectsAndMechs.grid_regions
 				                         });
 				return true;
 			}
@@ -237,6 +245,14 @@ namespace CombatAI
 				                         new[]
 				                         {
 					                         wildlife.grid
+				                         },
+				                         new[]
+				                         {
+					                         insectsAndMechs.grid_regions
+				                         },
+				                         new[]
+				                         {
+					                         colonistsAndFriendlies.grid_regions, raidersAndHostiles.grid_regions
 				                         });
 				return true;
 			}
@@ -255,6 +271,14 @@ namespace CombatAI
 				                         new[]
 				                         {
 					                         wildlife.grid
+				                         },
+				                         new[]
+				                         {
+					                         colonistsAndFriendlies.grid_regions
+				                         },
+				                         new[]
+				                         {
+					                         raidersAndHostiles.grid_regions, insectsAndMechs.grid_regions
 				                         });
 			}
 			else
@@ -271,6 +295,14 @@ namespace CombatAI
 				                         new[]
 				                         {
 					                         wildlife.grid
+				                         },
+				                         new[]
+				                         {
+					                         raidersAndHostiles.grid_regions
+				                         },
+				                         new[]
+				                         {
+					                         colonistsAndFriendlies.grid_regions, insectsAndMechs.grid_regions
 				                         });
 			}
 			return true;
@@ -291,6 +323,13 @@ namespace CombatAI
 				                         new[]
 				                         {
 					                         wildlife.grid, colonistsAndFriendlies.grid, raidersAndHostiles.grid
+				                         },
+				                         new ITRegionGrid[]
+				                         {
+				                         },
+				                         new[]
+				                         {
+					                         insectsAndMechs.grid_regions
 				                         });
 				return true;
 			}
@@ -308,6 +347,14 @@ namespace CombatAI
 				                         new[]
 				                         {
 					                         wildlife.grid
+				                         },
+				                         new[]
+				                         {
+					                         insectsAndMechs.grid_regions
+				                         },
+				                         new[]
+				                         {
+					                         colonistsAndFriendlies.grid_regions, raidersAndHostiles.grid_regions
 				                         });
 				return true;
 			}
@@ -326,6 +373,14 @@ namespace CombatAI
 				                         new[]
 				                         {
 					                         wildlife.grid
+				                         },
+				                         new[]
+				                         {
+					                         colonistsAndFriendlies.grid_regions
+				                         },
+				                         new[]
+				                         {
+					                         raidersAndHostiles.grid_regions, insectsAndMechs.grid_regions
 				                         });
 			}
 			else
@@ -342,6 +397,14 @@ namespace CombatAI
 				                         new[]
 				                         {
 					                         wildlife.grid
+				                         },
+				                         new[]
+				                         {
+					                         raidersAndHostiles.grid_regions
+				                         },
+				                         new[]
+				                         {
+					                         colonistsAndFriendlies.grid_regions, insectsAndMechs.grid_regions
 				                         });
 			}
 			return true;
@@ -468,15 +531,20 @@ namespace CombatAI
 			public ITSignalGrid[] friendlies;
 			public ITSignalGrid[] hostiles;
 			public ITSignalGrid[] neutrals;
+			
+			public ITRegionGrid[] friendlies_regions;
+			public ITRegionGrid[] hostiles_regions;
 
-			public SightReader(SightTracker tracker, ITSignalGrid[] friendlies, ITSignalGrid[] hostiles, ITSignalGrid[] neutrals)
+			public SightReader(SightTracker tracker, ITSignalGrid[] friendlies, ITSignalGrid[] hostiles, ITSignalGrid[] neutrals, ITRegionGrid[] friendlies_regions, ITRegionGrid[] hostiles_regions)
 			{
-				Tacker          = tracker;
-				Map             = tracker.map;
-				indices         = tracker.map.cellIndices;
-				this.friendlies = friendlies.ToArray();
-				this.hostiles   = hostiles.ToArray();
-				this.neutrals   = neutrals.ToArray();
+				Tacker                  = tracker;
+				Map                     = tracker.map;
+				indices                 = tracker.map.cellIndices;
+				this.friendlies         = friendlies.ToArray();
+				this.hostiles           = hostiles.ToArray();
+				this.neutrals           = neutrals.ToArray();
+				this.friendlies_regions = friendlies_regions.ToArray();
+				this.hostiles_regions   = hostiles_regions.ToArray();
 			}
 
 			public SightTracker Tacker
@@ -485,9 +553,11 @@ namespace CombatAI
 			}
 			public Map Map
 			{
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				get;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetThreat(IntVec3 cell)
 			{
 				return GetThreat(indices.CellToIndex(cell));
@@ -509,6 +579,7 @@ namespace CombatAI
 				return armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetBlunt(IntVec3 cell)
 			{
 				return GetBlunt(indices.CellToIndex(cell));
@@ -523,6 +594,7 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetSharp(IntVec3 cell)
 			{
 				return GetSharp(indices.CellToIndex(cell));
@@ -537,6 +609,7 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public MetaCombatAttribute GetMetaAttributes(IntVec3 cell)
 			{
 				return GetMetaAttributes(indices.CellToIndex(cell));
@@ -551,6 +624,45 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public int GetRegionAbsVisibilityToEnemies(Region region)
+			{
+				if (region != null)
+				{
+					return GetRegionAbsVisibilityToEnemies(region.id);
+				}
+				return 0;
+			}
+			public int GetRegionAbsVisibilityToEnemies(int id)
+			{
+				int value = 0;
+				for (int i = 0; i < hostiles_regions.Length; i++)
+				{
+					value += hostiles_regions[i].GetSignalNumById(id);
+				}
+				return value;
+			}
+			
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public int GetRegionAbsVisibilityToFriendlies(Region region)
+			{
+				if (region != null)
+				{
+					return GetRegionAbsVisibilityToFriendlies(region.id);
+				}
+				return 0;
+			}
+			public int GetRegionAbsVisibilityToFriendlies(int id)
+			{
+				int value = 0;
+				for (int i = 0; i < friendlies_regions.Length; i++)
+				{
+					value += friendlies_regions[i].GetSignalNumById(id);
+				}
+				return value;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetAbsVisibilityToNeutrals(IntVec3 cell)
 			{
 				return GetAbsVisibilityToNeutrals(indices.CellToIndex(cell));
@@ -565,6 +677,7 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetAbsVisibilityToEnemies(IntVec3 cell)
 			{
 				return GetAbsVisibilityToEnemies(indices.CellToIndex(cell));
@@ -579,6 +692,7 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetAbsVisibilityToFriendlies(IntVec3 cell)
 			{
 				return GetAbsVisibilityToFriendlies(indices.CellToIndex(cell));
@@ -593,6 +707,7 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetVisibilityToNeutrals(IntVec3 cell)
 			{
 				return GetVisibilityToNeutrals(indices.CellToIndex(cell));
@@ -607,6 +722,7 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetVisibilityToEnemies(IntVec3 cell)
 			{
 				return GetVisibilityToEnemies(indices.CellToIndex(cell));
@@ -621,6 +737,7 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetVisibilityToFriendlies(IntVec3 cell)
 			{
 				return GetVisibilityToFriendlies(indices.CellToIndex(cell));
@@ -635,15 +752,18 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public bool CheckFlags(IntVec3 cell, ulong flags)
 			{
 				return CheckFlags(indices.CellToIndex(cell), flags);
 			}
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public bool CheckFlags(int index, ulong flags)
 			{
 				return (flags & GetEnemyFlags(index)) == flags;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public ulong GetEnemyFlags(IntVec3 cell)
 			{
 				return GetEnemyFlags(indices.CellToIndex(cell));
@@ -658,6 +778,7 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public ulong GetFriendlyFlags(IntVec3 cell)
 			{
 				return GetFriendlyFlags(indices.CellToIndex(cell));
@@ -672,6 +793,7 @@ namespace CombatAI
 				return value;
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public Vector2 GetEnemyDirection(IntVec3 cell)
 			{
 				return GetEnemyDirection(indices.CellToIndex(cell));
@@ -685,7 +807,8 @@ namespace CombatAI
 				}
 				return value;
 			}
-
+			
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public Vector2 GetFriendlyDirection(IntVec3 cell)
 			{
 				return GetFriendlyDirection(indices.CellToIndex(cell));

@@ -23,6 +23,10 @@ namespace CombatAI
 			NumGridCells = cellIndices.NumGridCells;
 			regions      = new IFieldInfo[short.MaxValue];
 			cells_ids     = new int[NumGridCells];
+			for (int i = 0; i < NumGridCells; i++)
+			{
+				cells_ids[i] = -1;
+			}
 		}
 		
 		public short CycleNum
@@ -94,9 +98,9 @@ namespace CombatAI
 		/// <param name="region">region</param>
 		public void SetRegionAt(int index, Region region)
 		{
-			if (region?.id != -1 && index >= 0 && index < NumGridCells)
+			if (index >= 0 && index < NumGridCells)
 			{
-				cells_ids[index] = region.id;
+				cells_ids[index] = region?.id ?? -1;
 			}
 		}
 
