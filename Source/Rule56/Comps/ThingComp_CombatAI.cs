@@ -272,7 +272,7 @@ namespace CombatAI.Comps
 						float distSqr = pawnPosition.DistanceToSquared(shiftedPos);
 						if (canRetreat && distSqr < retreatDistSqr)
 						{
-							if (enemyPawn != null && distSqr < 49)
+							if (enemyPawn != null && distSqr < 81)
 							{
 								bestEnemy = enemy;
 								retreat   = true;
@@ -338,6 +338,7 @@ namespace CombatAI.Comps
 							Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
 							job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
 							pawn.jobs.ClearQueuedJobs();
+							pawn.jobs.StopAll();
 							pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
 						}
 					}

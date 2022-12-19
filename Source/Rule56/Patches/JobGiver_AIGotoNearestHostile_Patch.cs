@@ -15,7 +15,7 @@ namespace CombatAI.Patches
 				if (pawn.TryGetSightReader(out SightTracker.SightReader reader))
 				{
 					Thing nearestEnemy = null;
-					WeightedRegionFlooder.Flood(pawn.Position,
+					RegionFlooder.Flood(pawn.Position,
 					                            pawn.mindState.enemyTarget == null ? pawn.Position : pawn.mindState.enemyTarget.Position, pawn.Map,
 					                            (region, depth) =>
 					                            {

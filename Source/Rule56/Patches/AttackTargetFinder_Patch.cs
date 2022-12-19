@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
+using Mono.Unix.Native;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -10,14 +12,15 @@ namespace CombatAI.Patches
 {
 	internal static class AttackTargetFinder_Patch
 	{
-		private static Map                      map;
-		private static Pawn                     searcherPawn;
-		private static Faction                  searcherFaction;
-		private static Verb                     searcherVerb;
-		private static float                    dmg05;
-		private static ProjectileProperties     projectile;
-		private static SightTracker.SightReader sightReader;
-		private static DamageReport             damageReport;
+		private static          Map                      map;
+		private static          Pawn                     searcherPawn;
+		private static          Faction                  searcherFaction;
+		private static          Verb                     searcherVerb;
+		private static          float                    dmg05;
+		private static          ProjectileProperties     projectile;
+		private static          SightTracker.SightReader sightReader;
+		private static          DamageReport             damageReport;
+		private static readonly Dictionary<int, float>   distDict = new Dictionary<int, float>(256);
 
 		[HarmonyPatch(typeof(AttackTargetFinder), nameof(AttackTargetFinder.BestAttackTarget))]
 		internal static class AttackTargetFinder_BestAttackTarget_Patch
@@ -28,14 +31,47 @@ namespace CombatAI.Patches
 
 				if (searcher.Thing is Pawn pawn && !pawn.RaceProps.Animal)
 				{
+					distDict.Clear();
 					damageReport = DamageUtility.GetDamageReport(searcher.Thing);
 					searcherPawn = pawn;
 					searcherVerb = pawn.CurrentEffectiveVerb;
+					pawn.TryGetSightReader(out sightReader);
+					if (sightReader != null)
+					{
+						int num = 0;
+//						if (Find.Selector.SelectedPawns.Contains(pawn))
+//						{
+//							map.debugDrawer.FlashCell(pawn.Position, 0.1f, "s");
+//						}
+						Func<Region, int, bool> action = (region, depth) =>
+						{
+							List<Thing> things = region.ListerThings.ThingsInGroup(ThingRequestGroup.Pawn);
+							depth = Maths.Min(depth, 45);
+							for (int i = 0; i < things.Count; i++)
+							{
+								if (things[i] != null)
+								{
+									num++;
+									distDict[things[i].thingIDNumber] = depth;
+//									if (Find.Selector.SelectedPawns.Contains(pawn))
+//									{
+//										map.debugDrawer.FlashCell(things[i].Position, 0.9f, $"{depth}");
+//									}
+								}
+							}
+							return num >= 32;
+						};
+						float               costConst = !Mod_CE.active ? 7.5f : 2.5f;
+						Func<Region, float> cost = region =>
+						{
+							return Maths.Min(sightReader.GetRegionAbsVisibilityToEnemies(region), 10) * costConst;
+						};
+						RegionFlooder.Flood(pawn.Position, pawn.Position, pawn.Map, action, null,  cost, maxRegions: !Finder.Performance.TpsCriticallyLow ? 200 : 75);
+					}
 					if (searcherVerb != null && !searcherVerb.IsMeleeAttack && (projectile = searcherVerb.GetProjectile()?.projectile ?? null) != null)
 					{
 						dmg05 = projectile.damageAmountBase / 2f;
 					}
-					pawn.TryGetSightReader(out sightReader);
 				}
 				searcherFaction = searcher.Thing?.Faction ?? null;
 			}
@@ -46,6 +82,7 @@ namespace CombatAI.Patches
 				damageReport = default(DamageReport);
 				searcherPawn = null;
 				sightReader  = null;
+				distDict.Clear();
 			}
 		}
 
@@ -79,6 +116,14 @@ namespace CombatAI.Patches
 				float result = 60f;
 				if (Finder.Settings.Targeter_Enabled && sightReader != null && searcherPawn != null)
 				{
+					if (distDict.TryGetValue(target.Thing.thingIDNumber, out float intCost))
+					{
+						result += 45 - intCost;
+					}
+					else if(target.Thing is Building_Turret)
+					{
+						result += 22;
+					}
 					if (verb.IsMeleeAttack || verb.EffectiveRange <= 15)
 					{
 						if (sightReader.GetAbsVisibilityToEnemies(target.Thing.Position) > sightReader.GetAbsVisibilityToFriendlies(target.Thing.Position) + 1)
@@ -106,19 +151,6 @@ namespace CombatAI.Patches
 								diff = Mathf.Clamp01(1 - Maths.Max(armorReport.Blunt - damageReport.adjustedBlunt, armorReport.Sharp - damageReport.adjustedSharp, 0f));
 							}
 							result += 8f * diff;
-							//var armor = armorReport.GetArmor(projectile.damageDef);
-							//var damage = damageReport.GetAdjustedDamage(projectile.damageDef.armorCategory);
-							//if (projectile.armorPenetrationBase > 0)
-							//{
-							//    result += Mathf.Lerp(0f, 12f, damageReport.ad);
-							//if (Find.Selector.SelectedPawns.Contains(searcher.Thing as Pawn))
-							//{
-							//    map.debugDrawer.FlashCell(target.Thing.Position, diff, $"{diff}");
-							//}                            
-							//else
-							//{
-							//    result -= Maths.Min(armor * 0.5f, 8f);
-							//}
 						}
 						Thing targeted;
 						if (enemy.stances?.stagger != null && enemy.stances.stagger.Staggered)
