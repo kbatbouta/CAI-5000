@@ -333,14 +333,14 @@ namespace CombatAI.Comps
 					request.checkBlockChance   = true;
 					if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell) && cell != pawnPosition)
 					{
-						if (Rand.Chance((sightReader.GetThreat(pawn.Position) - sightReader.GetThreat(cell)) + 0.1f))
-						{
+//						if (Rand.Chance((sightReader.GetThreat(pawn.Position) - sightReader.GetThreat(cell)) + 0.1f))
+//						{
 							Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
 							job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
 							pawn.jobs.ClearQueuedJobs();
 							pawn.jobs.StopAll();
 							pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
-						}
+//						}
 					}
 					else if (warmup == null)
 					{

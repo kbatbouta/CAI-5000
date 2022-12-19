@@ -10,8 +10,8 @@ namespace CombatAI
 	public static class CoverPositionFinder
 	{
 		private static readonly Dictionary<IntVec3, IntVec3> parentTree = new Dictionary<IntVec3, IntVec3>(512);
-		private static readonly Dictionary<IntVec3, float> scores = new Dictionary<IntVec3, float>(512);
-
+		private static readonly Dictionary<IntVec3, float>   scores     = new Dictionary<IntVec3, float>(512);
+		
 		public static bool TryFindCoverPosition(CoverPositionRequest request, out IntVec3 coverCell)
 		{
 			request.caster.TryGetSightReader(out SightReader sightReader);
@@ -118,16 +118,15 @@ namespace CombatAI
 			flooder.Flood(request.locus,
 			              node =>
 			              {
+				              parentTree[node.cell] = node.parent;
+				              
 				              if (adjustedMaxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
 				              {
 					              return;
 				              }
-				              // save the node parent.
-				              parentTree[node.cell] = node.parent;
 				              // do math
 				              float c = (node.dist - node.distAbs) / (node.distAbs + 1f) + avoidanceReader.GetProximity(node.cell) * 0.5f - interceptors.grid.Get(node.cell) + (sightReader.GetThreat(node.cell) - rootThreat) * 0.75f;
-				              // save node score.
-				              scores[node.cell] = c;
+
 				              if (c < bestCellScore)
 				              {
 					              float d = node.cell.DistanceToSquared(enemyLoc);
@@ -138,10 +137,7 @@ namespace CombatAI
 						              bestCell      = node.cell;
 					              }
 				              }
-//				              if (Find.Selector.SelectedPawns.Contains(caster))
-//				              {
-//					              map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
-//				              }
+				              scores[node.cell]     = c;  
 			              },
 			              cell =>
 			              {
@@ -153,6 +149,13 @@ namespace CombatAI
 			              },
 			              (int)Maths.Min(adjustedMaxDist, 45f)
 			);
+//			if (Find.Selector.SelectedPawns.Contains(caster))
+//			{
+//				foreach (var v in scores)
+//				{
+//					map.debugDrawer.FlashCell(v.Key, (v.Value + 15f) / 30f, $"{Math.Round(v.Value, 2)}");
+//				}
+//			} 
 			if (!bestCell.IsValid)
 			{
 				coverCell = IntVec3.Invalid;
@@ -162,10 +165,9 @@ namespace CombatAI
 			if (bestCellDist > distSqr)
 			{
 				IntVec3 cell = bestCell;
-				while (parentTree.TryGetValue(cell, out IntVec3 parent) && parent != cell && parent.DistanceToSquared(request.locus) > distSqr && scores.TryGetValue(parent, out float score) && score < bestCellScore + 0.1f)
+				while (parentTree.TryGetValue(cell, out IntVec3 parent) && parent != cell && parent.DistanceToSquared(request.locus) > distSqr)
 				{
 					cell = parent;
-//					map.debugDrawer.FlashCell(cell, 1f, text: $"i");
 				}
 				bestCell = cell;
 			}
