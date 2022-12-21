@@ -103,6 +103,26 @@ namespace CombatAI.R
                    _CombatAI_Preparing : _CombatAI_Preparing = "CombatAI.Preparing".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Animator_Controller = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Animator.Controller</c>. inner text:
+        ///
+        /// <code>Hold</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Animator_Controller {
+            get => _CombatAI_Animator_Controller != null ? 
+                   _CombatAI_Animator_Controller : _CombatAI_Animator_Controller = "CombatAI.Animator.Controller".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Animator_Controller_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Animator.Controller.Description</c>. inner text:
+        ///
+        /// <code>Hold at the current angle.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Animator_Controller_Description {
+            get => _CombatAI_Animator_Controller_Description != null ? 
+                   _CombatAI_Animator_Controller_Description : _CombatAI_Animator_Controller_Description = "CombatAI.Animator.Controller.Description".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic</c>. inner text:
         ///
@@ -111,6 +131,76 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Settings_Basic {
             get => _CombatAI_Settings_Basic != null ? 
                    _CombatAI_Settings_Basic : _CombatAI_Settings_Basic = "CombatAI.Settings.Basic".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Presets = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets</c>. inner text:
+        ///
+        /// <code>Performance/Difficulty presets</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Presets {
+            get => _CombatAI_Settings_Basic_Presets != null ? 
+                   _CombatAI_Settings_Basic_Presets : _CombatAI_Settings_Basic_Presets = "CombatAI.Settings.Basic.Presets".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Presets_Easy = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Easy</c>. inner text:
+        ///
+        /// <code>Easy/Perf</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Presets_Easy {
+            get => _CombatAI_Settings_Basic_Presets_Easy != null ? 
+                   _CombatAI_Settings_Basic_Presets_Easy : _CombatAI_Settings_Basic_Presets_Easy = "CombatAI.Settings.Basic.Presets.Easy".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Presets_Normal = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Normal</c>. inner text:
+        ///
+        /// <code>Normal</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Presets_Normal {
+            get => _CombatAI_Settings_Basic_Presets_Normal != null ? 
+                   _CombatAI_Settings_Basic_Presets_Normal : _CombatAI_Settings_Basic_Presets_Normal = "CombatAI.Settings.Basic.Presets.Normal".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Presets_Hard = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Hard</c>. inner text:
+        ///
+        /// <code>Hard/Complex</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Presets_Hard {
+            get => _CombatAI_Settings_Basic_Presets_Hard != null ? 
+                   _CombatAI_Settings_Basic_Presets_Hard : _CombatAI_Settings_Basic_Presets_Hard = "CombatAI.Settings.Basic.Presets.Hard".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Presets_Deathwish = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Deathwish</c>. inner text:
+        ///
+        /// <code>Deathwish</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Presets_Deathwish {
+            get => _CombatAI_Settings_Basic_Presets_Deathwish != null ? 
+                   _CombatAI_Settings_Basic_Presets_Deathwish : _CombatAI_Settings_Basic_Presets_Deathwish = "CombatAI.Settings.Basic.Presets.Deathwish".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Presets_Applied = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Applied</c>. inner text:
+        ///
+        /// <code>Applied preset:</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Presets_Applied {
+            get => _CombatAI_Settings_Basic_Presets_Applied != null ? 
+                   _CombatAI_Settings_Basic_Presets_Applied : _CombatAI_Settings_Basic_Presets_Applied = "CombatAI.Settings.Basic.Presets.Applied".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Presets_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Description</c>. inner text:
+        ///
+        /// <code>Performance presets will determine the complexity of AI calculations and their interval. More complex calculations means harder AI but lower performance. Default is normal.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Presets_Description {
+            get => _CombatAI_Settings_Basic_Presets_Description != null ? 
+                   _CombatAI_Settings_Basic_Presets_Description : _CombatAI_Settings_Basic_Presets_Description = "CombatAI.Settings.Basic.Presets.Description".Translate();
         }             
                       
         private static TaggedString _CombatAI_Settings_Basic_FogOfWar = null;
@@ -216,17 +306,27 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Basic_PerformanceOpt = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.PerformanceOpt</c>. inner text:
         ///
-        /// <code>Enable dynamic performance settings</code>
+        /// <code>Enable Dynamic performance settings</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Basic_PerformanceOpt {
             get => _CombatAI_Settings_Basic_PerformanceOpt != null ? 
                    _CombatAI_Settings_Basic_PerformanceOpt : _CombatAI_Settings_Basic_PerformanceOpt = "CombatAI.Settings.Basic.PerformanceOpt".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_PerformanceOpt_Warning = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.PerformanceOpt.Warning</c>. inner text:
+        ///
+        /// <code>WARNING: NOT having dynamic performance settings ON will result in lag spikes and lose of performance!</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_PerformanceOpt_Warning {
+            get => _CombatAI_Settings_Basic_PerformanceOpt_Warning != null ? 
+                   _CombatAI_Settings_Basic_PerformanceOpt_Warning : _CombatAI_Settings_Basic_PerformanceOpt_Warning = "CombatAI.Settings.Basic.PerformanceOpt.Warning".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic_PerformanceOpt_Description = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.PerformanceOpt.Description</c>. inner text:
         ///
-        /// <code>Automatically adjust settings to maintain both a good level of\        TPS and a good AI.</code>
+        /// <code>Automatically adjust settings to maintain both a good level of TPS and a good AI.</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Basic_PerformanceOpt_Description {
             get => _CombatAI_Settings_Basic_PerformanceOpt_Description != null ? 
@@ -253,6 +353,36 @@ namespace CombatAI.R
                    _CombatAI_Settings_Basic_Targeter : _CombatAI_Settings_Basic_Targeter = "CombatAI.Settings.Basic.Targeter".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_Flanking = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Flanking</c>. inner text:
+        ///
+        /// <code>Enable aggressive flanking</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Flanking {
+            get => _CombatAI_Settings_Basic_Flanking != null ? 
+                   _CombatAI_Settings_Basic_Flanking : _CombatAI_Settings_Basic_Flanking = "CombatAI.Settings.Basic.Flanking".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Reaction = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Reaction</c>. inner text:
+        ///
+        /// <code>Enable fast reactions</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Reaction {
+            get => _CombatAI_Settings_Basic_Reaction != null ? 
+                   _CombatAI_Settings_Basic_Reaction : _CombatAI_Settings_Basic_Reaction = "CombatAI.Settings.Basic.Reaction".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Retreat = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Retreat</c>. inner text:
+        ///
+        /// <code>Enable tactical retreat</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Retreat {
+            get => _CombatAI_Settings_Basic_Retreat != null ? 
+                   _CombatAI_Settings_Basic_Retreat : _CombatAI_Settings_Basic_Retreat = "CombatAI.Settings.Basic.Retreat".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic_Pather = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Pather</c>. inner text:
         ///
@@ -276,7 +406,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Basic_DestWeight_Description = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.DestWeight.Description</c>. inner text:
         ///
-        /// <code>Lower numbers mean pathfinding will be more aggressive at avoiding\        enemies, flanking and minimizing risk to pawns.</code>
+        /// <code>Lower numbers mean pathfinding will be more aggressive at avoiding enemies, flanking and minimizing risk to pawns.</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Basic_DestWeight_Description {
             get => _CombatAI_Settings_Basic_DestWeight_Description != null ? 
@@ -326,7 +456,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Advance_Warning = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Warning</c>. inner text:
         ///
-        /// <code>WARNING: This is only for advanced users! Don't enable this if you don't know\        what you're doing!</code>
+        /// <code>WARNING: This is only for advanced users! Don't enable this if you don't know what you're doing!</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Advance_Warning {
             get => _CombatAI_Settings_Advance_Warning != null ? 
@@ -356,7 +486,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Description = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Description</c>. inner text:
         ///
-        /// <code>You can adjust how many buckets pawns/turrets are divided\        into and how often they updates. Warning: DON'T USE THIS IF YOU DON'T KNOW WHAT YOU'RE DOING</code>
+        /// <code>You can adjust how many buckets pawns/turrets are divided into and how often they updates. Warning: DON'T USE THIS IF YOU DON'T KNOW WHAT YOU'RE DOING</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Description {
             get => _CombatAI_Settings_Advance_Sight_Performance_Description != null ? 
@@ -446,7 +576,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description</c>. inner text:
         ///
-        /// <code>The maximum number of things along line\        of sight. This includes trees, buildings, etc. Higher values means more accurate sight model but higher\        performance impact.</code>
+        /// <code>The maximum number of things along line of sight. This includes trees, buildings, etc. Higher values means more accurate sight model but higher performance impact.</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description {
             get => _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description != null ? 

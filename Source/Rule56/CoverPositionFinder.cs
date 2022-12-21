@@ -1,4 +1,7 @@
-﻿using Verse;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Verse;
 using static CombatAI.AvoidanceTracker;
 using static CombatAI.SightTracker;
 
@@ -6,6 +9,9 @@ namespace CombatAI
 {
 	public static class CoverPositionFinder
 	{
+		private static readonly Dictionary<IntVec3, IntVec3> parentTree = new Dictionary<IntVec3, IntVec3>(512);
+		private static readonly Dictionary<IntVec3, float>   scores     = new Dictionary<IntVec3, float>(512);
+		
 		public static bool TryFindCoverPosition(CoverPositionRequest request, out IntVec3 coverCell)
 		{
 			request.caster.TryGetSightReader(out SightReader sightReader);
@@ -95,24 +101,32 @@ namespace CombatAI
 			{
 				request.maxRangeFromLocus = float.MaxValue;
 			}
-			InterceptorTracker interceptors      = map.GetComp_Fast<MapComponent_CombatAI>().interceptors;
-			float              maxDistSqr        = request.maxRangeFromLocus * request.maxRangeFromLocus;
-			CellFlooder        flooder           = map.GetCellFlooder();
-			IntVec3            enemyLoc          = request.target.Cell;
-			IntVec3            bestCell          = IntVec3.Invalid;
-			float              rootVis           = sightReader.GetVisibilityToEnemies(request.locus);
-			float              rootVisFriendlies = sightReader.GetVisibilityToFriendlies(request.locus);
-			float              rootThreat        = sightReader.GetThreat(request.locus);
-			float              bestCellDist      = request.locus.DistanceToSquared(enemyLoc);
-			float              bestCellScore     = 1e8f;
+			parentTree.Clear();
+			scores.Clear();
+			InterceptorTracker interceptors       = map.GetComp_Fast<MapComponent_CombatAI>().interceptors;
+			CellIndices        indices            = map.cellIndices;
+			float              adjustedMaxDist    = request.maxRangeFromLocus * 2;
+			float              adjustedMaxDistSqr = adjustedMaxDist * adjustedMaxDist;
+			CellFlooder        flooder            = map.GetCellFlooder();
+			IntVec3            enemyLoc           = request.target.Cell;
+			IntVec3            bestCell           = IntVec3.Invalid;
+			float              rootVis            = sightReader.GetVisibilityToEnemies(request.locus);
+			float              rootVisFriendlies  = sightReader.GetVisibilityToFriendlies(request.locus);
+			float              rootThreat         = sightReader.GetThreat(request.locus);
+			float              bestCellDist       = request.locus.DistanceToSquared(enemyLoc);
+			float              bestCellScore      = 1e8f;
 			flooder.Flood(request.locus,
 			              node =>
 			              {
-				              if (maxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
+				              parentTree[node.cell] = node.parent;
+				              
+				              if (adjustedMaxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
 				              {
 					              return;
 				              }
+				              // do math
 				              float c = (node.dist - node.distAbs) / (node.distAbs + 1f) + avoidanceReader.GetProximity(node.cell) * 0.5f - interceptors.grid.Get(node.cell) + (sightReader.GetThreat(node.cell) - rootThreat) * 0.75f;
+
 				              if (c < bestCellScore)
 				              {
 					              float d = node.cell.DistanceToSquared(enemyLoc);
@@ -123,7 +137,7 @@ namespace CombatAI
 						              bestCell      = node.cell;
 					              }
 				              }
-				              //map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
+				              scores[node.cell]     = c;  
 			              },
 			              cell =>
 			              {
@@ -133,8 +147,30 @@ namespace CombatAI
 			              {
 				              return (request.validator == null || request.validator(cell)) && cell.WalkableBy(map, caster);
 			              },
-			              (int)Maths.Min(request.maxRangeFromLocus, 30)
+			              (int)Maths.Min(adjustedMaxDist, 45f)
 			);
+//			if (Find.Selector.SelectedPawns.Contains(caster))
+//			{
+//				foreach (var v in scores)
+//				{
+//					map.debugDrawer.FlashCell(v.Key, (v.Value + 15f) / 30f, $"{Math.Round(v.Value, 2)}");
+//				}
+//			} 
+			if (!bestCell.IsValid)
+			{
+				coverCell = IntVec3.Invalid;
+				return false;
+			}
+			int distSqr = Mathf.CeilToInt(request.maxRangeFromLocus * request.maxRangeFromLocus); 
+			if (bestCellDist > distSqr)
+			{
+				IntVec3 cell = bestCell;
+				while (parentTree.TryGetValue(cell, out IntVec3 parent) && parent != cell && parent.DistanceToSquared(request.locus) > distSqr)
+				{
+					cell = parent;
+				}
+				bestCell = cell;
+			}
 			coverCell = bestCell;
 			return bestCell.IsValid;
 		}

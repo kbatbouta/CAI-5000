@@ -132,13 +132,6 @@ namespace CombatAI
 			}
 		}
 
-		//public override void MapComponentOnGUI()
-		//{
-		//	base.MapComponentOnGUI();
-		//	//
-		//	//Widgets.Label(new Rect(0, 0, 100, 25), $"{zoom} {Find.CameraDriver.rootPos}");
-		//}
-
 		public override void MapRemoved()
 		{
 			alive = false;
@@ -191,7 +184,7 @@ namespace CombatAI
 					}
 				}
 				stopwatch.Stop();
-				float t = 0.016f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
+				float t = 0.064f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
 				if (t > 0f)
 				{
 					Thread.Sleep(Mathf.CeilToInt(t * 1000));
@@ -291,11 +284,11 @@ namespace CombatAI
 									changed = true;
 									if (val > old)
 									{
-										cells[x * SECTION_SIZE + z] = Maths.Min(old + 0.05f,val);
+										cells[x * SECTION_SIZE + z] = Maths.Min(old + 0.1f,val);
 									}
 									else
 									{
-										cells[x * SECTION_SIZE + z] = Maths.Max(old - 0.2f,val);
+										cells[x * SECTION_SIZE + z] = Maths.Max(old - 0.4f,val);
 									}
 								}
 							}

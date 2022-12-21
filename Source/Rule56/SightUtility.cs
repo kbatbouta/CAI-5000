@@ -50,11 +50,14 @@ namespace CombatAI
 				return result;
 			}
 			Verb verb = pawn.equipment?.PrimaryEq?.PrimaryVerb ?? null;
+//			if (verb == null || !verb.Available())
+//			{
+//				if (pawn.verbTracker != null && !pawn.verbTracker.AllVerbs.NullOrEmpty())
+//				{
+//					verb = pawn.verbTracker.AllVerbs.Where(v => v.Available()).MaxBy(v => v.IsMeleeAttack ? 0 : v.EffectiveRange) ?? null;
+//				}
+//			}
 			if (verb == null || !verb.Available())
-			{
-				verb = pawn.verbTracker?.AllVerbs.Where(v => v.Available()).MaxBy(v => v.IsMeleeAttack ? 0 : v.EffectiveRange) ?? null;
-			}
-			if (verb == null)
 			{
 				result.sight = 4;
 				result.scan  = 0;
@@ -140,7 +143,7 @@ namespace CombatAI
 				float hearing = pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Hearing) ?? 1f;
 				float rest    = Mathf.Lerp(0.65f, 1f, pawn.needs?.rest?.curLevelInt ?? 1f);
 				float mul     = Mathf.Clamp(Maths.Min(vision, hearing, rest) * 0.6f + Maths.Max(vision, hearing, rest) * 0.4f, 0.5f, 1.5f);
-				return sightRadius * mul;
+				return Maths.Max(Maths.Max(sightRadius, 17) * mul, 10);
 			}
 			return sightRadius;
 		}

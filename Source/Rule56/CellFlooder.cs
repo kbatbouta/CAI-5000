@@ -39,7 +39,8 @@ namespace CombatAI
 			Func<IntVec3, bool> blocked = GetBlockedTestFunc(validator);
 			walls = map.GetComponent<WallGrid>();
 			Node node = GetIntialFloodedCell(center);
-			node.dist = costFunction != null ? costFunction(node.cell) : 0;
+			node.dist                                        = costFunction != null ? costFunction(node.cell) : 0;
+			sigArray[map.cellIndices.CellToIndex(node.cell)] = sig;
 			Node    nextNode;
 			int     cellIndex;
 			IntVec3 nextCell;
@@ -69,7 +70,8 @@ namespace CombatAI
 					nextCell = node.cell + offset;
 					if (nextCell.InBounds(map))
 					{
-						if (sigArray[cellIndex = map.cellIndices.CellToIndex(nextCell)] != sig)
+						bool visited;
+						if (!(visited = sigArray[cellIndex = map.cellIndices.CellToIndex(nextCell)] == sig))
 						{
 							sigArray[cellIndex] = sig;
 							if (!blocked(nextCell))
@@ -95,12 +97,11 @@ namespace CombatAI
 									nextNode.dist += costFunction(nextCell);
 								}
 								floodQueue.Enqueue(nextNode);
-								//
-								//floodedCells.Add(nextNode);
 							}
 						}
 					}
 				}
+//				}
 			}
 		}
 

@@ -324,7 +324,7 @@
                 <radiusNight>23</radiusNight>
                 <powered>true</powered>
                 <fieldOfView>65</fieldOfView>
-                <animator>CombatAI.CCTVTopAnimator_Periodic</animator>
+                <animator>CombatAI.CCTVTopAnimator_Controlled</animator>
                 <graphicData>
                     <graphicClass>Graphic_Single</graphicClass>
                     <texPath>Isma/Buildings/CCTV/cctv_wall_turret</texPath>
@@ -413,7 +413,7 @@
                 <radiusNight>41</radiusNight>
                 <powered>true</powered>
                 <fieldOfView>70</fieldOfView>
-                <animator>CombatAI.CCTVTopAnimator_Periodic</animator>
+                <animator>CombatAI.CCTVTopAnimator_Controlled</animator>
                 <graphicData>
                     <graphicClass>Graphic_Single</graphicClass>
                     <texPath>Isma/Buildings/CCTV/cctv_wall_turret</texPath>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 namespace CombatAI.Comps
@@ -53,16 +54,19 @@ namespace CombatAI.Comps
 			}
 		}
 
+		public override void PostPostMake()
+		{
+			base.PostPostMake();
+			if (animator == null)
+			{
+				animator = (CCTVTopAnimator)Activator.CreateInstance((props as CompProperties_CCTVTop).animator, this);
+			}
+		}
+
 		public override void PostSpawnSetup(bool respawningAfterLoad)
 		{
 			base.PostSpawnSetup(respawningAfterLoad);
 			parent.Map.GetComp_Fast<WallCCTVTracker>().Register(this);
-		}
-
-		public override void Initialize(CompProperties props)
-		{
-			base.Initialize(props);
-			animator = (CCTVTopAnimator)Activator.CreateInstance((props as CompProperties_CCTVTop).animator, this);
 		}
 
 		/// <summary>
@@ -77,6 +81,21 @@ namespace CombatAI.Comps
 			Matrix4x4              matrix   = default;
 			matrix.SetTRS(parent.DrawPos + Altitudes.AltIncVect + position, rot.ToQuat(), new Vector3(props.graphicData.drawSize.x, 1, props.graphicData.drawSize.y));
 			Graphics.DrawMesh(MeshPool.plane10, matrix, props.turretTopMat, 0);
+		}
+
+		public override void PostExposeData()
+		{
+			base.PostExposeData();
+			Scribe_Deep.Look(ref animator, "animator", this);
+			if (animator == null)
+			{
+				animator = (CCTVTopAnimator)Activator.CreateInstance((props as CompProperties_CCTVTop).animator, this);
+			}
+		}
+
+		public override IEnumerable<Gizmo> CompGetGizmosExtra()
+		{
+			return animator?.GetGizmos();
 		}
 	}
 }
