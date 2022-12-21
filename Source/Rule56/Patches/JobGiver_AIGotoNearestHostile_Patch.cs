@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
+using UnityEngine;
 using Verse;
 using Verse.AI;
 namespace CombatAI.Patches
@@ -40,8 +41,8 @@ namespace CombatAI.Patches
 					                            },
 					                            cost: region =>
 					                            {
-						                            return Maths.Min(reader.GetRegionAbsVisibilityToEnemies(region), 8 * Finder.P50) * 10;
-					                            });
+						                            return Maths.Min(reader.GetRegionAbsVisibilityToEnemies(region), 8 * Finder.P50) * 10 * Mathf.Clamp(reader.GetRegionThreat(region) + 0.5f, 1.0f, 2.0f);
+					                            }, maxRegions:512);
 					if (nearestEnemy != null)
 					{
 						Job job = JobMaker.MakeJob(JobDefOf.Goto, nearestEnemy);

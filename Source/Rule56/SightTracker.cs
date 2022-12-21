@@ -529,11 +529,11 @@ namespace CombatAI
 
 			public ArmorReport    armor;
 			public ITSignalGrid[] friendlies;
-			public ITSignalGrid[] hostiles;
-			public ITSignalGrid[] neutrals;
-			
+
 			public ITRegionGrid[] friendlies_regions;
+			public ITSignalGrid[] hostiles;
 			public ITRegionGrid[] hostiles_regions;
+			public ITSignalGrid[] neutrals;
 
 			public SightReader(SightTracker tracker, ITSignalGrid[] friendlies, ITSignalGrid[] hostiles, ITSignalGrid[] neutrals, ITRegionGrid[] friendlies_regions, ITRegionGrid[] hostiles_regions)
 			{
@@ -578,7 +578,31 @@ namespace CombatAI
 				}
 				return armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
 			}
-
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public float GetRegionThreat(Region region)
+			{
+				if (region != null)
+				{
+					return GetRegionThreat(region.id);
+				}
+				return 0;
+			}
+			public float GetRegionThreat(int id)
+			{
+				if (armor.weaknessAttributes != MetaCombatAttribute.None)
+				{
+					MetaCombatAttribute attributes = GetRegionMetaAttributes(id);
+					if ((attributes & armor.weaknessAttributes) != MetaCombatAttribute.None)
+					{
+						return 2.0f;
+					}
+				}
+				if (!Mod_CE.active)
+				{
+					return armor.createdAt != 0 ? Mathf.Clamp01(2f * Maths.Max(GetRegionBlunt(id) / (armor.Blunt + 0.001f), GetRegionSharp(id) / (armor.Sharp + 0.001f), 0f)) : 0f;
+				}
+				return armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetRegionBlunt(id) / (armor.Blunt + 0.001f), GetRegionSharp(id) / (armor.Sharp + 0.001f), 0f)) : 0f;
+			}
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetBlunt(IntVec3 cell)
 			{
@@ -593,7 +617,6 @@ namespace CombatAI
 				}
 				return value;
 			}
-
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetSharp(IntVec3 cell)
 			{
@@ -608,7 +631,6 @@ namespace CombatAI
 				}
 				return value;
 			}
-
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public MetaCombatAttribute GetMetaAttributes(IntVec3 cell)
 			{
@@ -623,7 +645,6 @@ namespace CombatAI
 				}
 				return value;
 			}
-
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public int GetRegionAbsVisibilityToEnemies(Region region)
 			{
@@ -642,7 +663,98 @@ namespace CombatAI
 				}
 				return value;
 			}
-			
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public ulong GetRegionEnemyFlags(Region region)
+			{
+				if (region != null)
+				{
+					return GetRegionEnemyFlags(region.id);
+				}
+				return 0;
+			}
+			public ulong GetRegionEnemyFlags(int id)
+			{
+				ulong value = 0;
+				for (int i = 0; i < hostiles_regions.Length; i++)
+				{
+					value |= hostiles_regions[i].GetFlagsAt(id);
+				}
+				return value;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public ulong GetRegionFriendlyFlags(Region region)
+			{
+				if (region != null)
+				{
+					return GetRegionFriendlyFlags(region.id);
+				}
+				return 0;
+			}
+			public ulong GetRegionFriendlyFlags(int id)
+			{
+				ulong value = 0;
+				for (int i = 0; i < friendlies_regions.Length; i++)
+				{
+					value |= friendlies_regions[i].GetFlagsAt(id);
+				}
+				return value;
+			}
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public MetaCombatAttribute GetRegionMetaAttributes(Region region)
+			{
+				if (region != null)
+				{
+					return GetRegionMetaAttributes(region.id);
+				}
+				return 0;
+			}
+			public MetaCombatAttribute GetRegionMetaAttributes(int id)
+			{
+				MetaCombatAttribute value = 0;
+				for (int i = 0; i < hostiles_regions.Length; i++)
+				{
+					value |= hostiles_regions[i].GetCombatAttributesAt(id);
+				}
+				return value;
+			}
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public float GetRegionSharp(Region region)
+			{
+				if (region != null)
+				{
+					return GetRegionSharp(region.id);
+				}
+				return 0;
+			}
+			public float GetRegionSharp(int id)
+			{
+				float value = 0;
+				for (int i = 0; i < hostiles_regions.Length; i++)
+				{
+					value += hostiles_regions[i].GetSharpAt(id);
+				}
+				return value;
+			}
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public float GetRegionBlunt(Region region)
+			{
+				if (region != null)
+				{
+					return GetRegionBlunt(region.id);
+				}
+				return 0;
+			}
+			public float GetRegionBlunt(int id)
+			{
+				float value = 0;
+				for (int i = 0; i < hostiles_regions.Length; i++)
+				{
+					value += hostiles_regions[i].GetBluntAt(id);
+				}
+				return value;
+			}
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public int GetRegionAbsVisibilityToFriendlies(Region region)
 			{
@@ -807,7 +919,7 @@ namespace CombatAI
 				}
 				return value;
 			}
-			
+
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public Vector2 GetFriendlyDirection(IntVec3 cell)
 			{

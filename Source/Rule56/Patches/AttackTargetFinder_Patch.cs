@@ -64,7 +64,7 @@ namespace CombatAI.Patches
 						float               costConst = !Mod_CE.active ? 7.5f : 2.5f;
 						Func<Region, float> cost = region =>
 						{
-							return Maths.Min(sightReader.GetRegionAbsVisibilityToEnemies(region), 10) * costConst;
+							return Maths.Min(sightReader.GetRegionAbsVisibilityToEnemies(region), 10) * Mathf.Clamp(sightReader.GetRegionThreat(region) + 0.5f, 1.0f, 2.0f) * costConst;
 						};
 						RegionFlooder.Flood(pawn.Position, pawn.Position, pawn.Map, action, null,  cost, maxRegions: !Finder.Performance.TpsCriticallyLow ? 200 : 75);
 					}

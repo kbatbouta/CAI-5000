@@ -132,13 +132,6 @@ namespace CombatAI
 			}
 		}
 
-		//public override void MapComponentOnGUI()
-		//{
-		//	base.MapComponentOnGUI();
-		//	//
-		//	//Widgets.Label(new Rect(0, 0, 100, 25), $"{zoom} {Find.CameraDriver.rootPos}");
-		//}
-
 		public override void MapRemoved()
 		{
 			alive = false;

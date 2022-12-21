@@ -378,7 +378,7 @@ namespace CombatAI
 					}
 				}
 				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
-				grid_regions.Next();
+				grid_regions.Next( GetFlags(item), item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
 				float r_fade     = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
 				float d_fade     = sightRadius.fog - r_fade;
 				float rSqr_sight = Maths.Sqr(sightRadius.sight);
