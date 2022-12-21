@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
 namespace CombatAI
 {
 	public static class TCacheHelper
@@ -17,4 +16,3 @@ namespace CombatAI
 		}
 	}
 }
-

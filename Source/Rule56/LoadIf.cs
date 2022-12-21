@@ -2,7 +2,7 @@
 namespace CombatAI
 {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Field)]
-	public partial class LoadIf : Attribute
+	public class LoadIf : Attribute
 	{
 		public string packageId;
 
@@ -12,4 +12,3 @@ namespace CombatAI
 		}
 	}
 }
-

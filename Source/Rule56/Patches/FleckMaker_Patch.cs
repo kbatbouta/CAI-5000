@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using CombatAI.Comps;
-using HarmonyLib;
+﻿using HarmonyLib;
 using RimWorld;
-using UnityEngine;
 using Verse;
-
 namespace CombatAI.Patches
 {
 	public static class FleckMaker_Patch
@@ -20,7 +12,7 @@ namespace CombatAI.Patches
 			{
 				return !Finder.Settings.FogOfWar_Enabled || !(map.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(cell) ?? false);
 			}
-		}		
+		}
 
 		[HarmonyPatch(typeof(FleckMaker), nameof(FleckMaker.PlaceFootprint))]
 		private static class FleckMaker_PlaceFootprint_Patch
@@ -41,4 +33,3 @@ namespace CombatAI.Patches
 		}
 	}
 }
-

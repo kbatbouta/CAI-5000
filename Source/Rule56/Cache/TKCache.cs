@@ -1,9 +1,4 @@
-﻿using System;
-using RimWorld;
-using System.Collections.Generic;
-using Verse;
-using System.Runtime.CompilerServices;
-
+﻿using System.Runtime.CompilerServices;
 namespace CombatAI
 {
 	public static class TKCache<T, K>
@@ -28,4 +23,3 @@ namespace CombatAI
 		}
 	}
 }
-

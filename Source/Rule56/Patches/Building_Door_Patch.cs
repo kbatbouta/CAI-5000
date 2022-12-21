@@ -1,14 +1,6 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using RimWorld;
-using System.Collections.Generic;
-using System.Reflection.Emit;
-using UnityEngine;
 using Verse;
-using Verse.AI;
-using System.Linq;
-using System.Reflection;
-
 namespace CombatAI.Patches
 {
 	public static class Building_Door_Patch
@@ -38,4 +30,3 @@ namespace CombatAI.Patches
 		}
 	}
 }
-

@@ -1,7 +1,5 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Verse;
-
 namespace CombatAI.Patches
 {
 	public static class RoofGrid_Patch
@@ -11,9 +9,8 @@ namespace CombatAI.Patches
 		{
 			public static void Prefix(Verse.RoofGrid __instance, IntVec3 c, RoofDef def)
 			{
-				__instance.map.GetComp_Fast<RoofGrid>().SetRoof(c, def);				
+				__instance.map.GetComp_Fast<RoofGrid>().SetRoof(c, def);
 			}
 		}
 	}
 }
-

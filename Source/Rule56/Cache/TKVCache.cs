@@ -1,7 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using RimWorld;
-using Verse;
-
 namespace CombatAI
 {
 	public static class TKVCache<T, K, V>

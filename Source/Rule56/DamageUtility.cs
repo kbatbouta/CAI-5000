@@ -1,15 +1,14 @@
 ﻿using System;
-using RimWorld;
-using Verse;
 using System.Collections.Generic;
 using CombatAI.Gui;
+using RimWorld;
 using UnityEngine;
-
+using Verse;
 namespace CombatAI
 {
 	public static class DamageUtility
 	{
-		private static Dictionary<int, DamageReport> reports = new Dictionary<int, DamageReport>(1024);
+		private static readonly Dictionary<int, DamageReport> reports = new Dictionary<int, DamageReport>(1024);
 
 		public static DamageReport GetDamageReport(Thing thing, Listing_Collapsible collapsible = null)
 		{
@@ -19,9 +18,9 @@ namespace CombatAI
 			}
 			report = new DamageReport();
 			bool debug = collapsible != null;
-			report.thing = thing;			
+			report.thing = thing;
 			if (thing is Pawn pawn)
-			{			
+			{
 				report.canMelee = true;
 				if (debug)
 				{
@@ -35,7 +34,7 @@ namespace CombatAI
 						collapsible.Label("Equipment");
 					}
 					foreach (Verb verb in pawn.equipment.AllEquipmentVerbs)
-					{						
+					{
 						report.AddVerb(verb);
 						if (debug)
 						{
@@ -47,7 +46,7 @@ namespace CombatAI
 							collapsible.Gap(2);
 						}
 					}
-				}				
+				}
 				if (pawn.meleeVerbs != null)
 				{
 					if (debug)
@@ -79,20 +78,20 @@ namespace CombatAI
 					report.primaryVerbProps = effectiveVerb.verbProps;
 				}
 				float rangedMul = 1;
-				float meleeMul = 1;
+				float meleeMul  = 1;
 				if (pawn.skills != null)
 				{
 					SkillRecord record;
 
 					record = pawn.skills.GetSkill(SkillDefOf.Shooting);
-					if(record != null)
+					if (record != null)
 					{
 						rangedMul = Mathf.Lerp(0.75f, 1.75f, record.levelInt / 20f);
 					}
 
 					record = pawn.skills.GetSkill(SkillDefOf.Melee);
 					if (record != null)
-					{ 
+					{
 						meleeMul = Mathf.Lerp(0.75f, 1.75f, record.levelInt / 20f);
 					}
 				}
@@ -117,7 +116,7 @@ namespace CombatAI
 					}
 					report.primaryVerbProps = verb.verbProps;
 				}
-				report.primaryIsRanged = true;				
+				report.primaryIsRanged = true;
 				report.Finalize(1, 1);
 			}
 			if (debug)
@@ -139,7 +138,7 @@ namespace CombatAI
 
 		public static float ThreatTo(this DamageReport damage, ArmorReport armor)
 		{
-			if(!damage.IsValid || !armor.IsValid)
+			if (!damage.IsValid || !armor.IsValid)
 			{
 				return 0f;
 			}
@@ -149,12 +148,9 @@ namespace CombatAI
 			}
 			if (!Mod_CE.active)
 			{
-				return Mathf.Clamp01(2f * Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f),damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
+				return Mathf.Clamp01(2f * Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f), damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
 			}
-			else
-			{
-				return Mathf.Clamp01(Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f), damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
-			}
+			return Mathf.Clamp01(Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f), damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
 		}
 
 		public static void ClearCache()
@@ -163,4 +159,3 @@ namespace CombatAI
 		}
 	}
 }
-
