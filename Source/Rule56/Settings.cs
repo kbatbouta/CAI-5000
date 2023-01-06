@@ -31,8 +31,9 @@ namespace CombatAI
 		public bool  Debug_DrawShadowCastsVectors = false;
 		public bool  Debug_DrawThreatCasts        = false;
 		public bool  Debug_ValidateSight;
-		public bool  FogOfWar_Enabled;
-		public float FogOfWar_FogColor            = 0.35f;
+		public int Debug_ArenaMaxMapNum = 2;
+		public bool  FogOfWar_Enabled;		
+		public float FogOfWar_FogColor            = 0.35f;	
 		public float FogOfWar_RangeFadeMultiplier = 0.5f;
 		public float FogOfWar_RangeMultiplier     = 1.0f;
 
@@ -113,6 +114,7 @@ namespace CombatAI
 			Scribe_Values.Look(ref PerformanceOpt_Enabled, $"PerformanceOpt_Enabled.{version}", true);
 			Scribe_Values.Look(ref FogOfWar_Enabled, $"FogOfWar_Enabled.{version}");
 			Scribe_Values.Look(ref Debug, $"Debug.{version}");
+			Scribe_Values.Look(ref Debug_ArenaMaxMapNum, $"Debug_ArenaMaxMapNum.{version}", 2);
 			Scribe_Values.Look(ref Debug_ValidateSight, $"Debug_ValidateSight.{version}");
 			Scribe_Values.Look(ref Debug_DrawShadowCasts, $"Debug_DrawShadowCasts.{version}");
 			//ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)

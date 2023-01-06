@@ -407,6 +407,13 @@ namespace CombatAI
 			collapsible.CheckboxLabeled("Debug things tracker", ref Finder.Settings.Debug_DebugThingsTracker);
 			collapsible.CheckboxLabeled("Debug validate sight <color=red>EXTREMELY BAD FOR PERFORMANCE</color>", ref Finder.Settings.Debug_ValidateSight);
 			collapsible.Line(1);
+			collapsible.Lambda(25, rect =>
+			{
+				float val = Finder.Settings.Debug_ArenaMaxMapNum;
+				Widgets.HorizontalSlider(rect, ref val, new FloatRange(1, 20), $"BattleRoyal Map number {Finder.Settings.Debug_ArenaMaxMapNum}");
+				Finder.Settings.Debug_ArenaMaxMapNum = Mathf.RoundToInt(val);
+			}, useMargins: true);
+			collapsible.Line(1);
 			collapsible.Label("DO NOT USE THESE AT ALL - FOR DEVS ONLY - WILL FILL YOUR DISK IN 10 MINUTES");
 			collapsible.CheckboxLabeled("Dump data <color=red>EXTREMELY BAD FOR PERFORMANCE THIS IS DEAD DON'T TOUCH IT</color>", ref Finder.Settings.Debug_DebugDumpData);
 		}
