@@ -8,6 +8,6 @@ namespace CombatAI.Arena
 	//	public DebugBattleTracker(Map map) : base(map)
 	//	{
 	//	}
-	//}
+	//}w
 }
 
