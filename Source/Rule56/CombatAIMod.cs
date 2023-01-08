@@ -27,8 +27,9 @@ namespace CombatAI
 
 		private bool collapsibleGroupInited;
 		public CombatAIMod(ModContentPack contentPack) : base(contentPack)
-		{
+		{			
 			Finder.Harmony = new Harmony("Krkr.Rule56");
+			ITKeyedHelper.Initialize();
 			Finder.Harmony.PatchAll();
 			Finder.Mod      = this;
 			Finder.Settings = GetSettings<Settings>();
