@@ -45,7 +45,6 @@
         <Folder Include="Defs\Extensions\" />
         <Folder Include="Cache\" />
         <Folder Include="Comps\Deprecated\" />
-        <Folder Include="Arena\" />
         <Folder Include="ML\Tensors\" />
         <Folder Include="ML\Models\" />
     </ItemGroup>
@@ -64,7 +63,6 @@
         <None Remove="Defs\Extensions\" />
         <None Remove="Cache\" />
         <None Remove="Comps\Deprecated\" />
-        <None Remove="Arena\" />
         <None Remove="MachineLearning\Features\" />
         <None Remove="ML\Tensors\" />
         <None Remove="ML\Models\" />

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <WorldObjectDef>
+    <defName>CAI_Debug_BattleGround</defName>
+    <worldObjectClass>MapParent</worldObjectClass>
+    <texture>World/WorldObjects/Ambush</texture>
+    <comps></comps>
+  </WorldObjectDef>
+  
+</Defs>

@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using HarmonyLib;
 using Verse;
 
-namespace CombatAI.Patches.BattleRoyale
+namespace CombatAI.Patches.Arean
 {
 	public static class ArenaUtility_Patch
 	{		

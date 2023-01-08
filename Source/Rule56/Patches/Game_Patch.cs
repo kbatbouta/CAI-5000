@@ -27,6 +27,7 @@ namespace CombatAI.Patches
 				ArmorUtility.ClearCache();
 				DamageUtility.ClearCache();
 				MetaCombatAttributeUtility.ClearCache();
+				BattleRoyale.manager.Active = false;
 			}
 		}
 	}
