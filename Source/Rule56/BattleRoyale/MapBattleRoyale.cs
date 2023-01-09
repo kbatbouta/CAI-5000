@@ -44,7 +44,7 @@ namespace CombatAI
 		public override void MapComponentTick()
 		{
 			base.MapComponentTick();			
-			if (!enabled || !BattleRoyale.manager.Active)
+			if (!BattleRoyale.manager.Active)
 			{
 				return;
 			}
