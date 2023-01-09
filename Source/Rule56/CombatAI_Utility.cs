@@ -18,7 +18,7 @@ namespace CombatAI
 			{
 				return AIType.legacy;
 			}
-			if (!TKCache<int, AIType>.TryGet(pawn.thingIDNumber, out AIType type, 240))
+			if (!TKVCache<int, Pawn, AIType>.TryGet(pawn.thingIDNumber, out AIType type, 240))
 			{
 				Map map = pawn.Map;
 				MapBattleRoyale battle = map.GetComp_Fast<MapBattleRoyale>();
@@ -36,7 +36,7 @@ namespace CombatAI
 					{
 						type = AIType.legacy;
 					}
-					TKCache<int, AIType>.Put(pawn.thingIDNumber, type);
+					TKVCache<int, Pawn, AIType>.Put(pawn.thingIDNumber, type);
 				}
 			}
 			return type;
@@ -72,12 +72,22 @@ namespace CombatAI
 
 		public static bool TryGetAvoidanceReader(this Pawn pawn, out AvoidanceReader reader)
 		{
+			if (pawn.GetAIType() == AIType.vanilla)
+			{
+				reader = null;
+				return false;
+			}
 			return pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out reader);
 		}
 
 
 		public static bool TryGetSightReader(this Pawn pawn, out SightReader reader)
 		{
+			if(pawn.GetAIType() == AIType.vanilla)
+			{
+				reader = null;
+				return false;
+			}
 			if (pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out reader) && reader != null)
 			{
 				reader.armor = pawn.GetArmorReport();
@@ -97,7 +107,6 @@ namespace CombatAI
 		{
 			return map.GetComp_Fast<MapComponent_CombatAI>().flooder;
 		}
-
 
 		public static ulong GetThingFlags(this Thing thing)
 		{
