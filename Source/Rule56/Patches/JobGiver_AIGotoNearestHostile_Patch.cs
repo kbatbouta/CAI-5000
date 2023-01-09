@@ -13,7 +13,8 @@ namespace CombatAI.Patches
 		{
 			public static bool Prefix(Pawn pawn, ref Job __result)
 			{
-				if (pawn.TryGetSightReader(out SightTracker.SightReader reader))
+				AIType aiType = pawn.GetAIType();
+				if (pawn.TryGetSightReader(out SightTracker.SightReader reader) && aiType != AIType.vanilla)
 				{
 					Thing nearestEnemy = null;
 					RegionFlooder.Flood(pawn.Position,

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CombatAI.Arena;
 using NAudio.SoundFont;
 using Verse;
 
@@ -12,9 +11,9 @@ namespace CombatAI
 		private bool _active;	
 				
 		public BattleRoyaleManager(Game game)
-		{
-			BattleRoyale.manager = this;
+		{			
 			_active = false;
+			BattleRoyale.manager = this;
 			BattleRoyale.generator = new BattleRoyaleGenerator();			
 		}
 
@@ -67,6 +66,7 @@ namespace CombatAI
 		public void Start()
 		{			
 			_active = true;
+			BattleRoyale.enabled = true;
 			foreach (MapBattleRoyale br in Battles)
 			{
 				br.Stop();
@@ -77,6 +77,7 @@ namespace CombatAI
 		public void Stop()
 		{			
 			_active = false;
+			BattleRoyale.enabled = false;
 			foreach (MapBattleRoyale br in Battles)
 			{
 				br.Stop();

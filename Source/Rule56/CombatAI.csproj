@@ -95,6 +95,9 @@
         <None Update="..\..\1.4\Defs\ThingDef_Research\Cai5000_ResearchDefs.xml">
           <Link>Xml\Defs\ThingDef_Research\\Cai5000_ResearchDefs.xml</Link>
         </None>
+        <None Update="..\..\1.4\Defs\WorldObjectDefs\WorldObjects_Debug.xml">
+          <Link>Xml\Defs\WorldObjectDefs\\WorldObjects_Debug.xml</Link>
+        </None>
     </ItemGroup>
     <!-- ................ -->
     <!--     Packages     -->

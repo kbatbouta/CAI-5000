@@ -10,7 +10,9 @@ namespace CombatAI
 		public int maxRoundTicks;
 		public int runs;
 		public List<PawnKindDef> lhs;
+		public AIType lhsAi;
 		public List<PawnKindDef> rhs;
+		public AIType rhsAi;
 		public BattleSpawn spawn;
 		public Action<BattleResult, List<Pawn>, List<Pawn>> callback;	
 

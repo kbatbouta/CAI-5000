@@ -8,6 +8,10 @@ namespace CombatAI
 {
 	public class BattleRoyaleGenerator
 	{
+		public int score_legacy  = 0;
+		public int score_vanilla = 0;
+		public int score_stalemate = 0;
+
 		private List<PawnGroupMaker> groupMakers = new List<PawnGroupMaker>(); 
 
 		public BattleRoyaleGenerator()
@@ -44,17 +48,32 @@ namespace CombatAI
 		}
 
 		public BattleRoyaleParms Next()
-		{			
+		{
 			BattleRoyaleParms parms = new BattleRoyaleParms();
-			parms.maxRoundTicks = 60 * 120;
+			parms.maxRoundTicks = 60 * 180;
 			parms.runs = BattleRoyale.roundsPerPair;
 			parms.spawn = BattleRoyale.spawn;	
 			PawnGroupMaker groupMaker = groupMakers.RandomElement();
-			int points = Rand.Range(100, 1500);			
+			int points = Rand.Range(500, 2500);			
 			parms.lhs = GeneratePawnKindDefGroup(groupMaker, points).ToList();
-			parms.rhs = GeneratePawnKindDefGroup(groupMaker, points).ToList();
+			parms.lhsAi = AIType.legacy;
+			parms.rhs = new List<PawnKindDef>(parms.lhs);
+			parms.rhsAi = AIType.vanilla;			
 			parms.callback = (res, lshPawns, rshPawns) =>
 			{
+				if(res == BattleResult.lhs_winner)
+				{
+					score_legacy++;
+				}
+				else if (res == BattleResult.rhs_winner)
+				{
+					score_vanilla++;
+				}
+				else
+				{
+					score_stalemate++;
+				}
+				Log.Error($"Current results:\nvanilla:{score_vanilla}\nlegacy_mod:{score_legacy}\nstalemate:{score_stalemate}");
 			};
 			return parms;
 		}

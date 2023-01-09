@@ -5,7 +5,6 @@ using Verse;
 using UnityEngine.SocialPlatforms;
 using RimWorld.Planet;
 using System.Linq;
-using CombatAI.Arena;
 
 namespace CombatAI
 {

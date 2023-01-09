@@ -12,7 +12,7 @@ namespace CombatAI.Patches
 		{
 			public static void Postfix(JobDriver_Wait __instance)
 			{
-				if (__instance.job.def.alwaysShowWeapon && __instance.pawn.mindState?.enemyTarget != null && __instance.job.def == JobDefOf.Wait_Combat && __instance.GetType() == typeof(JobDriver_Wait))
+				if (__instance.job.def.alwaysShowWeapon && __instance.pawn.GetAIType() == AIType.legacy && __instance.pawn.mindState?.enemyTarget != null && __instance.job.def == JobDefOf.Wait_Combat && __instance.GetType() == typeof(JobDriver_Wait))
 				{
 					if (__instance.job.targetC.IsValid)
 					{

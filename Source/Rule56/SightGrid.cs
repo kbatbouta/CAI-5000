@@ -349,7 +349,7 @@ namespace CombatAI
 				{
 					scanForEnemies = false;
 				}
-			}
+			}			
 			if (scanForEnemies)
 			{
 				item.lastScannedForEnemies = ticks;

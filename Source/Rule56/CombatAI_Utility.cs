@@ -12,12 +12,42 @@ namespace CombatAI
 			return def != null && other != null && def == other;
 		}
 
+		public static AIType GetAIType(this Pawn pawn)
+		{
+			if (!BattleRoyale.enabled || !pawn.Spawned)
+			{
+				return AIType.legacy;
+			}
+			if (!TKCache<int, AIType>.TryGet(pawn.thingIDNumber, out AIType type, 240))
+			{
+				Map map = pawn.Map;
+				MapBattleRoyale battle = map.GetComp_Fast<MapBattleRoyale>();
+				if (battle.Active)
+				{
+					if (battle.rhSet.Contains(pawn))
+					{
+						type = battle.parms.rhsAi;
+					}
+					else if (battle.lhSet.Contains(pawn))
+					{
+						type = battle.parms.lhsAi;
+					}
+					else
+					{
+						type = AIType.legacy;
+					}
+					TKCache<int, AIType>.Put(pawn.thingIDNumber, type);
+				}
+			}
+			return type;
+		}
+
 		public static bool IsDormant(this Thing thing)
 		{
-			if (!TKVCache<Thing, CompCanBeDormant, bool>.TryGet(thing, out bool value, 240))
+			if (!TKVCache<int, CompCanBeDormant, bool>.TryGet(thing.thingIDNumber, out bool value, 240))
 			{
 				CompCanBeDormant dormant = thing.GetComp_Fast<CompCanBeDormant>();
-				TKVCache<Thing, CompCanBeDormant, bool>.Put(thing, dormant != null && !dormant.Awake);
+				TKVCache<int, CompCanBeDormant, bool>.Put(thing.thingIDNumber, dormant != null && !dormant.Awake);
 			}
 			return value;
 		}

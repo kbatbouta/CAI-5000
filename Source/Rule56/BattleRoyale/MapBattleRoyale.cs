@@ -8,7 +8,7 @@ using Verse;
 using Verse.AI;
 using Verse.AI.Group;
 
-namespace CombatAI.Arena
+namespace CombatAI
 {
 	public class MapBattleRoyale : MapComponent
 	{
@@ -28,8 +28,8 @@ namespace CombatAI.Arena
 		public List<Pawn> lhs = new List<Pawn>();
 		public List<Pawn> rhs = new List<Pawn>();		
 		public BattleRoyaleParms parms;
-		private HashSet<Pawn> lhSet = new HashSet<Pawn>();
-		private HashSet<Pawn> rhSet = new HashSet<Pawn>();
+		public HashSet<Pawn> lhSet = new HashSet<Pawn>();
+		public HashSet<Pawn> rhSet = new HashSet<Pawn>();
 		private List<Lord> battleLords = new List<Lord>();
 
 		public MapBattleRoyale(Map map) : base(map)
@@ -73,6 +73,7 @@ namespace CombatAI.Arena
 				{
 					case PawnState.dead:
 						TryRemovePawn(pawn);
+						BattleRoyale.lhsPawns.Remove(pawn);
 						lhs.RemoveAt(i);
 						lhSet.Remove(pawn);
 						break;
@@ -91,6 +92,7 @@ namespace CombatAI.Arena
 				{
 					case PawnState.dead:
 						TryRemovePawn(pawn);
+						BattleRoyale.rhsPawns.Remove(pawn);
 						rhs.RemoveAt(i);
 						rhSet.Remove(pawn);
 						break;
@@ -122,7 +124,7 @@ namespace CombatAI.Arena
 			{
 				float lr = (float)lhs.Count / lhsStartNum;
 				float rr = (float)rhs.Count / rhsStartNum;
-				if (Mathf.Abs(lr - rr) > 0.25)
+				if (Mathf.Abs(lr - rr) > 0.05)
 				{
 					if (lr > rr)
 						result = BattleResult.lhs_winner;
@@ -175,7 +177,7 @@ namespace CombatAI.Arena
 			if (Active && lhsStartNum > 0)
 			{
 				Rect r = new Rect(0, 30, 300, 20);
-				Widgets.Label(r, $"map battle stats: lr:<color=green>{Math.Round((float)lhs.Count / lhsStartNum, 2)}</color>, rr:<color=red>{Math.Round((float)rhs.Count / rhsStartNum, 2)}</color>, time left:<color=yellow>{Mathf.RoundToInt(roundTicksLeft / 60)} seconds</color>");
+				Widgets.Label(r, $"map battle stats: lr:<color=green>{Math.Round((float)lhs.Count / lhsStartNum, 2)}</color>({parms.lhsAi}), rr:<color=red>{Math.Round((float)rhs.Count / rhsStartNum, 2)}</color>({parms.rhsAi}), time left:<color=yellow>{Mathf.RoundToInt(roundTicksLeft / 60)} seconds</color>");
 			}
 		}
 
@@ -183,11 +185,11 @@ namespace CombatAI.Arena
 		{
 			for (int i = 0; i < kinds.Count; i++)
 			{
-				Pawn pawn = PawnGenerator.GeneratePawn(kinds[i], faction);
+				Pawn pawn = PawnGenerator.GeneratePawn(kinds[i], faction);				
 				IntVec3 loc = CellFinder.RandomClosewalkCellNear(spot, map, 12);
 				GenSpawn.Spawn(pawn, loc, map, Rot4.Random);
 				result.Add(pawn);
-				resultSet.Add(pawn);
+				resultSet.Add(pawn);				
 			}
 			battleLords.Add(LordMaker.MakeNewLord(faction, new LordJob_DefendPoint(map.Center), map, result));
 		}
@@ -199,7 +201,9 @@ namespace CombatAI.Arena
 			lhs.Clear();
 			rhs.Clear();
 			SpawnPawnSet(parms.lhs, lhsSpawnPoint, Faction.OfAncients, lhs, lhSet);
+			BattleRoyale.lhsPawns.AddRange(lhs);
 			SpawnPawnSet(parms.rhs, rhsSpawnPoint, Faction.OfAncientsHostile, rhs, rhSet);
+			BattleRoyale.rhsPawns.AddRange(rhs);
 			lhsStartNum = lhs.Count;
 			rhsStartNum = rhs.Count;
 			roundsLeft--;
@@ -223,14 +227,16 @@ namespace CombatAI.Arena
 			for (int i = 0; i < lhs.Count; i++)
 			{
 				Pawn pawn = lhs[i];
+				BattleRoyale.lhsPawns.Remove(pawn);
 				if (!pawn.Destroyed)
-				{
+				{					
 					pawn.Destroy();
 				}
 			}			
 			for (int i = 0; i < rhs.Count; i++)
 			{
 				Pawn pawn = rhs[i];
+				BattleRoyale.rhsPawns.Remove(pawn);
 				if (!pawn.Destroyed)
 				{
 					pawn.Destroy();

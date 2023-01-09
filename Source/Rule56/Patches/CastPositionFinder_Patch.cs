@@ -13,6 +13,7 @@ namespace CombatAI.Patches
 {
 	public static class Harmony_CastPositionFinder
 	{
+		private static AIType							aiType;
 		private static bool                             ai_fightEnemies;
 		private static Verb                             verb;
 		private static Pawn                             pawn;
@@ -51,9 +52,10 @@ namespace CombatAI.Patches
 					newReq.maxRangeFromTarget = 0;
 				}
 				skipped = true;
+				aiType  = AIType.mod;
 				if (newReq.caster != null && Finder.Settings.Caster_Enabled && newReq.target != null && (newReq.maxRangeFromTarget == 0 || newReq.maxRangeFromTarget * newReq.maxRangeFromTarget > newReq.caster.Position.DistanceToSquared(newReq.target.Position)) && newReq.maxRangeFromLocus == 0)
 				{
-					if ((pawn = newReq.caster) != null && !(pawn.RaceProps?.Animal ?? true) && !((pawn.Faction?.IsPlayerSafe() ?? false) && !pawn.Drafted && pawn.mindState?.duty == null) && !(pawn.mindState != null && (pawn.mindState.duty?.def == DutyDefOf.Sapper || pawn.mindState.duty?.def == DutyDefOf.Breaching)))
+					if ((pawn = newReq.caster) != null && (aiType = pawn.GetAIType()) != AIType.vanilla && !(pawn.RaceProps?.Animal ?? true) && !((pawn.Faction?.IsPlayerSafe() ?? false) && !pawn.Drafted && pawn.mindState?.duty == null) && !(pawn.mindState != null && (pawn.mindState.duty?.def == DutyDefOf.Sapper || pawn.mindState.duty?.def == DutyDefOf.Breaching)))
 					{
 						map              = newReq.caster?.Map;
 						verb             = newReq.verb;
@@ -93,6 +95,7 @@ namespace CombatAI.Patches
 				target           = null;
 				map              = null;
 				skipped          = true;
+				aiType			 = AIType.vanilla;
 			}
 
 			public static void Postfix(IntVec3 dest, bool __result)
@@ -115,6 +118,7 @@ namespace CombatAI.Patches
 				verb             = null;
 				target           = null;
 				map              = null;
+				aiType			 = AIType.vanilla;
 			}
 
 			public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)

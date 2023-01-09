@@ -18,6 +18,7 @@ namespace CombatAI.Patches
 		private static class PathFinder_FindPath_Patch
 		{
 			//private static IGridBufferedWriter gridWriter;
+			private static			AIType							 aiType;
 			private static          ThingComp_CombatAI               comp;
 			private static          DataWriter_Path                  pathWriter;
 			private static          bool                             dump;
@@ -48,7 +49,7 @@ namespace CombatAI.Patches
 					return __state = true;
 				}
 				dump = false;
-				if (Finder.Settings.Pather_Enabled && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
+				if (Finder.Settings.Pather_Enabled && (aiType = traverseParms.pawn?.GetAIType() ?? AIType.legacy) != AIType.vanilla && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
 				{
 					original_traverseParms = traverseParms;
 					origina_peMode         = peMode;

@@ -12,6 +12,7 @@ namespace CombatAI.Patches
 {
 	internal static class AttackTargetFinder_Patch
 	{
+		private static			AIType					 aiType;
 		private static          Map                      map;
 		private static          Pawn                     searcherPawn;
 		private static          Faction                  searcherFaction;
@@ -29,7 +30,7 @@ namespace CombatAI.Patches
 			{
 				map = searcher.Thing?.Map;
 
-				if (searcher.Thing is Pawn pawn && !pawn.RaceProps.Animal)
+				if (searcher.Thing is Pawn pawn && !pawn.RaceProps.Animal && (aiType = pawn.GetAIType()) != AIType.vanilla)
 				{
 					distDict.Clear();
 					damageReport = DamageUtility.GetDamageReport(searcher.Thing);
@@ -79,6 +80,10 @@ namespace CombatAI.Patches
 			internal static void Postfix()
 			{
 				map          = null;
+				searcherFaction = null;
+				searcherVerb = null;
+				dmg05 = 0;
+				projectile = null;
 				damageReport = default(DamageReport);
 				searcherPawn = null;
 				sightReader  = null;
