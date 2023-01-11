@@ -359,7 +359,7 @@ namespace CombatAI
 					}
 					BattleRoyale.manager.reactionBreeder.queue.Add(new SeqBreeder.SeqSpecimen()
 					{
-						score = Mathf.FloorToInt(comp.hitsLanded),
+						score = comp.hitsLanded,
 						sequential = comp.sequential
 					});
 				}

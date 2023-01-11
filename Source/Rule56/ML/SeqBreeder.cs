@@ -75,7 +75,7 @@ namespace CombatAI
 		public class SeqSpecimen
 		{
 			public Sequential sequential;
-			public int score;
+			public float score;
 			public int breeded;
 		}
 	}

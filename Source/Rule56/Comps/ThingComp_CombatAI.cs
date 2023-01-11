@@ -226,7 +226,7 @@ namespace CombatAI.Comps
 					}
 					bool clearLosTested = false;
 					bool clearLos = false;
-					if ((clearLosTested = dist < verb.EffectiveRange) && (clearLos = verb.CanHitTarget(enemy)))
+					if ((clearLosTested = dist < verb.EffectiveRange - 2) && (clearLos = verb.CanHitTarget(enemy)))
 					{						
 						visibleEnemiesInRange.Add(enemy);
 					}
