@@ -5,7 +5,7 @@ namespace CombatAI
 	{
 		public static Sequential MakeReaction()
 		{
-			Sequential sequential = new Sequential(1, 5);
+			Sequential sequential = new Sequential(1, 6);
 			sequential.AddDense(3, true, ActivationType.none, InitializationType.random01, InitializationType.random01);			
 			if (SeqDefaults.reaction != null)
 			{

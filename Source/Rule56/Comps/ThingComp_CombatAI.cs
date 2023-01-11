@@ -42,7 +42,7 @@ namespace CombatAI.Comps
 		/// <summary>
 		///		Number of hits parent was able to land on the enemy.
 		/// </summary>
-		public int hitsLanded;
+		public float hitsLanded;
 		/// <summary>
 		///		ML model.
 		/// </summary>
@@ -247,6 +247,7 @@ namespace CombatAI.Comps
 					(float)visibleEnemiesTargetingSelf.Count / 3f,
 					(float)visibleEnemiesInRange.Count / 3f,
 					Maths.Min(GenTicks.TicksGame - lastChangedOrRetreated, 900) / 60f,
+					nearestEnemyDist / 8f,
 					sightReader.GetThreat(position),
 					sightReader.GetVisibilityToEnemies(position) / 3f);
 				var decision = -1;
@@ -284,7 +285,7 @@ namespace CombatAI.Comps
 		public void WarmUp()
 		{
 			Pawn pawn = parent as Pawn;
-			if (!(pawn.stances.curStance is Stance_Warmup))
+			if (!(pawn.jobs.curJob?.def.Is(JobDefOf.Wait_Combat) ?? false))
 			{
 				Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 200 + 200);
 				pawn.jobs.ClearQueuedJobs();
@@ -316,7 +317,7 @@ namespace CombatAI.Comps
 				pawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);				
 				prevEnemyDir = sightReader.GetEnemyDirection(cell).normalized;
 			}
-			else if (!(pawn.stances.curStance is Stance_Warmup))
+			else if (!(pawn.jobs.curJob?.def.Is(JobDefOf.Wait_Combat) ?? false))
 			{
 				Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 200 + 200);
 				pawn.jobs.ClearQueuedJobs();
@@ -346,7 +347,7 @@ namespace CombatAI.Comps
 				pawn.jobs.StopAll();
 				pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);				
 			}
-			else if (!(pawn.stances.curStance is Stance_Warmup))
+			else if (!(pawn.jobs.curJob?.def.Is(JobDefOf.Wait_Combat) ?? false))
 			{
 				Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 200 + 200);
 				pawn.jobs.ClearQueuedJobs();
@@ -364,7 +365,7 @@ namespace CombatAI.Comps
 			ThingComp_CombatAI comp = dInfo.Instigator?.GetComp_Fast<ThingComp_CombatAI>() ?? null;
 			if (comp != null && (dInfo.Weapon?.IsRangedWeapon ?? false))
 			{
-				comp.hitsLanded++;
+				comp.hitsLanded += dInfo.Amount;
 			}		
 			lastTookDamage = GenTicks.TicksGame;
 		}

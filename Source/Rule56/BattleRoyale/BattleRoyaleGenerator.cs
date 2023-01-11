@@ -54,7 +54,7 @@ namespace CombatAI
 			parms.runs = BattleRoyale.roundsPerPair;
 			parms.spawn = BattleRoyale.spawn;	
 			PawnGroupMaker groupMaker = groupMakers.RandomElement();
-			int points = Rand.Range(500, 2500);			
+			int points = Rand.Range(250, 7500);			
 			parms.lhs = GeneratePawnKindDefGroup(groupMaker, points).ToList();
 			parms.lhsAi = AIType.legacy;
 			parms.rhs = new List<PawnKindDef>(parms.lhs);

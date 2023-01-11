@@ -74,7 +74,7 @@ namespace CombatAI
 				switch (state)
 				{
 					case PawnState.dead:
-						TryRemovePawn(pawn);
+						TryRemovePawn(pawn, true);
 						BattleRoyale.lhsPawns.Remove(pawn);						
 						lhs.RemoveAt(i);
 						lhSet.Remove(pawn);
@@ -93,7 +93,7 @@ namespace CombatAI
 				switch (state)
 				{
 					case PawnState.dead:
-						TryRemovePawn(pawn);
+						TryRemovePawn(pawn, false);
 						BattleRoyale.rhsPawns.Remove(pawn);
 						rhs.RemoveAt(i);
 						rhSet.Remove(pawn);
@@ -208,13 +208,14 @@ namespace CombatAI
 			}
 		}
 
-		private void SpawnPawnSet(List<PawnKindDef> kinds, IntVec3 spot, Faction faction, List<Pawn> result, HashSet<Pawn> resultSet)
+		private void SpawnPawnSet(List<PawnKindDef> kinds, IntVec3 spot, Faction faction, List<Pawn> result, HashSet<Pawn> resultSet, bool modAI)
 		{
 			string msg = null;
 			for (int i = 0; i < kinds.Count; i++)
-			{				
+			{
+
 				Pawn pawn = PawnGenerator.GeneratePawn(kinds[i], faction);
-				if (pawn.CurrentEffectiveVerb?.IsMeleeAttack ?? false)
+				if ((pawn.CurrentEffectiveVerb?.IsMeleeAttack ?? false) && modAI)
 				{
 					ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
 					comp.sequential = BattleRoyale.manager.reactionBreeder.TryBreedNewSpecimen(comp.sequential);
@@ -248,9 +249,9 @@ namespace CombatAI
 			rhSet.Clear();
 			lhs.Clear();
 			rhs.Clear();
-			SpawnPawnSet(parms.lhs, lhsSpawnPoint, Faction.OfAncients, lhs, lhSet);
+			SpawnPawnSet(parms.lhs, lhsSpawnPoint, Faction.OfAncients, lhs, lhSet, true);
 			BattleRoyale.lhsPawns.AddRange(lhs);
-			SpawnPawnSet(parms.rhs, rhsSpawnPoint, Faction.OfAncientsHostile, rhs, rhSet);
+			SpawnPawnSet(parms.rhs, rhsSpawnPoint, Faction.OfAncientsHostile, rhs, rhSet, false);
 			BattleRoyale.rhsPawns.AddRange(rhs);
 			lhsStartNum = lhs.Count;
 			rhsStartNum = rhs.Count;
@@ -276,13 +277,13 @@ namespace CombatAI
 			{
 				Pawn pawn = lhs[i];
 				BattleRoyale.lhsPawns.Remove(pawn);
-				TryRemovePawn(pawn);
+				TryRemovePawn(pawn, true);
 			}			
 			for (int i = 0; i < rhs.Count; i++)
 			{
 				Pawn pawn = rhs[i];
 				BattleRoyale.rhsPawns.Remove(pawn);
-				TryRemovePawn(pawn);
+				TryRemovePawn(pawn, false);
 			}
 			for(int i = 0;i < battleLords.Count; i++)
 			{
@@ -341,24 +342,27 @@ namespace CombatAI
 			return PawnState.alive;
 		}
 
-		private void TryRemovePawn(Pawn pawn)
+		private void TryRemovePawn(Pawn pawn, bool modAI)
 		{
 			if(pawn == null)
 			{
 				return;
 			}
-			ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
-			if (comp != null && comp.hitsLanded > 0)
+			if (modAI)
 			{
-				if (!pawn.Dead)
+				ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+				if (comp != null && comp.sequential != SeqDefaults.reaction && comp.hitsLanded > 0)
 				{
-					comp.hitsLanded *= 2;
+					if (!pawn.Dead)
+					{
+						comp.hitsLanded *= 2;
+					}
+					BattleRoyale.manager.reactionBreeder.queue.Add(new SeqBreeder.SeqSpecimen()
+					{
+						score = Mathf.FloorToInt(comp.hitsLanded),
+						sequential = comp.sequential
+					});
 				}
-				BattleRoyale.manager.reactionBreeder.queue.Add(new SeqBreeder.SeqSpecimen()
-				{
-					score = comp.hitsLanded,
-					sequential = comp.sequential
-				});
 			}
 			if (pawn.Dead && pawn.Corpse != null)
 			{

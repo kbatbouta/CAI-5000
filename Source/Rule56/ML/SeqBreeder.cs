@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using RimWorld;
 using Verse;
 
 namespace CombatAI
@@ -25,7 +27,7 @@ namespace CombatAI
 			{
 				recycled = maker();
 			}
-			if (queue.Count < 6)
+			if (queue.Count < 10 || Rand.Chance(0.2f))
 			{
 				Log.Message($"Breed still needs {6 - queue.Count}.");
 				for (int i = 0; i < recycled.weights.Count; i++)
@@ -34,14 +36,20 @@ namespace CombatAI
 				}				
 			}
 			else
-			{
-				queue.RemoveAll(s => s.score <= 0);
+			{	
+				queue.SortBy(s => -(s.score * 2 - s.breeded));
 				_temp.Clear();
-				int num = Rand.Range(2, Maths.Min(_temp.Count, 8));
+				int num = Rand.Range(2, Maths.Min(_temp.Count, 6));
 				for(int i = 0;i < num; i++)
 				{
-					var r = queue.Where(s => !_temp.Contains(s)).RandomElementByWeightWithFallback(s => s.score * 4 - s.breeded, queue.RandomElementByWeight(s => s.score * 4 - s.breeded));
-					_temp.Add(r);
+					if (Rand.Chance(0.5f))
+					{
+						_temp.Add(queue[i]);
+					}
+					else
+					{
+						_temp.Add(queue.Where(s => !_temp.Contains(s)).RandomElementByWeight(s => s.score * 2 - s.breeded));
+					}					
 				}
 				_temp.SortBy(s => - (s.score - s.breeded));
 				Sequential.DeepCopyWeights(_temp[0].sequential, recycled);
@@ -61,7 +69,12 @@ namespace CombatAI
 				{
 					TensorUtility.Noise(recycled.weights[j], -0.15f, 0.15f, recycled.weights[j]);
 				}
-				queue.RemoveAll(s => s.breeded > s.score - 2);
+				int k = queue.Count - 1;
+				while (k-- > 32)
+				{
+					queue.RemoveAt(k);
+				}	
+				queue.RemoveAll(s => s.breeded >= s.score);
 			}
 			return recycled;
 		}		
