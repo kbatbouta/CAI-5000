@@ -287,12 +287,7 @@ namespace CombatAI.Comps
 						{
 							fitness -= 5f;
 							parent.Map.debugDrawer.FlashCell(position, 0.0f, "_X_", 50);
-						}
-						if (pawn.stances.curStance is Stance_Warmup)
-						{
-							fitness -= -0.15f;
-							parent.Map.debugDrawer.FlashCell(position, 0.0f, "O__", 50);
-						}
+						}						
 						if (BattleRoyale.enabled)
 						{
 							parent.Map.debugDrawer.FlashCell(position, 0.50f, "1", 50);
@@ -346,7 +341,7 @@ namespace CombatAI.Comps
 			request.target = new LocalTargetInfo(nearestEnemy);
 			request.maxRangeFromCaster = Rand.Chance(Finder.P50 - 0.1f) ? Mathf.Clamp(pawn.GetStatValue_Fast(StatDefOf.MoveSpeed, 900) * 2 / (pawn.BodySize + 0.01f), 4, 10) : 4;
 			request.checkBlockChance = true;	
-			if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
+			if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && cell != pawn.Position)
 			{				
 				Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
 				job_goto.locomotionUrgency = LocomotionUrgency.Sprint;

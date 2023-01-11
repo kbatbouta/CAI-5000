@@ -64,11 +64,14 @@ namespace CombatAI
 				{
 					TensorUtility.Div(recycled.weights[j], _temp.Count, recycled.weights[j]);
 				}
-				for (int j = 0; j < recycled.weights.Count; j++)
+				if (Rand.Chance(0.2f))
 				{
-					float f = Maths.Max(1f - num / 1000f, 0.5f);
-					TensorUtility.Noise(recycled.weights[j], -0.1f * f, 0.1f * f, recycled.weights[j]);
-				}				
+					for (int j = 0; j < recycled.weights.Count; j++)
+					{
+						float f = Maths.Max(1f - num / 1000f, 0.5f);
+						TensorUtility.Noise(recycled.weights[j], -0.1f * f, 0.1f * f, recycled.weights[j]);
+					}
+				}
 				int k = queue.Count - 1;
 				while (k-- > 64)
 				{
