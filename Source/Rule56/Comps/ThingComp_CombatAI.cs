@@ -11,7 +11,7 @@ using GUIUtility = CombatAI.Gui.GUIUtility;
 namespace CombatAI.Comps
 {
 	public class ThingComp_CombatAI : ThingComp
-	{
+	{		
 		private int lastChangedOrRetreated = 0;
 		/// <summary>
 		///     Set of visible enemies. A queue for visible enemies during scans.
@@ -246,11 +246,10 @@ namespace CombatAI.Comps
 				Tensor2 dTensor = sequential.Evaluate(
 					(float)visibleEnemiesTargetingSelf.Count / 3f,
 					(float)visibleEnemiesInRange.Count / 3f,
-					Maths.Min(GenTicks.TicksGame - lastChangedOrRetreated, 900) / 60f,
-					nearestEnemyDist / 3f,
+					Maths.Min(GenTicks.TicksGame - lastChangedOrRetreated, 240f) / 240f,
+					1f - Maths.Min(GenTicks.TicksGame - lastTookDamage, 240f) / 240f,					
 					sightReader.GetThreat(position),
-					sightReader.GetVisibilityToEnemies(position),
-					verb.EffectiveRange / 3f);
+					sightReader.GetVisibilityToEnemies(position));
 				var decision = -1;
 				var dScore = -1f;
 				for(int i = 0;i < 3; i++)
@@ -368,7 +367,8 @@ namespace CombatAI.Comps
 			{
 				VerbProperties props = dInfo.Weapon.verbs.MaxBy(v => v.burstShotCount);				
 				comp.hitsLanded += props.warmupTime / (props.burstShotCount + 0.01f);				
-			}		
+			}
+			hitsLanded *= 0.97f;
 			lastTookDamage = GenTicks.TicksGame;
 		}
 

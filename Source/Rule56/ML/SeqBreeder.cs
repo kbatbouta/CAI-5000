@@ -27,7 +27,7 @@ namespace CombatAI
 			{
 				recycled = maker();
 			}
-			if (queue.Count < 10 || Rand.Chance(0.2f))
+			if (queue.Count < 10 || Rand.Chance(0.05f))
 			{
 				Log.Message($"Breed still needs {6 - queue.Count}.");
 				for (int i = 0; i < recycled.weights.Count; i++)
