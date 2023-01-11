@@ -38,7 +38,12 @@ namespace CombatAI
 			else
 			{
 				float scores = queue.Sum(s => s.score);
-				queue.SortBy(s => - s.score / (scores + 0.1f) * Rand.Value);
+				for(int i = 0;i < queue.Count; i++)
+				{
+					var s = queue[i];
+					s.order = -s.score / (scores + 0.1f) * Maths.Max(Rand.Value, 0.5f);
+				}
+				queue.SortBy(s => s.order);
 				_temp.Clear();
 				int num = Rand.Range(2, Maths.Min(_temp.Count, 6));
 				for(int i = 0;i < num; i++)
@@ -52,8 +57,7 @@ namespace CombatAI
 					for (int j = 0; j < recycled.weights.Count; j++)
 					{
 						TensorUtility.Add(recycled.weights[j], _temp[i].sequential.weights[j], recycled.weights[j]);
-					}
-					_temp[i].breeded++;
+					}					
 				}
 				for (int j = 0; j < recycled.weights.Count; j++)
 				{
@@ -62,7 +66,7 @@ namespace CombatAI
 				for (int j = 0; j < recycled.weights.Count; j++)
 				{
 					TensorUtility.Noise(recycled.weights[j], -0.15f, 0.15f, recycled.weights[j]);
-				}
+				}				
 				int k = queue.Count - 1;
 				while (k-- > 64)
 				{
@@ -76,7 +80,7 @@ namespace CombatAI
 		{
 			public Sequential sequential;
 			public float score;
-			public int breeded;
+			public float order;
 		}
 	}
 }

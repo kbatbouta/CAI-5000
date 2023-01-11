@@ -172,7 +172,7 @@ namespace CombatAI.Comps
 			}			
 			if (parent is Pawn pawn && !(pawn.RaceProps?.Animal ?? true) && sequential != null)
 			{
-				if (pawn.GetAIType() == AIType.vanilla)
+				if (pawn.GetAIType() == AIType.vanilla || sequential == null)
 				{
 					return;
 				}
@@ -367,7 +367,7 @@ namespace CombatAI.Comps
 			if (comp != null && (dInfo.Weapon?.IsRangedWeapon ?? false))
 			{
 				VerbProperties props = dInfo.Weapon.verbs.MaxBy(v => v.burstShotCount);				
-				comp.hitsLanded += props.warmupTime / (props.burstShotCount + 0.01f);
+				comp.hitsLanded += props.warmupTime / (props.burstShotCount + 0.01f);				
 			}		
 			lastTookDamage = GenTicks.TicksGame;
 		}

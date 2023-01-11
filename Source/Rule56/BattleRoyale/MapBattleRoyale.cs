@@ -215,17 +215,24 @@ namespace CombatAI
 			{
 
 				Pawn pawn = PawnGenerator.GeneratePawn(kinds[i], faction);
-				if ((pawn.CurrentEffectiveVerb?.IsMeleeAttack ?? false) && modAI)
+				if (modAI)
 				{
 					ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
-					comp.sequential = BattleRoyale.manager.reactionBreeder.TryBreedNewSpecimen(comp.sequential);
-					if (Rand.Chance(1f / kinds.Count) && msg == null)
+					if (!(pawn.CurrentEffectiveVerb?.IsMeleeAttack ?? false))
 					{
-						msg = "Breeding sample:\n";
-						for(int j = 0; j < comp.sequential.weights.Count; j++)
+						comp.sequential = BattleRoyale.manager.reactionBreeder.TryBreedNewSpecimen(null);
+						if (Rand.Chance(1f / kinds.Count) && msg == null)
 						{
-							msg += comp.sequential.weights[j].ToString() + "\n";
+							msg = "Breeding sample:\n";
+							for (int j = 0; j < comp.sequential.weights.Count; j++)
+							{
+								msg += comp.sequential.weights[j].ToString() + "\n";
+							}
 						}
+					}
+					else
+					{
+						comp.sequential = null;
 					}
 				}				
 				IntVec3 loc = CellFinder.RandomClosewalkCellNear(spot, map, 12);
@@ -351,7 +358,7 @@ namespace CombatAI
 			if (modAI)
 			{
 				ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
-				if (comp != null && comp.sequential != SeqDefaults.reaction && comp.hitsLanded > 0)
+				if (comp != null && comp.sequential != null && comp.hitsLanded > 0)
 				{
 					if (!pawn.Dead)
 					{
