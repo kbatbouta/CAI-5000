@@ -42,7 +42,7 @@ namespace CombatAI.Comps
 		/// <summary>
 		///		Number of hits parent was able to land on the enemy.
 		/// </summary>
-		public float hitsLanded;
+		public float fitness;
 		/// <summary>
 		///		ML model.
 		/// </summary>
@@ -199,7 +199,7 @@ namespace CombatAI.Comps
 				}
 				Thing nearestEnemy = null;
 				float nearestEnemyDist = 1e4f;
-				
+				var anyEnemiesInRange = false;
 				var position = pawn.Position;				
 				foreach (Thing enemy in visibleEnemies)
 				{
@@ -212,7 +212,7 @@ namespace CombatAI.Comps
 						{
 							continue;
 						}
-						enemyPos = PawnPathUtility.GetMovingShiftedPosition(pawn, 30);
+						enemyPos = PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 30);
 					}
 					else
 					{
@@ -226,9 +226,10 @@ namespace CombatAI.Comps
 					}
 					bool clearLosTested = false;
 					bool clearLos = false;
-					if ((clearLosTested = dist < verb.EffectiveRange - 2) && (clearLos = verb.CanHitTarget(enemy)))
+					if ((clearLosTested = dist < verb.EffectiveRange) && (clearLos = verb.CanHitTarget(enemy)))
 					{						
 						visibleEnemiesInRange.Add(enemy);
+						anyEnemiesInRange = true;
 					}
 					Verb enemyVerb = enemy.TryGetAttackVerb();					
 					if (enemyVerb != null && ((clearLosTested && clearLos) || (!clearLosTested && enemyVerb.CanHitTarget(parent))))
@@ -242,7 +243,7 @@ namespace CombatAI.Comps
 							visibleEnemiesTargetingSelf.Add(enemy);
 						}
 					}
-				}
+				}				
 				Tensor2 dTensor = sequential.Evaluate(
 					(float)visibleEnemiesTargetingSelf.Count / 3f,
 					(float)visibleEnemiesInRange.Count / 3f,
@@ -251,7 +252,7 @@ namespace CombatAI.Comps
 					sightReader.GetThreat(position),
 					sightReader.GetVisibilityToEnemies(position));
 				var decision = -1;
-				var dScore = -1f;
+				var dScore = -1f;				
 				for(int i = 0;i < 3; i++)
 				{
 					if (dTensor[0, i] > dScore)
@@ -265,16 +266,45 @@ namespace CombatAI.Comps
 					default:
 						// TODO warmup stance	
 						//
-						WarmUp();
-						parent.Map.debugDrawer.FlashCell(position, 0.01f, "0", 15);			
+						if (BattleRoyale.enabled && !anyEnemiesInRange)
+						{
+							fitness -= 5f; 
+							parent.Map.debugDrawer.FlashCell(position, 0.0f, "X__", 15);
+						}
+						if (BattleRoyale.enabled && nearestEnemyDist <= 6)
+						{
+							fitness -= 5f;
+							parent.Map.debugDrawer.FlashCell(position, 0.0f, "_X_", 15);
+						}
+						if (BattleRoyale.enabled)
+						{
+							parent.Map.debugDrawer.FlashCell(position, 0.25f, "0", 15);
+						}
+						WarmUp();								
 						return;	
 					case 1:
-						parent.Map.debugDrawer.FlashCell(position, 0.50f, "1", 15);
+						if (BattleRoyale.enabled && nearestEnemyDist <= 6)
+						{
+							fitness -= 5f;
+							parent.Map.debugDrawer.FlashCell(position, 0.0f, "_X_", 15);
+						}
+						if (BattleRoyale.enabled)
+						{
+							parent.Map.debugDrawer.FlashCell(position, 0.50f, "1", 15);
+						}
 						ChangePos(nearestEnemy);
 						lastChangedOrRetreated = GenTicks.TicksGame;
 						return;
 					case 2:
-						parent.Map.debugDrawer.FlashCell(position, 0.99f, "2", 15);
+						if (BattleRoyale.enabled && nearestEnemyDist > 16)
+						{
+							fitness -= 5f;
+							parent.Map.debugDrawer.FlashCell(position, 0.0f, "__X", 15);
+						}
+						if (BattleRoyale.enabled)
+						{
+							parent.Map.debugDrawer.FlashCell(position, 0.99f, "2", 15);
+						}
 						Retreat(nearestEnemy);
 						lastChangedOrRetreated = GenTicks.TicksGame;
 						return;
@@ -366,9 +396,9 @@ namespace CombatAI.Comps
 			if (comp != null && (dInfo.Weapon?.IsRangedWeapon ?? false))
 			{
 				VerbProperties props = dInfo.Weapon.verbs.MaxBy(v => v.burstShotCount);				
-				comp.hitsLanded += props.warmupTime / (props.burstShotCount + 0.01f);				
+				comp.fitness += props.warmupTime / (props.burstShotCount + 0.01f);				
 			}
-			hitsLanded *= 0.97f;
+			fitness *= 0.97f;
 			lastTookDamage = GenTicks.TicksGame;
 		}
 

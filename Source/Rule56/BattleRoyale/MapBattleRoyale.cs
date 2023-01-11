@@ -367,15 +367,15 @@ namespace CombatAI
 			if (modAI)
 			{
 				ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
-				if (comp != null && comp.sequential != null && comp.hitsLanded > 0)
+				if (comp != null && comp.sequential != null && comp.fitness > 0)
 				{
 					if (!pawn.Dead)
 					{
-						comp.hitsLanded *= 2;
+						comp.fitness *= 5;
 					}
 					BattleRoyale.manager.reactionBreeder.queue.Add(new SeqBreeder.SeqSpecimen()
 					{
-						score = comp.hitsLanded,
+						score = comp.fitness,
 						sequential = comp.sequential
 					});
 				}
