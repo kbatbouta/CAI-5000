@@ -46,7 +46,8 @@
         <Folder Include="Cache\" />
         <Folder Include="Comps\Deprecated\" />
         <Folder Include="ML\Tensors\" />
-        <Folder Include="ML\Models\" />
+        <Folder Include="ML\Activation\" />
+        <Folder Include="ML\Initialization\" />
     </ItemGroup>
     <ItemGroup>
         <None Remove="Gui\Core\GUIUtility.ScrollViews" />
@@ -65,7 +66,8 @@
         <None Remove="Comps\Deprecated\" />
         <None Remove="MachineLearning\Features\" />
         <None Remove="ML\Tensors\" />
-        <None Remove="ML\Models\" />
+        <None Remove="ML\Activation\" />
+        <None Remove="ML\Initialization\" />
     </ItemGroup>
     <ItemGroup>
         <None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">

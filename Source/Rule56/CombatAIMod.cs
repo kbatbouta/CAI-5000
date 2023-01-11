@@ -27,9 +27,44 @@ namespace CombatAI
 
 		private bool collapsibleGroupInited;
 		public CombatAIMod(ModContentPack contentPack) : base(contentPack)
-		{			
-			Finder.Harmony = new Harmony("Krkr.Rule56");
-			ITKeyedHelper.Initialize();
+		{
+			//Tensor2 first = new Tensor2(3, 4);
+			//first[0, 0] = 11;
+			//first[0, 1] = 12;
+			//first[0, 2] = 13;
+			//first[0, 3] = 14;
+			//first[1, 0] = 21;
+			//first[1, 1] = 22;
+			//first[1, 2] = 23;
+			//first[1, 3] = 24;
+			//first[2, 0] = 31;
+			//first[2, 1] = 32;
+			//first[2, 2] = 33;
+			//first[2, 3] = 34;
+			//Tensor2 second = new Tensor2(4, 2);
+			//second[0, 0] = 11;
+			//second[0, 1] = 12;
+			//second[1, 0] = 21;
+			//second[1, 1] = 22;
+			//second[2, 0] = 31;
+			//second[2, 1] = 32;
+			//second[3, 0] = 41;
+			//second[3, 1] = 90;
+			//Tensor2Var var1 = new Tensor2Var(3, 4);
+			//var1.Value = first;
+			//Tensor2Var var2 = new Tensor2Var(4, 2);
+			//var2.Value = second;
+
+
+			//Tensor2Op op1 = var1.T();
+			//var1.Value = first;
+			//Log.Message("op1+\n" + op1.Evaluate().ToString() + "\n" + first.T + "\n");			
+
+			//Tensor2Op op2 = var2.T(true);
+			//var2.Value = second;
+			//Log.Message("op2+\n" + op2.Evaluate().ToString() + "\n" + second.T + "\n");
+
+			Finder.Harmony = new Harmony("Krkr.Rule56");			
 			Finder.Harmony.PatchAll();
 			Finder.Mod      = this;
 			Finder.Settings = GetSettings<Settings>();

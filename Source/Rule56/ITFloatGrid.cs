@@ -84,6 +84,20 @@ namespace CombatAI
 			return 0;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool Available(IntVec3 cell)
+		{
+			return Available(cellIndices.CellToIndex(cell));
+		}
+		public bool Available(int index)
+		{
+			if (index >= 0 && index < mapCellNum)
+			{
+				return grid[index].sig != sig;
+			}
+			return false;
+		}
+
 		public void Next()
 		{
 			if (sig++ == short.MaxValue)

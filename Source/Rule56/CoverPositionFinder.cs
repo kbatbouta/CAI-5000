@@ -46,7 +46,7 @@ namespace CombatAI
 			flooder.Flood(request.locus,
 			              node =>
 			              {
-				              if (request.verb != null && !request.verb.CanHitTargetFrom(node.cell, enemyLoc) || maxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
+				              if ((request.validatorEval != null && !request.validatorEval(node.cell)) || (request.verb != null && !request.verb.CanHitTargetFrom(node.cell, enemyLoc)) || maxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
 				              {
 					              return;
 				              }
@@ -61,10 +61,6 @@ namespace CombatAI
 						              bestCell           = node.cell;
 					              }
 				              }
-				              //if (Find.Selector.SelectedPawns.Contains(request.caster))
-				              //{
-				              //    map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
-				              //}
 			              },
 			              cell =>
 			              {

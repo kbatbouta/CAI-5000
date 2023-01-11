@@ -14,12 +14,12 @@ namespace CombatAI
 		public List<PawnKindDef> rhs;
 		public AIType rhsAi;
 		public BattleSpawn spawn;
-		public Action<BattleResult, List<Pawn>, List<Pawn>> callback;	
+		public Action<BattleResult, List<Pawn>, List<Pawn>, float, float> callback;
 
 		public bool IsValid
 		{
 			get
-			{
+			{				
 				return lhs != null && rhs != null && runs > 0;
 			}
 		}

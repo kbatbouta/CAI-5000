@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using CombatAI.Comps;
 using NAudio.SoundFont;
 using RimWorld;
 using RimWorld.Planet;
@@ -30,8 +31,8 @@ namespace CombatAI
 		public List<Pawn> rhs = new List<Pawn>();		
 		public BattleRoyaleParms parms;
 		public HashSet<Pawn> lhSet = new HashSet<Pawn>();
-		public HashSet<Pawn> rhSet = new HashSet<Pawn>();
-		private List<Lord> battleLords = new List<Lord>();
+		public HashSet<Pawn> rhSet = new HashSet<Pawn>();		
+		private List<Lord> battleLords = new List<Lord>();		
 
 		public MapBattleRoyale(Map map) : base(map)
 		{
@@ -39,8 +40,8 @@ namespace CombatAI
 
 		public bool Active
 		{
-			get => parms.IsValid;
-		}	
+			get => parms.IsValid && BattleRoyale.enabled;
+		}
 
 		public override void MapComponentTick()
 		{
@@ -74,7 +75,7 @@ namespace CombatAI
 				{
 					case PawnState.dead:
 						TryRemovePawn(pawn);
-						BattleRoyale.lhsPawns.Remove(pawn);
+						BattleRoyale.lhsPawns.Remove(pawn);						
 						lhs.RemoveAt(i);
 						lhSet.Remove(pawn);
 						break;
@@ -139,7 +140,9 @@ namespace CombatAI
 			}
 			if(result != BattleResult.inprogress)
 			{
-				parms.callback(result, lhs, rhs);
+				float lr = (float)lhs.Count / lhsStartNum;
+				float rr = (float)rhs.Count / rhsStartNum;
+				parms.callback(result, lhs, rhs, lr, rr);
 				Log.Message($"Battle ended with lr:{(float)lhs.Count / lhsStartNum}, rr:{(float)rhs.Count / rhsStartNum}, result:{result}");
 				Restart();
 			}
@@ -207,14 +210,33 @@ namespace CombatAI
 
 		private void SpawnPawnSet(List<PawnKindDef> kinds, IntVec3 spot, Faction faction, List<Pawn> result, HashSet<Pawn> resultSet)
 		{
+			string msg = null;
 			for (int i = 0; i < kinds.Count; i++)
 			{				
-				Pawn pawn = PawnGenerator.GeneratePawn(kinds[i], faction);				
+				Pawn pawn = PawnGenerator.GeneratePawn(kinds[i], faction);
+				if (pawn.CurrentEffectiveVerb?.IsMeleeAttack ?? false)
+				{
+					ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+					comp.sequential = BattleRoyale.manager.reactionBreeder.TryBreedNewSpecimen(comp.sequential);
+					if (Rand.Chance(1f / kinds.Count) && msg == null)
+					{
+						msg = "Breeding sample:\n";
+						for(int j = 0; j < comp.sequential.weights.Count; j++)
+						{
+							msg += comp.sequential.weights[j].ToString() + "\n";
+						}
+					}
+				}				
 				IntVec3 loc = CellFinder.RandomClosewalkCellNear(spot, map, 12);
 				GenSpawn.Spawn(pawn, loc, map, Rot4.Random);
 				result.Add(pawn);
 				resultSet.Add(pawn);				
 			}
+			if (msg != null)
+			{
+				Log.Message(msg);
+			}
+
 			battleLords.Add(LordMaker.MakeNewLord(faction, new LordJob_DefendPoint(map.Center), map, result));
 		}
 
@@ -254,19 +276,13 @@ namespace CombatAI
 			{
 				Pawn pawn = lhs[i];
 				BattleRoyale.lhsPawns.Remove(pawn);
-				if (!pawn.Destroyed)
-				{					
-					pawn.Destroy();
-				}
+				TryRemovePawn(pawn);
 			}			
 			for (int i = 0; i < rhs.Count; i++)
 			{
 				Pawn pawn = rhs[i];
 				BattleRoyale.rhsPawns.Remove(pawn);
-				if (!pawn.Destroyed)
-				{
-					pawn.Destroy();
-				}
+				TryRemovePawn(pawn);
 			}
 			for(int i = 0;i < battleLords.Count; i++)
 			{
@@ -327,6 +343,27 @@ namespace CombatAI
 
 		private void TryRemovePawn(Pawn pawn)
 		{
+			if(pawn == null)
+			{
+				return;
+			}
+			ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+			if (comp != null && comp.hitsLanded > 0)
+			{
+				if (!pawn.Dead)
+				{
+					comp.hitsLanded *= 2;
+				}
+				BattleRoyale.manager.reactionBreeder.queue.Add(new SeqBreeder.SeqSpecimen()
+				{
+					score = comp.hitsLanded,
+					sequential = comp.sequential
+				});
+			}
+			if (pawn.Dead && pawn.Corpse != null)
+			{
+				pawn.Corpse.Destroy();
+			}
 			if (!pawn.Destroyed)
 			{
 				pawn.Destroy(DestroyMode.Vanish);

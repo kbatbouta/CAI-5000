@@ -40,7 +40,7 @@ namespace CombatAI
 		private static void StartBattleInternel(BattleSpawn spawn)
 		{
 			List<DebugMenuOption> items = new List<DebugMenuOption>();
-			for(int i = 1;i < 32; i+= 4)
+			for (int i = 1; i < 32; i += 2)
 			{ 
 				items.Add(new DebugMenuOption($"rounds num per pair: {i}", DebugMenuOptionMode.Action, delegate
 				{

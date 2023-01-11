@@ -8,11 +8,14 @@ namespace CombatAI
 {
 	public class BattleRoyaleManager : GameComponent
 	{
-		private bool _active;	
+		private bool _active;
+
+		public SeqBreeder reactionBreeder;		
 				
 		public BattleRoyaleManager(Game game)
 		{			
 			_active = false;
+			reactionBreeder = new SeqBreeder(SeqFactory.MakeReaction, SeqDefaults.reaction);
 			BattleRoyale.manager = this;
 			BattleRoyale.generator = new BattleRoyaleGenerator();			
 		}
@@ -29,7 +32,7 @@ namespace CombatAI
 			{				
 				_active = value;
 			}
-		}
+		}		
 
 		public override void GameComponentTick()
 		{
@@ -82,7 +85,7 @@ namespace CombatAI
 			{
 				br.Stop();
 			}
-		}	
+		}		
 
 		private void StartMapBattle(MapBattleRoyale mapBattle)
 		{
@@ -91,7 +94,7 @@ namespace CombatAI
 			{							
 				mapBattle.StartBattleRoyale(parms);				
 			}
-		}
+		}		
 	}
 }
 

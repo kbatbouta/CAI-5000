@@ -19,5 +19,7 @@ namespace CombatAI
 		public bool checkBlockChance;
 
 		public Func<IntVec3, bool> validator;
+
+		public Func<IntVec3, bool> validatorEval;
 	}
 }

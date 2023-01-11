@@ -63,7 +63,7 @@ namespace CombatAI
 				return turret.AttackVerb;
 			}
 			return null;
-		}
+		}	
 
 		public static bool HasWeaponVisible(this Pawn pawn)
 		{
