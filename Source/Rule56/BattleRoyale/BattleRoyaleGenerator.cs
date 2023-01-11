@@ -12,7 +12,8 @@ namespace CombatAI
 		public int score_vanilla = 0;
 		public int score_stalemate = 0;
 
-		private List<PawnGroupMaker> groupMakers = new List<PawnGroupMaker>();		
+		private List<PawnGroupMaker> lhs_groupMakers = new List<PawnGroupMaker>();
+		private List<PawnGroupMaker> rhs_groupMakers = new List<PawnGroupMaker>();
 
 		public BattleRoyaleGenerator()
 		{
@@ -37,8 +38,27 @@ namespace CombatAI
 				if (groupMaker != null)
 				{
 					Log.Message($"Found groupMaker for faction '{def.label}'");
-					groupMakers.Add(groupMaker);
+					lhs_groupMakers.Add(groupMaker);
 				}				
+			}			
+			factions.Add(FactionDefOf.TribeCivil);
+			factions.Add(FactionDefOf.TribeRough);
+			foreach (FactionDef def in factions)
+			{
+				PawnGroupMaker groupMaker = null;
+				foreach (PawnGroupMaker gm in def.pawnGroupMakers)
+				{
+					if (gm.kindDef == PawnGroupKindDefOf.Combat)
+					{
+						groupMaker = gm;
+						break;
+					}
+				}
+				if (groupMaker != null)
+				{
+					Log.Message($"Found groupMaker for faction '{def.label}'");
+					rhs_groupMakers.Add(groupMaker);
+				}
 			}
 		}
 
@@ -52,12 +72,16 @@ namespace CombatAI
 			BattleRoyaleParms parms = new BattleRoyaleParms();
 			parms.maxRoundTicks = 60 * 180;
 			parms.runs = BattleRoyale.roundsPerPair;
-			parms.spawn = BattleRoyale.spawn;	
-			PawnGroupMaker groupMaker = groupMakers.RandomElement();
-			int points = Rand.Range(250, 2500);			
-			parms.lhs = GeneratePawnKindDefGroup(groupMaker, points).ToList();
+			parms.spawn = BattleRoyale.spawn;				
+			int points = Rand.Range(300, 2500);
+			parms.lhs = new List<PawnKindDef>();
+			parms.lhs.AddRange(GeneratePawnKindDefGroup(lhs_groupMakers.RandomElement(), points / 2).ToList());
+			parms.lhs.AddRange(GeneratePawnKindDefGroup(lhs_groupMakers.RandomElement(), points / 2).ToList());
 			parms.lhsAi = AIType.legacy;
-			parms.rhs = new List<PawnKindDef>(parms.lhs);
+			parms.rhs = new List<PawnKindDef>();
+			parms.rhs.AddRange(GeneratePawnKindDefGroup(rhs_groupMakers.RandomElement(), points / 3).ToList());
+			parms.rhs.AddRange(GeneratePawnKindDefGroup(rhs_groupMakers.RandomElement(), points / 3).ToList());
+			parms.rhs.AddRange(GeneratePawnKindDefGroup(rhs_groupMakers.RandomElement(), points / 3).ToList());
 			parms.rhsAi = AIType.vanilla;
 			float s_lhs = 0;
 			float s_rhs = 0;			
