@@ -37,21 +37,14 @@ namespace CombatAI
 			}
 			else
 			{	
-				queue.SortBy(s => -(s.score * 2 - s.breeded));
+				queue.SortBy(s => -s.score);
 				_temp.Clear();
 				int num = Rand.Range(2, Maths.Min(_temp.Count, 6));
 				for(int i = 0;i < num; i++)
 				{
-					if (Rand.Chance(0.5f))
-					{
-						_temp.Add(queue[i]);
-					}
-					else
-					{
-						_temp.Add(queue.Where(s => !_temp.Contains(s)).RandomElementByWeight(s => s.score * 2 - s.breeded));
-					}					
+					_temp.Add(queue[i]);					
 				}
-				_temp.SortBy(s => - (s.score - s.breeded));
+				_temp.SortBy(s => - s.score);
 				Sequential.DeepCopyWeights(_temp[0].sequential, recycled);
 				for(int i = 1; i < _temp.Count; i++)
 				{
@@ -74,7 +67,7 @@ namespace CombatAI
 				{
 					queue.RemoveAt(k);
 				}	
-				queue.RemoveAll(s => s.breeded >= s.score);
+				queue.RemoveAll(s => s.breeded > 16);
 			}
 			return recycled;
 		}		
