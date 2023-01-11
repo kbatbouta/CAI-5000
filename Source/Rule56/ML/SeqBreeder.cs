@@ -36,8 +36,9 @@ namespace CombatAI
 				}				
 			}
 			else
-			{	
-				queue.SortBy(s => -(s.score - s.breeded / 2));
+			{
+				float scores = queue.Sum(s => s.score);
+				queue.SortBy(s => - s.score / (scores + 0.1f) * Rand.Value);
 				_temp.Clear();
 				int num = Rand.Range(2, Maths.Min(_temp.Count, 6));
 				for(int i = 0;i < num; i++)
@@ -63,11 +64,10 @@ namespace CombatAI
 					TensorUtility.Noise(recycled.weights[j], -0.15f, 0.15f, recycled.weights[j]);
 				}
 				int k = queue.Count - 1;
-				while (k-- > 32)
+				while (k-- > 64)
 				{
 					queue.RemoveAt(k);
-				}	
-				queue.RemoveAll(s => s.breeded > 16);
+				}				
 			}
 			return recycled;
 		}		
