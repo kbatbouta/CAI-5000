@@ -172,7 +172,7 @@ namespace CombatAI.Comps
 			}			
 			if (parent is Pawn pawn && !(pawn.RaceProps?.Animal ?? true) && sequential != null)
 			{
-				if (pawn.GetAIType() == AIType.vanilla || sequential == null)
+				if (pawn.GetAIType() == AIType.vanilla)
 				{
 					return;
 				}

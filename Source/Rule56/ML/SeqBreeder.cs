@@ -9,6 +9,7 @@ namespace CombatAI
 {
 	public class SeqBreeder
 	{
+		private int num;
 		private List<SeqSpecimen> _temp = new List<SeqSpecimen>();
 
 		public Sequential defSeq;
@@ -27,7 +28,7 @@ namespace CombatAI
 			{
 				recycled = maker();
 			}
-			if (queue.Count < 10 || Rand.Chance(0.05f))
+			if (queue.Count < 10 || Rand.Chance(0.10f - 0.10f * Maths.Min(num / 256f, 0.85f)))
 			{
 				Log.Message($"Breed still needs {6 - queue.Count}.");
 				for (int i = 0; i < recycled.weights.Count; i++)
@@ -65,14 +66,16 @@ namespace CombatAI
 				}
 				for (int j = 0; j < recycled.weights.Count; j++)
 				{
-					TensorUtility.Noise(recycled.weights[j], -0.15f, 0.15f, recycled.weights[j]);
+					float f = Maths.Max(1f - num / 1000f, 0.5f);
+					TensorUtility.Noise(recycled.weights[j], -0.1f * f, 0.1f * f, recycled.weights[j]);
 				}				
 				int k = queue.Count - 1;
 				while (k-- > 64)
 				{
 					queue.RemoveAt(k);
+					num++;
 				}				
-			}
+			}			
 			return recycled;
 		}		
 
