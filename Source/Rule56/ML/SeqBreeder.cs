@@ -37,7 +37,7 @@ namespace CombatAI
 			}
 			else
 			{	
-				queue.SortBy(s => -s.score);
+				queue.SortBy(s => -(s.score - s.breeded / 2));
 				_temp.Clear();
 				int num = Rand.Range(2, Maths.Min(_temp.Count, 6));
 				for(int i = 0;i < num; i++)

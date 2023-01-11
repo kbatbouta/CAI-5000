@@ -247,9 +247,10 @@ namespace CombatAI.Comps
 					(float)visibleEnemiesTargetingSelf.Count / 3f,
 					(float)visibleEnemiesInRange.Count / 3f,
 					Maths.Min(GenTicks.TicksGame - lastChangedOrRetreated, 900) / 60f,
-					nearestEnemyDist / 8f,
+					nearestEnemyDist / 3f,
 					sightReader.GetThreat(position),
-					sightReader.GetVisibilityToEnemies(position) / 3f);
+					sightReader.GetVisibilityToEnemies(position),
+					verb.EffectiveRange / 3f);
 				var decision = -1;
 				var dScore = -1f;
 				for(int i = 0;i < 3; i++)
@@ -365,7 +366,8 @@ namespace CombatAI.Comps
 			ThingComp_CombatAI comp = dInfo.Instigator?.GetComp_Fast<ThingComp_CombatAI>() ?? null;
 			if (comp != null && (dInfo.Weapon?.IsRangedWeapon ?? false))
 			{
-				comp.hitsLanded += dInfo.Amount;
+				VerbProperties props = dInfo.Weapon.verbs.MaxBy(v => v.burstShotCount);				
+				comp.hitsLanded += props.warmupTime / (props.burstShotCount + 0.01f);
 			}		
 			lastTookDamage = GenTicks.TicksGame;
 		}
