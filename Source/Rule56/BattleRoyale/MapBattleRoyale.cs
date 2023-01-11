@@ -31,7 +31,8 @@ namespace CombatAI
 		public List<Pawn> rhs = new List<Pawn>();		
 		public BattleRoyaleParms parms;
 		public HashSet<Pawn> lhSet = new HashSet<Pawn>();
-		public HashSet<Pawn> rhSet = new HashSet<Pawn>();		
+		public HashSet<Pawn> rhSet = new HashSet<Pawn>();
+		public List<Thing> forbidenItems = new List<Thing>();
 		private List<Lord> battleLords = new List<Lord>();		
 
 		public MapBattleRoyale(Map map) : base(map)
@@ -63,6 +64,14 @@ namespace CombatAI
 			if (GenTicks.TicksGame % 60 != 0)
 			{
 				return;
+			}
+			for(int j = 0;j < forbidenItems.Count; j++)
+			{
+				Thing t = forbidenItems[j];
+				if(t != null && !t.Destroyed)
+				{
+					t.Destroy();
+				}
 			}
 			map.debugDrawer.FlashCell(map.Center, 1.0f, "mc", 60);
 			int i;
@@ -307,7 +316,7 @@ namespace CombatAI
 			lhSet.Clear();
 			lhsStartNum = 0;
 			rhsStartNum = 0;
-			roundTicksLeft = 0;
+			roundTicksLeft = 0;			
 		}
 
 		private void SetupSpawnPoints()

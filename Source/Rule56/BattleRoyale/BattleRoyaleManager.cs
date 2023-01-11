@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NAudio.SoundFont;
 using Verse;
+using Verse.AI;
 
 namespace CombatAI
 {
@@ -62,6 +63,17 @@ namespace CombatAI
 				if (GenTicks.TicksGame % 480 == 0)
 				{
 					BattleRoyale.generator.GeneratorUpdate();
+				}
+			}
+			if (GenTicks.TicksGame % 4082 == 0)
+			{				
+				List<Pawn> pawns = Find.World.worldPawns.AllPawnsAliveOrDead;
+				foreach (Pawn pawn in pawns)
+				{
+					if (pawn != null && (pawn.Faction == null || pawn.Faction.leader != pawn))
+					{
+						Find.World.worldPawns.RemoveAndDiscardPawnViaGC(pawn);
+					}
 				}
 			}
 		}
