@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Verse;
 
 namespace CombatAI
@@ -39,7 +40,8 @@ namespace CombatAI
 				int num = Rand.Range(2, Maths.Min(_temp.Count, 8));
 				for(int i = 0;i < num; i++)
 				{
-					_temp.Add(queue.RandomElementByWeight(s => s.score - s.breeded));
+					var r = queue.Where(s => !_temp.Contains(s)).RandomElementByWeightWithFallback(s => s.score * 4 - s.breeded, queue.RandomElementByWeight(s => s.score * 4 - s.breeded));
+					_temp.Add(r);
 				}
 				_temp.SortBy(s => - (s.score - s.breeded));
 				Sequential.DeepCopyWeights(_temp[0].sequential, recycled);
@@ -59,7 +61,7 @@ namespace CombatAI
 				{
 					TensorUtility.Noise(recycled.weights[j], -0.15f, 0.15f, recycled.weights[j]);
 				}
-				queue.RemoveAll(s => s.breeded > s.score + 1);
+				queue.RemoveAll(s => s.breeded > s.score - 2);
 			}
 			return recycled;
 		}		

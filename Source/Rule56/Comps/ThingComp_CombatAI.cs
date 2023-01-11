@@ -12,6 +12,7 @@ namespace CombatAI.Comps
 {
 	public class ThingComp_CombatAI : ThingComp
 	{
+		private int lastChangedOrRetreated = 0;
 		/// <summary>
 		///     Set of visible enemies. A queue for visible enemies during scans.
 		/// </summary>
@@ -241,16 +242,13 @@ namespace CombatAI.Comps
 							visibleEnemiesTargetingSelf.Add(enemy);
 						}
 					}
-				}					
+				}
 				Tensor2 dTensor = sequential.Evaluate(
 					(float)visibleEnemiesTargetingSelf.Count / 3f,
-					(float)visibleEnemiesOutRangeSelf.Count  / 3f,
-					(float)visibleEnemies.Count / 3f,
+					(float)visibleEnemiesInRange.Count / 3f,
+					Maths.Min(GenTicks.TicksGame - lastChangedOrRetreated, 900) / 60f,
 					sightReader.GetThreat(position),
-					sightReader.GetVisibilityToEnemies(position) / 3f,
-					(nearestEnemyDist - 8) / verb.EffectiveRange,
-					pawn.stances?.curStance is Stance_Warmup ? 1f : 0f
-					);
+					sightReader.GetVisibilityToEnemies(position) / 3f);
 				var decision = -1;
 				var dScore = -1f;
 				for(int i = 0;i < 3; i++)
@@ -264,44 +262,49 @@ namespace CombatAI.Comps
 				switch (decision)
 				{
 					default:
-						// TODO warmup stance		
+						// TODO warmup stance	
+						//
+						WarmUp();
 						parent.Map.debugDrawer.FlashCell(position, 0.01f, "0", 15);			
 						return;	
 					case 1:
 						parent.Map.debugDrawer.FlashCell(position, 0.50f, "1", 15);
-						ChangePos();
+						ChangePos(nearestEnemy);
+						lastChangedOrRetreated = GenTicks.TicksGame;
 						return;
 					case 2:
 						parent.Map.debugDrawer.FlashCell(position, 0.99f, "2", 15);
 						Retreat(nearestEnemy);
+						lastChangedOrRetreated = GenTicks.TicksGame;
 						return;
 				}						
+			}
+		}
+
+		public void WarmUp()
+		{
+			Pawn pawn = parent as Pawn;
+			if (!(pawn.stances.curStance is Stance_Warmup))
+			{
+				Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 200 + 200);
+				pawn.jobs.ClearQueuedJobs();
+				pawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
 			}
 		}
 
 		/// <summary>
 		/// TODO
 		/// </summary>
-		public void ChangePos()
+		public void ChangePos(Thing nearestEnemy)
 		{
 			Pawn pawn = parent as Pawn;
 			Verb verb = pawn.CurrentEffectiveVerb;			
 			CoverPositionRequest request = new CoverPositionRequest();
 			request.caster = pawn;			
-			request.verb = null;
+			request.verb = pawn.CurrentEffectiveVerb;
+			request.target = new LocalTargetInfo(nearestEnemy);
 			request.maxRangeFromCaster = Rand.Chance(Finder.P50 - 0.1f) ? Mathf.Clamp(pawn.GetStatValue_Fast(StatDefOf.MoveSpeed, 900) * 2 / (pawn.BodySize + 0.01f), 4, 10) : 4;
-			request.checkBlockChance = true;
-			request.validatorEval = (cell) =>
-			{
-				for (int i = 0; i < visibleEnemiesInRange.Count; i++)
-				{
-					if (verb.CanHitTarget(visibleEnemiesInRange[i]))
-					{
-						return true;
-					}
-				}
-				return false;
-			};
+			request.checkBlockChance = true;	
 			if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
 			{				
 				Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
