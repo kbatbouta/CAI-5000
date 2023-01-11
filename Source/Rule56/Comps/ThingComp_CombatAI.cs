@@ -288,6 +288,11 @@ namespace CombatAI.Comps
 							fitness -= 5f;
 							parent.Map.debugDrawer.FlashCell(position, 0.0f, "_X_", 50);
 						}
+						if (pawn.stances.curStance is Stance_Warmup)
+						{
+							fitness -= -0.15f;
+							parent.Map.debugDrawer.FlashCell(position, 0.0f, "O__", 50);
+						}
 						if (BattleRoyale.enabled)
 						{
 							parent.Map.debugDrawer.FlashCell(position, 0.50f, "1", 50);
@@ -300,6 +305,11 @@ namespace CombatAI.Comps
 						{
 							fitness -= 5f;
 							parent.Map.debugDrawer.FlashCell(position, 0.0f, "__X", 50);
+						}
+						if (pawn.stances.curStance is Stance_Warmup)
+						{
+							fitness -= -0.075f;
+							parent.Map.debugDrawer.FlashCell(position, 0.0f, "_O_", 50);
 						}
 						if (BattleRoyale.enabled)
 						{
