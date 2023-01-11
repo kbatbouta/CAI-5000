@@ -1,3 +1,4 @@
+# Warning: this branch is not usable and for testing only! Please switch to the development branch!
 [![Build](https://github.com/kbatbouta/RimWorld-RocketMan/actions/workflows/main.yml/badge.svg)](https://github.com/kbatbouta/CAI-5000/blob/main/.github/workflows/main.yml) ![Version](https://img.shields.io/badge/Rimworld-1.4-brightgreen.svg)
 ---
 # CAI-5000 (Combat AI 5000)
