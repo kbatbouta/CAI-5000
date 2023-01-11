@@ -269,16 +269,16 @@ namespace CombatAI.Comps
 						if (BattleRoyale.enabled && !anyEnemiesInRange)
 						{
 							fitness -= 5f; 
-							parent.Map.debugDrawer.FlashCell(position, 0.0f, "X__", 15);
+							parent.Map.debugDrawer.FlashCell(position, 0.0f, "X__", 50);
 						}
 						if (BattleRoyale.enabled && nearestEnemyDist <= 6)
 						{
 							fitness -= 5f;
-							parent.Map.debugDrawer.FlashCell(position, 0.0f, "_X_", 15);
+							parent.Map.debugDrawer.FlashCell(position, 0.0f, "_X_", 50);
 						}
 						if (BattleRoyale.enabled)
 						{
-							parent.Map.debugDrawer.FlashCell(position, 0.25f, "0", 15);
+							parent.Map.debugDrawer.FlashCell(position, 0.25f, "0", 50);
 						}
 						WarmUp();								
 						return;	
@@ -286,11 +286,11 @@ namespace CombatAI.Comps
 						if (BattleRoyale.enabled && nearestEnemyDist <= 6)
 						{
 							fitness -= 5f;
-							parent.Map.debugDrawer.FlashCell(position, 0.0f, "_X_", 15);
+							parent.Map.debugDrawer.FlashCell(position, 0.0f, "_X_", 50);
 						}
 						if (BattleRoyale.enabled)
 						{
-							parent.Map.debugDrawer.FlashCell(position, 0.50f, "1", 15);
+							parent.Map.debugDrawer.FlashCell(position, 0.50f, "1", 50);
 						}
 						ChangePos(nearestEnemy);
 						lastChangedOrRetreated = GenTicks.TicksGame;
@@ -299,11 +299,11 @@ namespace CombatAI.Comps
 						if (BattleRoyale.enabled && nearestEnemyDist > 16)
 						{
 							fitness -= 5f;
-							parent.Map.debugDrawer.FlashCell(position, 0.0f, "__X", 15);
+							parent.Map.debugDrawer.FlashCell(position, 0.0f, "__X", 50);
 						}
 						if (BattleRoyale.enabled)
 						{
-							parent.Map.debugDrawer.FlashCell(position, 0.99f, "2", 15);
+							parent.Map.debugDrawer.FlashCell(position, 0.99f, "2", 50);
 						}
 						Retreat(nearestEnemy);
 						lastChangedOrRetreated = GenTicks.TicksGame;
