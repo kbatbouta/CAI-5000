@@ -1,20 +1,18 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using Verse;
-using System.Collections.Generic;
-
 namespace CombatAI
 {
 	public class PawnDefExtension : DefModExtension
 	{
+		private readonly List<MetaCombatAttribute> strongAttributes = new List<MetaCombatAttribute>();
+
+		private readonly List<MetaCombatAttribute> weakAttributes = new List<MetaCombatAttribute>();
 		[Unsaved(allowLoading: false)]
-		private MetaCombatAttribute _weakness;
+		private bool _inited;
 		[Unsaved(allowLoading: false)]
 		private MetaCombatAttribute _strength;
 		[Unsaved(allowLoading: false)]
-		private bool _inited;
-
-		private List<MetaCombatAttribute> weakAttributes = new List<MetaCombatAttribute>();
-		private List<MetaCombatAttribute> strongAttributes = new List<MetaCombatAttribute>();
+		private MetaCombatAttribute _weakness;
 
 		public MetaCombatAttribute WeakCombatAttribute
 		{
@@ -42,10 +40,9 @@ namespace CombatAI
 
 		private void Init()
 		{
-			_inited = true;
+			_inited   = true;
 			_weakness = weakAttributes.Sum();
 			_strength = strongAttributes.Sum();
 		}
 	}
 }
-

@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LanguageData>        
+<LanguageData>
     <CombatAI>Combat AI 5000</CombatAI>
     <CombatAI.Sym.Empty></CombatAI.Sym.Empty>
     <CombatAI.Close>Close</CombatAI.Close>
     <CombatAI.Open>Open</CombatAI.Open>
     <CombatAI.Hide>Hide</CombatAI.Hide>
     <CombatAI.Expand>Hide</CombatAI.Expand>
+    <CombatAI.PlaceWorker.WallMounted>Needs to be mounted to a wall or a solid structure.</CombatAI.PlaceWorker.WallMounted>
     <CombatAI.Preparing>Preparing Combat AI</CombatAI.Preparing>
+    <CombatAI.Animator.Controller>Hold</CombatAI.Animator.Controller>
+    <CombatAI.Animator.Controller.Description>Hold at the current angle.</CombatAI.Animator.Controller.Description>
     <CombatAI.Settings.Basic>Basic Settings</CombatAI.Settings.Basic>
+    <CombatAI.Settings.Basic.Presets>Performance/Difficulty presets</CombatAI.Settings.Basic.Presets>
+    <CombatAI.Settings.Basic.Presets.Easy>Easy/Perf</CombatAI.Settings.Basic.Presets.Easy>
+    <CombatAI.Settings.Basic.Presets.Normal>Normal</CombatAI.Settings.Basic.Presets.Normal>
+    <CombatAI.Settings.Basic.Presets.Hard>Hard/Complex</CombatAI.Settings.Basic.Presets.Hard>
+    <CombatAI.Settings.Basic.Presets.Deathwish>Deathwish</CombatAI.Settings.Basic.Presets.Deathwish>
+    <CombatAI.Settings.Basic.Presets.Applied>Applied preset:</CombatAI.Settings.Basic.Presets.Applied>
+    <CombatAI.Settings.Basic.Presets.Description>Performance presets will determine the complexity of AI calculations and their interval. More complex calculations means harder AI but lower performance. Default is normal.</CombatAI.Settings.Basic.Presets.Description>
     <CombatAI.Settings.Basic.FogOfWar>[BETA] Fog of war</CombatAI.Settings.Basic.FogOfWar>
     <CombatAI.Settings.Basic.FogOfWar.Enable>Enable fog of war</CombatAI.Settings.Basic.FogOfWar.Enable>
     <CombatAI.Settings.Basic.FogOfWar.Density>Fog density (how dark the fog of war is)</CombatAI.Settings.Basic.FogOfWar.Density>
@@ -18,23 +28,24 @@
     <CombatAI.Settings.Basic.FogOfWar.FadeMul.Readouts>{0}x</CombatAI.Settings.Basic.FogOfWar.FadeMul.Readouts>
     <CombatAI.Settings.Basic.KillBoxKiller>Enable The Killbox killer 5000</CombatAI.Settings.Basic.KillBoxKiller>
     <CombatAI.Settings.Basic.CELean>Enable Combat Extended lean profile</CombatAI.Settings.Basic.CELean>
-    <CombatAI.Settings.Basic.PerformanceOpt>Enable dynamic performance settings</CombatAI.Settings.Basic.PerformanceOpt>
+    <CombatAI.Settings.Basic.PerformanceOpt>Enable Dynamic performance settings</CombatAI.Settings.Basic.PerformanceOpt>
+    <CombatAI.Settings.Basic.PerformanceOpt.Warning>WARNING: NOT having dynamic performance settings ON will result in lag spikes and lose of performance!</CombatAI.Settings.Basic.PerformanceOpt.Warning>
     <CombatAI.Settings.Basic.PerformanceOpt.Description>Automatically adjust settings to maintain both a good level of TPS and a good AI.</CombatAI.Settings.Basic.PerformanceOpt.Description>
     <CombatAI.Settings.Basic.Caster>Enable fire position tweaks</CombatAI.Settings.Basic.Caster>
     <CombatAI.Settings.Basic.Targeter>Enable target selection tweaks</CombatAI.Settings.Basic.Targeter>
+    <CombatAI.Settings.Basic.Flanking>Enable aggressive flanking</CombatAI.Settings.Basic.Flanking>
+    <CombatAI.Settings.Basic.Reaction>Enable fast reactions</CombatAI.Settings.Basic.Reaction>
+    <CombatAI.Settings.Basic.Retreat>Enable tactical retreat</CombatAI.Settings.Basic.Retreat>
     <CombatAI.Settings.Basic.Pather>Enable pathfinding tweaks</CombatAI.Settings.Basic.Pather>
     <CombatAI.Settings.Basic.DestWeight>Pathfinding aggressiveness level</CombatAI.Settings.Basic.DestWeight>
     <CombatAI.Settings.Basic.DestWeight.Description>Lower numbers mean pathfinding will be more aggressive at avoiding enemies, flanking and minimizing risk to pawns.</CombatAI.Settings.Basic.DestWeight.Description>
     <CombatAI.Settings.Basic.DestWeight.Warning>WARNING: Lower values will cause alot of performance issues.</CombatAI.Settings.Basic.DestWeight.Warning>
-
     <CombatAI.Settings.Debugging>Debugging</CombatAI.Settings.Debugging>
     <CombatAI.Settings.Debugging.Enable>Enable Debugging</CombatAI.Settings.Debugging.Enable>
-    Pathfinding_DestWeight
     <CombatAI.Settings.Advance>Advance Settings</CombatAI.Settings.Advance>
-    <CombatAI.Settings.Advance.Warning>WARNING: This is only for advanced users! Don't enable this if you don't know what you're doing!</CombatAI.Settings.Advance.Warning>   
+    <CombatAI.Settings.Advance.Warning>WARNING: This is only for advanced users! Don't enable this if you don't know what you're doing!</CombatAI.Settings.Advance.Warning>
     <CombatAI.Settings.Advance.Enable>I'm an advanced user!</CombatAI.Settings.Advance.Enable>
-
-    <CombatAI.Settings.Advance.Sight.Performance>Performance</CombatAI.Settings.Advance.Sight.Performance>    
+    <CombatAI.Settings.Advance.Sight.Performance>Performance</CombatAI.Settings.Advance.Sight.Performance>
     <CombatAI.Settings.Advance.Sight.Performance.Description>You can adjust how many buckets pawns/turrets are divided into and how often they updates. Warning: DON'T USE THIS IF YOU DON'T KNOW WHAT YOU'RE DOING</CombatAI.Settings.Advance.Sight.Performance.Description>
     <CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies>Humanlike factions</CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies>
     <CombatAI.Settings.Advance.Sight.Performance.MechsAndInsect>Mechs and insects</CombatAI.Settings.Advance.Sight.Performance.MechsAndInsect>

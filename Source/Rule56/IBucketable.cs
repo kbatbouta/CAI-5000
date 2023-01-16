@@ -1,17 +1,15 @@
-﻿using System;
-namespace CombatAI
+﻿namespace CombatAI
 {
-    public interface IBucketable
-    {
-        public int BucketIndex
-        {
-            get;
-        }
+	public interface IBucketable
+	{
+		public int BucketIndex
+		{
+			get;
+		}
 
-        public int UniqueIdNumber
-        {
-            get;
-        }       
-    }
+		public int UniqueIdNumber
+		{
+			get;
+		}
+	}
 }
-
