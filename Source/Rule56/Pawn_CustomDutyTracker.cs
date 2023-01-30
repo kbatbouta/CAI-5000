@@ -45,6 +45,11 @@ namespace CombatAI
 					curCustomDuty = null;
 					pawn.mindState.duty = null;
 				}
+				else if (curCustomDuty.dest.IsValid && (!pawn.CanReach(curCustomDuty.dest, PathEndMode.OnCell, Danger.Unspecified, true, true, TraverseMode.PassAllDestroyableThingsNotWater)  || curCustomDuty.dest.DistanceToSquared(pawn.Position) < Maths.Sqr(curCustomDuty.failOnDistanceToFocus)))
+				{
+					curCustomDuty = null;
+					pawn.mindState.duty = null;
+				}
 				else if (curCustomDuty.expiresAt > 0 && curCustomDuty.expiresAt <= GenTicks.TicksGame)
 				{
 					curCustomDuty       = null;
@@ -227,6 +232,7 @@ namespace CombatAI
 			public DutyDef  failOnFocusDutyNot;
 			public int      startAfter;
 			public int      startsAt = -1;
+			public IntVec3  dest = IntVec3.Invalid;
 
 			public void ExposeData()
 			{
@@ -235,6 +241,7 @@ namespace CombatAI
 				Scribe_Values.Look(ref startAfter, "startAfter");
 				Scribe_Values.Look(ref startsAt, "startsAt", -1);
 				Scribe_Values.Look(ref expiresAt, "expiresAt", -1);
+				Scribe_Values.Look(ref dest, "endNear", IntVec3.Invalid);
 				Scribe_Values.Look(ref failOnDistanceToFocus, "failOnDistanceToFocus");
 				Scribe_Values.Look(ref failOnFocusDeath, "failOnFocusDeath");
 				Scribe_Values.Look(ref failOnFocusDowned, "failOnFocusDowned");
