@@ -34,5 +34,33 @@ namespace CombatAI
 			custom.failOnFocusDeath      = true;
 			return custom;
 		}
+
+		public static Pawn_CustomDutyTracker.CustomPawnDuty AssaultPoint(Pawn pawn, IntVec3 dest, int switchAssaultRadius = 15, int expireAfter = 0, int startAfter = 0)
+		{
+			//if (!pawn.CanReach(dest, PathEndMode.InteractionCell, Danger.Unspecified, true, true, TraverseMode.PassAllDestroyableThingsNotWater))
+			//{
+			//	return null;
+			//}
+			ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+			if (comp == null)
+			{
+				return null;
+			}
+			Pawn_CustomDutyTracker tracker = comp.duties;
+			if (tracker == null)
+			{
+				return null;
+			}
+			Pawn_CustomDutyTracker.CustomPawnDuty custom = new Pawn_CustomDutyTracker.CustomPawnDuty();
+			custom.duty = new PawnDuty(DutyDefOf.Defend, dest, switchAssaultRadius);
+			custom.duty.locomotion = LocomotionUrgency.Sprint;
+			custom.dest = dest;
+			custom.failOnDistanceToFocus = switchAssaultRadius;
+			custom.expireAfter = expireAfter;
+			custom.startAfter = startAfter;			
+			custom.failOnFocusDestroyed = true;
+			custom.failOnFocusDeath = true;
+			return custom;
+		}
 	}
 }

@@ -676,7 +676,7 @@ namespace CombatAI.Comps
 
 		private void TryStartSapperJob()
 		{
-			if (sightReader.GetVisibilityToEnemies(cellBefore) > 0)
+			if (sightReader.GetVisibilityToEnemies(cellBefore) > 0 || sapperNodes.Count == 0)
 			{
 				ReleaseEscorts();
 				cellBefore = IntVec3.Invalid;
@@ -686,46 +686,54 @@ namespace CombatAI.Comps
 				return;
 			}
 			Pawn pawn = parent as Pawn;
+			if(pawn.Destroyed || pawn.Downed || pawn.Dead || pawn.mindState?.duty == null || !(pawn.mindState.duty.def.Is(DutyDefOf.AssaultColony) || pawn.mindState.duty.def.Is(DutyDefOf.Defend) || pawn.mindState.duty.def.Is(DutyDefOf.AssaultThing) || pawn.mindState.duty.def.Is(DutyDefOf.Breaching)))
+			{
+				ReleaseEscorts();
+				return;
+			}			
 			Map map = pawn.Map;
 			Thing blocker = sapperNodes[0].GetEdifice(map);
-			Job job = DigUtility.PassBlockerJob(pawn, blocker, cellBefore, true, true);
-			if (job != null)
+			if (blocker != null)
 			{
-				job.playerForced = true;
-				job.expiryInterval = 3600;
-				job.maxNumMeleeAttacks = 300;
-				pawn.jobs.StopAll();
-				pawn.jobs.StartJob(job, JobCondition.InterruptForced);
-				if (findEscorts)
+				Job job = DigUtility.PassBlockerJob(pawn, blocker, cellBefore, true, true);
+				if (job != null)
 				{
-					int count = escorts.Count;
-					int countTarget = Rand.Int % 6 + 4 + Maths.Min(sapperNodes.Count, 10);
-					Faction faction = pawn.Faction;
-					Predicate<Thing> validator = t =>
+					job.playerForced = true;
+					job.expiryInterval = 3600;
+					job.maxNumMeleeAttacks = 300;
+					pawn.jobs.StopAll();
+					pawn.jobs.StartJob(job, JobCondition.InterruptForced);
+					if (findEscorts)
 					{
-						if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
-							&& !ally.CurJobDef.Is(JobDefOf.Mine)
-							&& ally.mindState?.duty?.def != DutyDefOf.Escort
-							&& (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
-							&& ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
+						int count = escorts.Count;
+						int countTarget = Rand.Int % 6 + 4 + Maths.Min(sapperNodes.Count, 10);
+						Faction faction = pawn.Faction;
+						Predicate<Thing> validator = t =>
 						{
-							ThingComp_CombatAI comp = ally.GetComp_Fast<ThingComp_CombatAI>();
-							if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick < 600)
+							if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
+								&& !ally.CurJobDef.Is(JobDefOf.Mine)
+								&& ally.mindState?.duty?.def != DutyDefOf.Escort
+								&& (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
+								&& ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
 							{
-								Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 500 * sapperNodes.Count + Rand.Int % 1000);
-								if (custom != null)
+								ThingComp_CombatAI comp = ally.GetComp_Fast<ThingComp_CombatAI>();
+								if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick < 600)
 								{
-									custom.duty.locomotion = LocomotionUrgency.Sprint;
-									comp.duties.StartDuty(custom);
-									escorts.Add(ally);
+									Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 500 * sapperNodes.Count + Rand.Int % 1000);
+									if (custom != null)
+									{
+										custom.duty.locomotion = LocomotionUrgency.Sprint;
+										comp.duties.StartDuty(custom);
+										escorts.Add(ally);
+									}
+									count++;
 								}
-								count++;
-							}							
-							return count == countTarget;
-						}
-						return false;
-					};
-					Verse.GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 10, 40, out int _);
+								return count == countTarget;
+							}
+							return false;
+						};
+						Verse.GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 10, 40, out int _);
+					}
 				}
 			}
 		}
