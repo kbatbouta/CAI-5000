@@ -109,7 +109,7 @@ namespace CombatAI.Patches
 					}
 
 					float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-					if (dig = Finder.Settings.Pather_KillboxKiller && !dump && comp != null && !comp.TookDamageRecently(360) && sightReader != null && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual))
+					if (dig = Finder.Settings.Pather_KillboxKiller && !dump && comp != null && comp.CanSappOrEscort && pawn.mindState?.duty?.def != DutyDefOf.Sapper && pawn.CurJob?.def != JobDefOf.Mine && !comp.IsSapping && !comp.TookDamageRecently(360) && sightReader != null && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction) && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual))
 					{
 						raiders = true;
 						TraverseParms parms = traverseParms;
@@ -170,7 +170,7 @@ namespace CombatAI.Patches
 					{
 						blocked.Clear();
 						Thing blocker;
-						if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null && pawn.mindState?.duty?.def != DutyDefOf.Sapper && pawn.CurJob?.def != JobDefOf.Mine)
+						if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null)
 						{
 							if (tuning != null && (!enemiesAhead || enemiesBefore))
 							{
@@ -195,45 +195,46 @@ namespace CombatAI.Patches
 							}
 							else
 							{
-								Job job = DigUtility.PassBlockerJob(pawn, blocker, cellBefore, true, true);
-								if (job != null)
-								{
-									job.playerForced       = true;
-									job.expiryInterval     = 3600;
-									job.maxNumMeleeAttacks = 300;
-									pawn.jobs.StopAll();
-									pawn.jobs.StartJob(job, JobCondition.InterruptForced);
-									if (enemiesAhead)
-									{
-										int     count       = 0;
-										int     countTarget = Rand.Int % 6 + 4 + Maths.Min(blocked.Count, 10);
-										Faction faction     = pawn.Faction;
-										Predicate<Thing> validator = t =>
-										{
-											if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
-											    && !ally.CurJobDef.Is(JobDefOf.Mine)
-											    && ally.mindState?.duty?.def != DutyDefOf.Escort
-											    && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
-											    && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
-											{
-												ThingComp_CombatAI comp = ally.GetComp_Fast<ThingComp_CombatAI>();
-												if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false)
-												{
-													Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 300 * blocked.Count + Rand.Int % 1000);
-													if (custom != null)
-													{
-														custom.duty.locomotion = LocomotionUrgency.Sprint;
-														comp.duties.StartDuty(custom);
-													}
-												}
-												count++;
-												return count == countTarget;
-											}
-											return false;
-										};
-										Verse.GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 10, 40, out int _);
-									}
-								}
+								comp.StartSapper(blocked, cellBefore, enemiesAhead);
+								//Job job = DigUtility.PassBlockerJob(pawn, blocker, cellBefore, true, true);
+								//if (job != null)
+								//{
+								//	job.playerForced       = true;
+								//	job.expiryInterval     = 3600;
+								//	job.maxNumMeleeAttacks = 300;
+								//	pawn.jobs.StopAll();
+								//	pawn.jobs.StartJob(job, JobCondition.InterruptForced);
+								//	if (enemiesAhead)
+								//	{
+								//		int     count       = 0;
+								//		int     countTarget = Rand.Int % 6 + 4 + Maths.Min(blocked.Count, 10);
+								//		Faction faction     = pawn.Faction;
+								//		Predicate<Thing> validator = t =>
+								//		{
+								//			if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
+								//			    && !ally.CurJobDef.Is(JobDefOf.Mine)
+								//			    && ally.mindState?.duty?.def != DutyDefOf.Escort
+								//			    && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
+								//			    && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
+								//			{
+								//				ThingComp_CombatAI comp = ally.GetComp_Fast<ThingComp_CombatAI>();
+								//				if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false)
+								//				{
+								//					Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 300 * blocked.Count + Rand.Int % 1000);
+								//					if (custom != null)
+								//					{
+								//						custom.duty.locomotion = LocomotionUrgency.Sprint;
+								//						comp.duties.StartDuty(custom);
+								//					}
+								//				}
+								//				count++;
+								//				return count == countTarget;
+								//			}
+								//			return false;
+								//		};
+								//		Verse.GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 10, 40, out int _);
+								//	}
+								//}
 							}
 						}
 					}
