@@ -4,9 +4,12 @@ using System.Linq;
 using System.Threading;
 using CombatAI.Utilities;
 using RimWorld;
+using Steamworks;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 using Verse;
 using Verse.AI;
+using Verse.Noise;
 using GUIUtility = CombatAI.Gui.GUIUtility;
 namespace CombatAI.Comps
 {
@@ -41,10 +44,51 @@ namespace CombatAI.Comps
 		///     Wait job started/queued by this comp.
 		/// </summary>
 		public Job waitJob;
+		/// <summary>
+		///		Cell to stand on while sapping
+		/// </summary>
+		private IntVec3 cellBefore = IntVec3.Invalid;
+		/// <summary>
+		///		Whether to find escorts.
+		/// </summary>
+		private bool findEscorts;
+		/// <summary>
+		///		Sapper path nodes.
+		/// </summary>
+		private List<IntVec3> sapperNodes = new List<IntVec3>();
+		/// <summary>
+		///		Sapper timestamp
+		/// </summary>
+		private int sapperStartTick;
+		/// <summary>
+		///		Escorting pawns.
+		/// </summary>		
+		private List<Pawn> escorts = new List<Pawn>();
+		/// <summary>
+		///		Tick when this pawn was released as an escort.
+		/// </summary>
+		private int releasedTick;
+		private int _sap;
 
 		public ThingComp_CombatAI()
 		{
 			visibleEnemies = new HashSet<Thing>(32);
+		}
+
+		public bool IsSapping
+		{
+			get
+			{
+				return cellBefore.IsValid && sapperNodes.Count > 0 && (GenTicks.TicksGame - sapperStartTick) < 4800;
+			}
+		}
+
+		public bool CanSappOrEscort
+		{
+			get
+			{
+				return GenTicks.TicksGame - releasedTick > 1200 && !IsSapping;
+			}
 		}
 
 		public override void PostSpawnSetup(bool respawningAfterLoad)
@@ -67,6 +111,31 @@ namespace CombatAI.Comps
 			if (duties != null)
 			{
 				duties.TickRare();
+			}
+			if (IsSapping && parent is Pawn pawn && !pawn.Downed && !pawn.Dead)
+			{
+				if (sapperNodes[0].GetEdifice(parent.Map) == null)
+				{
+					cellBefore = sapperNodes[0];
+					sapperNodes.RemoveAt(0);
+					if (sapperNodes.Count > 0)
+					{
+						_sap++;
+						TryStartSapperJob();
+					}
+					else
+					{
+						ReleaseEscorts();
+						sapperNodes.Clear();
+						cellBefore = IntVec3.Invalid;
+						sapperStartTick = -1;
+						releasedTick = GenTicks.TicksGame;
+					}
+				}
+				else
+				{
+					TryStartSapperJob();
+				}				
 			}
 		}
 
@@ -499,6 +568,53 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
+		///		Start a sapping task.
+		/// </summary>
+		/// <param name="blocked">Blocked cells</param>
+		/// <param name="cellBefore">Cell before blocked cells</param>
+		/// <param name="findEscorts">Whether to look for escorts</param>
+		public void StartSapper(List<IntVec3> blocked, IntVec3 cellBefore, bool findEscorts)
+		{			
+			Pawn pawn = parent as Pawn;
+			if (pawn == null)
+			{
+				return;
+			}
+			if (IsSapping)
+			{
+				ReleaseEscorts();
+			}
+			this.cellBefore = cellBefore;
+			this.findEscorts = findEscorts;
+			sapperStartTick = GenTicks.TicksGame;
+			sapperNodes.Clear();
+			sapperNodes.AddRange(blocked);
+			_sap = 0;
+			TryStartSapperJob();			
+		}
+
+		/// <summary>
+		///		Release escorts pawns.
+		/// </summary>
+		public void ReleaseEscorts()
+		{
+			for (int i = 0; i < escorts.Count; i++)
+			{
+				Pawn escort = escorts[i];
+				if (escort == null || escort.Destroyed || escort.Dead || escort.Downed || escort.mindState.duty == null)
+				{
+					continue;
+				}
+				if (escort.mindState.duty.focus == parent)
+				{
+					escort.GetComp_Fast<ThingComp_CombatAI>().releasedTick = GenTicks.TicksGame;
+					escort.GetComp_Fast<ThingComp_CombatAI>().duties.FinishAllDuties(DutyDefOf.Escort, parent);
+				}
+			}
+			escorts.Clear();
+		}
+
+		/// <summary>
 		///     Enqueue enemies for reaction processing.
 		/// </summary>
 		/// <param name="things">Spotted enemies</param>
@@ -524,7 +640,7 @@ namespace CombatAI.Comps
 				return;
 			}
 			visibleEnemies.Add(thing);
-		}
+		}	
 
 		/// <summary>
 		///     Called to notify a wait job started by reaction has ended. Will reduce the reaction cooldown.
@@ -555,6 +671,62 @@ namespace CombatAI.Comps
 					duties = new Pawn_CustomDutyTracker(pawn);
 				}
 				duties.pawn = pawn;
+			}
+		}
+
+		private void TryStartSapperJob()
+		{
+			if (sightReader.GetVisibilityToEnemies(cellBefore) > 0)
+			{
+				ReleaseEscorts();
+				cellBefore = IntVec3.Invalid;
+				releasedTick = GenTicks.TicksGame;
+				sapperStartTick = -1;
+				sapperNodes.Clear();
+				return;
+			}
+			Pawn pawn = parent as Pawn;
+			Map map = pawn.Map;
+			Thing blocker = sapperNodes[0].GetEdifice(map);
+			Job job = DigUtility.PassBlockerJob(pawn, blocker, cellBefore, true, true);
+			if (job != null)
+			{
+				job.playerForced = true;
+				job.expiryInterval = 3600;
+				job.maxNumMeleeAttacks = 300;
+				pawn.jobs.StopAll();
+				pawn.jobs.StartJob(job, JobCondition.InterruptForced);
+				if (findEscorts)
+				{
+					int count = escorts.Count;
+					int countTarget = Rand.Int % 6 + 4 + Maths.Min(sapperNodes.Count, 10);
+					Faction faction = pawn.Faction;
+					Predicate<Thing> validator = t =>
+					{
+						if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
+							&& !ally.CurJobDef.Is(JobDefOf.Mine)
+							&& ally.mindState?.duty?.def != DutyDefOf.Escort
+							&& (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
+							&& ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
+						{
+							ThingComp_CombatAI comp = ally.GetComp_Fast<ThingComp_CombatAI>();
+							if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick < 600)
+							{
+								Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 500 * sapperNodes.Count + Rand.Int % 1000);
+								if (custom != null)
+								{
+									custom.duty.locomotion = LocomotionUrgency.Sprint;
+									comp.duties.StartDuty(custom);
+									escorts.Add(ally);
+								}
+								count++;
+							}							
+							return count == countTarget;
+						}
+						return false;
+					};
+					Verse.GenClosest.RegionwiseBFSWorker(pawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(pawn), validator, null, 1, 10, 40, out int _);
+				}
 			}
 		}
 
