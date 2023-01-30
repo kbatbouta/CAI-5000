@@ -34,13 +34,18 @@ namespace CombatAI
 			{
 				queue = new List<CustomPawnDuty>();
 			}
-		}
+		}	
 
 		public void TickRare()
 		{
 			if (curCustomDuty != null)
 			{
-				if (curCustomDuty.expiresAt > 0 && curCustomDuty.expiresAt <= GenTicks.TicksGame)
+				if (curCustomDuty.finished)
+				{
+					curCustomDuty = null;
+					pawn.mindState.duty = null;
+				}
+				else if (curCustomDuty.expiresAt > 0 && curCustomDuty.expiresAt <= GenTicks.TicksGame)
 				{
 					curCustomDuty       = null;
 					pawn.mindState.duty = null;
@@ -95,14 +100,17 @@ namespace CombatAI
 				while (queue.Count > 0)
 				{
 					CustomPawnDuty next = queue[0];
-					if (next.startsAt > GenTicks.TicksGame)
+					if (!next.finished)
 					{
-						break;
-					}
-					if (next.expiresAt < 0 || next.expiresAt > GenTicks.TicksGame)
-					{
-						curCustomDuty = next;
-						break;
+						if (next.startsAt > GenTicks.TicksGame)
+						{
+							break;
+						}
+						if (next.expiresAt < 0 || next.expiresAt > GenTicks.TicksGame)
+						{
+							curCustomDuty = next;
+							break;
+						}
 					}
 					queue.RemoveAt(0);
 				}
@@ -110,6 +118,22 @@ namespace CombatAI
 			if (curCustomDuty != null && pawn.mindState.duty != curCustomDuty.duty && !IsForcedDuty(pawn.mindState.duty?.def ?? null))
 			{
 				pawn.mindState.duty = curCustomDuty.duty;
+			}
+		}
+
+		public void FinishAllDuties(DutyDef def, Thing focus = null)
+		{
+			for(int i = 0;i < queue.Count; i++)
+			{
+				CustomPawnDuty custom = queue[i];
+				if (custom.duty?.def == def && (focus == null || custom.duty.focus == focus || custom.duty.focusSecond == focus))
+				{
+					custom.finished = true;
+				}
+			}
+			if (curCustomDuty != null && (curCustomDuty.duty?.def == def && (focus == null || curCustomDuty.duty.focus == focus || curCustomDuty.duty.focusSecond == focus)))
+			{
+				curCustomDuty.finished = true;
 			}
 		}
 
@@ -192,6 +216,7 @@ namespace CombatAI
 		{
 			public bool     canExitMap = true;
 			public bool     canFlee    = true;
+			public bool		finished;
 			public PawnDuty duty;
 			public int      expireAfter;
 			public int      expiresAt = -1;
