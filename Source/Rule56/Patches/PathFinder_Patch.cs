@@ -223,7 +223,7 @@ namespace CombatAI.Patches
 								//					Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 300 * blocked.Count + Rand.Int % 1000);
 								//					if (custom != null)
 								//					{
-								//						custom.duty.locomotion = LocomotionUrgency.Sprint;
+								//						custom.duty.locomotion = LocomotionUrgency.Jog;
 								//						comp.duties.StartDuty(custom);
 								//					}
 								//				}

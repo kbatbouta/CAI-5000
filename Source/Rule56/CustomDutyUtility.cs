@@ -24,7 +24,7 @@ namespace CombatAI
 			}
 			Pawn_CustomDutyTracker.CustomPawnDuty custom = new Pawn_CustomDutyTracker.CustomPawnDuty();
 			custom.duty                  = new PawnDuty(DutyDefOf.Escort, escortee, radius);
-			custom.duty.locomotion       = LocomotionUrgency.Sprint;
+			custom.duty.locomotion       = LocomotionUrgency.Jog;
 			custom.failOnDistanceToFocus = failOnDist;
 			custom.expireAfter           = expireAfter;
 			custom.startAfter            = startAfter;
