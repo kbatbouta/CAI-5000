@@ -12,8 +12,9 @@ namespace CombatAI.Patches
 {
 	public static class LordToil_AssaultColony_Patch
 	{
-		private static List<Pawn>[] forces = new List<Pawn>[5];
-		private static List<Zone_Stockpile> stockpiles = new List<Zone_Stockpile>();
+		private static List<Pawn>[] forces	= new List<Pawn>[10];
+		private static List<Thing>	things	= new List<Thing>();
+		private static List<Zone>	zones	= new List<Zone>();
 
 		static LordToil_AssaultColony_Patch()
 		{
@@ -22,16 +23,27 @@ namespace CombatAI.Patches
 			forces[2] = new List<Pawn>();
 			forces[3] = new List<Pawn>();
 			forces[4] = new List<Pawn>();
+			forces[5] = new List<Pawn>();
+			forces[6] = new List<Pawn>();
+			forces[7] = new List<Pawn>();
+			forces[8] = new List<Pawn>();
+			forces[9] = new List<Pawn>();
 		}
 
 		public static void ClearCache()
 		{
-			stockpiles.Clear();
+			zones.Clear();
+			things.Clear();
 			forces[0].Clear();
 			forces[1].Clear();
 			forces[2].Clear();
 			forces[3].Clear();
 			forces[4].Clear();
+			forces[5].Clear();
+			forces[6].Clear();
+			forces[7].Clear();
+			forces[8].Clear();
+			forces[9].Clear();
 		}
 
 		[HarmonyPatch(typeof(LordToil_AssaultColony), nameof(LordToil_AssaultColony.UpdateAllDuties))]
@@ -40,36 +52,78 @@ namespace CombatAI.Patches
 			public static void Postfix(LordToil_AssaultColony __instance)
 			{
 				if (__instance.lord.ownedPawns.Count > 10)
-				{
+				{					
 					ClearCache();
-					stockpiles.AddRange(__instance.Map.zoneManager.AllZones.Where(z => z is Zone_Stockpile).Select(z => z as Zone_Stockpile));
-					if(stockpiles.Count == 0)
+					Map map = __instance.Map;
+					things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.Bed).Where(b => b is Building_Bed bed && bed.CompAssignableToPawn.AssignedPawns.Any(p => p.Faction == map.ParentFaction)));
+					things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.ResearchBench).Where(t => t.Faction == map.ParentFaction));
+					things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.FoodDispenser).Where(t => t.Faction == map.ParentFaction));					
+					things.AddRange(map.mapPawns.PrisonersOfColony);
+					if (ModsConfig.BiotechActive)
 					{
-						return;
+						things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.GenepackHolder));
 					}
-					int m = Rand.Int % 5 + 1;
-					int taskForceNum = Maths.Min(__instance.lord.ownedPawns.Count / 5, 5);
+					if (ModsConfig.RoyaltyActive)
+					{
+						things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.Throne));
+					}				
+					zones.AddRange(__instance.Map.zoneManager.AllZones.Where(z => z is Zone_Stockpile || z is Zone_Growing));										
+					int taskForceNum = Maths.Min(__instance.lord.ownedPawns.Count / 5, 10);
+					int m = Rand.Range(1, 7);
+					int c = 0;
 					for (int i = 0; i < __instance.lord.ownedPawns.Count; i++)
 					{
 						int k = Rand.Range(0, taskForceNum + m);
-						if (k <= m)
+						if (k < m)
 						{
+							c++;
 							continue;
 						}
 						forces[k - m].Add(__instance.lord.ownedPawns[i]);						
 					}
-					for(int i = 0; i < 5; i++)
+					if (Finder.Settings.Debug)
+					{
+						Log.Message($"{__instance.lord.ownedPawns.Count - c} pawns are assigned to attack specific targets and {c} are assigned to assault duties. {__instance.lord.ownedPawns.Count - c}/{__instance.lord.ownedPawns.Count} ");
+					}
+					for(int i = 0; i < taskForceNum; i++)
 					{						
 						List<Pawn> force = forces[i];
-						IntVec3 cell = stockpiles.RandomElementByWeight(s => (int)s.settings.Priority / 5f + GetStockpileTotalMarketValue(s) / 100f).cells.RandomElement();
-						for (int j = 0; j < force.Count; j++)
+						if (zones.Count != 0 && (Rand.Chance(0.333f) || things.Count == 0))
 						{
-							ThingComp_CombatAI comp = force[j].GetComp_Fast<ThingComp_CombatAI>();
-							if(comp != null && !comp.duties.Any(DutyDefOf.Defend))
+							Zone zone = zones.RandomElementByWeight(s => GetZoneTotalMarketValue(s) / 100f + (s.Position.Roofed(__instance.Map) ? 2 : 0f));
+							for (int j = 0; j < force.Count; j++)
 							{
-								var customDuty = CustomDutyUtility.AssaultPoint(force[j], cell, Rand.Range(7, 15), 3600);
-								comp.duties.StartDuty(customDuty, true);
-							}												
+								ThingComp_CombatAI comp = force[j].GetComp_Fast<ThingComp_CombatAI>();
+								if (comp != null && !comp.duties.Any(DutyDefOf.Defend))
+								{
+									var customDuty = CustomDutyUtility.AssaultPoint(force[j], zone.Position, Rand.Range(7, 15), 3600 * Rand.Range(3, 8));
+									comp.duties.StartDuty(customDuty, true);
+									if (Finder.Settings.Debug)
+									{
+										Log.Message($"{comp.parent} task force {i} attacking {zone}");
+									}
+								}
+							}
+						}
+						else if(things.Count != 0)
+						{
+							Thing thing = things.RandomElementByWeight(t => t.GetStatValue_Fast(StatDefOf.MarketValue, 1200));							
+							if (thing != null)
+							{
+								for (int j = 0; j < force.Count; j++)
+								{
+									ThingComp_CombatAI comp = force[j].GetComp_Fast<ThingComp_CombatAI>();
+									if (comp != null && !comp.duties.Any(DutyDefOf.Defend))
+									{
+										var customDuty = CustomDutyUtility.AssaultPoint(force[j], thing.Position, Rand.Range(7, 15), 3600 * Rand.Range(3, 8));
+										comp.duties.StartDuty(customDuty, true);
+										if (Finder.Settings.Debug)
+										{
+											Log.Message($"{comp.parent} task force {i} attacking {thing}");
+										}
+									}
+								}
+							}
 						}
 					}
 					ClearCache();
@@ -77,12 +131,12 @@ namespace CombatAI.Patches
 			}
 		}
 
-		private static float GetStockpileTotalMarketValue(Zone_Stockpile stockpile)
+		private static float GetZoneTotalMarketValue(Zone zone)
 		{
-			if (!TKVCache<int, Zone_Stockpile, float>.TryGet(stockpile.ID, out float val, 6000))
+			if (!TKVCache<int, Zone_Stockpile, float>.TryGet(zone.ID, out float val, 6000))
 			{
-				val = stockpile.AllContainedThings.Sum(t => t.GetStatValue_Fast(StatDefOf.MarketValue, 1200));
-				TKVCache<int, Zone_Stockpile, float>.Put(stockpile.ID, val);
+				val = zone.AllContainedThings.Sum(t => t.GetStatValue_Fast(StatDefOf.MarketValue, 1200));
+				TKVCache<int, Zone_Stockpile, float>.Put(zone.ID, val);
 			}
 			return val;
 		}	

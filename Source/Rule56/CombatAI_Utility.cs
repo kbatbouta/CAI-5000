@@ -1,5 +1,9 @@
-﻿using RimWorld;
+﻿using CombatAI.R;
+using RimWorld;
+using UnityEngine;
 using Verse;
+using Verse.AI;
+using Verse.Noise;
 using static CombatAI.AvoidanceTracker;
 using static CombatAI.SightTracker;
 
@@ -20,6 +24,51 @@ namespace CombatAI
 				TKVCache<Thing, CompCanBeDormant, bool>.Put(thing, dormant != null && !dormant.Awake);
 			}
 			return value;
+		}
+
+		public static IntVec3 TryGetNextDutyDest(this Pawn pawn, float maxDistFromPawn = -1)
+		{
+			if (pawn.mindState?.duty == null || !pawn.mindState.duty.focus.IsValid)
+			{
+				return IntVec3.Invalid;
+			}
+			DutyDestCache key = new DutyDestCache()
+			{
+				pawnId		= pawn.thingIDNumber,
+				dutyDefId	= pawn.mindState.duty.def.index,
+				dutyDest	= pawn.mindState.duty.focus.Cell
+			};
+			if (!TKVCache<DutyDestCache, PawnDuty, IntVec3>.TryGet(key, out IntVec3 dutyDest, 600))
+			{
+				dutyDest = IntVec3.Invalid;				
+				if (pawn.mindState.duty.focus.Cell.DistanceToSquared(pawn.Position) > Maths.Sqr(Maths.Max(pawn.mindState.duty.radius, 10)))
+				{					
+					PawnPath path = pawn.Map.pathFinder.FindPath(pawn.Position, pawn.mindState.duty.focus.Cell, pawn);
+					if (path != null)
+					{
+						maxDistFromPawn = Mathf.Clamp(maxDistFromPawn, 5f, 64f);						
+						int k = path.NodesLeftCount;
+						int i = 0;
+						float maxDistSqr = Maths.Sqr(maxDistFromPawn);
+						IntVec3 pawnPos = pawn.Position;
+						while (i < k && path.Peek(i).DistanceToSquared(pawnPos) < maxDistSqr)
+						{
+							i++;
+						}
+						if (i == k)
+						{
+							dutyDest = pawn.Position;
+						}
+						else
+						{
+							dutyDest = path.Peek(i);
+						}
+						path.ReleaseToPool();						
+					}				
+				}
+				TKVCache<DutyDestCache, PawnDuty, IntVec3>.Put(key, dutyDest);
+			}
+			return dutyDest;
 		}
 
 		public static Verb TryGetAttackVerb(this Thing thing)
@@ -77,6 +126,13 @@ namespace CombatAI
 		public static int GetThingFlagsIndex(this Thing thing)
 		{
 			return thing.thingIDNumber % 64;
+		}
+
+		private struct DutyDestCache
+		{
+			public int pawnId;
+			public int dutyDefId;
+			public IntVec3 dutyDest;
 		}
 	}
 }

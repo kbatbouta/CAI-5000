@@ -12,7 +12,7 @@ namespace CombatAI
 
 		public float maxRangeFromCaster;
 
-		public IntVec3 locus;
+		public IntVec3 locus;		
 
 		public float maxRangeFromLocus;
 
