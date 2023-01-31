@@ -40,24 +40,25 @@ namespace CombatAI
 		{
 			if (curCustomDuty != null)
 			{
+				float distSqr;
 				if (curCustomDuty.finished)
 				{
 					curCustomDuty = null;
-					pawn.mindState.duty = null;
-				}
-				else if (curCustomDuty.dest.IsValid && (!pawn.CanReach(curCustomDuty.dest, PathEndMode.OnCell, Danger.Unspecified, true, true, TraverseMode.PassAllDestroyableThingsNotWater)  || curCustomDuty.dest.DistanceToSquared(pawn.Position) < Maths.Sqr(curCustomDuty.failOnDistanceToFocus)))
-				{
-					curCustomDuty = null;
-					pawn.mindState.duty = null;
-				}
+					pawn.mindState.duty = null;					
+				}								
 				else if (curCustomDuty.expiresAt > 0 && curCustomDuty.expiresAt <= GenTicks.TicksGame)
 				{
 					curCustomDuty       = null;
 					pawn.mindState.duty = null;
 				}
-				else if (curCustomDuty.failOnDistanceToFocus > 0 && (curCustomDuty.duty.focus.Cell.IsValid == false || curCustomDuty.duty.focus.Cell.DistanceToSquared(pawn.Position) > curCustomDuty.failOnDistanceToFocus * curCustomDuty.failOnDistanceToFocus))
+				else if (curCustomDuty.failOnDistanceToFocus > 0 && curCustomDuty.duty.focus.Cell.IsValid && curCustomDuty.duty.focus.Cell.DistanceToSquared(pawn.Position) > Maths.Sqr(curCustomDuty.failOnDistanceToFocus))
 				{
 					curCustomDuty       = null;
+					pawn.mindState.duty = null;
+				}
+				else if (curCustomDuty.endOnDistanceToFocus > 0 && curCustomDuty.duty.focus.Cell.IsValid && curCustomDuty.duty.focus.Cell.DistanceToSquared(pawn.Position) < Maths.Sqr(curCustomDuty.endOnDistanceToFocus))
+				{
+					curCustomDuty = null;
 					pawn.mindState.duty = null;
 				}
 				else if (curCustomDuty?.duty.focus.Thing != null)
@@ -226,13 +227,14 @@ namespace CombatAI
 			public int      expireAfter;
 			public int      expiresAt = -1;
 			public int      failOnDistanceToFocus;
+			public int		endOnDistanceToFocus;
 			public bool     failOnFocusDeath;
 			public bool     failOnFocusDestroyed;
 			public bool     failOnFocusDowned;
 			public DutyDef  failOnFocusDutyNot;
 			public int      startAfter;
 			public int      startsAt = -1;
-			public IntVec3  dest = IntVec3.Invalid;
+			public IntVec3  dest = IntVec3.Invalid;			
 
 			public void ExposeData()
 			{
@@ -243,6 +245,7 @@ namespace CombatAI
 				Scribe_Values.Look(ref expiresAt, "expiresAt", -1);
 				Scribe_Values.Look(ref dest, "endNear", IntVec3.Invalid);
 				Scribe_Values.Look(ref failOnDistanceToFocus, "failOnDistanceToFocus");
+				Scribe_Values.Look(ref endOnDistanceToFocus, "endOnDistanceToFocus");
 				Scribe_Values.Look(ref failOnFocusDeath, "failOnFocusDeath");
 				Scribe_Values.Look(ref failOnFocusDowned, "failOnFocusDowned");
 				Scribe_Values.Look(ref failOnFocusDestroyed, "failOnFocusDestroyed");
