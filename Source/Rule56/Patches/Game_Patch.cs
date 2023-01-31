@@ -27,6 +27,7 @@ namespace CombatAI.Patches
 				ArmorUtility.ClearCache();
 				DamageUtility.ClearCache();
 				MetaCombatAttributeUtility.ClearCache();
+				LordToil_AssaultColony_Patch.ClearCache();
 			}
 		}
 	}
