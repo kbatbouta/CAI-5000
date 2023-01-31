@@ -39,8 +39,7 @@ namespace CombatAI
 		public void TickRare()
 		{
 			if (curCustomDuty != null)
-			{
-				float distSqr;
+			{				
 				if (curCustomDuty.finished)
 				{
 					curCustomDuty = null;
