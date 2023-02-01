@@ -44,25 +44,17 @@ namespace CombatAI
 				if (pawn.mindState.duty.focus.Cell.DistanceToSquared(pawn.Position) > Maths.Sqr(Maths.Max(pawn.mindState.duty.radius, 10)))
 				{					
 					PawnPath path = pawn.Map.pathFinder.FindPath(pawn.Position, pawn.mindState.duty.focus.Cell, pawn);
-					if (path != null)
+					if (path != null && path.nodes.Count > 0)
 					{
 						maxDistFromPawn = Mathf.Clamp(maxDistFromPawn, 5f, 64f);						
-						int k = path.NodesLeftCount;
-						int i = 0;
+						int i = path.nodes.Count - 1;
 						float maxDistSqr = Maths.Sqr(maxDistFromPawn);
 						IntVec3 pawnPos = pawn.Position;
-						while (i < k && path.Peek(i).DistanceToSquared(pawnPos) < maxDistSqr)
+						while (i >= 0 && path.nodes[i].DistanceToSquared(pawnPos) < maxDistSqr)
 						{
-							i++;
+							i--;
 						}
-						if (i == k)
-						{
-							dutyDest = pawn.Position;
-						}
-						else
-						{
-							dutyDest = path.Peek(i);
-						}
+						dutyDest = path.nodes[Maths.Max(i, 0)];					
 						path.ReleaseToPool();						
 					}				
 				}
