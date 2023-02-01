@@ -97,6 +97,11 @@ namespace CombatAI
 							Finder.Settings.React_Enabled                               = false;
 							Finder.Settings.Retreat_Enabled                             = false;
 							Finder.Settings.Flank_Enabled                               = false;
+
+							Finder.Settings.Enable_Sprinting		  = false;
+							Finder.Settings.Enable_Groups			  = false;
+							Finder.Settings.Pathfinding_SappingMul    = 0.5f;
+
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
 							if (Current.ProgramState != ProgramState.Playing)
 							{
@@ -128,6 +133,11 @@ namespace CombatAI
 							Finder.Settings.React_Enabled                               = true;
 							Finder.Settings.Retreat_Enabled                             = false;
 							Finder.Settings.Flank_Enabled                               = true;
+
+							Finder.Settings.Enable_Sprinting          = false;
+							Finder.Settings.Enable_Groups             = true;
+							Finder.Settings.Pathfinding_SappingMul    = 1.0f;
+
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
 							if (Current.ProgramState != ProgramState.Playing)
 							{
@@ -159,6 +169,11 @@ namespace CombatAI
 							Finder.Settings.Retreat_Enabled                             = true;
 							Finder.Settings.Flank_Enabled                               = true;
 							Finder.Settings.PerformanceOpt_Enabled                      = true;
+
+							Finder.Settings.Enable_Sprinting          = false;
+							Finder.Settings.Enable_Groups             = true;
+							Finder.Settings.Pathfinding_SappingMul    = 0.9f;
+
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 2;
 							if (Current.ProgramState != ProgramState.Playing)
 							{
@@ -191,6 +206,11 @@ namespace CombatAI
 							Finder.Settings.Retreat_Enabled                             = true;
 							Finder.Settings.Flank_Enabled                               = true;
 							Finder.Settings.PerformanceOpt_Enabled                      = false;
+
+							Finder.Settings.Enable_Sprinting          = true;
+							Finder.Settings.Enable_Groups             = true;
+							Finder.Settings.Pathfinding_SappingMul    = 0.85f;
+
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
 							if (Current.ProgramState != ProgramState.Playing)
 							{
@@ -225,13 +245,24 @@ namespace CombatAI
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Reaction, ref Finder.Settings.React_Enabled);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Flanking, ref Finder.Settings.Flank_Enabled);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Retreat, ref Finder.Settings.Retreat_Enabled);
+			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Groups, ref Finder.Settings.Enable_Groups, tooltip: Keyed.CombatAI_Settings_Basic_Groups_Description);
+			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Sprinting, ref Finder.Settings.Enable_Sprinting, tooltip: Keyed.CombatAI_Settings_Basic_Sprinting_Description);
 		}
 
 		private void FillCollapsible_FogOfWar(Listing_Collapsible collapsible)
 		{
-			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Enable, ref Finder.Settings.FogOfWar_Enabled);
+			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Enable, ref Finder.Settings.FogOfWar_Enabled);			
+
 			if (Finder.Settings.FogOfWar_Enabled)
 			{
+				collapsible.Line(1);
+
+				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Animals, ref Finder.Settings.FogOfWar_Animals);
+				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Animals_SmartOnly, ref Finder.Settings.FogOfWar_AnimalsSmartOnly, disabled: !Finder.Settings.FogOfWar_Animals);
+				collapsible.Line(1);
+				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Allies, ref Finder.Settings.FogOfWar_Allies);
+				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Turrets, ref Finder.Settings.FogOfWar_Turrets);
+
 				collapsible.Line(1);
 
 				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_Density);
@@ -387,6 +418,16 @@ namespace CombatAI
 			collapsible.Label(Keyed.CombatAI_Settings_Advance_Warning);
 			collapsible.Line(1);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Advance_Enable, ref Finder.Settings.AdvancedUser);
+			if (Finder.Settings.AdvancedUser)
+			{
+				collapsible.Line(1);
+				collapsible.Label(Keyed.CombatAI_Settings_Basic_SappingMul_Description);
+				collapsible.Lambda(25, rect =>
+				{					
+					Widgets.HorizontalSlider(rect, ref Finder.Settings.Pathfinding_SappingMul, new FloatRange(0.5f, 1.5f), Keyed.CombatAI_Settings_Basic_SappingMul);
+				}, useMargins: true);
+			}
+			//collapsible.Line(1);
 			//if (Finder.Settings.AdvancedUser)
 			//{
 			//    collapsible.Lambda(25, (rect) =>

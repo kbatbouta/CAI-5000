@@ -405,7 +405,7 @@ namespace CombatAI.Comps
 //						if (Rand.Chance((sightReader.GetThreat(pawn.Position) - sightReader.GetThreat(cell)) + 0.1f))
 //						{
 							Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-							job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
+							job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 							pawn.jobs.ClearQueuedJobs();
 							pawn.jobs.StopAll();
 							pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
@@ -448,7 +448,7 @@ namespace CombatAI.Comps
 								if (cell != pawnPosition && (prevEnemyDir == Vector2.zero || Rand.Chance(Mathf.Abs(1 - Vector2.Dot(prevEnemyDir, sightReader.GetEnemyDirection(cell).normalized))) || Rand.Chance(sightReader.GetVisibilityToEnemies(pawn.Position) - sightReader.GetVisibilityToEnemies(cell))))
 								{
 									Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-									job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
+									job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 									Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
 									job_waitCombat.checkOverrideOnExpire = true;
 									pawn.jobs.ClearQueuedJobs();
@@ -481,7 +481,7 @@ namespace CombatAI.Comps
 								if (prevEnemyDir == Vector2.zero || Rand.Chance(Mathf.Abs(1 - Vector2.Dot(prevEnemyDir, sightReader.GetEnemyDirection(cell).normalized))) || Rand.Chance(sightReader.GetVisibilityToEnemies(pawn.Position) - sightReader.GetVisibilityToEnemies(cell)))
 								{
 									Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-									job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
+									job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 									Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
 									job_waitCombat.checkOverrideOnExpire = true;
 									pawn.jobs.ClearQueuedJobs();
@@ -551,7 +551,7 @@ namespace CombatAI.Comps
 									if (Rand.Chance(sightReader.GetVisibilityToEnemies(pawn.Position) - sightReader.GetVisibilityToEnemies(cell)) || Rand.Chance(sightReader.GetThreat(pawn.Position) - sightReader.GetThreat(cell)))
 									{
 										Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-										job_goto.locomotionUrgency = LocomotionUrgency.Sprint;
+										job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 										Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
 										pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
 										pawn.jobs.ClearQueuedJobs();
@@ -722,7 +722,7 @@ namespace CombatAI.Comps
 									Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 500 * sapperNodes.Count + Rand.Int % 1000);
 									if (custom != null)
 									{
-										custom.duty.locomotion = LocomotionUrgency.Sprint;
+										custom.duty.locomotion = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 										comp.duties.StartDuty(custom);
 										escorts.Add(ally);
 									}
