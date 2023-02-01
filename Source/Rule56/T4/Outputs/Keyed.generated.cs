@@ -203,6 +203,66 @@ namespace CombatAI.R
                    _CombatAI_Settings_Basic_Presets_Description : _CombatAI_Settings_Basic_Presets_Description = "CombatAI.Settings.Basic.Presets.Description".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_Sprinting = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Sprinting</c>. inner text:
+        ///
+        /// <code>Enable sprinting</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Sprinting {
+            get => _CombatAI_Settings_Basic_Sprinting != null ? 
+                   _CombatAI_Settings_Basic_Sprinting : _CombatAI_Settings_Basic_Sprinting = "CombatAI.Settings.Basic.Sprinting".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Sprinting_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Sprinting.Description</c>. inner text:
+        ///
+        /// <code>If this is disabled: Pathetic F F...\n if not: Chad :thumbsup</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Sprinting_Description {
+            get => _CombatAI_Settings_Basic_Sprinting_Description != null ? 
+                   _CombatAI_Settings_Basic_Sprinting_Description : _CombatAI_Settings_Basic_Sprinting_Description = "CombatAI.Settings.Basic.Sprinting.Description".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Groups = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Groups</c>. inner text:
+        ///
+        /// <code>Enable tactical groups</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Groups {
+            get => _CombatAI_Settings_Basic_Groups != null ? 
+                   _CombatAI_Settings_Basic_Groups : _CombatAI_Settings_Basic_Groups = "CombatAI.Settings.Basic.Groups".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_Groups_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Groups.Description</c>. inner text:
+        ///
+        /// <code>Raiders will be divided into tactical groups (2-10) each with their own objective. Not all pawns will be assigned to groups, some will remain on the default assault duty.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Groups_Description {
+            get => _CombatAI_Settings_Basic_Groups_Description != null ? 
+                   _CombatAI_Settings_Basic_Groups_Description : _CombatAI_Settings_Basic_Groups_Description = "CombatAI.Settings.Basic.Groups.Description".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_SappingMul = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.SappingMul</c>. inner text:
+        ///
+        /// <code>Cost multiplier for pathing through walls (default is 1.0)</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_SappingMul {
+            get => _CombatAI_Settings_Basic_SappingMul != null ? 
+                   _CombatAI_Settings_Basic_SappingMul : _CombatAI_Settings_Basic_SappingMul = "CombatAI.Settings.Basic.SappingMul".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_SappingMul_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.SappingMul.Description</c>. inner text:
+        ///
+        /// <code>Cost multiplier for pathing through walls. Higher values means raiders are less likely to path through walls.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_SappingMul_Description {
+            get => _CombatAI_Settings_Basic_SappingMul_Description != null ? 
+                   _CombatAI_Settings_Basic_SappingMul_Description : _CombatAI_Settings_Basic_SappingMul_Description = "CombatAI.Settings.Basic.SappingMul.Description".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic_FogOfWar = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar</c>. inner text:
         ///
@@ -221,6 +281,46 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Settings_Basic_FogOfWar_Enable {
             get => _CombatAI_Settings_Basic_FogOfWar_Enable != null ? 
                    _CombatAI_Settings_Basic_FogOfWar_Enable : _CombatAI_Settings_Basic_FogOfWar_Enable = "CombatAI.Settings.Basic.FogOfWar.Enable".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_Allies = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.Allies</c>. inner text:
+        ///
+        /// <code>Allies reveal fog of war</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_Allies {
+            get => _CombatAI_Settings_Basic_FogOfWar_Allies != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_Allies : _CombatAI_Settings_Basic_FogOfWar_Allies = "CombatAI.Settings.Basic.FogOfWar.Allies".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_Animals = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.Animals</c>. inner text:
+        ///
+        /// <code>Colony animals reveal fog of war</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_Animals {
+            get => _CombatAI_Settings_Basic_FogOfWar_Animals != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_Animals : _CombatAI_Settings_Basic_FogOfWar_Animals = "CombatAI.Settings.Basic.FogOfWar.Animals".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_Animals_SmartOnly = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.Animals.SmartOnly</c>. inner text:
+        ///
+        /// <code>Only smart animals reveal fog of war</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_Animals_SmartOnly {
+            get => _CombatAI_Settings_Basic_FogOfWar_Animals_SmartOnly != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_Animals_SmartOnly : _CombatAI_Settings_Basic_FogOfWar_Animals_SmartOnly = "CombatAI.Settings.Basic.FogOfWar.Animals.SmartOnly".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_Turrets = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.Turrets</c>. inner text:
+        ///
+        /// <code>Colony turrets reveal fog of war</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_Turrets {
+            get => _CombatAI_Settings_Basic_FogOfWar_Turrets != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_Turrets : _CombatAI_Settings_Basic_FogOfWar_Turrets = "CombatAI.Settings.Basic.FogOfWar.Turrets".Translate();
         }             
                       
         private static TaggedString _CombatAI_Settings_Basic_FogOfWar_Density = null;

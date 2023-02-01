@@ -62,15 +62,15 @@ namespace CombatAI.Gui
 			return new GUITextState(
 				text,
 				GUIFont.Font,
-				new Tuple<float, float>(
+				new System.Tuple<float, float>(
 					width,
 					Prefs.UIScale),
-				new Tuple<int, int, int, int>(
+				new System.Tuple<int, int, int, int>(
 					GUIFont.CurFontStyle.fontSize,
 					Text.CurTextAreaReadOnlyStyle.fontSize,
 					Text.CurTextAreaStyle.fontSize,
 					Text.CurTextFieldStyle.fontSize),
-				new Tuple<FontStyle, FontStyle, FontStyle, FontStyle>(
+				new System.Tuple<FontStyle, FontStyle, FontStyle, FontStyle>(
 					GUIFont.CurFontStyle.fontStyle,
 					Text.CurTextAreaReadOnlyStyle.fontStyle,
 					Text.CurTextAreaStyle.fontStyle,

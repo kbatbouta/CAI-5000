@@ -18,24 +18,52 @@ namespace CombatAI
 			if (sighter != null)
 			{
 				result = GetSightRadius_Sighter(sighter);
+				Faction f = thing.Faction;
+
+				if ((f != null && (f.IsPlayerSafe() || (!f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies))))
+				{
+					result.fog = Maths.Max(Mathf.CeilToInt(GetFogRadius(thing, result.sight) * Finder.Settings.FogOfWar_RangeMultiplier), 3);
+				}
 			}
 			else if (thing is Pawn pawn)
 			{
 				result = GetSightRadius_Pawn(pawn);
+				Faction f = thing.Faction;
+
+				if (f != null && (f.IsPlayerSafe() || (!f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies)))
+				{
+					if (pawn.RaceProps.Animal)
+					{
+						if (!Finder.Settings.FogOfWar_Animals)
+						{
+							goto finalize;
+						}
+						if (Finder.Settings.FogOfWar_AnimalsSmartOnly && pawn.RaceProps.trainability == TrainabilityDefOf.None)
+						{
+							goto finalize;
+						}
+					}
+					result.fog = Maths.Max(Mathf.CeilToInt(GetFogRadius(thing, result.sight) * Finder.Settings.FogOfWar_RangeMultiplier), 3);
+				}
 			}
 			else if (thing is Building_Turret turret)
 			{
 				result = GetSightRadius_Turret(turret);
+				if (Finder.Settings.FogOfWar_Turrets || (turret.GetComp_Fast<CompMannable>() is CompMannable mannable && mannable.MannedNow))
+				{
+					Faction f = thing.Faction;
+
+					if (f != null && (f.IsPlayerSafe() || (!f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies)))
+					{
+						result.fog = Maths.Max(Mathf.CeilToInt(GetFogRadius(thing, result.sight) * Finder.Settings.FogOfWar_RangeMultiplier), 3);
+					}
+				}
 			}
 			else
 			{
 				throw new Exception($"ISMA: GetSightRadius got an object that is niether a pawn, turret nor does it have sighter. {thing}");
 			}
-			Faction f = thing.Faction;
-			if (f != null && (f.IsPlayerSafe() || !f.HostileTo(Faction.OfPlayer)))
-			{
-				result.fog = Maths.Max(Mathf.CeilToInt(GetFogRadius(thing, result.sight) * Finder.Settings.FogOfWar_RangeMultiplier), 3);
-			}
+			finalize:
 			result.createdAt = GenTicks.TicksGame;
 			return result;
 		}

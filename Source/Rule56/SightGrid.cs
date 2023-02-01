@@ -365,11 +365,11 @@ namespace CombatAI
 				ops += 1;
 				suCentroid += pos;
 			}
-			ISightRadius sightRadius = item.cachedSightRadius;
+			ISightRadius sightRadius = item.cachedSightRadius;			
 			Action action = () =>
 			{
-				if (playerAlliance)
-				{
+				if (playerAlliance && sightRadius.fog > 0)
+				{					
 					gridFog.Next();
 					gridFog.Set(origin, 1.0f);
 					for (int i = 0; i < item.path.Count; i++)
