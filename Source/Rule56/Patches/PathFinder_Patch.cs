@@ -123,9 +123,9 @@ namespace CombatAI.Patches
 							tuning                                     = new PathFinderCostTuning();
 							tuning.costBlockedDoor                     = 34;
 							tuning.costBlockedDoorPerHitPoint          = 0;
-							tuning.costBlockedWallBase                 = (int)Maths.Max(10 * Maths.Max(13 - miningSkill, 0), 24);
-							tuning.costBlockedWallExtraForNaturalWalls = (int)Maths.Max(45 * Maths.Max(10 - miningSkill, 0), 45);
-							tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(3 - miningSkill, 0);
+							tuning.costBlockedWallBase                 = (int)(Maths.Max(10 * Maths.Max(13 - miningSkill, 0), 24) * Finder.Settings.Pathfinding_SappingMul);
+							tuning.costBlockedWallExtraForNaturalWalls = (int)(Maths.Max(45 * Maths.Max(10 - miningSkill, 0), 45) * Finder.Settings.Pathfinding_SappingMul);
+							tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(3 - miningSkill, 0) * Finder.Settings.Pathfinding_SappingMul;
 							tuning.costOffLordWalkGrid                 = 0;
 						}
 					}

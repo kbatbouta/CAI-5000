@@ -32,13 +32,13 @@ namespace CombatAI
 			{
 				return IntVec3.Invalid;
 			}
-			DutyDestCache key = new DutyDestCache()
+			Tuple<int, int, IntVec3> key = new Tuple<int, int, IntVec3>()
 			{
-				pawnId		= pawn.thingIDNumber,
-				dutyDefId	= pawn.mindState.duty.def.index,
-				dutyDest	= pawn.mindState.duty.focus.Cell
+				val1	= pawn.thingIDNumber,
+				val2	= pawn.mindState.duty.def.index,
+				val3	= pawn.mindState.duty.focus.Cell
 			};
-			if (!TKVCache<DutyDestCache, PawnDuty, IntVec3>.TryGet(key, out IntVec3 dutyDest, 600))
+			if (!TKVCache<Tuple<int, int, IntVec3>, PawnDuty, IntVec3>.TryGet(key, out IntVec3 dutyDest, 600))
 			{
 				dutyDest = IntVec3.Invalid;				
 				if (pawn.mindState.duty.focus.Cell.DistanceToSquared(pawn.Position) > Maths.Sqr(Maths.Max(pawn.mindState.duty.radius, 10)))
@@ -51,14 +51,14 @@ namespace CombatAI
 						float maxDistSqr = Maths.Sqr(maxDistFromPawn);
 						IntVec3 pawnPos = pawn.Position;
 						while (i >= 0 && path.nodes[i].DistanceToSquared(pawnPos) < maxDistSqr)
-						{
+						{							
 							i--;
 						}
 						dutyDest = path.nodes[Maths.Max(i, 0)];					
 						path.ReleaseToPool();						
 					}				
 				}
-				TKVCache<DutyDestCache, PawnDuty, IntVec3>.Put(key, dutyDest);
+				TKVCache<Tuple<int, int, IntVec3>, PawnDuty, IntVec3>.Put(key, dutyDest);
 			}
 			return dutyDest;
 		}
@@ -118,13 +118,6 @@ namespace CombatAI
 		public static int GetThingFlagsIndex(this Thing thing)
 		{
 			return thing.thingIDNumber % 64;
-		}
-
-		private struct DutyDestCache
-		{
-			public int pawnId;
-			public int dutyDefId;
-			public IntVec3 dutyDest;
 		}
 	}
 }

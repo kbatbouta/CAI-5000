@@ -51,7 +51,7 @@ namespace CombatAI.Patches
 		{			
 			public static void Postfix(LordToil_AssaultColony __instance)
 			{
-				if (__instance.lord.ownedPawns.Count > 10)
+				if (Finder.Settings.Enable_Groups && __instance.lord.ownedPawns.Count > 10)
 				{					
 					ClearCache();
 					Map map = __instance.Map;

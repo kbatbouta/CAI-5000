@@ -18,8 +18,18 @@
     <CombatAI.Settings.Basic.Presets.Deathwish>Deathwish</CombatAI.Settings.Basic.Presets.Deathwish>
     <CombatAI.Settings.Basic.Presets.Applied>Applied preset:</CombatAI.Settings.Basic.Presets.Applied>
     <CombatAI.Settings.Basic.Presets.Description>Performance presets will determine the complexity of AI calculations and their interval. More complex calculations means harder AI but lower performance. Default is normal.</CombatAI.Settings.Basic.Presets.Description>
+    <CombatAI.Settings.Basic.Sprinting>Enable sprinting</CombatAI.Settings.Basic.Sprinting>
+    <CombatAI.Settings.Basic.Sprinting.Description>If this is disabled: Pathetic F F...\n if not: Chad :thumbsup</CombatAI.Settings.Basic.Sprinting.Description>
+    <CombatAI.Settings.Basic.Groups>Enable tactical groups</CombatAI.Settings.Basic.Groups>
+    <CombatAI.Settings.Basic.Groups.Description>Raiders will be divided into tactical groups (2-10) each with their own objective. Not all pawns will be assigned to groups, some will remain on the default assault duty.</CombatAI.Settings.Basic.Groups.Description>
+    <CombatAI.Settings.Basic.SappingMul>Cost multiplier for pathing through walls (default is 1.0)</CombatAI.Settings.Basic.SappingMul>
+    <CombatAI.Settings.Basic.SappingMul.Description>Cost multiplier for pathing through walls. Higher values means raiders are less likely to path through walls.</CombatAI.Settings.Basic.SappingMul.Description>
     <CombatAI.Settings.Basic.FogOfWar>[BETA] Fog of war</CombatAI.Settings.Basic.FogOfWar>
     <CombatAI.Settings.Basic.FogOfWar.Enable>Enable fog of war</CombatAI.Settings.Basic.FogOfWar.Enable>
+    <CombatAI.Settings.Basic.FogOfWar.Allies>Allies reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Allies>
+    <CombatAI.Settings.Basic.FogOfWar.Animals>Colony animals reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Animals>    
+    <CombatAI.Settings.Basic.FogOfWar.Animals.SmartOnly>Only smart animals reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Animals.SmartOnly>
+    <CombatAI.Settings.Basic.FogOfWar.Turrets>Colony turrets reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Turrets>
     <CombatAI.Settings.Basic.FogOfWar.Density>Fog density (how dark the fog of war is)</CombatAI.Settings.Basic.FogOfWar.Density>
     <CombatAI.Settings.Basic.FogOfWar.Density.Readouts>{0} Fog desnity</CombatAI.Settings.Basic.FogOfWar.Density.Readouts>
     <CombatAI.Settings.Basic.FogOfWar.RangeMul>Fog of war sight radius multiplie (default is 1.0)</CombatAI.Settings.Basic.FogOfWar.RangeMul>
