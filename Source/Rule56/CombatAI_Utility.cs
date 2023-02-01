@@ -61,7 +61,11 @@ namespace CombatAI
 						}
 						else
 						{
-							dutyDest = path.Peek(i);
+							i = Maths.Min(i, path.NodesLeftCount - 1);
+							if (i >= 0)
+							{
+								dutyDest = path.Peek(Maths.Min(i, path.NodesLeftCount - 1));
+							}
 						}
 						path.ReleaseToPool();						
 					}				
