@@ -44,7 +44,7 @@ namespace CombatAI
 				if (pawn.mindState.duty.focus.Cell.DistanceToSquared(pawn.Position) > Maths.Sqr(Maths.Max(pawn.mindState.duty.radius, 10)))
 				{					
 					PawnPath path = pawn.Map.pathFinder.FindPath(pawn.Position, pawn.mindState.duty.focus.Cell, pawn);
-					if (path != null)
+					if (path != null && path.NodesLeftCount > 0)
 					{
 						maxDistFromPawn = Mathf.Clamp(maxDistFromPawn, 5f, 64f);						
 						int k = path.NodesLeftCount;
