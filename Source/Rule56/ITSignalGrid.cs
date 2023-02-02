@@ -16,10 +16,10 @@ namespace CombatAI
 	public class ITSignalGrid
 	{
 		private readonly IFieldInfo[]                  cells;
+		private readonly IField<float>[]               cells_blunt;
 		private readonly IField<Vector2>[]             cells_dir;
 		private readonly IField<ulong>[]               cells_flags;
 		private readonly IField<MetaCombatAttribute>[] cells_meta;
-		private readonly IField<float>[]               cells_blunt;
 		private readonly IField<float>[]               cells_sharp;
 		private readonly IField<float>[]               cells_strength;
 
@@ -534,7 +534,7 @@ namespace CombatAI
 				value     = newVal;
 			}
 		}
-		
+
 
 		[StructLayout(LayoutKind.Sequential)]
 		private struct IFieldInfo

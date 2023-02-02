@@ -4,12 +4,9 @@ using System.Linq;
 using System.Threading;
 using CombatAI.Utilities;
 using RimWorld;
-using Steamworks;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
 using Verse;
 using Verse.AI;
-using Verse.Noise;
 using GUIUtility = CombatAI.Gui.GUIUtility;
 namespace CombatAI.Comps
 {
@@ -19,21 +16,46 @@ namespace CombatAI.Comps
 		///     Set of visible enemies. A queue for visible enemies during scans.
 		/// </summary>
 		private readonly HashSet<Thing> visibleEnemies;
+		private int _sap;
 
 		/// <summary>
 		///     Parent armor report.
 		/// </summary>
 		private ArmorReport armor;
 		/// <summary>
+		///     Cell to stand on while sapping
+		/// </summary>
+		private IntVec3 cellBefore = IntVec3.Invalid;
+		/// <summary>
 		///     Custom pawn duty tracker. Allows the execution of new duties then going back to the old one once the new one is
 		///     finished.
 		/// </summary>
 		public Pawn_CustomDutyTracker duties;
+		/// <summary>
+		///     Escorting pawns.
+		/// </summary>
+		private readonly List<Pawn> escorts = new List<Pawn>();
+		/// <summary>
+		///     Whether to find escorts.
+		/// </summary>
+		private bool findEscorts;
 
 		/// <summary>
 		///     Move job started by this comp.
 		/// </summary>
 		public Job moveJob;
+		/// <summary>
+		///     Tick when this pawn was released as an escort.
+		/// </summary>
+		private int releasedTick;
+		/// <summary>
+		///     Sapper path nodes.
+		/// </summary>
+		private readonly List<IntVec3> sapperNodes = new List<IntVec3>();
+		/// <summary>
+		///     Sapper timestamp
+		/// </summary>
+		private int sapperStartTick;
 		//Whether a scan is occuring.
 		private bool scanning;
 		/// <summary>
@@ -44,31 +66,6 @@ namespace CombatAI.Comps
 		///     Wait job started/queued by this comp.
 		/// </summary>
 		public Job waitJob;
-		/// <summary>
-		///		Cell to stand on while sapping
-		/// </summary>
-		private IntVec3 cellBefore = IntVec3.Invalid;
-		/// <summary>
-		///		Whether to find escorts.
-		/// </summary>
-		private bool findEscorts;
-		/// <summary>
-		///		Sapper path nodes.
-		/// </summary>
-		private List<IntVec3> sapperNodes = new List<IntVec3>();
-		/// <summary>
-		///		Sapper timestamp
-		/// </summary>
-		private int sapperStartTick;
-		/// <summary>
-		///		Escorting pawns.
-		/// </summary>		
-		private List<Pawn> escorts = new List<Pawn>();
-		/// <summary>
-		///		Tick when this pawn was released as an escort.
-		/// </summary>
-		private int releasedTick;
-		private int _sap;
 
 		public ThingComp_CombatAI()
 		{
@@ -77,18 +74,12 @@ namespace CombatAI.Comps
 
 		public bool IsSapping
 		{
-			get
-			{
-				return cellBefore.IsValid && sapperNodes.Count > 0 && (GenTicks.TicksGame - sapperStartTick) < 4800;
-			}
+			get => cellBefore.IsValid && sapperNodes.Count > 0 && GenTicks.TicksGame - sapperStartTick < 4800;
 		}
 
 		public bool CanSappOrEscort
 		{
-			get
-			{
-				return GenTicks.TicksGame - releasedTick > 1200 && !IsSapping;
-			}
+			get => GenTicks.TicksGame - releasedTick > 1200 && !IsSapping;
 		}
 
 		public override void PostSpawnSetup(bool respawningAfterLoad)
@@ -127,15 +118,15 @@ namespace CombatAI.Comps
 					{
 						ReleaseEscorts();
 						sapperNodes.Clear();
-						cellBefore = IntVec3.Invalid;
+						cellBefore      = IntVec3.Invalid;
 						sapperStartTick = -1;
-						releasedTick = GenTicks.TicksGame;
+						releasedTick    = GenTicks.TicksGame;
 					}
 				}
 				else
 				{
 					TryStartSapperJob();
-				}				
+				}
 			}
 		}
 
@@ -404,11 +395,11 @@ namespace CombatAI.Comps
 					{
 //						if (Rand.Chance((sightReader.GetThreat(pawn.Position) - sightReader.GetThreat(cell)) + 0.1f))
 //						{
-							Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-							job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
-							pawn.jobs.ClearQueuedJobs();
-							pawn.jobs.StopAll();
-							pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
+						Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
+						job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+						pawn.jobs.ClearQueuedJobs();
+						pawn.jobs.StopAll();
+						pawn.jobs.StartJob(moveJob = job_goto, JobCondition.InterruptForced);
 //						}
 					}
 					else if (warmup == null)
@@ -568,13 +559,13 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		///		Start a sapping task.
+		///     Start a sapping task.
 		/// </summary>
 		/// <param name="blocked">Blocked cells</param>
 		/// <param name="cellBefore">Cell before blocked cells</param>
 		/// <param name="findEscorts">Whether to look for escorts</param>
 		public void StartSapper(List<IntVec3> blocked, IntVec3 cellBefore, bool findEscorts)
-		{			
+		{
 			Pawn pawn = parent as Pawn;
 			if (pawn == null)
 			{
@@ -584,17 +575,17 @@ namespace CombatAI.Comps
 			{
 				ReleaseEscorts();
 			}
-			this.cellBefore = cellBefore;
+			this.cellBefore  = cellBefore;
 			this.findEscorts = findEscorts;
-			sapperStartTick = GenTicks.TicksGame;
+			sapperStartTick  = GenTicks.TicksGame;
 			sapperNodes.Clear();
 			sapperNodes.AddRange(blocked);
 			_sap = 0;
-			TryStartSapperJob();			
+			TryStartSapperJob();
 		}
 
 		/// <summary>
-		///		Release escorts pawns.
+		///     Release escorts pawns.
 		/// </summary>
 		public void ReleaseEscorts()
 		{
@@ -640,7 +631,7 @@ namespace CombatAI.Comps
 				return;
 			}
 			visibleEnemies.Add(thing);
-		}	
+		}
 
 		/// <summary>
 		///     Called to notify a wait job started by reaction has ended. Will reduce the reaction cooldown.
@@ -679,42 +670,42 @@ namespace CombatAI.Comps
 			if (sightReader.GetVisibilityToEnemies(cellBefore) > 0 || sapperNodes.Count == 0)
 			{
 				ReleaseEscorts();
-				cellBefore = IntVec3.Invalid;
-				releasedTick = GenTicks.TicksGame;
+				cellBefore      = IntVec3.Invalid;
+				releasedTick    = GenTicks.TicksGame;
 				sapperStartTick = -1;
 				sapperNodes.Clear();
 				return;
 			}
 			Pawn pawn = parent as Pawn;
-			if(pawn.Destroyed || pawn.Downed || pawn.Dead || pawn.mindState?.duty == null || !(pawn.mindState.duty.def.Is(DutyDefOf.AssaultColony) || pawn.mindState.duty.def.Is(DutyDefOf.Defend) || pawn.mindState.duty.def.Is(DutyDefOf.AssaultThing) || pawn.mindState.duty.def.Is(DutyDefOf.Breaching)))
+			if (pawn.Destroyed || pawn.Downed || pawn.Dead || pawn.mindState?.duty == null || !(pawn.mindState.duty.def.Is(DutyDefOf.AssaultColony) || pawn.mindState.duty.def.Is(DutyDefOf.Defend) || pawn.mindState.duty.def.Is(DutyDefOf.AssaultThing) || pawn.mindState.duty.def.Is(DutyDefOf.Breaching)))
 			{
 				ReleaseEscorts();
 				return;
-			}			
-			Map map = pawn.Map;
+			}
+			Map   map     = pawn.Map;
 			Thing blocker = sapperNodes[0].GetEdifice(map);
 			if (blocker != null)
 			{
 				Job job = DigUtility.PassBlockerJob(pawn, blocker, cellBefore, true, true);
 				if (job != null)
 				{
-					job.playerForced = true;
-					job.expiryInterval = 3600;
+					job.playerForced       = true;
+					job.expiryInterval     = 3600;
 					job.maxNumMeleeAttacks = 300;
 					pawn.jobs.StopAll();
 					pawn.jobs.StartJob(job, JobCondition.InterruptForced);
 					if (findEscorts)
 					{
-						int count = escorts.Count;
-						int countTarget = Rand.Int % 6 + 4 + Maths.Min(sapperNodes.Count, 10);
-						Faction faction = pawn.Faction;
+						int     count       = escorts.Count;
+						int     countTarget = Rand.Int % 6 + 4 + Maths.Min(sapperNodes.Count, 10);
+						Faction faction     = pawn.Faction;
 						Predicate<Thing> validator = t =>
 						{
 							if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
-								&& !ally.CurJobDef.Is(JobDefOf.Mine)
-								&& ally.mindState?.duty?.def != DutyDefOf.Escort
-								&& (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
-								&& ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
+							    && !ally.CurJobDef.Is(JobDefOf.Mine)
+							    && ally.mindState?.duty?.def != DutyDefOf.Escort
+							    && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
+							    && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
 							{
 								ThingComp_CombatAI comp = ally.GetComp_Fast<ThingComp_CombatAI>();
 								if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick < 600)

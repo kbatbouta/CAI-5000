@@ -34,17 +34,17 @@ namespace CombatAI
 			{
 				queue = new List<CustomPawnDuty>();
 			}
-		}	
+		}
 
 		public void TickRare()
 		{
 			if (curCustomDuty != null)
-			{				
+			{
 				if (curCustomDuty.finished)
 				{
-					curCustomDuty = null;
-					pawn.mindState.duty = null;					
-				}								
+					curCustomDuty       = null;
+					pawn.mindState.duty = null;
+				}
 				else if (curCustomDuty.expiresAt > 0 && curCustomDuty.expiresAt <= GenTicks.TicksGame)
 				{
 					curCustomDuty       = null;
@@ -57,7 +57,7 @@ namespace CombatAI
 				}
 				else if (curCustomDuty.endOnDistanceToFocus > 0 && curCustomDuty.duty.focus.Cell.IsValid && curCustomDuty.duty.focus.Cell.DistanceToSquared(pawn.Position) < Maths.Sqr(curCustomDuty.endOnDistanceToFocus))
 				{
-					curCustomDuty = null;
+					curCustomDuty       = null;
 					pawn.mindState.duty = null;
 				}
 				else if (curCustomDuty?.duty.focus.Thing != null)
@@ -128,7 +128,7 @@ namespace CombatAI
 
 		public void FinishAllDuties(DutyDef def, Thing focus = null)
 		{
-			for(int i = 0;i < queue.Count; i++)
+			for (int i = 0; i < queue.Count; i++)
 			{
 				CustomPawnDuty custom = queue[i];
 				if (custom.duty?.def == def && (focus == null || custom.duty.focus == focus || custom.duty.focusSecond == focus))
@@ -136,7 +136,7 @@ namespace CombatAI
 					custom.finished = true;
 				}
 			}
-			if (curCustomDuty != null && (curCustomDuty.duty?.def == def && (focus == null || curCustomDuty.duty.focus == focus || curCustomDuty.duty.focusSecond == focus)))
+			if (curCustomDuty != null && curCustomDuty.duty?.def == def && (focus == null || curCustomDuty.duty.focus == focus || curCustomDuty.duty.focusSecond == focus))
 			{
 				curCustomDuty.finished = true;
 			}
@@ -221,19 +221,19 @@ namespace CombatAI
 		{
 			public bool     canExitMap = true;
 			public bool     canFlee    = true;
-			public bool		finished;
+			public IntVec3  dest       = IntVec3.Invalid;
 			public PawnDuty duty;
+			public int      endOnDistanceToFocus;
 			public int      expireAfter;
 			public int      expiresAt = -1;
 			public int      failOnDistanceToFocus;
-			public int		endOnDistanceToFocus;
 			public bool     failOnFocusDeath;
 			public bool     failOnFocusDestroyed;
 			public bool     failOnFocusDowned;
 			public DutyDef  failOnFocusDutyNot;
+			public bool     finished;
 			public int      startAfter;
 			public int      startsAt = -1;
-			public IntVec3  dest = IntVec3.Invalid;			
 
 			public void ExposeData()
 			{

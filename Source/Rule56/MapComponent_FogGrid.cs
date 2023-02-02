@@ -284,11 +284,11 @@ namespace CombatAI
 									changed = true;
 									if (val > old)
 									{
-										cells[x * SECTION_SIZE + z] = Maths.Min(old + 0.1f,val);
+										cells[x * SECTION_SIZE + z] = Maths.Min(old + 0.1f, val);
 									}
 									else
 									{
-										cells[x * SECTION_SIZE + z] = Maths.Max(old - 0.4f,val);
+										cells[x * SECTION_SIZE + z] = Maths.Max(old - 0.4f, val);
 									}
 								}
 							}

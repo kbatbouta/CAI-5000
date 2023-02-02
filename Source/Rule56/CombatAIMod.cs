@@ -88,19 +88,19 @@ namespace CombatAI
 						GUI.color = Color.green;
 						if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Easy))
 						{
-							Finder.Settings.Pathfinding_DestWeight                      = 0.9f;
-							Finder.Settings.Caster_Enabled                              = false;
-							Finder.Settings.Targeter_Enabled                            = false;
-							Finder.Settings.Pather_Enabled                              = true;
-							Finder.Settings.Pather_KillboxKiller                        = false;
-							Finder.Settings.PerformanceOpt_Enabled                      = true;
-							Finder.Settings.React_Enabled                               = false;
-							Finder.Settings.Retreat_Enabled                             = false;
-							Finder.Settings.Flank_Enabled                               = false;
+							Finder.Settings.Pathfinding_DestWeight = 0.9f;
+							Finder.Settings.Caster_Enabled         = false;
+							Finder.Settings.Targeter_Enabled       = false;
+							Finder.Settings.Pather_Enabled         = true;
+							Finder.Settings.Pather_KillboxKiller   = false;
+							Finder.Settings.PerformanceOpt_Enabled = true;
+							Finder.Settings.React_Enabled          = false;
+							Finder.Settings.Retreat_Enabled        = false;
+							Finder.Settings.Flank_Enabled          = false;
 
-							Finder.Settings.Enable_Sprinting		  = false;
-							Finder.Settings.Enable_Groups			  = false;
-							Finder.Settings.Pathfinding_SappingMul    = 0.5f;
+							Finder.Settings.Enable_Sprinting       = false;
+							Finder.Settings.Enable_Groups          = false;
+							Finder.Settings.Pathfinding_SappingMul = 0.5f;
 
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
 							if (Current.ProgramState != ProgramState.Playing)
@@ -133,11 +133,9 @@ namespace CombatAI
 							Finder.Settings.React_Enabled                               = true;
 							Finder.Settings.Retreat_Enabled                             = false;
 							Finder.Settings.Flank_Enabled                               = true;
-
-							Finder.Settings.Enable_Sprinting          = false;
-							Finder.Settings.Enable_Groups             = true;
-							Finder.Settings.Pathfinding_SappingMul    = 1.0f;
-
+							Finder.Settings.Enable_Sprinting                            = false;
+							Finder.Settings.Enable_Groups                               = true;
+							Finder.Settings.Pathfinding_SappingMul                      = 1.0f;
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
 							if (Current.ProgramState != ProgramState.Playing)
 							{
@@ -160,19 +158,19 @@ namespace CombatAI
 					{
 						if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Hard))
 						{
-							Finder.Settings.Pathfinding_DestWeight                      = 0.75f;
-							Finder.Settings.Caster_Enabled                              = true;
-							Finder.Settings.Targeter_Enabled                            = true;
-							Finder.Settings.Pather_Enabled                              = true;
-							Finder.Settings.Pather_KillboxKiller                        = true;
-							Finder.Settings.React_Enabled                               = true;
-							Finder.Settings.Retreat_Enabled                             = true;
-							Finder.Settings.Flank_Enabled                               = true;
-							Finder.Settings.PerformanceOpt_Enabled                      = true;
+							Finder.Settings.Pathfinding_DestWeight = 0.75f;
+							Finder.Settings.Caster_Enabled         = true;
+							Finder.Settings.Targeter_Enabled       = true;
+							Finder.Settings.Pather_Enabled         = true;
+							Finder.Settings.Pather_KillboxKiller   = true;
+							Finder.Settings.React_Enabled          = true;
+							Finder.Settings.Retreat_Enabled        = true;
+							Finder.Settings.Flank_Enabled          = true;
+							Finder.Settings.PerformanceOpt_Enabled = true;
 
-							Finder.Settings.Enable_Sprinting          = false;
-							Finder.Settings.Enable_Groups             = true;
-							Finder.Settings.Pathfinding_SappingMul    = 0.9f;
+							Finder.Settings.Enable_Sprinting       = false;
+							Finder.Settings.Enable_Groups          = true;
+							Finder.Settings.Pathfinding_SappingMul = 0.9f;
 
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 2;
 							if (Current.ProgramState != ProgramState.Playing)
@@ -197,19 +195,19 @@ namespace CombatAI
 						GUI.color = Color.red;
 						if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Deathwish))
 						{
-							Finder.Settings.Pathfinding_DestWeight                      = 0.6f;
-							Finder.Settings.Caster_Enabled                              = true;
-							Finder.Settings.Targeter_Enabled                            = true;
-							Finder.Settings.Pather_Enabled                              = true;
-							Finder.Settings.Pather_KillboxKiller                        = true;
-							Finder.Settings.React_Enabled                               = true;
-							Finder.Settings.Retreat_Enabled                             = true;
-							Finder.Settings.Flank_Enabled                               = true;
-							Finder.Settings.PerformanceOpt_Enabled                      = false;
+							Finder.Settings.Pathfinding_DestWeight = 0.6f;
+							Finder.Settings.Caster_Enabled         = true;
+							Finder.Settings.Targeter_Enabled       = true;
+							Finder.Settings.Pather_Enabled         = true;
+							Finder.Settings.Pather_KillboxKiller   = true;
+							Finder.Settings.React_Enabled          = true;
+							Finder.Settings.Retreat_Enabled        = true;
+							Finder.Settings.Flank_Enabled          = true;
+							Finder.Settings.PerformanceOpt_Enabled = false;
 
-							Finder.Settings.Enable_Sprinting          = true;
-							Finder.Settings.Enable_Groups             = true;
-							Finder.Settings.Pathfinding_SappingMul    = 0.85f;
+							Finder.Settings.Enable_Sprinting       = true;
+							Finder.Settings.Enable_Groups          = true;
+							Finder.Settings.Pathfinding_SappingMul = 0.85f;
 
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
 							if (Current.ProgramState != ProgramState.Playing)
@@ -245,13 +243,13 @@ namespace CombatAI
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Reaction, ref Finder.Settings.React_Enabled);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Flanking, ref Finder.Settings.Flank_Enabled);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Retreat, ref Finder.Settings.Retreat_Enabled);
-			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Groups, ref Finder.Settings.Enable_Groups, tooltip: Keyed.CombatAI_Settings_Basic_Groups_Description);
-			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Sprinting, ref Finder.Settings.Enable_Sprinting, tooltip: Keyed.CombatAI_Settings_Basic_Sprinting_Description);
+			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Groups, ref Finder.Settings.Enable_Groups, Keyed.CombatAI_Settings_Basic_Groups_Description);
+			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Sprinting, ref Finder.Settings.Enable_Sprinting, Keyed.CombatAI_Settings_Basic_Sprinting_Description);
 		}
 
 		private void FillCollapsible_FogOfWar(Listing_Collapsible collapsible)
 		{
-			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Enable, ref Finder.Settings.FogOfWar_Enabled);			
+			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Enable, ref Finder.Settings.FogOfWar_Enabled);
 
 			if (Finder.Settings.FogOfWar_Enabled)
 			{
@@ -268,7 +266,7 @@ namespace CombatAI
 				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_Density);
 				collapsible.Lambda(25, rect =>
 				{
-					Finder.Settings.FogOfWar_FogColor = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_FogColor, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_Density_Readouts.Formatted(Finder.Settings.FogOfWar_FogColor.ToString()), roundTo: 0.05f);
+					Finder.Settings.FogOfWar_FogColor = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_FogColor, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_Density_Readouts.Formatted(Finder.Settings.FogOfWar_FogColor.ToString()), 0.05f);
 				}, useMargins: true);
 
 //				collapsible.Line(1);
@@ -276,7 +274,7 @@ namespace CombatAI
 				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul);
 				collapsible.Lambda(25, rect =>
 				{
-					Finder.Settings.FogOfWar_RangeMultiplier = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_RangeMultiplier, 0.75f, 2.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeMultiplier.ToString()), roundTo: 0.05f);
+					Finder.Settings.FogOfWar_RangeMultiplier = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_RangeMultiplier, 0.75f, 2.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeMultiplier.ToString()), 0.05f);
 				}, useMargins: true);
 
 //				collapsible.Line(1);
@@ -284,7 +282,7 @@ namespace CombatAI
 				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul);
 				collapsible.Lambda(25, rect =>
 				{
-					Finder.Settings.FogOfWar_RangeFadeMultiplier = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_RangeFadeMultiplier, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeFadeMultiplier.ToString()), roundTo: 0.05f);
+					Finder.Settings.FogOfWar_RangeFadeMultiplier = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_RangeFadeMultiplier, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeFadeMultiplier.ToString()), 0.05f);
 				}, useMargins: true);
 			}
 		}
@@ -302,7 +300,7 @@ namespace CombatAI
 				string color = Finder.Settings.Pathfinding_DestWeight < 0.75f ? "red" : "while";
 				string extra = Finder.Settings.Pathfinding_DestWeight < 0.75f ? " <color=yellow>WILL IMPACT PERFORMANCE</color>" : "";
 				Text.CurFontStyle.fontStyle            = FontStyle.Bold;
-				Finder.Settings.Pathfinding_DestWeight = HorizontalSlider_NewTemp(rect, Finder.Settings.Pathfinding_DestWeight, 0.95f, Finder.Settings.AdvancedUser ? 0.3f : 0.65f, true, $"<color={color}>{Math.Round(Finder.Settings.Pathfinding_DestWeight * 100f, 1)}%</color>{extra}", roundTo: 0.05f);
+				Finder.Settings.Pathfinding_DestWeight = HorizontalSlider_NewTemp(rect, Finder.Settings.Pathfinding_DestWeight, 0.95f, Finder.Settings.AdvancedUser ? 0.3f : 0.65f, true, $"<color={color}>{Math.Round(Finder.Settings.Pathfinding_DestWeight * 100f, 1)}%</color>{extra}", 0.05f);
 			}, useMargins: true);
 
 			collapsible.Line(2);
@@ -316,18 +314,18 @@ namespace CombatAI
 			collapsible.Label(Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Frequency.Formatted(60f / (Finder.Settings.SightSettings_FriendliesAndRaiders.buckets * Finder.Settings.SightSettings_FriendliesAndRaiders.interval)));
 			collapsible.Lambda(25, rect =>
 			{
-				Finder.Settings.SightSettings_FriendliesAndRaiders.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_FriendliesAndRaiders.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_FriendliesAndRaiders.interval), roundTo: 0.05f);
+				Finder.Settings.SightSettings_FriendliesAndRaiders.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_FriendliesAndRaiders.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_FriendliesAndRaiders.interval), 0.05f);
 			}, useMargins: true);
 			if (Current.ProgramState != ProgramState.Playing)
 			{
 				collapsible.Lambda(25, rect =>
 				{
-					Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_FriendliesAndRaiders.buckets, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_FriendliesAndRaiders.buckets), roundTo: 0.05f);
+					Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_FriendliesAndRaiders.buckets, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_FriendliesAndRaiders.buckets), 0.05f);
 				}, useMargins: true);
 			}
 			collapsible.Lambda(25, rect =>
 			{
-				Finder.Settings.SightSettings_FriendliesAndRaiders.carryLimit = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_FriendliesAndRaiders.carryLimit, 4, 16, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_FriendliesAndRaiders.carryLimit), roundTo: 0.05f);
+				Finder.Settings.SightSettings_FriendliesAndRaiders.carryLimit = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_FriendliesAndRaiders.carryLimit, 4, 16, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_FriendliesAndRaiders.carryLimit), 0.05f);
 				if (Mouse.IsOver(rect))
 				{
 					TooltipHandler.TipRegion(rect, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description);
@@ -342,18 +340,18 @@ namespace CombatAI
 			collapsible.Label(Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Frequency.Formatted(60f / (Finder.Settings.SightSettings_MechsAndInsects.buckets * Finder.Settings.SightSettings_MechsAndInsects.interval)));
 			collapsible.Lambda(25, rect =>
 			{
-				Finder.Settings.SightSettings_MechsAndInsects.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_MechsAndInsects.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_MechsAndInsects.interval), roundTo: 0.05f);
+				Finder.Settings.SightSettings_MechsAndInsects.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_MechsAndInsects.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_MechsAndInsects.interval), 0.05f);
 			}, useMargins: true);
 			if (Current.ProgramState != ProgramState.Playing)
 			{
 				collapsible.Lambda(25, rect =>
 				{
-					Finder.Settings.SightSettings_MechsAndInsects.buckets = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_MechsAndInsects.buckets, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_MechsAndInsects.buckets), roundTo: 0.05f);
+					Finder.Settings.SightSettings_MechsAndInsects.buckets = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_MechsAndInsects.buckets, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_MechsAndInsects.buckets), 0.05f);
 				}, useMargins: true);
 			}
 			collapsible.Lambda(25, rect =>
 			{
-				Finder.Settings.SightSettings_MechsAndInsects.carryLimit = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_MechsAndInsects.carryLimit, 4, 16, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_MechsAndInsects.carryLimit), roundTo: 0.05f);
+				Finder.Settings.SightSettings_MechsAndInsects.carryLimit = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_MechsAndInsects.carryLimit, 4, 16, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_MechsAndInsects.carryLimit), 0.05f);
 				if (Mouse.IsOver(rect))
 				{
 					TooltipHandler.TipRegion(rect, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description);
@@ -368,18 +366,18 @@ namespace CombatAI
 			collapsible.Label(Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Frequency.Formatted(60f / (Finder.Settings.SightSettings_Wildlife.buckets * Finder.Settings.SightSettings_Wildlife.interval)));
 			collapsible.Lambda(25, rect =>
 			{
-				Finder.Settings.SightSettings_Wildlife.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_Wildlife.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_Wildlife.interval), roundTo: 0.05f);
+				Finder.Settings.SightSettings_Wildlife.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_Wildlife.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_Wildlife.interval), 0.05f);
 			}, useMargins: true);
 			if (Current.ProgramState != ProgramState.Playing)
 			{
 				collapsible.Lambda(25, rect =>
 				{
-					Finder.Settings.SightSettings_Wildlife.buckets = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_Wildlife.buckets, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_Wildlife.buckets), roundTo: 0.05f);
+					Finder.Settings.SightSettings_Wildlife.buckets = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_Wildlife.buckets, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_Wildlife.buckets), 0.05f);
 				}, useMargins: true);
 			}
 			collapsible.Lambda(25, rect =>
 			{
-				Finder.Settings.SightSettings_Wildlife.carryLimit = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_Wildlife.carryLimit, 4, 16, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_Wildlife.carryLimit), roundTo: 0.05f);
+				Finder.Settings.SightSettings_Wildlife.carryLimit = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_Wildlife.carryLimit, 4, 16, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_Wildlife.carryLimit), 0.05f);
 				if (Mouse.IsOver(rect))
 				{
 					TooltipHandler.TipRegion(rect, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description);
@@ -394,18 +392,18 @@ namespace CombatAI
 			collapsible.Label(Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Frequency.Formatted((60f / ((float)Finder.Settings.SightSettings_SettlementTurrets.buckets * Finder.Settings.SightSettings_SettlementTurrets.interval)).ToString()));
 			collapsible.Lambda(25, rect =>
 			{
-				Finder.Settings.SightSettings_SettlementTurrets.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_SettlementTurrets.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_SettlementTurrets.interval), roundTo: 0.05f);
+				Finder.Settings.SightSettings_SettlementTurrets.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_SettlementTurrets.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_SettlementTurrets.interval), 0.05f);
 			}, useMargins: true);
 			if (Current.ProgramState != ProgramState.Playing)
 			{
 				collapsible.Lambda(25, rect =>
 				{
-					Finder.Settings.SightSettings_SettlementTurrets.buckets = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_SettlementTurrets.buckets, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_SettlementTurrets.buckets), roundTo: 0.05f);
+					Finder.Settings.SightSettings_SettlementTurrets.buckets = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_SettlementTurrets.buckets, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Buckets.Formatted(Finder.Settings.SightSettings_SettlementTurrets.buckets), 0.05f);
 				}, useMargins: true);
 			}
 			collapsible.Lambda(25, rect =>
 			{
-				Finder.Settings.SightSettings_SettlementTurrets.carryLimit = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_SettlementTurrets.carryLimit, 4, 16, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_SettlementTurrets.carryLimit), roundTo: 0.05f);
+				Finder.Settings.SightSettings_SettlementTurrets.carryLimit = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_SettlementTurrets.carryLimit, 4, 16, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit.Formatted(Finder.Settings.SightSettings_SettlementTurrets.carryLimit), 0.05f);
 				if (Mouse.IsOver(rect))
 				{
 					TooltipHandler.TipRegion(rect, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description);
@@ -423,7 +421,7 @@ namespace CombatAI
 				collapsible.Line(1);
 				collapsible.Label(Keyed.CombatAI_Settings_Basic_SappingMul_Description);
 				collapsible.Lambda(25, rect =>
-				{					
+				{
 					Widgets.HorizontalSlider(rect, ref Finder.Settings.Pathfinding_SappingMul, new FloatRange(0.5f, 1.5f), Keyed.CombatAI_Settings_Basic_SappingMul);
 				}, useMargins: true);
 			}
@@ -519,9 +517,9 @@ namespace CombatAI
 		}
 
 		// TODO rework this.
-		private float HorizontalSlider_NewTemp(Rect rect, float val , float min, float max, bool middleAlinment, string label, float roundTo = -1)
+		private float HorizontalSlider_NewTemp(Rect rect, float val, float min, float max, bool middleAlinment, string label, float roundTo = -1)
 		{
-			Widgets.HorizontalSlider(rect, ref val, new FloatRange(min, max), label, roundTo: roundTo);
+			Widgets.HorizontalSlider(rect, ref val, new FloatRange(min, max), label, roundTo);
 			return val;
 		}
 	}

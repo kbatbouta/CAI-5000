@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using HarmonyLib;
-using RimWorld;
-using UnityEngine;
 using Verse;
 namespace CombatAI.Patches
 {
@@ -16,6 +11,6 @@ namespace CombatAI.Patches
 			{
 				__instance.map.GetComp_Fast<SightTracker>().Notify_RegionChanged(c, reg);
 			}
-		}	
+		}
 	}
 }

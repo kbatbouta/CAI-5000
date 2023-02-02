@@ -19,7 +19,7 @@ namespace CombatAI
 		/// </summary>
 		public readonly ITSignalGrid grid;
 		/// <summary>
-		///		Region grid contains sight data for regions.
+		///     Region grid contains sight data for regions.
 		/// </summary>
 		public readonly ITRegionGrid grid_regions;
 
@@ -41,30 +41,30 @@ namespace CombatAI
 		private readonly List<IBucketableThing> tmpDeRegisterList      = new List<IBucketableThing>(64);
 		private readonly List<IBucketableThing> tmpInconsistentRecords = new List<IBucketableThing>(64);
 		private readonly List<IBucketableThing> tmpInvalidRecords      = new List<IBucketableThing>(64);
-
-		private int      ops;
-		private WallGrid _walls;
+		private          WallGrid               _walls;
 		/// <summary>
 		///     Fog of war grid. Can be null.
 		/// </summary>
 		public ITFloatGrid gridFog;
+
+		private int ops;
 		/// <summary>
 		///     Whether this is the player grid
 		/// </summary>
 		public bool playerAlliance = false;
-		/// <summary>
-		/// Super rect containing all none sighter things casting.
-		/// </summary>
-		private CellRect suRect_Combatant = CellRect.Empty;
-		/// <summary>
-		/// Super rect containing all none sighter things casting from the prev cycle.
-		/// </summary>
-		private CellRect suRectPrev_Combatant = CellRect.Empty;
 
 		private IntVec3 suCentroid;
 		private IntVec3 suCentroidPrev;
 		/// <summary>
-		/// Ticks until update.
+		///     Super rect containing all none sighter things casting.
+		/// </summary>
+		private CellRect suRect_Combatant = CellRect.Empty;
+		/// <summary>
+		///     Super rect containing all none sighter things casting from the prev cycle.
+		/// </summary>
+		private CellRect suRectPrev_Combatant = CellRect.Empty;
+		/// <summary>
+		///     Ticks until update.
 		/// </summary>
 		private int ticksUntilUpdate;
 		/// <summary>
@@ -98,14 +98,14 @@ namespace CombatAI
 			get => numsByFaction.Count;
 		}
 		/// <summary>
-		/// CellRect containing all combatant pawns.
+		///     CellRect containing all combatant pawns.
 		/// </summary>
 		public CellRect SuRect_Combatant
 		{
 			get => suRectPrev_Combatant;
 		}
 		/// <summary>
-		/// Avg position of combatant pawns.
+		///     Avg position of combatant pawns.
 		/// </summary>
 		public IntVec3 SuCentroid
 		{
@@ -356,20 +356,20 @@ namespace CombatAI
 				item.ai.OnScanStarted();
 				item.spottings.Clear();
 			}
-			if (scanForEnemies || (item.sighter == null && item.CctvTop == null))
+			if (scanForEnemies || item.sighter == null && item.CctvTop == null)
 			{
-				suRect_Combatant.minX = Maths.Min(suRect_Combatant.minX, pos.x);
-				suRect_Combatant.maxX = Maths.Max(suRect_Combatant.maxX, pos.x);
-				suRect_Combatant.minZ = Maths.Min(suRect_Combatant.minZ, pos.z);
-				suRect_Combatant.maxZ = Maths.Max(suRect_Combatant.maxZ, pos.z);
-				ops += 1;
-				suCentroid += pos;
+				suRect_Combatant.minX =  Maths.Min(suRect_Combatant.minX, pos.x);
+				suRect_Combatant.maxX =  Maths.Max(suRect_Combatant.maxX, pos.x);
+				suRect_Combatant.minZ =  Maths.Min(suRect_Combatant.minZ, pos.z);
+				suRect_Combatant.maxZ =  Maths.Max(suRect_Combatant.maxZ, pos.z);
+				ops                   += 1;
+				suCentroid            += pos;
 			}
-			ISightRadius sightRadius = item.cachedSightRadius;			
+			ISightRadius sightRadius = item.cachedSightRadius;
 			Action action = () =>
 			{
 				if (playerAlliance && sightRadius.fog > 0)
-				{					
+				{
 					gridFog.Next();
 					gridFog.Set(origin, 1.0f);
 					for (int i = 0; i < item.path.Count; i++)
@@ -378,7 +378,7 @@ namespace CombatAI
 					}
 				}
 				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
-				grid_regions.Next( GetFlags(item), item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
+				grid_regions.Next(GetFlags(item), item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
 				float r_fade     = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
 				float d_fade     = sightRadius.fog - r_fade;
 				float rSqr_sight = Maths.Sqr(sightRadius.sight);
