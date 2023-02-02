@@ -10,7 +10,7 @@ namespace CombatAI
 		public CCTVTopAnimator()
 		{
 		}
-		
+
 		public CCTVTopAnimator(ThingComp_CCTVTop comp)
 		{
 			this.comp = comp;
@@ -21,9 +21,9 @@ namespace CombatAI
 			get;
 			set;
 		}
+		public abstract void ExposeData();
 
 		public abstract void Tick();
-		public abstract void ExposeData();
 
 		public virtual IEnumerable<Gizmo> GetGizmos()
 		{

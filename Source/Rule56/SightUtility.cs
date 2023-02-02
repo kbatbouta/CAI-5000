@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using CombatAI.Comps;
 using RimWorld;
 using UnityEngine;
@@ -20,7 +19,7 @@ namespace CombatAI
 				result = GetSightRadius_Sighter(sighter);
 				Faction f = thing.Faction;
 
-				if ((f != null && (f.IsPlayerSafe() || (!f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies))))
+				if (f != null && (f.IsPlayerSafe() || !f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies))
 				{
 					result.fog = Maths.Max(Mathf.CeilToInt(GetFogRadius(thing, result.sight) * Finder.Settings.FogOfWar_RangeMultiplier), 3);
 				}
@@ -30,7 +29,7 @@ namespace CombatAI
 				result = GetSightRadius_Pawn(pawn);
 				Faction f = thing.Faction;
 
-				if (f != null && (f.IsPlayerSafe() || (!f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies)))
+				if (f != null && (f.IsPlayerSafe() || !f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies))
 				{
 					if (pawn.RaceProps.Animal)
 					{
@@ -49,11 +48,11 @@ namespace CombatAI
 			else if (thing is Building_Turret turret)
 			{
 				result = GetSightRadius_Turret(turret);
-				if (Finder.Settings.FogOfWar_Turrets || (turret.GetComp_Fast<CompMannable>() is CompMannable mannable && mannable.MannedNow))
+				if (Finder.Settings.FogOfWar_Turrets || turret.GetComp_Fast<CompMannable>() is CompMannable mannable && mannable.MannedNow)
 				{
 					Faction f = thing.Faction;
 
-					if (f != null && (f.IsPlayerSafe() || (!f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies)))
+					if (f != null && (f.IsPlayerSafe() || !f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies))
 					{
 						result.fog = Maths.Max(Mathf.CeilToInt(GetFogRadius(thing, result.sight) * Finder.Settings.FogOfWar_RangeMultiplier), 3);
 					}
@@ -63,7 +62,7 @@ namespace CombatAI
 			{
 				throw new Exception($"ISMA: GetSightRadius got an object that is niether a pawn, turret nor does it have sighter. {thing}");
 			}
-			finalize:
+		finalize:
 			result.createdAt = GenTicks.TicksGame;
 			return result;
 		}

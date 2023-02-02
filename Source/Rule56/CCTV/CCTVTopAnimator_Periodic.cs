@@ -5,8 +5,8 @@ namespace CombatAI
 {
 	public class CCTVTopAnimator_Periodic : CCTVTopAnimator
 	{
-		private float rot;
 		private bool  idleTurnClockwise;
+		private float rot;
 		private int   ticksUntilIdleTurn;
 
 		public CCTVTopAnimator_Periodic(ThingComp_CCTVTop comp) : base(comp)
@@ -48,7 +48,7 @@ namespace CombatAI
 		}
 		public override void ExposeData()
 		{
-			Scribe_Values.Look(ref rot, "rot", 0);
+			Scribe_Values.Look(ref rot, "rot");
 		}
 	}
 }

@@ -52,14 +52,14 @@ namespace CombatAI
 				return null;
 			}
 			Pawn_CustomDutyTracker.CustomPawnDuty custom = new Pawn_CustomDutyTracker.CustomPawnDuty();
-			custom.duty = new PawnDuty(DutyDefOf.Defend, dest, switchAssaultRadius);
-			custom.duty.locomotion = LocomotionUrgency.Sprint;
-			custom.dest = dest;			
+			custom.duty                 = new PawnDuty(DutyDefOf.Defend, dest, switchAssaultRadius);
+			custom.duty.locomotion      = LocomotionUrgency.Sprint;
+			custom.dest                 = dest;
 			custom.endOnDistanceToFocus = switchAssaultRadius;
-			custom.expireAfter = expireAfter;
-			custom.startAfter = startAfter;			
+			custom.expireAfter          = expireAfter;
+			custom.startAfter           = startAfter;
 			custom.failOnFocusDestroyed = false;
-			custom.failOnFocusDeath = false;
+			custom.failOnFocusDeath     = false;
 			return custom;
 		}
 	}

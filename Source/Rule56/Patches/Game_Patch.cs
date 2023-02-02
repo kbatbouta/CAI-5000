@@ -4,7 +4,9 @@ namespace CombatAI.Patches
 {
 	public static class Game_Patch
 	{
+#pragma warning disable CS0612
 		[HarmonyPatch(typeof(Game), nameof(Game.DeinitAndRemoveMap))]
+#pragma warning restore CS0612
 		private static class Game_DeinitAndRemoveMap_Patch
 		{
 			public static void Prefix(Map map)

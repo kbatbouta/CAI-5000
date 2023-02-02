@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Security.Policy;
-
 namespace CombatAI
 {
-	public struct Tuple<A1, A2> : IEquatable<Tuple<A1, A2>>		
+	public struct Tuple<A1, A2> : IEquatable<Tuple<A1, A2>>
 	{
 		public A1 val1;
-		public A2 val2;		
-		
+		public A2 val2;
+
 		public Tuple(A1 val1, A2 val2)
 		{
 			this.val1 = val1;
@@ -17,13 +15,13 @@ namespace CombatAI
 
 		public Tuple(Tuple<A1, A2> other)
 		{
-			this.val1 = other.val1;
-			this.val2 = other.val2;
+			val1 = other.val1;
+			val2 = other.val2;
 		}
 
 		public override bool Equals(object obj)
-		{			
-			return obj is Tuple<A1, A2> other && this.Equals(other);
+		{
+			return obj is Tuple<A1, A2> other && Equals(other);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -46,11 +44,11 @@ namespace CombatAI
 
 		public override string ToString()
 		{
-			return $"({this.val1.ToString()}, {this.val2.ToString()})";
+			return $"({val1.ToString()}, {val2.ToString()})";
 		}
 	}
 
-	public struct Tuple<A1, A2, A3> : IEquatable<Tuple<A1, A2, A3>>	
+	public struct Tuple<A1, A2, A3> : IEquatable<Tuple<A1, A2, A3>>
 	{
 		public A1 val1;
 		public A2 val2;
@@ -65,14 +63,14 @@ namespace CombatAI
 
 		public Tuple(Tuple<A1, A2, A3> other)
 		{
-			this.val1 = other.val1;
-			this.val2 = other.val2;
-			this.val3 = other.val3;
+			val1 = other.val1;
+			val2 = other.val2;
+			val3 = other.val3;
 		}
 
 		public override bool Equals(object obj)
 		{
-			return obj is Tuple<A1, A2, A3> other && this.Equals(other);
+			return obj is Tuple<A1, A2, A3> other && Equals(other);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,11 +94,11 @@ namespace CombatAI
 
 		public override string ToString()
 		{
-			return $"({this.val1.ToString()}, {this.val2.ToString()}, {this.val3.ToString()})";
+			return $"({val1.ToString()}, {val2.ToString()}, {val3.ToString()})";
 		}
 	}
 
-	public struct Tuple<A1, A2, A3, A4> : IEquatable<Tuple<A1, A2, A3, A4>>	
+	public struct Tuple<A1, A2, A3, A4> : IEquatable<Tuple<A1, A2, A3, A4>>
 	{
 		public A1 val1;
 		public A2 val2;
@@ -117,15 +115,15 @@ namespace CombatAI
 
 		public Tuple(Tuple<A1, A2, A3, A4> other)
 		{
-			this.val1 = other.val1;
-			this.val2 = other.val2;
-			this.val3 = other.val3;
-			this.val4 = other.val4;
+			val1 = other.val1;
+			val2 = other.val2;
+			val3 = other.val3;
+			val4 = other.val4;
 		}
 
 		public override bool Equals(object obj)
 		{
-			return obj is Tuple<A1, A2, A3, A4> other && this.Equals(other);
+			return obj is Tuple<A1, A2, A3, A4> other && Equals(other);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -150,7 +148,7 @@ namespace CombatAI
 
 		public override string ToString()
 		{
-			return $"({this.val1.ToString()}, {this.val2.ToString()}, {this.val3.ToString()}, {this.val4.ToString()})";
+			return $"({val1.ToString()}, {val2.ToString()}, {val3.ToString()}, {val4.ToString()})";
 		}
 	}
 
@@ -173,16 +171,16 @@ namespace CombatAI
 
 		public Tuple(Tuple<A1, A2, A3, A4, A5> other)
 		{
-			this.val1 = other.val1;
-			this.val2 = other.val2;
-			this.val3 = other.val3;
-			this.val4 = other.val4;
-			this.val5 = other.val5;
+			val1 = other.val1;
+			val2 = other.val2;
+			val3 = other.val3;
+			val4 = other.val4;
+			val5 = other.val5;
 		}
 
 		public override bool Equals(object obj)
 		{
-			return obj is Tuple<A1, A2, A3, A4, A5> other && this.Equals(other);
+			return obj is Tuple<A1, A2, A3, A4, A5> other && Equals(other);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -208,8 +206,7 @@ namespace CombatAI
 
 		public override string ToString()
 		{
-			return $"({this.val1.ToString()}, {this.val2.ToString()}, {this.val3.ToString()}, {this.val4.ToString()}, {this.val5.ToString()})";
+			return $"({val1.ToString()}, {val2.ToString()}, {val3.ToString()}, {val4.ToString()}, {val5.ToString()})";
 		}
 	}
 }
-

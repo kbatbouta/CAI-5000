@@ -1,9 +1,7 @@
-﻿using CombatAI.R;
-using RimWorld;
+﻿using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using Verse.Noise;
 using static CombatAI.AvoidanceTracker;
 using static CombatAI.SightTracker;
 
@@ -32,31 +30,31 @@ namespace CombatAI
 			{
 				return IntVec3.Invalid;
 			}
-			Tuple<int, int, IntVec3> key = new Tuple<int, int, IntVec3>()
+			Tuple<int, int, IntVec3> key = new Tuple<int, int, IntVec3>
 			{
-				val1	= pawn.thingIDNumber,
-				val2	= pawn.mindState.duty.def.index,
-				val3	= pawn.mindState.duty.focus.Cell
+				val1 = pawn.thingIDNumber,
+				val2 = pawn.mindState.duty.def.index,
+				val3 = pawn.mindState.duty.focus.Cell
 			};
 			if (!TKVCache<Tuple<int, int, IntVec3>, PawnDuty, IntVec3>.TryGet(key, out IntVec3 dutyDest, 600))
 			{
-				dutyDest = IntVec3.Invalid;				
+				dutyDest = IntVec3.Invalid;
 				if (pawn.mindState.duty.focus.Cell.DistanceToSquared(pawn.Position) > Maths.Sqr(Maths.Max(pawn.mindState.duty.radius, 10)))
-				{					
+				{
 					PawnPath path = pawn.Map.pathFinder.FindPath(pawn.Position, pawn.mindState.duty.focus.Cell, pawn);
 					if (path != null && path.nodes.Count > 0)
 					{
-						maxDistFromPawn = Mathf.Clamp(maxDistFromPawn, 5f, 64f);						
-						int i = path.nodes.Count - 1;
-						float maxDistSqr = Maths.Sqr(maxDistFromPawn);
-						IntVec3 pawnPos = pawn.Position;
+						maxDistFromPawn = Mathf.Clamp(maxDistFromPawn, 5f, 64f);
+						int     i          = path.nodes.Count - 1;
+						float   maxDistSqr = Maths.Sqr(maxDistFromPawn);
+						IntVec3 pawnPos    = pawn.Position;
 						while (i >= 0 && path.nodes[i].DistanceToSquared(pawnPos) < maxDistSqr)
-						{							
+						{
 							i--;
 						}
-						dutyDest = path.nodes[Maths.Max(i, 0)];					
-						path.ReleaseToPool();						
-					}				
+						dutyDest = path.nodes[Maths.Max(i, 0)];
+						path.ReleaseToPool();
+					}
 				}
 				TKVCache<Tuple<int, int, IntVec3>, PawnDuty, IntVec3>.Put(key, dutyDest);
 			}

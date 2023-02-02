@@ -1,4 +1,3 @@
-using System;
 using RimWorld.Planet;
 using Verse;
 namespace CombatAI
