@@ -12,19 +12,23 @@ namespace CombatAI
 		public static void Flood(IntVec3 root, IntVec3 target, Map map, Func<Region, int, bool> action, Func<Region, bool> validator = null, Func<Region, float> cost = null, TraverseParms? traverseParms = null, int minRegions = 0, int maxRegions = 9999, float maxDist = 9999f, bool depthCost = true)
 		{
 			Region rootRegion = root.GetRegion(map);
-			if (rootRegion == null || (validator != null && !validator(rootRegion)))
+			if (rootRegion == null || validator != null && !validator(rootRegion))
 			{
 				return;
 			}
 			Func<Region, bool> traverseValidator = GetTraverseValidator(traverseParms);
 			int                num               = 1;
 			queue.Clear();
-			queue.Enqueue(new Node(){ region = rootRegion, score = Maths.Sqrt_Fast(target.DistanceToSquared(rootRegion.extentsClose.TopRight), 3)});
+			queue.Enqueue(new Node
+			{
+				region = rootRegion,
+				score  = Maths.Sqrt_Fast(target.DistanceToSquared(rootRegion.extentsClose.TopRight), 3)
+			});
 			flooded.Clear();
 			flooded.Add(rootRegion.id);
 			while (!queue.IsEmpty && (num < minRegions || num <= maxRegions))
 			{
-				Node   node   = queue.Dequeue();
+				Node   node    = queue.Dequeue();
 				Region current = node.region;
 				if (action(current, Mathf.CeilToInt(node.score / 12f)))
 				{
@@ -46,11 +50,11 @@ namespace CombatAI
 								float distToTarget = Maths.Sqrt_Fast(target.DistanceToSquared(next.extentsClose.TopRight), 3);
 								if (distToTarget < maxDist)
 								{
-									queue.Enqueue(new Node()
+									queue.Enqueue(new Node
 									{
 										region = next,
-										score  = distToTarget + (!depthCost ? 0 : ((node.depth + 1) * 12)) + (cost?.Invoke(next) ?? 0),
-										depth  = node.depth + 1,
+										score  = distToTarget + (!depthCost ? 0 : (node.depth + 1) * 12) + (cost?.Invoke(next) ?? 0),
+										depth  = node.depth + 1
 									});
 								}
 							}
@@ -64,7 +68,7 @@ namespace CombatAI
 
 		private static Func<Region, bool> GetTraverseValidator(TraverseParms? traverseParms)
 		{
-			if ( traverseParms != null)
+			if (traverseParms != null)
 			{
 				TraverseParms            traverse = traverseParms.Value;
 				Pawn                     pawn     = traverse.pawn;
@@ -73,7 +77,7 @@ namespace CombatAI
 				{
 					pawn.TryGetSightReader(out sight);
 				}
-				return (region) =>
+				return region =>
 				{
 					if (!traverse.canBashDoors && region.IsDoorway)
 					{

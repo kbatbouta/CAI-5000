@@ -1,30 +1,26 @@
-using System;
-using Verse;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using RimWorld;
+using Verse;
 namespace CombatAI
 {
 	public class ITRegionGrid
 	{
-		private readonly Map                           map;
-		private readonly CellIndices                   cellIndices;
+		private readonly CellIndices cellIndices;
+		private readonly int[]       cells_ids;
+		private readonly Map         map;
+
+		private readonly int                           NumGridCells;
 		private readonly IFieldInfo[]                  regions;
-		private readonly IField<UInt64>[]              regions_flags;
-		private readonly IField<MetaCombatAttribute>[] regions_meta;
 		private readonly IField<float>[]               regions_blunt;
+		private readonly IField<ulong>[]               regions_flags;
+		private readonly IField<MetaCombatAttribute>[] regions_meta;
 		private readonly IField<float>[]               regions_sharp;
-		private readonly int[]                         cells_ids;
-		
-		private readonly int   NumGridCells;
-		private         short r_sig = 19;
-		
+
 		private float               curBlunt;
-		private float               curSharp;
-		private UInt64              curFlag;
+		private ulong               curFlag;
 		private MetaCombatAttribute curMeta;
+		private float               curSharp;
+		private short               r_sig = 19;
 
 		public ITRegionGrid(Map map)
 		{
@@ -33,7 +29,7 @@ namespace CombatAI
 			NumGridCells  = cellIndices.NumGridCells;
 			cells_ids     = new int[NumGridCells];
 			regions       = new IFieldInfo[short.MaxValue];
-			regions_flags = new IField<UInt64>[short.MaxValue];
+			regions_flags = new IField<ulong>[short.MaxValue];
 			regions_meta  = new IField<MetaCombatAttribute>[short.MaxValue];
 			regions_blunt = new IField<float>[short.MaxValue];
 			regions_sharp = new IField<float>[short.MaxValue];
@@ -42,7 +38,7 @@ namespace CombatAI
 				cells_ids[i] = -1;
 			}
 		}
-		
+
 		public short CycleNum
 		{
 			get;
@@ -50,7 +46,7 @@ namespace CombatAI
 		} = 19;
 
 		/// <summary>
-		/// Set region by id.
+		///     Set region by id.
 		/// </summary>
 		/// <param name="cell">Cell</param>
 		public void Set(IntVec3 cell)
@@ -58,7 +54,7 @@ namespace CombatAI
 			Set(cellIndices.CellToIndex(cell));
 		}
 		/// <summary>
-		/// Set region by id.
+		///     Set region by id.
 		/// </summary>
 		/// <param name="index">Cell index.</param>
 		public void Set(int index)
@@ -105,7 +101,7 @@ namespace CombatAI
 			}
 		}
 		/// <summary>
-		/// Update the region id grids.
+		///     Update the region id grids.
 		/// </summary>
 		/// <param name="cell">Cell</param>
 		/// <param name="region">Region</param>
@@ -114,7 +110,7 @@ namespace CombatAI
 			SetRegionAt(cellIndices.CellToIndex(cell), region);
 		}
 		/// <summary>
-		/// Update the region id grids.
+		///     Update the region id grids.
 		/// </summary>
 		/// <param name="index">Cell index</param>
 		/// <param name="region">region</param>
@@ -127,7 +123,7 @@ namespace CombatAI
 		}
 
 		/// <summary>
-		/// Returns number of sources who can view a region.
+		///     Returns number of sources who can view a region.
 		/// </summary>
 		/// <param name="region">Region.</param>
 		/// <returns>Number of sources.</returns>
@@ -140,7 +136,7 @@ namespace CombatAI
 			return 0;
 		}
 		/// <summary>
-		/// Returns number of sources who can view a region.
+		///     Returns number of sources who can view a region.
 		/// </summary>
 		/// <param name="id">Region id.</param>
 		/// <returns>Number of sources.</returns>
@@ -162,7 +158,7 @@ namespace CombatAI
 			return 0;
 		}
 		/// <summary>
-		/// Returns avg sharp at a region.
+		///     Returns avg sharp at a region.
 		/// </summary>
 		/// <param name="region">Region.</param>
 		/// <returns>Sharp</returns>
@@ -175,7 +171,7 @@ namespace CombatAI
 			return 0;
 		}
 		/// <summary>
-		/// Returns avg sharp at a region.
+		///     Returns avg sharp at a region.
 		/// </summary>
 		/// <param name="id">Region id</param>
 		/// <returns>Sharp</returns>
@@ -198,7 +194,7 @@ namespace CombatAI
 			return 0;
 		}
 		/// <summary>
-		/// Returns avg blunt at a region.
+		///     Returns avg blunt at a region.
 		/// </summary>
 		/// <param name="region">Region.</param>
 		/// <returns>Blunt</returns>
@@ -211,7 +207,7 @@ namespace CombatAI
 			return 0;
 		}
 		/// <summary>
-		/// Returns avg blunt at a region.
+		///     Returns avg blunt at a region.
 		/// </summary>
 		/// <param name="id">Region id</param>
 		/// <returns>Blunt</returns>
@@ -234,7 +230,7 @@ namespace CombatAI
 			return 0;
 		}
 		/// <summary>
-		/// Return region meta combat attributes.
+		///     Return region meta combat attributes.
 		/// </summary>
 		/// <param name="region">Region</param>
 		/// <returns>Meta combat attribute</returns>
@@ -247,7 +243,7 @@ namespace CombatAI
 			return 0;
 		}
 		/// <summary>
-		/// Return region meta combat attributes.
+		///     Return region meta combat attributes.
 		/// </summary>
 		/// <param name="id">Region id</param>
 		/// <returns>Meta combat attribute</returns>
@@ -255,7 +251,7 @@ namespace CombatAI
 		{
 			if (id != -1)
 			{
-				IFieldInfo    cell  = regions[id];
+				IFieldInfo cell = regions[id];
 				switch (CycleNum - cell.cycle)
 				{
 					case 0:
@@ -270,11 +266,11 @@ namespace CombatAI
 			return 0;
 		}
 		/// <summary>
-		/// Return region flags.
+		///     Return region flags.
 		/// </summary>
 		/// <param name="region">Region</param>
 		/// <returns>Region flags.</returns>
-		public UInt64 GetFlagsAt(Region region)
+		public ulong GetFlagsAt(Region region)
 		{
 			if (region != null)
 			{
@@ -283,11 +279,11 @@ namespace CombatAI
 			return 0;
 		}
 		/// <summary>
-		/// Return region flags.
+		///     Return region flags.
 		/// </summary>
 		/// <param name="id">Region id</param>
 		/// <returns>Region flags.</returns>
-		public UInt64 GetFlagsAt(int id)
+		public ulong GetFlagsAt(int id)
 		{
 			if (id != -1)
 			{
@@ -306,7 +302,7 @@ namespace CombatAI
 			return 0;
 		}
 		/// <summary>
-		/// Returns region id for cell.
+		///     Returns region id for cell.
 		/// </summary>
 		/// <param name="cell">Cell.</param>
 		/// <returns>Region id</returns>
@@ -315,7 +311,7 @@ namespace CombatAI
 			return GetRegionId(cellIndices.CellToIndex(cell));
 		}
 		/// <summary>
-		/// Returns region id for cell index.
+		///     Returns region id for cell index.
 		/// </summary>
 		/// <param name="index">Cell index.</param>
 		/// <returns>Region id</returns>
@@ -327,11 +323,11 @@ namespace CombatAI
 			}
 			return -1;
 		}
-		
+
 		/// <summary>
-		///		TODO
+		///     TODO
 		/// </summary>
-		public void Next(UInt64 flag, float sharp, float blunt, MetaCombatAttribute meta)
+		public void Next(ulong flag, float sharp, float blunt, MetaCombatAttribute meta)
 		{
 			if (r_sig++ == short.MaxValue)
 			{
@@ -357,7 +353,7 @@ namespace CombatAI
 				CycleNum = 13;
 			}
 		}
-		
+
 		private struct IField<T> where T : struct
 		{
 			public T value;

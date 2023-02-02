@@ -20,7 +20,7 @@ namespace CombatAI.Patches
 		private static Map                              map;
 		private static bool                             skipped;
 		private static IntVec3                          targetPosition;
-		private static IntVec3							dutyDest;
+		private static IntVec3                          dutyDest;
 		private static float                            warmupTime;
 		private static float                            range;
 		private static CastPositionRequest              request;
@@ -62,7 +62,7 @@ namespace CombatAI.Patches
 						map              = pawn.Map;
 						avoidanceTracker = pawn.Map.GetComp_Fast<AvoidanceTracker>();
 						avoidanceTracker.TryGetReader(pawn, out avoidanceReader);
-						dutyDest = pawn.TryGetNextDutyDest(request.maxRangeFromCaster);						
+						dutyDest = pawn.TryGetNextDutyDest(request.maxRangeFromCaster);
 						if (avoidanceReader != null)
 						{
 							grid = map.GetFloatGrid();
@@ -146,36 +146,36 @@ namespace CombatAI.Patches
 					float   rootVis    = sightReader.GetVisibilityToEnemies(root);
 					float   rootThreat = sightReader.GetThreat(request.locus);
 
-					float	rootDutyDestDist = dutyDest.IsValid ? dutyDest.DistanceTo(pawn.Position) : -1;
+					float rootDutyDestDist = dutyDest.IsValid ? dutyDest.DistanceTo(pawn.Position) : -1;
 					map.GetCellFlooder().Flood(root,
-						node =>
-						{
-							float val = (node.dist - node.distAbs) / (node.distAbs + 1f) + (sightReader.GetVisibilityToEnemies(node.cell) - rootVis) * 0.25f + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;
-							if (rootDutyDestDist > 0)
-							{
-								val += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -2f, 2f);
-							}
-							grid[node.cell] = val;
-						},
-						cell =>
-						{
-							//Vector2 dir = sightReader.GetEnemyDirection(cell);
-							//IntVec3 adjustedLoc;
-							//if (dir.sqrMagnitude < 4)
-							//{
-							//    adjustedLoc = targetPosition;
-							//}
-							//else
-							//{
-							//    adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);  
-							//}
-							return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
-						},
-						cell =>
-						{
-							return rect.Contains(cell) && cell.WalkableBy(map, pawn) && map.reservationManager.CanReserve(pawn, cell);
-						}
-						, Maths.Max(rect.Height, rect.Width) * 2);
+					                           node =>
+					                           {
+						                           float val = (node.dist - node.distAbs) / (node.distAbs + 1f) + (sightReader.GetVisibilityToEnemies(node.cell) - rootVis) * 0.25f + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;
+						                           if (rootDutyDestDist > 0)
+						                           {
+							                           val += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -2f, 2f);
+						                           }
+						                           grid[node.cell] = val;
+					                           },
+					                           cell =>
+					                           {
+						                           //Vector2 dir = sightReader.GetEnemyDirection(cell);
+						                           //IntVec3 adjustedLoc;
+						                           //if (dir.sqrMagnitude < 4)
+						                           //{
+						                           //    adjustedLoc = targetPosition;
+						                           //}
+						                           //else
+						                           //{
+						                           //    adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);  
+						                           //}
+						                           return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
+					                           },
+					                           cell =>
+					                           {
+						                           return rect.Contains(cell) && cell.WalkableBy(map, pawn) && map.reservationManager.CanReserve(pawn, cell);
+					                           }
+					                           , Maths.Max(rect.Height, rect.Width) * 2);
 				}
 			}
 		}

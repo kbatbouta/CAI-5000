@@ -8,11 +8,11 @@ namespace CombatAI
 	public class CCTVTopAnimator_Controlled : CCTVTopAnimator_Periodic
 	{
 		private bool paused;
-		
+
 		public CCTVTopAnimator_Controlled(ThingComp_CCTVTop comp) : base(comp)
 		{
 		}
-		
+
 		public override void Tick()
 		{
 			if (!paused)
@@ -32,16 +32,16 @@ namespace CombatAI
 			{
 				return paused;
 			};
-			toggle.icon  = TexCommand.PauseCaravan;
-			toggle.defaultLabel = R.Keyed.CombatAI_Animator_Controller;
-			toggle.defaultDesc = R.Keyed.CombatAI_Animator_Controller_Description;
+			toggle.icon         = TexCommand.PauseCaravan;
+			toggle.defaultLabel = Keyed.CombatAI_Animator_Controller;
+			toggle.defaultDesc  = Keyed.CombatAI_Animator_Controller_Description;
 			yield return toggle;
 		}
 
 		public override void ExposeData()
 		{
 			base.ExposeData();
-			Scribe_Values.Look(ref paused, "paused", false);
+			Scribe_Values.Look(ref paused, "paused");
 		}
 	}
 }

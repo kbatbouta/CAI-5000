@@ -22,15 +22,28 @@ namespace CombatAI
 		 * 
 		 */
 
-		public bool  Debug;
-		public bool  Debug_DebugDumpData               = false;
-		public bool  Debug_DebugThingsTracker          = false;
-		public bool  Debug_DrawAvoidanceGrid_Danger    = false;
-		public bool  Debug_DrawAvoidanceGrid_Proximity = false;
-		public bool  Debug_DrawShadowCasts;
-		public bool  Debug_DrawShadowCastsVectors = false;
-		public bool  Debug_DrawThreatCasts        = false;
-		public bool  Debug_ValidateSight;		
+		public bool Debug;
+		public bool Debug_DebugDumpData               = false;
+		public bool Debug_DebugThingsTracker          = false;
+		public bool Debug_DrawAvoidanceGrid_Danger    = false;
+		public bool Debug_DrawAvoidanceGrid_Proximity = false;
+		public bool Debug_DrawShadowCasts;
+		public bool Debug_DrawShadowCastsVectors = false;
+		public bool Debug_DrawThreatCasts        = false;
+		public bool Debug_ValidateSight;
+		public bool Enable_Groups = true;
+
+		public bool Enable_Sprinting          = true;
+		public bool Flank_Enabled             = true;
+		public bool FogOfWar_Allies           = true;
+		public bool FogOfWar_Animals          = true;
+		public bool FogOfWar_AnimalsSmartOnly = true;
+
+		public bool  FogOfWar_Enabled;
+		public float FogOfWar_FogColor            = 0.35f;
+		public float FogOfWar_RangeFadeMultiplier = 0.5f;
+		public float FogOfWar_RangeMultiplier     = 1.0f;
+		public bool  FogOfWar_Turrets             = true;
 
 		/*                 
 		 * -- * -- * -- * -- * -- * -- * -- * -- * --
@@ -47,23 +60,10 @@ namespace CombatAI
 		public bool  Pather_Enabled         = true;
 		public bool  Pather_KillboxKiller   = true;
 		public float Pathfinding_DestWeight = 0.85f;
+		public float Pathfinding_SappingMul = 1.0f;
+		public bool  PerformanceOpt_Enabled = true;
 		public bool  React_Enabled          = true;
 		public bool  Retreat_Enabled        = true;
-		public bool  Flank_Enabled			= true;
-		public bool  PerformanceOpt_Enabled = true;
-		public float Pathfinding_SappingMul = 1.0f;
-
-		public bool Enable_Sprinting	= true;
-		public bool Enable_Groups		= true;
-
-		public bool FogOfWar_Enabled;
-		public float FogOfWar_FogColor				= 0.35f;
-		public float FogOfWar_RangeFadeMultiplier	= 0.5f;
-		public float FogOfWar_RangeMultiplier		= 1.0f;		
-		public bool FogOfWar_Turrets				= true;
-		public bool FogOfWar_Animals				= true;
-		public bool FogOfWar_AnimalsSmartOnly					= true;
-		public bool FogOfWar_Allies					= true;
 
 
 		public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(3, 5, 16);
@@ -130,7 +130,7 @@ namespace CombatAI
 			Scribe_Values.Look(ref FogOfWar_Turrets, "FogOfWar_Turrets", true);
 			Scribe_Values.Look(ref FogOfWar_Animals, "FogOfWar_Animals", true);
 			Scribe_Values.Look(ref FogOfWar_AnimalsSmartOnly, "FogOfWar_AnimalsSmartOnly", true);
-			Scribe_Values.Look(ref FogOfWar_Allies, "FogOfWar_Allies", true);			
+			Scribe_Values.Look(ref FogOfWar_Allies, "FogOfWar_Allies", true);
 			Scribe_Values.Look(ref Pathfinding_SappingMul, "Pathfinding_SappingMul", 1.0f);
 
 			//ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
