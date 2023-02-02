@@ -6,8 +6,7 @@
     <CombatAI.Open>Open</CombatAI.Open>
     <CombatAI.Hide>Hide</CombatAI.Hide>
     <CombatAI.Expand>Hide</CombatAI.Expand>
-    <CombatAI.PlaceWorker.WallMounted>Needs to be mounted to a wall or a solid structure.
-    </CombatAI.PlaceWorker.WallMounted>
+    <CombatAI.PlaceWorker.WallMounted>Needs to be mounted to a wall or a solid structure.</CombatAI.PlaceWorker.WallMounted>
     <CombatAI.Preparing>Preparing Combat AI</CombatAI.Preparing>
     <CombatAI.Animator.Controller>Hold</CombatAI.Animator.Controller>
     <CombatAI.Animator.Controller.Description>Hold at the current angle.</CombatAI.Animator.Controller.Description>
@@ -18,49 +17,30 @@
     <CombatAI.Settings.Basic.Presets.Hard>Hard/Complex</CombatAI.Settings.Basic.Presets.Hard>
     <CombatAI.Settings.Basic.Presets.Deathwish>Deathwish</CombatAI.Settings.Basic.Presets.Deathwish>
     <CombatAI.Settings.Basic.Presets.Applied>Applied preset:</CombatAI.Settings.Basic.Presets.Applied>
-    <CombatAI.Settings.Basic.Presets.Description>Performance presets will determine the complexity of AI calculations
-        and their interval. More complex calculations means harder AI but lower performance. Default is normal.
-    </CombatAI.Settings.Basic.Presets.Description>
+    <CombatAI.Settings.Basic.Presets.Description>Performance presets will determine the complexity of AI calculations and their interval. More complex calculations means harder AI but lower performance. Default is normal.</CombatAI.Settings.Basic.Presets.Description>
     <CombatAI.Settings.Basic.Sprinting>Enable sprinting</CombatAI.Settings.Basic.Sprinting>
-    <CombatAI.Settings.Basic.Sprinting.Description>If this is disabled: Pathetic F F...\n if not: Chad :thumbsup
-    </CombatAI.Settings.Basic.Sprinting.Description>
+    <CombatAI.Settings.Basic.Sprinting.Description>If this is disabled: Pathetic F F...\n if not: Chad :thumbsup</CombatAI.Settings.Basic.Sprinting.Description>
     <CombatAI.Settings.Basic.Groups>Enable tactical groups</CombatAI.Settings.Basic.Groups>
-    <CombatAI.Settings.Basic.Groups.Description>Raiders will be divided into tactical groups (2-10) each with their own
-        objective. Not all pawns will be assigned to groups, some will remain on the default assault duty.
-    </CombatAI.Settings.Basic.Groups.Description>
-    <CombatAI.Settings.Basic.SappingMul>Cost multiplier for pathing through walls (default is 1.0)
-    </CombatAI.Settings.Basic.SappingMul>
-    <CombatAI.Settings.Basic.SappingMul.Description>Cost multiplier for pathing through walls. Higher values means
-        raiders are less likely to path through walls.
-    </CombatAI.Settings.Basic.SappingMul.Description>
+    <CombatAI.Settings.Basic.Groups.Description>Raiders will be divided into tactical groups (2-10) each with their own objective. Not all pawns will be assigned to groups, some will remain on the default assault duty.</CombatAI.Settings.Basic.Groups.Description>
+    <CombatAI.Settings.Basic.SappingMul>Cost multiplier for pathing through walls (default is 1.0)</CombatAI.Settings.Basic.SappingMul>
+    <CombatAI.Settings.Basic.SappingMul.Description>Cost multiplier for pathing through walls. Higher values means raiders are less likely to path through walls.</CombatAI.Settings.Basic.SappingMul.Description>
     <CombatAI.Settings.Basic.FogOfWar>[BETA] Fog of war</CombatAI.Settings.Basic.FogOfWar>
     <CombatAI.Settings.Basic.FogOfWar.Enable>Enable fog of war</CombatAI.Settings.Basic.FogOfWar.Enable>
     <CombatAI.Settings.Basic.FogOfWar.Allies>Allies reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Allies>
-    <CombatAI.Settings.Basic.FogOfWar.Animals>Colony animals reveal fog of war
-    </CombatAI.Settings.Basic.FogOfWar.Animals>
-    <CombatAI.Settings.Basic.FogOfWar.Animals.SmartOnly>Only smart animals reveal fog of war
-    </CombatAI.Settings.Basic.FogOfWar.Animals.SmartOnly>
-    <CombatAI.Settings.Basic.FogOfWar.Turrets>Colony turrets reveal fog of war
-    </CombatAI.Settings.Basic.FogOfWar.Turrets>
-    <CombatAI.Settings.Basic.FogOfWar.Density>Fog density (how dark the fog of war is)
-    </CombatAI.Settings.Basic.FogOfWar.Density>
-    <CombatAI.Settings.Basic.FogOfWar.Density.Readouts>{0} Fog desnity
-    </CombatAI.Settings.Basic.FogOfWar.Density.Readouts>
-    <CombatAI.Settings.Basic.FogOfWar.RangeMul>Fog of war sight radius multiplie (default is 1.0)
-    </CombatAI.Settings.Basic.FogOfWar.RangeMul>
+    <CombatAI.Settings.Basic.FogOfWar.Animals>Colony animals reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Animals>
+    <CombatAI.Settings.Basic.FogOfWar.Animals.SmartOnly>Only smart animals reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Animals.SmartOnly>
+    <CombatAI.Settings.Basic.FogOfWar.Turrets>Colony turrets reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Turrets>
+    <CombatAI.Settings.Basic.FogOfWar.Density>Fog density (how dark the fog of war is)</CombatAI.Settings.Basic.FogOfWar.Density>
+    <CombatAI.Settings.Basic.FogOfWar.Density.Readouts>{0} Fog desnity</CombatAI.Settings.Basic.FogOfWar.Density.Readouts>
+    <CombatAI.Settings.Basic.FogOfWar.RangeMul>Fog of war sight radius multiplie (default is 1.0)</CombatAI.Settings.Basic.FogOfWar.RangeMul>
     <CombatAI.Settings.Basic.FogOfWar.RangeMul.Readouts>{0}x</CombatAI.Settings.Basic.FogOfWar.RangeMul.Readouts>
-    <CombatAI.Settings.Basic.FogOfWar.FadeMul>Fog of war sight fade radius multiplier (default is 0.5)
-    </CombatAI.Settings.Basic.FogOfWar.FadeMul>
+    <CombatAI.Settings.Basic.FogOfWar.FadeMul>Fog of war sight fade radius multiplier (default is 0.5)</CombatAI.Settings.Basic.FogOfWar.FadeMul>
     <CombatAI.Settings.Basic.FogOfWar.FadeMul.Readouts>{0}x</CombatAI.Settings.Basic.FogOfWar.FadeMul.Readouts>
     <CombatAI.Settings.Basic.KillBoxKiller>Enable The Killbox killer 5000</CombatAI.Settings.Basic.KillBoxKiller>
     <CombatAI.Settings.Basic.CELean>Enable Combat Extended lean profile</CombatAI.Settings.Basic.CELean>
     <CombatAI.Settings.Basic.PerformanceOpt>Enable Dynamic performance settings</CombatAI.Settings.Basic.PerformanceOpt>
-    <CombatAI.Settings.Basic.PerformanceOpt.Warning>WARNING: NOT having dynamic performance settings ON will result in
-        lag spikes and lose of performance!
-    </CombatAI.Settings.Basic.PerformanceOpt.Warning>
-    <CombatAI.Settings.Basic.PerformanceOpt.Description>Automatically adjust settings to maintain both a good level of
-        TPS and a good AI.
-    </CombatAI.Settings.Basic.PerformanceOpt.Description>
+    <CombatAI.Settings.Basic.PerformanceOpt.Warning>WARNING: NOT having dynamic performance settings ON will result in lag spikes and lose of performance!</CombatAI.Settings.Basic.PerformanceOpt.Warning>
+    <CombatAI.Settings.Basic.PerformanceOpt.Description>Automatically adjust settings to maintain both a good level of TPS and a good AI.</CombatAI.Settings.Basic.PerformanceOpt.Description>
     <CombatAI.Settings.Basic.Caster>Enable fire position tweaks</CombatAI.Settings.Basic.Caster>
     <CombatAI.Settings.Basic.Targeter>Enable target selection tweaks</CombatAI.Settings.Basic.Targeter>
     <CombatAI.Settings.Basic.Flanking>Enable aggressive flanking</CombatAI.Settings.Basic.Flanking>
@@ -68,40 +48,22 @@
     <CombatAI.Settings.Basic.Retreat>Enable tactical retreat</CombatAI.Settings.Basic.Retreat>
     <CombatAI.Settings.Basic.Pather>Enable pathfinding tweaks</CombatAI.Settings.Basic.Pather>
     <CombatAI.Settings.Basic.DestWeight>Pathfinding aggressiveness level</CombatAI.Settings.Basic.DestWeight>
-    <CombatAI.Settings.Basic.DestWeight.Description>Lower numbers mean pathfinding will be more aggressive at avoiding
-        enemies, flanking and minimizing risk to pawns.
-    </CombatAI.Settings.Basic.DestWeight.Description>
-    <CombatAI.Settings.Basic.DestWeight.Warning>WARNING: Lower values will cause alot of performance issues.
-    </CombatAI.Settings.Basic.DestWeight.Warning>
+    <CombatAI.Settings.Basic.DestWeight.Description>Lower numbers mean pathfinding will be more aggressive at avoiding enemies, flanking and minimizing risk to pawns.</CombatAI.Settings.Basic.DestWeight.Description>
+    <CombatAI.Settings.Basic.DestWeight.Warning>WARNING: Lower values will cause alot of performance issues.</CombatAI.Settings.Basic.DestWeight.Warning>
     <CombatAI.Settings.Debugging>Debugging</CombatAI.Settings.Debugging>
     <CombatAI.Settings.Debugging.Enable>Enable Debugging</CombatAI.Settings.Debugging.Enable>
     <CombatAI.Settings.Advance>Advance Settings</CombatAI.Settings.Advance>
-    <CombatAI.Settings.Advance.Warning>WARNING: This is only for advanced users! Don't enable this if you don't know
-        what you're doing!
-    </CombatAI.Settings.Advance.Warning>
+    <CombatAI.Settings.Advance.Warning>WARNING: This is only for advanced users! Don't enable this if you don't know what you're doing!</CombatAI.Settings.Advance.Warning>
     <CombatAI.Settings.Advance.Enable>I'm an advanced user!</CombatAI.Settings.Advance.Enable>
     <CombatAI.Settings.Advance.Sight.Performance>Performance</CombatAI.Settings.Advance.Sight.Performance>
-    <CombatAI.Settings.Advance.Sight.Performance.Description>You can adjust how many buckets pawns/turrets are divided
-        into and how often they updates. Warning: DON'T USE THIS IF YOU DON'T KNOW WHAT YOU'RE DOING
-    </CombatAI.Settings.Advance.Sight.Performance.Description>
-    <CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies>Humanlike factions
-    </CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies>
-    <CombatAI.Settings.Advance.Sight.Performance.MechsAndInsect>Mechs and insects
-    </CombatAI.Settings.Advance.Sight.Performance.MechsAndInsect>
-    <CombatAI.Settings.Advance.Sight.Performance.WildLife>Wildlife
-    </CombatAI.Settings.Advance.Sight.Performance.WildLife>
-    <CombatAI.Settings.Advance.Sight.Performance.Turrets>Map turrets
-    </CombatAI.Settings.Advance.Sight.Performance.Turrets>
-    <CombatAI.Settings.Advance.Sight.Performance.Readouts.Frequency>Update frequency {0}Hz (buckets * interval)
-    </CombatAI.Settings.Advance.Sight.Performance.Readouts.Frequency>
-    <CombatAI.Settings.Advance.Sight.Performance.Readouts.Buckets>Bucket count {0}
-    </CombatAI.Settings.Advance.Sight.Performance.Readouts.Buckets>
-    <CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval>Ticks between bucket updates {0} Ticks
-    </CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval>
-    <CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit>{0} Things maximum can obstuct line of sight
-    </CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit>
-    <CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description>The maximum number of things along line
-        of sight. This includes trees, buildings, etc. Higher values means more accurate sight model but higher
-        performance impact.
-    </CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description>
+    <CombatAI.Settings.Advance.Sight.Performance.Description>You can adjust how many buckets pawns/turrets are divided into and how often they updates. Warning: DON'T USE THIS IF YOU DON'T KNOW WHAT YOU'RE DOING</CombatAI.Settings.Advance.Sight.Performance.Description>
+    <CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies>Humanlike factions</CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies>
+    <CombatAI.Settings.Advance.Sight.Performance.MechsAndInsect>Mechs and insects</CombatAI.Settings.Advance.Sight.Performance.MechsAndInsect>
+    <CombatAI.Settings.Advance.Sight.Performance.WildLife>Wildlife</CombatAI.Settings.Advance.Sight.Performance.WildLife>
+    <CombatAI.Settings.Advance.Sight.Performance.Turrets>Map turrets</CombatAI.Settings.Advance.Sight.Performance.Turrets>
+    <CombatAI.Settings.Advance.Sight.Performance.Readouts.Frequency>Update frequency {0}Hz (buckets * interval)</CombatAI.Settings.Advance.Sight.Performance.Readouts.Frequency>
+    <CombatAI.Settings.Advance.Sight.Performance.Readouts.Buckets>Bucket count {0}</CombatAI.Settings.Advance.Sight.Performance.Readouts.Buckets>
+    <CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval>Ticks between bucket updates {0} Ticks</CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval>
+    <CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit>{0} Things maximum can obstuct line of sight</CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit>
+    <CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description>The maximum number of things along line of sight. This includes trees, buildings, etc. Higher values means more accurate sight model but higher performance impact.</CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description>
 </LanguageData>
