@@ -11,6 +11,8 @@
 		Fire       = 32,
 		Gas        = 64,
 		Explosives = 128,
-		Mortar     = 256
+		Mortar     = 256,
+		Free = 512,
+		Occupied = 1024,
 	}
 }

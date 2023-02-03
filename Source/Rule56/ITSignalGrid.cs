@@ -22,6 +22,7 @@ namespace CombatAI
 		private readonly IField<MetaCombatAttribute>[] cells_meta;
 		private readonly IField<float>[]               cells_sharp;
 		private readonly IField<float>[]               cells_strength;
+		private readonly IField<byte>[]                cells_aiming;
 
 		private readonly CellIndices indices;
 
@@ -29,6 +30,7 @@ namespace CombatAI
 		private         float               curBlunt;
 		private         MetaCombatAttribute curMeta;
 		private         float               curSharp;
+		private         byte                curAimAvailablity;
 
 
 		private short r_sig = 19;
@@ -45,6 +47,7 @@ namespace CombatAI
 			cells_blunt    = new IField<float>[NumGridCells];
 			cells_sharp    = new IField<float>[NumGridCells];
 			cells_meta     = new IField<MetaCombatAttribute>[NumGridCells];
+			cells_aiming    = new IField<byte>[NumGridCells];
 		}
 
 		public short CycleNum
@@ -73,6 +76,8 @@ namespace CombatAI
 						cells_meta[index].value     |= curMeta;
 						cells_sharp[index].value    =  Maths.Max(curSharp, cells_sharp[index].value);
 						cells_blunt[index].value    =  Maths.Max(curBlunt, cells_blunt[index].value);
+						cells_aiming[index].value   += curAimAvailablity;
+//						cells_aiming[index].value   
 					}
 					else
 					{
@@ -92,6 +97,7 @@ namespace CombatAI
 						cells_meta[index].ReSet(curMeta, expired);
 						cells_sharp[index].ReSet(curSharp, expired);
 						cells_blunt[index].ReSet(curBlunt, expired);
+						cells_aiming[index].ReSet(curAimAvailablity, expired);
 						info.cycle = CycleNum;
 					}
 					info.sig     = r_sig;
@@ -120,6 +126,7 @@ namespace CombatAI
 						cells_meta[index].value     |= metaAttributes;
 						cells_sharp[index].value    =  Maths.Max(curSharp, cells_sharp[index].value);
 						cells_blunt[index].value    =  Maths.Max(curBlunt, cells_blunt[index].value);
+						cells_aiming[index].value   += curAimAvailablity;
 					}
 					else
 					{
@@ -139,6 +146,7 @@ namespace CombatAI
 						cells_meta[index].ReSet(metaAttributes, expired);
 						cells_sharp[index].ReSet(curSharp, expired);
 						cells_blunt[index].ReSet(curBlunt, expired);
+						cells_aiming[index].ReSet(curAimAvailablity, expired);
 						info.cycle = CycleNum;
 					}
 					info.sig     = r_sig;
@@ -161,9 +169,10 @@ namespace CombatAI
 					int dc = CycleNum - info.cycle;
 					if (dc == 0)
 					{
-						cells_meta[index].value  |= metaAttributes;
-						cells_sharp[index].value =  Maths.Max(curSharp, cells_sharp[index].value);
-						cells_blunt[index].value =  Maths.Max(curBlunt, cells_blunt[index].value);
+						cells_meta[index].value   |= metaAttributes;
+						cells_sharp[index].value  =  Maths.Max(curSharp, cells_sharp[index].value);
+						cells_blunt[index].value  =  Maths.Max(curBlunt, cells_blunt[index].value);
+						cells_aiming[index].value += curAimAvailablity;
 					}
 					else
 					{
@@ -183,6 +192,7 @@ namespace CombatAI
 						cells_meta[index].ReSet(metaAttributes, expired);
 						cells_sharp[index].ReSet(curSharp, expired);
 						cells_blunt[index].ReSet(curBlunt, expired);
+						cells_aiming[index].ReSet(curAimAvailablity, expired);
 						info.cycle = CycleNum;
 					}
 					info.sig     = r_sig;
@@ -205,9 +215,10 @@ namespace CombatAI
 					int dc = CycleNum - info.cycle;
 					if (dc == 0)
 					{
-						cells_flags[index].value |= flags;
-						cells_sharp[index].value =  Maths.Max(curSharp, cells_sharp[index].value);
-						cells_blunt[index].value =  Maths.Max(curBlunt, cells_blunt[index].value);
+						cells_flags[index].value  |= flags;
+						cells_sharp[index].value  =  Maths.Max(curSharp, cells_sharp[index].value);
+						cells_blunt[index].value  =  Maths.Max(curBlunt, cells_blunt[index].value);
+						cells_aiming[index].value += curAimAvailablity;
 					}
 					else
 					{
@@ -227,6 +238,7 @@ namespace CombatAI
 						cells_meta[index].ReSet(curMeta, expired);
 						cells_sharp[index].ReSet(curSharp, expired);
 						cells_blunt[index].ReSet(curBlunt, expired);
+						cells_aiming[index].ReSet(curAimAvailablity, expired);
 						info.cycle = CycleNum;
 					}
 					info.sig     = r_sig;
@@ -256,6 +268,7 @@ namespace CombatAI
 						cells_meta[index].value     |= curMeta;
 						cells_sharp[index].value    =  Maths.Max(curSharp, cells_sharp[index].value);
 						cells_blunt[index].value    =  Maths.Max(curBlunt, cells_blunt[index].value);
+						cells_aiming[index].value   += curAimAvailablity;
 					}
 					else
 					{
@@ -275,6 +288,7 @@ namespace CombatAI
 						cells_meta[index].ReSet(curMeta, expired);
 						cells_sharp[index].ReSet(curSharp, expired);
 						cells_blunt[index].ReSet(curBlunt, expired);
+						cells_aiming[index].ReSet(curAimAvailablity, expired);
 						info.cycle = CycleNum;
 					}
 					info.sig     = r_sig;
@@ -466,6 +480,28 @@ namespace CombatAI
 			return 0;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int GetAvailability(IntVec3 cell)
+		{
+			return GetAvailability(indices.CellToIndex(cell));
+		}
+		public int GetAvailability(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				IFieldInfo cell = cells[index];
+				switch (CycleNum - cell.cycle)
+				{
+					case 0:
+						IField<byte> availability = cells_aiming[index];
+						return Maths.Max(availability.value, availability.valuePrev);
+					case 1:
+						return cells_aiming[index].value;
+				}
+			}
+			return 0;
+		}
+
 		public Vector2 GetSignalDirectionAt(IntVec3 cell)
 		{
 			return GetSignalDirectionAt(indices.CellToIndex(cell));
@@ -505,6 +541,14 @@ namespace CombatAI
 			curSharp = sharp;
 			curBlunt = blunt;
 			curMeta  = meta;
+			if ((meta & MetaCombatAttribute.Free) != 0)
+			{
+				curAimAvailablity = 1;
+			}
+			else
+			{
+				curAimAvailablity = 0;
+			}
 		}
 
 		/// <summary>

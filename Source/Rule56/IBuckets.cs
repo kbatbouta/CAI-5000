@@ -3,12 +3,9 @@ namespace CombatAI
 {
 	public class IBuckets<T> where T : IBucketable
 	{
-
 		private readonly Dictionary<int, int> bucketIndexByIds = new Dictionary<int, int>();
-
-		private readonly List<T>[] buckets;
-
-		public readonly int numBuckets;
+		private readonly List<T>[]            buckets;
+		public readonly  int                  numBuckets;
 
 		public IBuckets(int numBuckets)
 		{

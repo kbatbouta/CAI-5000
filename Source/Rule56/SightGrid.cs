@@ -365,7 +365,23 @@ namespace CombatAI
 				ops                   += 1;
 				suCentroid            += pos;
 			}
-			ISightRadius sightRadius = item.cachedSightRadius;
+			MetaCombatAttribute        availability = 0;
+			if (item.thing != null)
+			{
+				Verb verb = item.thing.TryGetAttackVerb();
+				if (!verb.IsMeleeAttack)
+				{
+					if (verb.state != VerbState.Idle || verb.WarmingUp)
+					{
+						availability = MetaCombatAttribute.Occupied;
+					}
+					else
+					{
+						availability = MetaCombatAttribute.Free;
+					}
+				}
+			}
+			ISightRadius sightRadius  = item.cachedSightRadius;
 			Action action = () =>
 			{
 				if (playerAlliance && sightRadius.fog > 0)
@@ -377,8 +393,8 @@ namespace CombatAI
 						gridFog.Set(item.path[i], 1.0f);
 					}
 				}
-				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
-				grid_regions.Next(GetFlags(item), item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes);
+				grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes | availability);
+				grid_regions.Next(GetFlags(item), item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes | availability);
 				float r_fade     = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
 				float d_fade     = sightRadius.fog - r_fade;
 				float rSqr_sight = Maths.Sqr(sightRadius.sight);
