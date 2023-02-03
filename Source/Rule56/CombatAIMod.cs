@@ -28,9 +28,9 @@ namespace CombatAI
 		private bool collapsibleGroupInited;
 		public CombatAIMod(ModContentPack contentPack) : base(contentPack)
 		{
+			Finder.Mod     = this;
 			Finder.Harmony = new Harmony("Krkr.Rule56");
 			Finder.Harmony.PatchAll();
-			Finder.Mod      = this;
 			Finder.Settings = GetSettings<Settings>();
 			if (Finder.Settings == null)
 			{
@@ -100,7 +100,7 @@ namespace CombatAI
 
 							Finder.Settings.Enable_Sprinting       = false;
 							Finder.Settings.Enable_Groups          = false;
-							Finder.Settings.Pathfinding_SappingMul = 0.5f;
+							Finder.Settings.Pathfinding_SappingMul = 1.5f;
 
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
 							if (Current.ProgramState != ProgramState.Playing)
@@ -135,7 +135,7 @@ namespace CombatAI
 							Finder.Settings.Flank_Enabled                               = true;
 							Finder.Settings.Enable_Sprinting                            = false;
 							Finder.Settings.Enable_Groups                               = true;
-							Finder.Settings.Pathfinding_SappingMul                      = 1.0f;
+							Finder.Settings.Pathfinding_SappingMul                      = 1.3f;
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
 							if (Current.ProgramState != ProgramState.Playing)
 							{
@@ -170,7 +170,7 @@ namespace CombatAI
 
 							Finder.Settings.Enable_Sprinting       = false;
 							Finder.Settings.Enable_Groups          = true;
-							Finder.Settings.Pathfinding_SappingMul = 0.9f;
+							Finder.Settings.Pathfinding_SappingMul = 1.0f;
 
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 2;
 							if (Current.ProgramState != ProgramState.Playing)
@@ -207,7 +207,7 @@ namespace CombatAI
 
 							Finder.Settings.Enable_Sprinting       = true;
 							Finder.Settings.Enable_Groups          = true;
-							Finder.Settings.Pathfinding_SappingMul = 0.85f;
+							Finder.Settings.Pathfinding_SappingMul = 1.0f;
 
 							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
 							if (Current.ProgramState != ProgramState.Playing)

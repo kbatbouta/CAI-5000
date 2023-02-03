@@ -64,10 +64,15 @@ namespace CombatAI.Patches
 					things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.Bed).Where(b => b is Building_Bed bed && bed.CompAssignableToPawn.AssignedPawns.Any(p => p.Faction == map.ParentFaction)));
 					things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.ResearchBench).Where(t => t.Faction == map.ParentFaction));
 					things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.FoodDispenser).Where(t => t.Faction == map.ParentFaction));
-					things.AddRange(map.mapPawns.PrisonersOfColony);
+					things.AddRange(map.mapPawns.PrisonersOfColonySpawned);
 					if (ModsConfig.BiotechActive)
 					{
+						things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.MechCharger).Where(t => t.Faction == map.ParentFaction));
 						things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.GenepackHolder));
+					}
+					if (ModsConfig.IdeologyActive)
+					{
+						things.AddRange(map.mapPawns.SlavesOfColonySpawned);
 					}
 					if (ModsConfig.RoyaltyActive)
 					{
@@ -102,11 +107,22 @@ namespace CombatAI.Patches
 								ThingComp_CombatAI comp = force[j].GetComp_Fast<ThingComp_CombatAI>();
 								if (comp != null && !comp.duties.Any(DutyDefOf.Defend))
 								{
-									Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.AssaultPoint(force[j], zone.Position, Rand.Range(7, 15), 3600 * Rand.Range(3, 8));
-									comp.duties.StartDuty(customDuty);
-									if (Finder.Settings.Debug)
+									Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.AssaultPoint(zone.Position, Rand.Range(7, 15), 3600 * Rand.Range(3, 8));
+									if(force[j].TryStartCustomDuty(customDuty))
 									{
-										Log.Message($"{comp.parent} task force {i} attacking {zone}");
+										if (Finder.Settings.Debug)
+										{
+											Log.Message($"{comp.parent} task force {i} attacking {zone}");
+										}
+										Pawn_CustomDutyTracker.CustomPawnDuty customDuty2 = CustomDutyUtility.DefendPoint(zone.Position, (int)Rand.Range(30, 60), true, 3600 + Rand.Range(0, 3600));
+										if (Rand.Chance(0.33f))
+										{
+											force[j].EnqueueFirstCustomDuty(customDuty);
+											if (Finder.Settings.Debug)
+											{
+												Log.Message($"{comp.parent} task force {i} occupying area around {zone}");
+											}
+										}
 									}
 								}
 							}
@@ -121,11 +137,22 @@ namespace CombatAI.Patches
 									ThingComp_CombatAI comp = force[j].GetComp_Fast<ThingComp_CombatAI>();
 									if (comp != null && !comp.duties.Any(DutyDefOf.Defend))
 									{
-										Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.AssaultPoint(force[j], thing.Position, Rand.Range(7, 15), 3600 * Rand.Range(3, 8));
-										comp.duties.StartDuty(customDuty);
-										if (Finder.Settings.Debug)
+										Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.AssaultPoint(thing.Position, Rand.Range(7, 15), 3600 * Rand.Range(3, 8));
+										if (force[j].TryStartCustomDuty(customDuty))
 										{
-											Log.Message($"{comp.parent} task force {i} attacking {thing}");
+											if (Finder.Settings.Debug)
+											{
+												Log.Message($"{comp.parent} task force {i} attacking {thing}");
+											}
+											Pawn_CustomDutyTracker.CustomPawnDuty customDuty2 = CustomDutyUtility.DefendPoint(thing.Position, (int)Rand.Range(30, 60), true, 3600 + Rand.Range(0, 3600));
+											if (Rand.Chance(0.33f))
+											{
+												force[j].EnqueueFirstCustomDuty(customDuty);
+												if (Finder.Settings.Debug)
+												{
+													Log.Message($"{comp.parent} task force {i} occupying area around {thing}");
+												}
+											}
 										}
 									}
 								}

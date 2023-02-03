@@ -510,6 +510,11 @@ namespace CombatAI.Comps
 		/// <param name="dInfo">Damage info</param>
 		public void Notify_TookDamage(DamageInfo dInfo)
 		{
+			// notify the custom duty manager that this pawn took damage.
+			if (duties != null)
+			{
+				duties.Notify_TookDamage();
+			}
 			// if the pawn is tanky enough skip.
 			if (Finder.Settings.Retreat_Enabled && parent.Spawned && GenTicks.TicksGame - lastScanned < 90 && parent is Pawn pawn && !pawn.Dead && !pawn.Downed && armor.TankInt < 0.4f)
 			{
@@ -582,6 +587,12 @@ namespace CombatAI.Comps
 			sapperNodes.AddRange(blocked);
 			_sap = 0;
 			TryStartSapperJob();
+//			if ((pawn.needs?.food?.CurCategory != HungerCategory.Fed) && pawn.Position.DistanceToSquared(cellBefore) < 13f)
+//			{
+//				List<Pawn> pawns = escorts.ToList();
+//				pawns.Add(pawn);
+//				SuppliesUtility.FulfillFoodSupplies(pawns, pawn.Map);
+//			}
 		}
 
 		/// <summary>
@@ -694,10 +705,10 @@ namespace CombatAI.Comps
 					job.maxNumMeleeAttacks = 300;
 					pawn.jobs.StopAll();
 					pawn.jobs.StartJob(job, JobCondition.InterruptForced);
-					if (findEscorts)
+					if (findEscorts && Rand.Chance(1 - Maths.Max(1f / (escorts.Count + 1f), 0.85f)))
 					{
 						int     count       = escorts.Count;
-						int     countTarget = Rand.Int % 6 + 4 + Maths.Min(sapperNodes.Count, 10);
+						int     countTarget = Rand.Int % 4 + 3 + Maths.Min(sapperNodes.Count, 10);
 						Faction faction     = pawn.Faction;
 						Predicate<Thing> validator = t =>
 						{
@@ -708,16 +719,21 @@ namespace CombatAI.Comps
 							    && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
 							{
 								ThingComp_CombatAI comp = ally.GetComp_Fast<ThingComp_CombatAI>();
-								if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick < 600)
+								if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick > 600)
 								{
-									Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(ally, pawn, 20, 100, 500 * sapperNodes.Count + Rand.Int % 1000);
-									if (custom != null)
+									Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(pawn, 20, 100, (500 * sapperNodes.Count) / (escorts.Count + 1) + Rand.Int % 500);
+									if (ally.TryStartCustomDuty(custom))
 									{
-										custom.duty.locomotion = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
-										comp.duties.StartDuty(custom);
 										escorts.Add(ally);
 									}
-									count++;
+									if (comp.duties.curCustomDuty?.duty != duties.curCustomDuty?.duty)
+									{
+										count += 3;
+									}
+									else
+									{
+										count++;
+									}
 								}
 								return count == countTarget;
 							}
