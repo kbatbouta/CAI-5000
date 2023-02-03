@@ -74,7 +74,7 @@ namespace CombatAI.Comps
 
 		public bool IsSapping
 		{
-			get => cellBefore.IsValid && sapperNodes.Count > 0 && GenTicks.TicksGame - sapperStartTick < 4800;
+			get => cellBefore.IsValid && sapperNodes.Count > 0 && GenTicks.TicksGame - sapperStartTick < 4800 && parent.Position.DistanceToSquared(cellBefore) < 1600;
 		}
 
 		public bool CanSappOrEscort
@@ -576,7 +576,7 @@ namespace CombatAI.Comps
 			{
 				return;
 			}
-			if (IsSapping)
+			if (cellBefore.IsValid && sapperNodes.Count > 0 && GenTicks.TicksGame - sapperStartTick < 4800)
 			{
 				ReleaseEscorts();
 			}
@@ -708,7 +708,7 @@ namespace CombatAI.Comps
 					if (findEscorts && Rand.Chance(1 - Maths.Max(1f / (escorts.Count + 1f), 0.85f)))
 					{
 						int     count       = escorts.Count;
-						int     countTarget = Rand.Int % 4 + 3 + Maths.Min(sapperNodes.Count, 10);
+						int     countTarget = Rand.Int % 4 + 3 + Maths.Min(sapperNodes.Count, 10) - Maths.Min(Mathf.CeilToInt(pawn.Position.DistanceTo(cellBefore) / 10f), 5);
 						Faction faction     = pawn.Faction;
 						Predicate<Thing> validator = t =>
 						{
