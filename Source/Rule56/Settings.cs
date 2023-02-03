@@ -125,13 +125,13 @@ namespace CombatAI
 			Scribe_Values.Look(ref Debug, $"Debug.{version}");
 			Scribe_Values.Look(ref Debug_ValidateSight, $"Debug_ValidateSight.{version}");
 			Scribe_Values.Look(ref Debug_DrawShadowCasts, $"Debug_DrawShadowCasts.{version}");
-			Scribe_Values.Look(ref Enable_Sprinting, "Enable_Sprinting", true);
-			Scribe_Values.Look(ref Enable_Groups, "Enable_Groups", true);
-			Scribe_Values.Look(ref FogOfWar_Turrets, "FogOfWar_Turrets", true);
-			Scribe_Values.Look(ref FogOfWar_Animals, "FogOfWar_Animals", true);
-			Scribe_Values.Look(ref FogOfWar_AnimalsSmartOnly, "FogOfWar_AnimalsSmartOnly", true);
-			Scribe_Values.Look(ref FogOfWar_Allies, "FogOfWar_Allies", true);
-			Scribe_Values.Look(ref Pathfinding_SappingMul, "Pathfinding_SappingMul", 1.0f);
+			Scribe_Values.Look(ref Enable_Sprinting, $"Enable_Sprinting.{version}", true);
+			Scribe_Values.Look(ref Enable_Groups, $"Enable_Groups.{version}", true);
+			Scribe_Values.Look(ref FogOfWar_Turrets, $"FogOfWar_Turrets.{version}", true);
+			Scribe_Values.Look(ref FogOfWar_Animals, $"FogOfWar_Animals.{version}", true);
+			Scribe_Values.Look(ref FogOfWar_AnimalsSmartOnly, $"FogOfWar_AnimalsSmartOnly.{version}", true);
+			Scribe_Values.Look(ref FogOfWar_Allies, $"FogOfWar_Allies.{version}", true);
+			Scribe_Values.Look(ref Pathfinding_SappingMul, $"Pathfinding_SappingMul2.{version}", 1.0f);
 
 			//ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
 		}

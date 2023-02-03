@@ -107,7 +107,7 @@ namespace CombatAI
 												float value = reader.GetThreat(cell);
 												if (value > 0)
 												{
-													map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 4f), $"{Math.Round(value, 2)}", 15);
+													map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
 												}
 												//var value = reader.hostiles[0].GetSharp(cell) + reader.hostiles[0].GetBlunt(cell);
 												//if (value > 0)
@@ -564,19 +564,25 @@ namespace CombatAI
 			}
 			public float GetThreat(int index)
 			{
-				if (armor.weaknessAttributes != MetaCombatAttribute.None)
+				MetaCombatAttribute attributes = GetMetaAttributes(index);
+				float               val;
+				if ((attributes & armor.weaknessAttributes) != MetaCombatAttribute.None)
 				{
-					MetaCombatAttribute attributes = GetMetaAttributes(index);
-					if ((attributes & armor.weaknessAttributes) != MetaCombatAttribute.None)
+					val = 2.0f;
+				}
+				else
+				{
+					if (!Mod_CE.active)
 					{
-						return 2.0f;
+						val = armor.createdAt != 0 ? Mathf.Clamp01(2f * Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
+					}
+					else
+					{
+						val = armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
 					}
 				}
-				if (!Mod_CE.active)
-				{
-					return armor.createdAt != 0 ? Mathf.Clamp01(2f * Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
-				}
-				return armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
+				val = Maths.Max((float)GetEnemyAvailability(index) * val, val);
+				return val;
 			}
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public float GetRegionThreat(Region region)
@@ -614,6 +620,33 @@ namespace CombatAI
 				for (int i = 0; i < hostiles.Length; i++)
 				{
 					value += hostiles[i].GetBlunt(index);
+				}
+				return value;
+			}
+			
+			public int GetEnemyAvailability(IntVec3 cell)
+			{
+				return GetEnemyAvailability(indices.CellToIndex(cell));
+			}
+			public int GetEnemyAvailability(int index)
+			{
+				int value = 0;
+				for (int i = 0; i < hostiles.Length; i++)
+				{
+					value += hostiles[i].GetAvailability(index);
+				}
+				return value;
+			}
+			public int GetFriendlyAvailability(IntVec3 cell)
+			{
+				return GetFriendlyAvailability(indices.CellToIndex(cell));
+			}
+			public int GetFriendlyAvailability(int index)
+			{
+				int value = 0;
+				for (int i = 0; i < friendlies.Length; i++)
+				{
+					value += friendlies[i].GetAvailability(index);
 				}
 				return value;
 			}

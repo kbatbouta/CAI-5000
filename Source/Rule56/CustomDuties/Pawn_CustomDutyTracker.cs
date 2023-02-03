@@ -4,10 +4,9 @@ using Verse;
 using Verse.AI;
 namespace CombatAI
 {
-	public class Pawn_CustomDutyTracker : IExposable
+	public partial class Pawn_CustomDutyTracker : IExposable
 	{
-		public CustomPawnDuty curCustomDuty;
-
+		public CustomPawnDuty       curCustomDuty;
 		public Pawn                 pawn;
 		public List<CustomPawnDuty> queue = new List<CustomPawnDuty>();
 
@@ -50,20 +49,20 @@ namespace CombatAI
 					curCustomDuty       = null;
 					pawn.mindState.duty = null;
 				}
-				else if (curCustomDuty.failOnDistanceToFocus > 0 && curCustomDuty.duty.focus.Cell.IsValid && curCustomDuty.duty.focus.Cell.DistanceToSquared(pawn.Position) > Maths.Sqr(curCustomDuty.failOnDistanceToFocus))
+				else if (curCustomDuty.endOnDistToFocusLarger > 0 && curCustomDuty.duty.focus.Cell.IsValid && curCustomDuty.duty.focus.Cell.DistanceToSquared(pawn.Position) > Maths.Sqr(curCustomDuty.endOnDistToFocusLarger))
 				{
 					curCustomDuty       = null;
 					pawn.mindState.duty = null;
 				}
-				else if (curCustomDuty.endOnDistanceToFocus > 0 && curCustomDuty.duty.focus.Cell.IsValid && curCustomDuty.duty.focus.Cell.DistanceToSquared(pawn.Position) < Maths.Sqr(curCustomDuty.endOnDistanceToFocus))
+				else if (curCustomDuty.endOnDistToFocusLess > 0 && curCustomDuty.duty.focus.Cell.IsValid && curCustomDuty.duty.focus.Cell.DistanceToSquared(pawn.Position) < Maths.Sqr(curCustomDuty.endOnDistToFocusLess))
 				{
 					curCustomDuty       = null;
 					pawn.mindState.duty = null;
 				}
-				else if (curCustomDuty?.duty.focus.Thing != null)
+				else if (curCustomDuty.duty.focus.Thing != null)
 				{
 					Thing focus = curCustomDuty.duty.focus.Thing;
-					if (curCustomDuty.failOnFocusDestroyed && (focus.Destroyed || !focus.Spawned))
+					if (curCustomDuty.endOnFocusDestroyed && (focus.Destroyed || !focus.Spawned))
 					{
 						curCustomDuty       = null;
 						pawn.mindState.duty = null;
@@ -74,7 +73,7 @@ namespace CombatAI
 						curCustomDuty       = null;
 						pawn.mindState.duty = null;
 					}
-					else if (curCustomDuty.failOnFocusDeath || curCustomDuty.failOnFocusDowned)
+					else if (curCustomDuty.endOnFocusDeath || curCustomDuty.endOnFocusDowned)
 					{
 						Pawn fpawn = focus as Pawn;
 						if (fpawn == null)
@@ -82,17 +81,17 @@ namespace CombatAI
 							curCustomDuty       = null;
 							pawn.mindState.duty = null;
 						}
-						else if ((curCustomDuty.failOnFocusDowned || curCustomDuty.failOnFocusDeath) && fpawn.Dead)
+						else if ((curCustomDuty.endOnFocusDowned || curCustomDuty.endOnFocusDeath) && fpawn.Dead)
 						{
 							curCustomDuty       = null;
 							pawn.mindState.duty = null;
 						}
-						else if (curCustomDuty.failOnFocusDowned && fpawn.Downed)
+						else if (curCustomDuty.endOnFocusDowned && fpawn.Downed)
 						{
 							curCustomDuty       = null;
 							pawn.mindState.duty = null;
 						}
-						else if (curCustomDuty.failOnFocusDutyNot != null && fpawn.mindState?.duty?.def != curCustomDuty.failOnFocusDutyNot)
+						else if (curCustomDuty.endOnFocusDutyNot != null && fpawn.mindState?.duty?.def != curCustomDuty.endOnFocusDutyNot)
 						{
 							curCustomDuty       = null;
 							pawn.mindState.duty = null;
@@ -217,40 +216,11 @@ namespace CombatAI
 			return def != null && (IsExitDuty(def) || def == DutyDefOf.PrisonerEscape || def == DutyDefOf.PrisonerEscapeSapper || def == DutyDefOf.PrisonerAssaultColony || def == DutyDefOf.Kidnap || def == DutyDefOf.Steal);
 		}
 
-		public class CustomPawnDuty : IExposable
+		public void Notify_TookDamage()
 		{
-			public bool     canExitMap = true;
-			public bool     canFlee    = true;
-			public IntVec3  dest       = IntVec3.Invalid;
-			public PawnDuty duty;
-			public int      endOnDistanceToFocus;
-			public int      expireAfter;
-			public int      expiresAt = -1;
-			public int      failOnDistanceToFocus;
-			public bool     failOnFocusDeath;
-			public bool     failOnFocusDestroyed;
-			public bool     failOnFocusDowned;
-			public DutyDef  failOnFocusDutyNot;
-			public bool     finished;
-			public int      startAfter;
-			public int      startsAt = -1;
-
-			public void ExposeData()
+			if (curCustomDuty is { endOnTookDamage: true })
 			{
-				Scribe_Deep.Look(ref duty, "duty");
-				Scribe_Values.Look(ref expireAfter, "expireAfter");
-				Scribe_Values.Look(ref startAfter, "startAfter");
-				Scribe_Values.Look(ref startsAt, "startsAt", -1);
-				Scribe_Values.Look(ref expiresAt, "expiresAt", -1);
-				Scribe_Values.Look(ref dest, "endNear", IntVec3.Invalid);
-				Scribe_Values.Look(ref failOnDistanceToFocus, "failOnDistanceToFocus");
-				Scribe_Values.Look(ref endOnDistanceToFocus, "endOnDistanceToFocus");
-				Scribe_Values.Look(ref failOnFocusDeath, "failOnFocusDeath");
-				Scribe_Values.Look(ref failOnFocusDowned, "failOnFocusDowned");
-				Scribe_Values.Look(ref failOnFocusDestroyed, "failOnFocusDestroyed");
-				Scribe_Values.Look(ref canFlee, "canFlee", true);
-				Scribe_Values.Look(ref canExitMap, "canExitMap", true);
-				Scribe_Defs.Look(ref failOnFocusDutyNot, "failOnFocusDutyNot");
+				curCustomDuty = null;
 			}
 		}
 	}
