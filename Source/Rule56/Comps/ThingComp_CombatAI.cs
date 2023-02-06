@@ -969,12 +969,11 @@ namespace CombatAI.Comps
 				}
 			}
 		}
-
-		private          int           _last;
-		private          Thing         _bestEnemy;
 		private readonly HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
 		private readonly List<IntVec3> _path           = new List<IntVec3>();
 		private readonly List<Color>   _colors         = new List<Color>();
 #endif
+		private int   _last;
+		private Thing _bestEnemy;
 	}
 }
