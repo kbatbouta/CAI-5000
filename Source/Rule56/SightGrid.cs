@@ -369,7 +369,7 @@ namespace CombatAI
 			if (item.thing != null)
 			{
 				Verb verb = item.thing.TryGetAttackVerb();
-				if (!verb.IsMeleeAttack)
+				if (verb != null && !verb.IsMeleeAttack)
 				{
 					if (verb.state != VerbState.Idle || verb.WarmingUp)
 					{
