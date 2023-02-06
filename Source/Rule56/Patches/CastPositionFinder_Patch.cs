@@ -193,18 +193,13 @@ namespace CombatAI.Patches
 					}
 					if (sightReader != null)
 					{
-						float before = __result;
 						if (!grid.IsSet(c))
 						{
 							__result = -1;
 						}
 						else
 						{
-							__result -= grid[c] * Finder.P50;
-							//if (Find.Selector.SelectedPawns.Contains(pawn))
-							//{
-							//	map.debugDrawer.FlashCell(c, (grid[c] + 5f) / 10f, $"{Math.Round(grid[c], 2)}");
-							//}
+							__result = __result - grid[c] * Finder.P50 + 1;
 						}
 					}
 				}

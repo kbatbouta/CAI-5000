@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 using static CombatAI.AvoidanceTracker;
@@ -11,7 +12,7 @@ namespace CombatAI
 		private static readonly Dictionary<IntVec3, IntVec3> parentTree = new Dictionary<IntVec3, IntVec3>(512);
 		private static readonly Dictionary<IntVec3, float>   scores     = new Dictionary<IntVec3, float>(512);
 
-		public static bool TryFindCoverPosition(CoverPositionRequest request, out IntVec3 coverCell)
+		public static bool TryFindCoverPosition(CoverPositionRequest request, out IntVec3 coverCell, Action<IntVec3, float> callback = null)
 		{
 			request.caster.TryGetSightReader(out SightReader sightReader);
 			request.caster.TryGetAvoidanceReader(out AvoidanceReader avoidanceReader);
@@ -54,9 +55,9 @@ namespace CombatAI
 				              float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - interceptors.grid.Get(node.cell) * 2 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.25f;
 				              if (rootDutyDestDist > 0)
 				              {
-					              c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -2f, 2f);
+					              c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -1f, 1f);
 				              }
-				              if (c < bestCellScore)
+				              if (bestCellScore - c >= 0.05f)
 				              {
 					              float v = sightReader.GetVisibilityToEnemies(node.cell);
 					              if (v < bestCellVisibility)
@@ -66,14 +67,14 @@ namespace CombatAI
 						              bestCell           = node.cell;
 					              }
 				              }
-				              //if (Find.Selector.SelectedPawns.Contains(request.caster))
-				              //{
-				              //    map.debugDrawer.FlashCell(node.cell, c / 5f, text: $"{Math.Round(c, 2)}");
-				              //}
+				              if (callback != null)
+				              {
+					              callback(node.cell, c);
+				              }
 			              },
 			              cell =>
 			              {
-				              return (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - interceptors.grid.Get(cell);
+				              return (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0) + (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - interceptors.grid.Get(cell);
 			              },
 			              cell =>
 			              {
@@ -85,7 +86,7 @@ namespace CombatAI
 			return bestCell.IsValid;
 		}
 
-		public static bool TryFindRetreatPosition(CoverPositionRequest request, out IntVec3 coverCell)
+		public static bool TryFindRetreatPosition(CoverPositionRequest request, out IntVec3 coverCell, Action<IntVec3, float> callback = null)
 		{
 			request.caster.TryGetSightReader(out SightReader sightReader);
 			request.caster.TryGetAvoidanceReader(out AvoidanceReader avoidanceReader);
@@ -136,9 +137,9 @@ namespace CombatAI
 				              float c = (node.dist - node.distAbs) / (node.distAbs + 1f) + avoidanceReader.GetProximity(node.cell) * 0.5f - interceptors.grid.Get(node.cell) + (sightReader.GetThreat(node.cell) - rootThreat) * 0.75f;
 				              if (rootDutyDestDist > 0)
 				              {
-					              c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -2f, 2f);
+					              c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 5) - rootDutyDestDist) * 0.25f, -1f, 1f);
 				              }
-				              if (c < bestCellScore)
+				              if (bestCellScore - c >= 0.05f)
 				              {
 					              float d = node.cell.DistanceToSquared(enemyLoc);
 					              if (d > bestCellDist)
@@ -148,11 +149,15 @@ namespace CombatAI
 						              bestCell      = node.cell;
 					              }
 				              }
+				              if (callback != null)
+				              {
+					              callback(node.cell, c);
+				              }
 				              scores[node.cell] = c;
 			              },
 			              cell =>
 			              {
-				              return (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (rootVisFriendlies - sightReader.GetVisibilityToFriendlies(cell)) - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
+				              return (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0) + (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - (rootVisFriendlies - sightReader.GetVisibilityToFriendlies(cell)) - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
 			              },
 			              cell =>
 			              {
