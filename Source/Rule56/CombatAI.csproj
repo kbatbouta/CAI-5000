@@ -24,12 +24,14 @@
         <DefineConstants>TRACE;NDEBUG</DefineConstants>
         <WarningLevel>4</WarningLevel>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <OutputPath>..\..\1.4\Assemblies</OutputPath>
         <DefineConstants>TRACE;DEBUG_REACTION;DEBUG;NETFRAMEWORK;NET472;</DefineConstants>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <DebugType>full</DebugType>
     </PropertyGroup>
     <ItemGroup>
         <Folder Include="T4\" />
