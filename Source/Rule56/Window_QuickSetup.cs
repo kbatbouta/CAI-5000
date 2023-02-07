@@ -131,24 +131,24 @@ namespace CombatAI
                 collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Allies, ref Finder.Settings.FogOfWar_Allies);
 				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Turrets, ref Finder.Settings.FogOfWar_Turrets);
                 
-				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_Density);
-				collapsible.Lambda(25, rect =>
-				{
-					Finder.Settings.FogOfWar_FogColor = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_FogColor, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_Density_Readouts.Formatted(Finder.Settings.FogOfWar_FogColor.ToString()), 0.05f);
-				}, useMargins: true);
-                
-				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul);
-				collapsible.Lambda(25, rect =>
-				{
-					Finder.Settings.FogOfWar_RangeMultiplier = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_RangeMultiplier, 0.75f, 2.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeMultiplier.ToString()), 0.05f);
-				}, useMargins: true);
-
-
-				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul);
-				collapsible.Lambda(25, rect =>
-				{
-					Finder.Settings.FogOfWar_RangeFadeMultiplier = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_RangeFadeMultiplier, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeFadeMultiplier.ToString()), 0.05f);
-				}, useMargins: true);
+//				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_Density);
+//				collapsible.Lambda(25, rect =>
+//				{
+//					Finder.Settings.FogOfWar_FogColor = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_FogColor, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_Density_Readouts.Formatted(Finder.Settings.FogOfWar_FogColor.ToString()), 0.05f);
+//				}, useMargins: true);
+//                
+//				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul);
+//				collapsible.Lambda(25, rect =>
+//				{
+//					Finder.Settings.FogOfWar_RangeMultiplier = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_RangeMultiplier, 0.75f, 2.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeMultiplier.ToString()), 0.05f);
+//				}, useMargins: true);
+//
+//
+//				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul);
+//				collapsible.Lambda(25, rect =>
+//				{
+//					Finder.Settings.FogOfWar_RangeFadeMultiplier = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_RangeFadeMultiplier, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeFadeMultiplier.ToString()), 0.05f);
+//				}, useMargins: true);
 			}
         }
         

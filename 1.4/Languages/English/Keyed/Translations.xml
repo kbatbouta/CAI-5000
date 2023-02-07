@@ -8,7 +8,7 @@
     <CombatAI.Hide>Hide</CombatAI.Hide>
     <CombatAI.Expand>Hide</CombatAI.Expand>
     <CombatAI.Quick.Welcome>Welcome to CAI-5000</CombatAI.Quick.Welcome>
-    <CombatAI.Quick.Welcome.Description>This quick start page will help you setup CAI-5000's many different features!</CombatAI.Quick.Welcome.Description>
+    <CombatAI.Quick.Welcome.Description>This quick-setup page will help you quickly setup CAI-5000's different features!</CombatAI.Quick.Welcome.Description>
     <CombatAI.Quick.QuickSetup>Quick Setup Options</CombatAI.Quick.QuickSetup>
     <CombatAI.Quick.Difficulty>Please select a difficulty level</CombatAI.Quick.Difficulty>
     <CombatAI.PlaceWorker.WallMounted>Needs to be mounted to a wall or a solid structure.</CombatAI.PlaceWorker.WallMounted>
@@ -19,7 +19,7 @@
     <CombatAI.Settings.Basic.Presets>Performance/Difficulty presets</CombatAI.Settings.Basic.Presets>
     <CombatAI.Settings.Basic.Presets.Easy>Easy/Perf</CombatAI.Settings.Basic.Presets.Easy>
     <CombatAI.Settings.Basic.Presets.Normal>Normal</CombatAI.Settings.Basic.Presets.Normal>
-    <CombatAI.Settings.Basic.Presets.Hard>Hard/Complex</CombatAI.Settings.Basic.Presets.Hard>
+    <CombatAI.Settings.Basic.Presets.Hard>Hard</CombatAI.Settings.Basic.Presets.Hard>
     <CombatAI.Settings.Basic.Presets.Deathwish>Deathwish</CombatAI.Settings.Basic.Presets.Deathwish>
     <CombatAI.Settings.Basic.Presets.Applied>Applied preset:</CombatAI.Settings.Basic.Presets.Applied>
     <CombatAI.Settings.Basic.Presets.Description>Performance presets will determine the complexity of AI calculations and their interval. More complex calculations means harder AI but lower performance. Default is normal.</CombatAI.Settings.Basic.Presets.Description>
