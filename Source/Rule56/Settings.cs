@@ -64,6 +64,7 @@ namespace CombatAI
 		public bool  PerformanceOpt_Enabled = true;
 		public bool  React_Enabled          = true;
 		public bool  Retreat_Enabled        = true;
+		public bool  FinishedQuickSetup     = false;
 
 
 		public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(3, 5, 16);
@@ -108,6 +109,7 @@ namespace CombatAI
 			//{
 			//	LeanCE_Enabled = false;
 			//}
+			Scribe_Values.Look(ref FinishedQuickSetup, $"FinishedQuickSetup2.{version}", false);
 			Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
 			Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);
 			Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
