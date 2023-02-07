@@ -106,7 +106,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Quick_Welcome_Description = null;
         /// <summary> Keyed string. key=<c>CombatAI.Quick.Welcome.Description</c>. inner text:
         ///
-        /// <code>This quick start page will help you setup CAI-5000's many different features!</code>
+        /// <code>This quick-setup page will help you setup CAI-5000's many different features!</code>
         /// </summary>       
         public static TaggedString CombatAI_Quick_Welcome_Description {
             get => _CombatAI_Quick_Welcome_Description != null ? 
@@ -216,7 +216,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Basic_Presets_Hard = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Hard</c>. inner text:
         ///
-        /// <code>Hard/Complex</code>
+        /// <code>Hard</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Basic_Presets_Hard {
             get => _CombatAI_Settings_Basic_Presets_Hard != null ? 
