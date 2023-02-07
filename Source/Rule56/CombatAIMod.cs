@@ -328,6 +328,7 @@ namespace CombatAI
 		private void FillCollapsible_Debugging(Listing_Collapsible collapsible)
 		{
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Debugging_Enable, ref Finder.Settings.Debug);
+			collapsible.CheckboxLabeled("Disable quick setup menu", ref Finder.Settings.FinishedQuickSetup);
 			collapsible.CheckboxLabeled("Draw sight grid", ref Finder.Settings.Debug_DrawShadowCasts);
 			collapsible.CheckboxLabeled("Draw sight vector field", ref Finder.Settings.Debug_DrawShadowCastsVectors);
 			collapsible.CheckboxLabeled("Draw threat (pawn armor vs enemy)", ref Finder.Settings.Debug_DrawThreatCasts);
