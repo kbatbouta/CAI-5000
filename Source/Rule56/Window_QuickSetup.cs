@@ -66,6 +66,7 @@ namespace CombatAI
                 if (Widgets.ButtonText(inRect.LeftHalf(), R.Keyed.CombatAI_Apply))
                 {
                     Finder.Settings.FinishedQuickSetup = true;
+                    Finder.Settings.Write();
                     Close();
                 }
                 GUI.color = Color.red;
