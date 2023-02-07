@@ -3,9 +3,14 @@
     <CombatAI>Combat AI 5000</CombatAI>
     <CombatAI.Sym.Empty></CombatAI.Sym.Empty>
     <CombatAI.Close>Close</CombatAI.Close>
+    <CombatAI.Apply>Apply</CombatAI.Apply>
     <CombatAI.Open>Open</CombatAI.Open>
     <CombatAI.Hide>Hide</CombatAI.Hide>
     <CombatAI.Expand>Hide</CombatAI.Expand>
+    <CombatAI.Quick.Welcome>Welcome to CAI-5000</CombatAI.Quick.Welcome>
+    <CombatAI.Quick.Welcome.Description>This quick start page will help you setup CAI-5000's many different features!</CombatAI.Quick.Welcome.Description>
+    <CombatAI.Quick.QuickSetup>Quick Setup Options</CombatAI.Quick.QuickSetup>
+    <CombatAI.Quick.Difficulty>Please select a difficulty level</CombatAI.Quick.Difficulty>
     <CombatAI.PlaceWorker.WallMounted>Needs to be mounted to a wall or a solid structure.</CombatAI.PlaceWorker.WallMounted>
     <CombatAI.Preparing>Preparing Combat AI</CombatAI.Preparing>
     <CombatAI.Animator.Controller>Hold</CombatAI.Animator.Controller>

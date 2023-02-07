@@ -361,7 +361,14 @@ namespace CombatAI
             if (scanForEnemies)
             {
                 item.lastScannedForEnemies = ticks;
-                item.ai.OnScanStarted();
+                try
+                {
+                    item.ai.OnScanStarted();
+                }
+                catch (Exception er)
+                {
+                    er.ShowExceptionGui();
+                }
                 item.spottings.Clear();
             }
             if (scanForEnemies || item.sighter == null && item.CctvTop == null)
@@ -488,8 +495,15 @@ namespace CombatAI
                                         }
                                     }
                                 }
-                                // notify the pawn so they can start processing targets.                                
-                                item.ai.OnScanFinished();
+                                // notify the pawn so they can start processing targets.   
+                                try
+                                {
+                                    item.ai.OnScanFinished();
+                                }
+                                catch (Exception er)
+                                {
+                                    er.ShowExceptionGui();
+                                }
                                 item.spottings.Clear();
                             }
                         });

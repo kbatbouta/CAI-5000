@@ -27,7 +27,6 @@ namespace CombatAI
             this.exception   = exception;
             this.trace       = trace;
             this.report      = report.NullOrEmpty() ? exception.Message : report;
-
         }
         
         public override Vector2 InitialSize

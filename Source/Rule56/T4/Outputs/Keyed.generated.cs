@@ -53,6 +53,16 @@ namespace CombatAI.R
                    _CombatAI_Close : _CombatAI_Close = "CombatAI.Close".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Apply = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Apply</c>. inner text:
+        ///
+        /// <code>Apply</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Apply {
+            get => _CombatAI_Apply != null ? 
+                   _CombatAI_Apply : _CombatAI_Apply = "CombatAI.Apply".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Open = null;
         /// <summary> Keyed string. key=<c>CombatAI.Open</c>. inner text:
         ///
@@ -81,6 +91,46 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Expand {
             get => _CombatAI_Expand != null ? 
                    _CombatAI_Expand : _CombatAI_Expand = "CombatAI.Expand".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Quick_Welcome = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Quick.Welcome</c>. inner text:
+        ///
+        /// <code>Welcome to CAI-5000</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Quick_Welcome {
+            get => _CombatAI_Quick_Welcome != null ? 
+                   _CombatAI_Quick_Welcome : _CombatAI_Quick_Welcome = "CombatAI.Quick.Welcome".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Quick_Welcome_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Quick.Welcome.Description</c>. inner text:
+        ///
+        /// <code>This quick start page will help you setup CAI-5000's many different features!</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Quick_Welcome_Description {
+            get => _CombatAI_Quick_Welcome_Description != null ? 
+                   _CombatAI_Quick_Welcome_Description : _CombatAI_Quick_Welcome_Description = "CombatAI.Quick.Welcome.Description".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Quick_QuickSetup = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Quick.QuickSetup</c>. inner text:
+        ///
+        /// <code>Quick Setup Options</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Quick_QuickSetup {
+            get => _CombatAI_Quick_QuickSetup != null ? 
+                   _CombatAI_Quick_QuickSetup : _CombatAI_Quick_QuickSetup = "CombatAI.Quick.QuickSetup".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Quick_Difficulty = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Quick.Difficulty</c>. inner text:
+        ///
+        /// <code>Please select a difficulty level</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Quick_Difficulty {
+            get => _CombatAI_Quick_Difficulty != null ? 
+                   _CombatAI_Quick_Difficulty : _CombatAI_Quick_Difficulty = "CombatAI.Quick.Difficulty".Translate();
         }             
                       
         private static TaggedString _CombatAI_PlaceWorker_WallMounted = null;

@@ -88,35 +88,7 @@ namespace CombatAI
 						GUI.color = Color.green;
 						if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Easy))
 						{
-							Finder.Settings.Pathfinding_DestWeight = 0.9f;
-							Finder.Settings.Caster_Enabled         = false;
-							Finder.Settings.Targeter_Enabled       = false;
-							Finder.Settings.Pather_Enabled         = true;
-							Finder.Settings.Pather_KillboxKiller   = false;
-							Finder.Settings.PerformanceOpt_Enabled = true;
-							Finder.Settings.React_Enabled          = false;
-							Finder.Settings.Retreat_Enabled        = false;
-							Finder.Settings.Flank_Enabled          = false;
-
-							Finder.Settings.Enable_Sprinting       = false;
-							Finder.Settings.Enable_Groups          = false;
-							Finder.Settings.Pathfinding_SappingMul = 1.5f;
-
-							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 10;
-							}
-							Finder.Settings.SightSettings_Wildlife.interval = 6;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_Wildlife.buckets = 10;
-							}
-							Finder.Settings.SightSettings_MechsAndInsects.interval = 3;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_MechsAndInsects.buckets = 12;
-							}
+							DifficultyUtility.SetDifficulty(Difficulty.Easy);
 							Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Easy, MessageTypeDefOf.TaskCompletion);
 						}
 					},
@@ -124,33 +96,7 @@ namespace CombatAI
 					{
 						if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Normal))
 						{
-							Finder.Settings.Pathfinding_DestWeight                      = 0.8f;
-							Finder.Settings.Caster_Enabled                              = true;
-							Finder.Settings.Targeter_Enabled                            = true;
-							Finder.Settings.Pather_Enabled                              = true;
-							Finder.Settings.Pather_KillboxKiller                        = true;
-							Finder.Settings.PerformanceOpt_Enabled                      = true;
-							Finder.Settings.React_Enabled                               = true;
-							Finder.Settings.Retreat_Enabled                             = false;
-							Finder.Settings.Flank_Enabled                               = true;
-							Finder.Settings.Enable_Sprinting                            = false;
-							Finder.Settings.Enable_Groups                               = true;
-							Finder.Settings.Pathfinding_SappingMul                      = 1.3f;
-							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 5;
-							}
-							Finder.Settings.SightSettings_Wildlife.interval = 3;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_Wildlife.buckets = 10;
-							}
-							Finder.Settings.SightSettings_MechsAndInsects.interval = 3;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_MechsAndInsects.buckets = 5;
-							}
+							DifficultyUtility.SetDifficulty(Difficulty.Normal);
 							Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Normal, MessageTypeDefOf.TaskCompletion);
 						}
 					},
@@ -158,35 +104,7 @@ namespace CombatAI
 					{
 						if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Hard))
 						{
-							Finder.Settings.Pathfinding_DestWeight = 0.75f;
-							Finder.Settings.Caster_Enabled         = true;
-							Finder.Settings.Targeter_Enabled       = true;
-							Finder.Settings.Pather_Enabled         = true;
-							Finder.Settings.Pather_KillboxKiller   = true;
-							Finder.Settings.React_Enabled          = true;
-							Finder.Settings.Retreat_Enabled        = true;
-							Finder.Settings.Flank_Enabled          = true;
-							Finder.Settings.PerformanceOpt_Enabled = true;
-
-							Finder.Settings.Enable_Sprinting       = false;
-							Finder.Settings.Enable_Groups          = true;
-							Finder.Settings.Pathfinding_SappingMul = 1.0f;
-
-							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 2;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 5;
-							}
-							Finder.Settings.SightSettings_Wildlife.interval = 2;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_Wildlife.buckets = 5;
-							}
-							Finder.Settings.SightSettings_MechsAndInsects.interval = 2;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_MechsAndInsects.buckets = 5;
-							}
+							DifficultyUtility.SetDifficulty(Difficulty.Hard);
 							Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Hard, MessageTypeDefOf.TaskCompletion);
 						}
 					},
@@ -195,35 +113,7 @@ namespace CombatAI
 						GUI.color = Color.red;
 						if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Deathwish))
 						{
-							Finder.Settings.Pathfinding_DestWeight = 0.6f;
-							Finder.Settings.Caster_Enabled         = true;
-							Finder.Settings.Targeter_Enabled       = true;
-							Finder.Settings.Pather_Enabled         = true;
-							Finder.Settings.Pather_KillboxKiller   = true;
-							Finder.Settings.React_Enabled          = true;
-							Finder.Settings.Retreat_Enabled        = true;
-							Finder.Settings.Flank_Enabled          = true;
-							Finder.Settings.PerformanceOpt_Enabled = false;
-
-							Finder.Settings.Enable_Sprinting       = true;
-							Finder.Settings.Enable_Groups          = true;
-							Finder.Settings.Pathfinding_SappingMul = 1.0f;
-
-							Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 5;
-							}
-							Finder.Settings.SightSettings_Wildlife.interval = 2;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_Wildlife.buckets = 5;
-							}
-							Finder.Settings.SightSettings_MechsAndInsects.interval = 2;
-							if (Current.ProgramState != ProgramState.Playing)
-							{
-								Finder.Settings.SightSettings_MechsAndInsects.buckets = 5;
-							}
+							DifficultyUtility.SetDifficulty(Difficulty.DeathWish);
 							Messages.Message(Keyed.CombatAI_Settings_Basic_PerformanceOpt_Warning, MessageTypeDefOf.CautionInput);
 							Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Deathwish, MessageTypeDefOf.TaskCompletion);
 						}
