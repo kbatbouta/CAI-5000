@@ -347,15 +347,19 @@ namespace CombatAI
             }
             SightTracker.SightReader reader = item.ai?.sightReader ?? null;
             bool                     scanForEnemies;
-            if (scanForEnemies = Finder.Settings.React_Enabled && !item.isPlayer && item.sighter == null && reader != null && item.ai != null && !item.ai.ReactedRecently(45) && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15))
+            bool                     moveAttackScan = false;
+            if (scanForEnemies = Finder.Settings.React_Enabled && item.sighter == null && reader != null && item.ai != null && !item.ai.ReactedRecently(45) && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15))
             {
-                if (item.dormant != null && !item.dormant.Awake)
+                if (!item.isPlayer || (moveAttackScan = (item.ai?.forcedTarget.IsValid ?? false)))
                 {
-                    scanForEnemies = false;
-                }
-                else if (item.pawn != null && item.pawn.mindState?.duty?.def == DutyDefOf.SleepForever)
-                {
-                    scanForEnemies = false;
+                    if (item.dormant != null && !item.dormant.Awake)
+                    {
+                        scanForEnemies = false;
+                    }
+                    else if (item.pawn != null && item.pawn.mindState?.duty?.def == DutyDefOf.SleepForever)
+                    {
+                        scanForEnemies = false;
+                    }
                 }
             }
             if (scanForEnemies)
@@ -469,11 +473,12 @@ namespace CombatAI
                 grid.Set(flagPos, item.pawn == null || !item.pawn.Downed ? GetFlags(item) : 0);
                 if (scanForEnemies)
                 {
-                    if (item.spottings.Count > 0 || Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
+                    item.ai.enemiesInRangeNum = item.spottings.Count;
+                    if ((item.spottings.Count > 0 || Finder.Settings.Debug) && Finder.Settings.Debug_ValidateSight)
                     {
                         // on the main thread check for enemies on or near this cell.
                         asyncActions.EnqueueMainThreadAction(delegate
-                        {
+                        {                         
                             if (!item.thing.Destroyed && item.thing.Spawned)
                             {
                                 for (int i = 0; i < item.spottings.Count; i++)
@@ -495,6 +500,7 @@ namespace CombatAI
                                         }
                                     }
                                 }
+                                //
                                 // notify the pawn so they can start processing targets.   
                                 try
                                 {

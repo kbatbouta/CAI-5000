@@ -5,7 +5,7 @@
 <#@ output extension=".cs" #>
 <#@ import namespace="System.IO" #>
 <#
-    string texturesPath = "$(SolutionDir)/../../../1.4/Textures/Isma";
+    string texturesPath = "$(SolutionDir)/../../../1.4/Textures";
 #>
 
 using System;
@@ -33,6 +33,7 @@ namespace CombatAI.R
     /// </code>        
     /// </example>    
     /// </summary>
+    [StaticConstructorOnStartup]
     public static class Tex
     {     
 <#

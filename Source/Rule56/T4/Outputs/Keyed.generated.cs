@@ -2,7 +2,6 @@
 
 namespace CombatAI.R
 {    
-
     // Auto generated file!
     // -------------------------------------------------
     // This file is auto generated! Mod path is:
@@ -101,6 +100,26 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Quick_Welcome {
             get => _CombatAI_Quick_Welcome != null ? 
                    _CombatAI_Quick_Welcome : _CombatAI_Quick_Welcome = "CombatAI.Quick.Welcome".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Gizmos_AttackMove = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Gizmos.AttackMove</c>. inner text:
+        ///
+        /// <code>Move-Attack</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Gizmos_AttackMove {
+            get => _CombatAI_Gizmos_AttackMove != null ? 
+                   _CombatAI_Gizmos_AttackMove : _CombatAI_Gizmos_AttackMove = "CombatAI.Gizmos.AttackMove".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Gizmos_AttackMove_Cancel = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Gizmos.AttackMove.Cancel</c>. inner text:
+        ///
+        /// <code>Cancel Move-Attack</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Gizmos_AttackMove_Cancel {
+            get => _CombatAI_Gizmos_AttackMove_Cancel != null ? 
+                   _CombatAI_Gizmos_AttackMove_Cancel : _CombatAI_Gizmos_AttackMove_Cancel = "CombatAI.Gizmos.AttackMove.Cancel".Translate();
         }             
                       
         private static TaggedString _CombatAI_Quick_Welcome_Description = null;

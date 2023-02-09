@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using CombatAI.Abilities;
+using CombatAI.R;
 using CombatAI.Utilities;
 using HarmonyLib;
 using RimWorld;
@@ -15,6 +16,11 @@ namespace CombatAI.Comps
 {
 	public class ThingComp_CombatAI : ThingComp
 	{
+		/// <summary>
+		/// Number of enemies in range.
+		/// Updated by the sightgrid.
+		/// </summary>
+		public int enemiesInRangeNum;
 		/// <summary>
 		///     Set of visible enemies. A queue for visible enemies during scans.
 		/// </summary>
@@ -68,6 +74,10 @@ namespace CombatAI.Comps
 		///		Parent pawn.
 		/// </summary>
 		public Pawn selPawn;
+		/// <summary>
+		///		Target forced by the player.
+		/// </summary>
+		public LocalTargetInfo forcedTarget = LocalTargetInfo.Invalid;
 
 		public ThingComp_CombatAI()
 		{
@@ -157,6 +167,23 @@ namespace CombatAI.Comps
 					TryStartSapperJob();
 				}
 			}
+			if (forcedTarget.IsValid)
+			{
+				// remove the forced target on when not drafted and near the target
+				if (!selPawn.Drafted || selPawn.Position.DistanceToSquared(forcedTarget.Cell) < 25)
+				{
+					forcedTarget = LocalTargetInfo.Invalid;;
+				}
+				else if (sightReader.GetAbsVisibilityToEnemies(selPawn.Position) == 0 && enemiesInRangeNum == 0 && (selPawn.jobs.curJob?.def.Is(JobDefOf.Goto) == false || selPawn.pather?.Destination != forcedTarget.Cell))
+				{
+					Job gotoJob = JobMaker.MakeJob(JobDefOf.Goto, forcedTarget);
+					gotoJob.canUseRangedWeapon = true;
+					gotoJob.locomotionUrgency  = LocomotionUrgency.Jog;
+					gotoJob.playerForced       = true;
+					selPawn.jobs.ClearQueuedJobs();
+					selPawn.jobs.StartJob(gotoJob);
+				}
+			}
 		}
 
 		public override void CompTickLong()
@@ -225,8 +252,12 @@ namespace CombatAI.Comps
 				Log.Warning($"ISMA: OnScanFinished called while not scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
 				return;
 			}
-			scanning = false;
-
+			scanning          = false;
+			if (selPawn.Faction.IsPlayerSafe() && !forcedTarget.IsValid)
+			{
+				visibleEnemies.Clear();
+				return;
+			}
 #if DEBUG_REACTION
 			if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
 			{
@@ -473,6 +504,7 @@ namespace CombatAI.Comps
 				waitJob                       = null;
 				selPawn.mindState.enemyTarget = enemy.Thing;
 				Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
+				job_waitCombat.playerForced = forcedTarget.IsValid;
 				selPawn.jobs.ClearQueuedJobs();
 				selPawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
 			}
@@ -506,8 +538,10 @@ namespace CombatAI.Comps
 								_last = 21;
 							}
 							Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-							job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+							job_goto.playerForced = forcedTarget.IsValid;
+							job_goto.locomotionUrgency  = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 							Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
+							job_waitCombat.playerForced                = forcedTarget.IsValid;
 							job_waitCombat.checkOverrideOnExpire = true;
 							selPawn.jobs.ClearQueuedJobs();
 							selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
@@ -524,6 +558,7 @@ namespace CombatAI.Comps
 							}
 							selPawn.mindState.enemyTarget = enemy.Thing;
 							Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
+							job_waitCombat.playerForced          = forcedTarget.IsValid;
 							job_waitCombat.checkOverrideOnExpire = true;
 							selPawn.jobs.ClearQueuedJobs();
 							selPawn.jobs.StartJob(waitJob = job_waitCombat, JobCondition.InterruptForced);
@@ -556,8 +591,10 @@ namespace CombatAI.Comps
 								selPawn.mindState.enemyTarget = enemy.Thing;
 							}
 							Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-							job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+							job_goto.playerForced = forcedTarget.IsValid;
+							job_goto.locomotionUrgency  = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 							Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
+							job_waitCombat.playerForced                = forcedTarget.IsValid;
 							job_waitCombat.checkOverrideOnExpire = true;
 							selPawn.jobs.ClearQueuedJobs();
 							selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
@@ -597,7 +634,8 @@ namespace CombatAI.Comps
 				if (validator == null || validator(cell))
 				{
 					Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-					job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+					job_goto.playerForced = forcedTarget.IsValid;
+					job_goto.locomotionUrgency  = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 					selPawn.jobs.ClearQueuedJobs();
 					selPawn.jobs.StopAll();
 					selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
@@ -613,6 +651,7 @@ namespace CombatAI.Comps
 						_last = 12;
 					}
 					Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
+					job_waitCombat.playerForced = forcedTarget.IsValid;
 					selPawn.jobs.ClearQueuedJobs();
 					selPawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
 					return true;
@@ -770,7 +809,91 @@ namespace CombatAI.Comps
 				yield return cover;
 				yield return cast;
 			}
-			yield break;
+			if (selPawn.IsColonist)
+			{
+				Command_Target attackMove = new Command_Target();
+				attackMove.defaultLabel                       = R.Keyed.CombatAI_Gizmos_AttackMove;
+				attackMove.targetingParams                    = new TargetingParameters();
+				attackMove.targetingParams.canTargetPawns     = true;
+				attackMove.targetingParams.canTargetLocations = true;
+				attackMove.targetingParams.canTargetSelf      = false;
+				attackMove.targetingParams.validator = (target) =>
+				{
+					if (!target.IsValid || !target.Cell.InBounds(selPawn.Map))
+					{ 
+						return false;
+					}
+					foreach (Pawn pawn in Find.Selector.SelectedPawns)
+					{
+						if (pawn == null)
+						{
+							continue;
+						}
+						if (pawn.CanReach(target.Cell, PathEndMode.OnCell, Danger.Unspecified, false, false))
+						{
+							return true;
+						}
+					}
+					return false;
+				};
+				attackMove.icon       = R.Tex.Isma_Gizmos_move_attack;
+				attackMove.groupable  = true;
+				attackMove.shrinkable = false;
+				attackMove.action = (LocalTargetInfo target) =>
+				{
+					foreach (Pawn pawn in Find.Selector.SelectedPawns)
+					{
+						if (pawn.IsColonist && pawn.drafter != null)
+						{
+							if (!pawn.CanReach(target.Cell, PathEndMode.OnCell, Danger.Unspecified, false, false))
+							{
+								continue;
+							}
+							if (!pawn.Drafted)
+							{
+								if (!pawn.drafter.ShowDraftGizmo)
+								{
+									continue;
+								}
+								DevelopmentalStage stage = pawn.DevelopmentalStage;
+								if (stage <= DevelopmentalStage.Child && stage != DevelopmentalStage.None)
+								{
+									continue;
+								}
+								pawn.drafter.Drafted = true;
+							}
+							pawn.GetComp_Fast<ThingComp_CombatAI>().forcedTarget = target;
+							Job gotoJob = JobMaker.MakeJob(JobDefOf.Goto, target);
+							gotoJob.canUseRangedWeapon = true;
+							gotoJob.locomotionUrgency  = LocomotionUrgency.Jog;
+							gotoJob.playerForced       = true;
+							pawn.jobs.ClearQueuedJobs();
+							pawn.jobs.StartJob(gotoJob);
+						}
+					}
+				};
+				yield return attackMove;
+				if (forcedTarget.IsValid)
+				{
+					Command_Action cancelAttackMove = new Command_Action();
+					cancelAttackMove.defaultLabel = R.Keyed.CombatAI_Gizmos_AttackMove_Cancel;
+					cancelAttackMove.groupable    = true;
+					//
+					// cancelAttackMove.disabled     = forcedTarget.IsValid;
+					cancelAttackMove.action = () =>
+					{
+						foreach (Pawn pawn in Find.Selector.SelectedPawns)
+						{
+							if (pawn.IsColonist)
+							{
+								pawn.GetComp_Fast<ThingComp_CombatAI>().forcedTarget = LocalTargetInfo.Invalid;
+								pawn.jobs.ClearQueuedJobs();
+								pawn.jobs.StopAll();
+							}
+						}
+					};
+				}
+			}
 		}
 
 		/// <summary>
@@ -845,6 +968,7 @@ namespace CombatAI.Comps
 			base.PostExposeData();
 			Scribe_Deep.Look(ref duties, "duties");
 			Scribe_Deep.Look(ref abilities, "abilities");
+			Scribe_TargetInfo.Look(ref forcedTarget, "forcedTarget");
 			if (duties == null)
 			{
 				duties = new Pawn_CustomDutyTracker(selPawn);
