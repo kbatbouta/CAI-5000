@@ -8,6 +8,8 @@
     <CombatAI.Hide>Hide</CombatAI.Hide>
     <CombatAI.Expand>Hide</CombatAI.Expand>
     <CombatAI.Quick.Welcome>Welcome to CAI-5000</CombatAI.Quick.Welcome>
+    <CombatAI.Gizmos.AttackMove>Move-Attack</CombatAI.Gizmos.AttackMove>
+    <CombatAI.Gizmos.AttackMove.Cancel>Cancel Move-Attack</CombatAI.Gizmos.AttackMove.Cancel>
     <CombatAI.Quick.Welcome.Description>This quick-setup page will help you quickly setup CAI-5000's different features!</CombatAI.Quick.Welcome.Description>
     <CombatAI.Quick.QuickSetup>Quick Setup Options</CombatAI.Quick.QuickSetup>
     <CombatAI.Quick.Difficulty>Please select a difficulty level</CombatAI.Quick.Difficulty>
