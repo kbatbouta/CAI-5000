@@ -439,7 +439,7 @@ namespace CombatAI.Comps
 						bool Validator_Attack(IntVec3 cell) => prevEnemyDir == Vector2.zero 
 						                                || Rand.Chance(Mathf.Abs(1 - Vector2.Dot(prevEnemyDir, sightReader.GetEnemyDirection(cell).normalized))) 
 						                                || Rand.Chance(sightReader.GetVisibilityToEnemies(pawnPosition) - sightReader.GetVisibilityToEnemies(cell));
-						if (TryAttack(new LocalTargetInfo(bestEnemy), verb, bestEnemyVisibleNow, out IntVec3 destCell, Validator_Attack, true, true))
+						if (TryAttack(new LocalTargetInfo(bestEnemy), verb, bestEnemyVisibleNow, out IntVec3 destCell, Validator_Attack, warmup == null, true))
 						{
 							lastInterupted = lastMoved = GenTicks.TicksGame;
 							prevEnemyDir   = sightReader.GetEnemyDirection(destCell).normalized;
