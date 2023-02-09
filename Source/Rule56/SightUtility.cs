@@ -76,14 +76,7 @@ namespace CombatAI
 				result.scan  = result.sight;
 				return result;
 			}
-			Verb verb = pawn.equipment?.PrimaryEq?.PrimaryVerb ?? null;
-//			if (verb == null || !verb.Available())
-//			{
-//				if (pawn.verbTracker != null && !pawn.verbTracker.AllVerbs.NullOrEmpty())
-//				{
-//					verb = pawn.verbTracker.AllVerbs.Where(v => v.Available()).MaxBy(v => v.IsMeleeAttack ? 0 : v.EffectiveRange) ?? null;
-//				}
-//			}
+			Verb verb = pawn.CurrentEffectiveVerb;
 			if (verb == null || !verb.Available())
 			{
 				result.sight = 4;
@@ -108,7 +101,7 @@ namespace CombatAI
 				if (melee != null)
 				{
 					result.sight = Maths.Max((int)(Mathf.Clamp(melee.Level, 5, 13) * ((pawn.equipment?.Primary?.def.IsMeleeWeapon ?? null) != null ? 1.5f : 0.85f)), 15);
-					result.scan  = 0;
+					result.scan  = Maths.Max(result.sight, 15);
 				}
 				else
 				{
