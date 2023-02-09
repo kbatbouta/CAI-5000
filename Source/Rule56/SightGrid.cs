@@ -474,7 +474,7 @@ namespace CombatAI
                 if (scanForEnemies)
                 {
                     item.ai.enemiesInRangeNum = item.spottings.Count;
-                    if ((item.spottings.Count > 0 || Finder.Settings.Debug) && Finder.Settings.Debug_ValidateSight)
+                    if (item.spottings.Count > 0 || (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight))
                     {
                         // on the main thread check for enemies on or near this cell.
                         asyncActions.EnqueueMainThreadAction(delegate
