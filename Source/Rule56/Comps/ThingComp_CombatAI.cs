@@ -422,12 +422,13 @@ namespace CombatAI.Comps
 						float retreatDist = Maths.Sqrt_Fast(retreatDistSqr, 4);
 						bool Validator_Retreat(IntVec3 cell)
 						{
-							if (retreatDistSqr - 4 > bestEnemyPositon.DistanceToSquared(cell))
+							float mul = 1f;
+							if (retreatDistSqr > bestEnemyPositon.DistanceToSquared(cell) && warmup != null )
 							{
-								return false;
+								mul = 0.25f;
 							}
-							return Rand.Chance(sightReader.GetVisibilityToEnemies(pawnPosition) - sightReader.GetVisibilityToEnemies(cell)) || 
-							       Rand.Chance(sightReader.GetThreat(pawnPosition) - sightReader.GetThreat(cell));
+							return Rand.Chance(mul * (sightReader.GetVisibilityToEnemies(pawnPosition) - sightReader.GetVisibilityToEnemies(cell))) || 
+							       Rand.Chance(mul * (sightReader.GetThreat(pawnPosition) - sightReader.GetThreat(cell)));
 						}
 						if (TryRetreat(new LocalTargetInfo(bestEnemy), retreatDist, verb, Validator_Retreat, warmup == null, true))
 						{

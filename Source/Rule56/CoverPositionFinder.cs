@@ -43,6 +43,7 @@ namespace CombatAI
 			float              rootThreat         = sightReader.GetThreat(request.locus);
 			float              bestCellVisibility = 1e8f;
 			float              bestCellScore      = 1e8f;
+			float              effectiveRange     = request.verb != null && request.verb.EffectiveRange > 0 ? request.verb.EffectiveRange * 0.8f : -1;
 			float              rootDutyDestDist   = dutyDest.IsValid ? dutyDest.DistanceTo(caster.Position) : -1;
 			bool               tpsLow             = Finder.Performance.TpsCriticallyLow;
 			flooder.Flood(request.locus,
@@ -56,6 +57,10 @@ namespace CombatAI
 				              if (rootDutyDestDist > 0)
 				              {
 					              c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -1f, 1f);
+				              }
+				              if (effectiveRange > 0)
+				              {
+					              c += 2f * Mathf.Abs(effectiveRange - Maths.Sqrt_Fast(node.cell.DistanceToSquared(enemyLoc), 5)) / effectiveRange;
 				              }
 				              if (bestCellScore - c >= 0.05f)
 				              {

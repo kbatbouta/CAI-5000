@@ -142,11 +142,11 @@ namespace CombatAI.Patches
 			{
 				if (!skipped && sightReader != null)
 				{
-					IntVec3 root       = pawn.Position;
-					float   rootVis    = sightReader.GetVisibilityToEnemies(root);
-					float   rootThreat = sightReader.GetThreat(request.locus);
-
-					float rootDutyDestDist = dutyDest.IsValid ? dutyDest.DistanceTo(pawn.Position) : -1;
+					IntVec3 root             = pawn.Position;
+					float   rootVis          = sightReader.GetVisibilityToEnemies(root);
+					float   rootThreat       = sightReader.GetThreat(request.locus);
+					float   effectiveRange   = verb?.EffectiveRange > 0 ? verb.EffectiveRange : -1;
+					float   rootDutyDestDist = dutyDest.IsValid ? dutyDest.DistanceTo(pawn.Position) : -1;
 					map.GetCellFlooder().Flood(root,
 					                           node =>
 					                           {
@@ -154,6 +154,10 @@ namespace CombatAI.Patches
 						                           if (rootDutyDestDist > 0)
 						                           {
 							                           val += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -2f, 2f);
+						                           }
+						                           if (effectiveRange > 0)
+						                           {
+							                           val += 2f * Mathf.Abs(effectiveRange - Maths.Sqrt_Fast(node.cell.DistanceToSquared(targetPosition), 5)) / effectiveRange;
 						                           }
 						                           grid[node.cell] = val;
 					                           },
