@@ -167,8 +167,12 @@ namespace CombatAI.Comps
 					TryStartSapperJob();
 				}
 			}
-			if (forcedTarget.IsValid)
+			if (forcedTarget.IsValid && !IsDeadOrDowned)
 			{
+				if (Mod_CE.active && (selPawn.CurJobDef.Is(Mod_CE.ReloadWeapon) || selPawn.CurJobDef.Is(Mod_CE.HunkerDown)))
+				{
+					return;
+				}
 				// remove the forced target on when not drafted and near the target
 				if (!selPawn.Drafted || selPawn.Position.DistanceToSquared(forcedTarget.Cell) < 25)
 				{
