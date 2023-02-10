@@ -178,7 +178,7 @@ namespace CombatAI.Comps
 				{
 					forcedTarget = LocalTargetInfo.Invalid;;
 				}
-				else if (sightReader.GetAbsVisibilityToEnemies(selPawn.Position) == 0 && enemiesInRangeNum == 0 && (selPawn.jobs.curJob?.def.Is(JobDefOf.Goto) == false || selPawn.pather?.Destination != forcedTarget.Cell))
+				else if (enemiesInRangeNum == 0 && (selPawn.jobs.curJob?.def.Is(JobDefOf.Goto) == false || selPawn.pather?.Destination != forcedTarget.Cell))
 				{
 					Job gotoJob = JobMaker.MakeJob(JobDefOf.Goto, forcedTarget);
 					gotoJob.canUseRangedWeapon = true;
