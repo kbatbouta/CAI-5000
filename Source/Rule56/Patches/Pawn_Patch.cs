@@ -45,7 +45,7 @@ namespace CombatAI.Patches
 		{
 			public static bool Prefix(Pawn __instance)
 			{
-				return !fogOverlay.IsFogged(__instance.Position);
+				return !fogOverlay.IsFogged(__instance.Position) && !Finder.Settings.Debug_DisablePawnGuiOverlay;
 			}
 		}
 

@@ -975,8 +975,8 @@ namespace CombatAI.Comps
 		public override void PostExposeData()
 		{
 			base.PostExposeData();
-			Scribe_Deep.Look(ref duties, "duties");
-			Scribe_Deep.Look(ref abilities, "abilities");
+			Scribe_Deep.Look(ref duties, "duties2");
+			Scribe_Deep.Look(ref abilities, "abilities2");
 			Scribe_TargetInfo.Look(ref forcedTarget, "forcedTarget");
 			if (duties == null)
 			{
