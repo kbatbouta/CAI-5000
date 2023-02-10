@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using CombatAI.Comps;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -54,8 +55,12 @@ namespace CombatAI.Patches
 				skipped = true;
 				if (newReq.caster != null && Finder.Settings.Caster_Enabled && newReq.target != null && (newReq.maxRangeFromTarget == 0 || newReq.maxRangeFromTarget * newReq.maxRangeFromTarget > newReq.caster.Position.DistanceToSquared(newReq.target.Position)) && newReq.maxRangeFromLocus == 0)
 				{
-					if ((pawn = newReq.caster) != null && !(pawn.RaceProps?.Animal ?? true) && !((pawn.Faction?.IsPlayerSafe() ?? false) && !pawn.Drafted && pawn.mindState?.duty == null) && !(pawn.mindState != null && (pawn.mindState.duty?.def == DutyDefOf.Sapper || pawn.mindState.duty?.def == DutyDefOf.Breaching)))
+					if ((pawn = newReq.caster) != null && !(pawn.RaceProps?.Animal ?? true) && (pawn.mindState?.duty == null || (pawn.mindState.duty.def != DutyDefOf.Sapper && pawn.mindState.duty.def != DutyDefOf.Breaching)))
 					{
+						if (pawn.Faction.IsPlayerSafe() && pawn.GetComp_Fast<ThingComp_CombatAI>()?.forcedTarget.IsValid == false)
+						{
+							goto skip;
+						}
 						map              = newReq.caster?.Map;
 						verb             = newReq.verb;
 						range            = verb.EffectiveRange;
@@ -86,6 +91,7 @@ namespace CombatAI.Patches
 						}
 					}
 				}
+				skip:
 				pawn             = null;
 				grid             = null;
 				avoidanceTracker = null;
