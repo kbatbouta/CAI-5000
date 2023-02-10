@@ -30,6 +30,7 @@ namespace CombatAI
 		public bool Debug_DrawShadowCasts;
 		public bool Debug_DrawShadowCastsVectors = false;
 		public bool Debug_DrawThreatCasts        = false;
+		public bool Debug_DisablePawnGuiOverlay  = false;
 		public bool Debug_ValidateSight;
 		public bool Enable_Groups = true;
 
