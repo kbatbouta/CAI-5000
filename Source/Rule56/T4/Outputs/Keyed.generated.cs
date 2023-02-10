@@ -112,6 +112,16 @@ namespace CombatAI.R
                    _CombatAI_Gizmos_AttackMove : _CombatAI_Gizmos_AttackMove = "CombatAI.Gizmos.AttackMove".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Gizmos_AttackMove_Warning = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Gizmos.AttackMove.Warning</c>. inner text:
+        ///
+        /// <code>Warning: Melee pawns cannot use move-attack. Melee pawns skipped.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Gizmos_AttackMove_Warning {
+            get => _CombatAI_Gizmos_AttackMove_Warning != null ? 
+                   _CombatAI_Gizmos_AttackMove_Warning : _CombatAI_Gizmos_AttackMove_Warning = "CombatAI.Gizmos.AttackMove.Warning".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Gizmos_AttackMove_Cancel = null;
         /// <summary> Keyed string. key=<c>CombatAI.Gizmos.AttackMove.Cancel</c>. inner text:
         ///

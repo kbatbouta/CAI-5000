@@ -862,6 +862,11 @@ namespace CombatAI.Comps
 								}
 								pawn.drafter.Drafted = true;
 							}
+							if (pawn.CurrentEffectiveVerb?.IsMeleeAttack ?? true)
+							{
+								Messages.Message(R.Keyed.CombatAI_Gizmos_AttackMove_Warning, MessageTypeDefOf.RejectInput, false);
+								continue;
+							}
 							pawn.GetComp_Fast<ThingComp_CombatAI>().forcedTarget = target;
 							Job gotoJob = JobMaker.MakeJob(JobDefOf.Goto, target);
 							gotoJob.canUseRangedWeapon = true;
