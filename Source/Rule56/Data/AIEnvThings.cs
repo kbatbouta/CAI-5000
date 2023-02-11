@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Verse;
@@ -74,7 +73,7 @@ namespace CombatAI
             {
                 if (IsReadOnly)
                 {
-                    throw new ReadOnlyException("Collection is readonly");
+                    throw new Exception("Collection is readonly");
                 }
                 for (int i = 0; i < things.Count; i++)
                 {
@@ -137,7 +136,7 @@ namespace CombatAI
         {
             if (IsReadOnly)
             {
-                throw new ReadOnlyException("Collection is readonly");
+                throw new Exception("Collection is readonly");
             }
             this[item.thing] = item.state;
         }
@@ -147,7 +146,7 @@ namespace CombatAI
         {
             if (IsReadOnly)
             {
-                throw new ReadOnlyException("Collection is readonly");
+                throw new Exception("Collection is readonly");
             }
             this[thing] = state;
         }
@@ -157,7 +156,7 @@ namespace CombatAI
         {
             if (IsReadOnly)
             {
-                throw new ReadOnlyException("Collection is readonly");
+                throw new Exception("Collection is readonly");
             }
             return things.Remove(item);
         }
@@ -167,7 +166,7 @@ namespace CombatAI
         {
             if (IsReadOnly)
             {
-                throw new ReadOnlyException("Collection is readonly");
+                throw new Exception("Collection is readonly");
             }
             return things.RemoveAll(i => i.thing == thing) > 0;
         }
@@ -176,7 +175,7 @@ namespace CombatAI
         {
             if (IsReadOnly)
             {
-                throw new ReadOnlyException("Collection is readonly");
+                throw new Exception("Collection is readonly");
             }
             things.Clear();
         }
@@ -185,7 +184,7 @@ namespace CombatAI
         {
             if (IsReadOnly)
             {
-                throw new ReadOnlyException("Collection is readonly");
+                throw new Exception("Collection is readonly");
             }
             this.things.Clear();
             this.things.AddRange(things);
@@ -195,7 +194,7 @@ namespace CombatAI
         {
             if (IsReadOnly)
             {
-                throw new ReadOnlyException("Collection is readonly");
+                throw new Exception("Collection is readonly");
             }
             this.ClearAndAddRange(things.ToHashSet());
         }
