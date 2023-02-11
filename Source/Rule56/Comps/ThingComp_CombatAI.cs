@@ -469,19 +469,20 @@ namespace CombatAI.Comps
 					if (retreat)
 					{
 						float retreatDist = Maths.Sqrt_Fast(retreatDistSqr, 4);
-						bool Validator_Retreat(IntVec3 cell)
+//						bool Validator_Retreat(IntVec3 cell)
+//						{
+//							float mul = 1f; 
+//							float vis = sightReader.GetVisibilityToEnemies(pawnPosition);
+//							if (retreatDistSqr > bestEnemyPositon.DistanceToSquared(cell) && warmup != null )
+//							{
+//								mul = 0.25f;
+//							}
+//							return Rand.Chance(mul * (vis - sightReader.GetVisibilityToEnemies(cell))) || 
+//							       Rand.Chance(mul * (sightReader.GetThreat(pawnPosition) - sightReader.GetThreat(cell)));
+//						}
+						if (TryRetreat(new LocalTargetInfo(bestEnemy), retreatDist, verb, null, warmup == null, true))
 						{
-							float mul = 1f;
-							if (retreatDistSqr > bestEnemyPositon.DistanceToSquared(cell) && warmup != null )
-							{
-								mul = 0.25f;
-							}
-							return Rand.Chance(mul * (sightReader.GetVisibilityToEnemies(pawnPosition) - sightReader.GetVisibilityToEnemies(cell))) || 
-							       Rand.Chance(mul * (sightReader.GetThreat(pawnPosition) - sightReader.GetThreat(cell)));
-						}
-						if (TryRetreat(new LocalTargetInfo(bestEnemy), retreatDist, verb, Validator_Retreat, warmup == null, true))
-						{
-							lastRetreated = GenTicks.TicksGame - Rand.Int % 50;
+							lastRetreated = GenTicks.TicksGame - Rand.Int % Mathf.FloorToInt(50 * (2 - verb.verbProps.warmupTime));
 						}
 					}
 					else if (!fastCheck)
