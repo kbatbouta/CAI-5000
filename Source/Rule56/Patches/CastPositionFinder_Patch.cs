@@ -156,7 +156,7 @@ namespace CombatAI.Patches
 					map.GetCellFlooder().Flood(root,
 					                           node =>
 					                           {
-						                           float val = (node.dist - node.distAbs) / (node.distAbs + 1f) + (sightReader.GetVisibilityToEnemies(node.cell) - rootVis) * 0.25f + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;
+						                           float val = (node.dist - node.distAbs) / (node.distAbs + 1f) * 2 + (sightReader.GetVisibilityToEnemies(node.cell) - rootVis) * 0.25f + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;
 						                           if (rootDutyDestDist > 0)
 						                           {
 							                           val += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -2f, 2f);
@@ -209,7 +209,7 @@ namespace CombatAI.Patches
 						}
 						else
 						{
-							__result = __result - grid[c] * Finder.P50 + 1;
+							__result = __result - grid[c] * Finder.P50 + 1.5f;
 						}
 					}
 				}
