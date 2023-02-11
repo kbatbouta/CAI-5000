@@ -16,6 +16,7 @@ namespace CombatAI.Comps
 {
 	public class ThingComp_CombatAI : ThingComp
 	{
+		public AIAgentData data;
 		/// <summary>
 		/// Number of enemies in range.
 		/// Updated by the sightgrid.
@@ -24,7 +25,10 @@ namespace CombatAI.Comps
 		/// <summary>
 		///     Set of visible enemies. A queue for visible enemies during scans.
 		/// </summary>
-		private readonly HashSet<Thing> visibleEnemies;
+		private readonly HashSet<AIEnvAgentInfo> allEnemies;
+		private readonly HashSet<AIEnvAgentInfo> allAllies;
+		
+		
 		private          int         _sap;
 
 		/// <summary>
@@ -81,7 +85,9 @@ namespace CombatAI.Comps
 
 		public ThingComp_CombatAI()
 		{
-			visibleEnemies = new HashSet<Thing>(32);
+			allEnemies = new HashSet<AIEnvAgentInfo>(32);
+			allAllies  = new HashSet<AIEnvAgentInfo>(32);
+			data       = new AIAgentData();
 		}
 
 		/// <summary>
@@ -140,7 +146,7 @@ namespace CombatAI.Comps
 			}
 			if (abilities != null)
 			{
-				abilities.TickRare(visibleEnemies);
+//				abilities.TickRare(visibleEnemies);
 			}
 			if (IsSapping && !IsDeadOrDowned)
 			{
@@ -231,14 +237,18 @@ namespace CombatAI.Comps
 		/// </summary>
 		public void OnScanStarted()
 		{
-			if (visibleEnemies.Count != 0)
+			if (allEnemies.Count != 0)
 			{
 				if (scanning)
 				{
-					Log.Warning($"ISMA: OnScanStarted called while scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
+					Log.Warning($"ISMA: OnScanStarted called while scanning. ({allEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
 					return;
 				}
-				visibleEnemies.Clear();
+				allEnemies.Clear();
+			}
+			if (allAllies.Count != 0)
+			{
+				allAllies.Clear();
 			}
 			scanning    = true;
 			lastScanned = GenTicks.TicksGame;
@@ -253,20 +263,23 @@ namespace CombatAI.Comps
 		{
 			if (scanning == false)
 			{
-				Log.Warning($"ISMA: OnScanFinished called while not scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
+				Log.Warning($"ISMA: OnScanFinished called while not scanning. ({allEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
 				return;
 			}
 			scanning          = false;
+			// set the agent data.
+			data.ReSetEnemies(allEnemies);
+			data.ReSetAllies(allAllies);
+			// skip for player pawns with no forced target.
 			if (selPawn.Faction.IsPlayerSafe() && !forcedTarget.IsValid)
 			{
-				visibleEnemies.Clear();
 				return;
 			}
 #if DEBUG_REACTION
 			if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
 			{
 				_visibleEnemies.Clear();
-				_visibleEnemies.AddRange(visibleEnemies.Where(t => t is Pawn).Select(t => t as Pawn));
+				_visibleEnemies.AddRange(allEnemies.Where(t => t.thing is Pawn).Select(t => t.thing as Pawn));
 				if (_path.Count == 0 || _path.Last() != parent.Position)
 				{
 					_path.Add(parent.Position);
@@ -291,7 +304,7 @@ namespace CombatAI.Comps
 			}
 #endif
 			// if no enemies are visible skip.
-			if (visibleEnemies.Count == 0)
+			if (allEnemies.Count == 0)
 			{
 				return;
 			}
@@ -376,15 +389,16 @@ namespace CombatAI.Comps
 					IntVec3 bestEnemyPositon    = IntVec3.Invalid;
 					IntVec3 pawnPosition        = selPawn.Position;
 					float   bestEnemyScore      = verb.currentTarget.IsValid && verb.currentTarget.Cell.IsValid ? verb.currentTarget.Cell.DistanceToSquared(pawnPosition) : 1e6f;
-					bool    bestEnemyVisibleNow = warmup != null;
+					bool    bestEnemyVisibleNow = false;
 					bool    retreat             = false;
 					bool    canRetreat          = Finder.Settings.Retreat_Enabled && selPawn.RaceProps.baseHealthScale <= 2.0f && selPawn.RaceProps.baseBodySize <= 2.2f;
-					float   retreatDistSqr      = Maths.Max(verb.EffectiveRange * verb.EffectiveRange / 9, 36);
-					foreach (Thing enemy in visibleEnemies)
+					float   retreatDistSqr      = Maths.Sqr(Maths.Min(verb.EffectiveRange / 4 * verb.verbProps.warmupTime, 9));
+					foreach (AIEnvAgentInfo enemyInfo in allEnemies)
 					{
+						Thing enemy = enemyInfo.thing;
 						if (enemy is { Spawned: true, Destroyed: false })
 						{
-							IntVec3 shiftedPos = enemy.Position;
+							IntVec3 enemyPosition = enemy.Position;
 							Pawn    enemyPawn  = enemy as Pawn;
 							if (enemyPawn != null)
 							{
@@ -394,29 +408,29 @@ namespace CombatAI.Comps
 								{
 									continue;
 								}
-								shiftedPos = PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 60);
 							}
-							float distSqr = pawnPosition.DistanceToSquared(shiftedPos);
-							if (canRetreat && distSqr < retreatDistSqr)
+							float distSqr        = pawnPosition.DistanceToSquared(enemyPosition);
+							if (enemyPawn != null)
 							{
-								if (enemyPawn != null && distSqr < 81)
+								float distSqrShifted = PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 120).DistanceToSquared(pawnPosition);
+								if (canRetreat && distSqrShifted < retreatDistSqr)
 								{
-									bestEnemy      = enemy;
-									bestEnemyScore = distSqr;
-									retreat        = true;
-									break;
+									bestEnemy        = enemy;
+									bestEnemyScore   = distSqr;
+									bestEnemyPositon = enemyPosition;
+									retreat          = true;
 								}
 							}
-							if (!fastCheck)
+							if (!fastCheck && !retreat)
 							{
-								if (verb.CanHitTarget(enemy.Position))
+								if (verb.CanHitTarget(enemyPosition))
 								{
 									if (!bestEnemyVisibleNow)
 									{
 										bestEnemyVisibleNow = true;
 										bestEnemy           = enemy;
 										bestEnemyScore      = distSqr;
-										bestEnemyPositon    = shiftedPos;
+										bestEnemyPositon    = enemyPosition;
 									}
 									else
 									{
@@ -424,20 +438,20 @@ namespace CombatAI.Comps
 										{
 											bestEnemy        = enemy;
 											bestEnemyScore   = distSqr;
-											bestEnemyPositon = shiftedPos;
+											bestEnemyPositon = enemyPosition;
 										}
 									}
 								}
 								else if (!bestEnemyVisibleNow)
 								{
-									if (shiftedPos != enemy.Position && verb.CanHitTarget(shiftedPos))
+									if (selPawn.CanReach(enemy, PathEndMode.InteractionCell, Danger.Unspecified, true, true))
 									{
-										distSqr = pawnPosition.DistanceToSquared(shiftedPos);
+										distSqr = pawnPosition.DistanceToSquared(enemyPosition);
 										if (bestEnemyScore > distSqr)
 										{
 											bestEnemy        = enemy;
 											bestEnemyScore   = distSqr;
-											bestEnemyPositon = shiftedPos;
+											bestEnemyPositon = enemyPosition;
 										}
 									}
 								}
@@ -472,10 +486,7 @@ namespace CombatAI.Comps
 					}
 					else if (!fastCheck)
 					{
-						bool Validator_Attack(IntVec3 cell) => prevEnemyDir == Vector2.zero 
-						                                || Rand.Chance(Mathf.Abs(1 - Vector2.Dot(prevEnemyDir, sightReader.GetEnemyDirection(cell).normalized))) 
-						                                || Rand.Chance(sightReader.GetVisibilityToEnemies(pawnPosition) - sightReader.GetVisibilityToEnemies(cell));
-						if (TryAttack(new LocalTargetInfo(bestEnemy), verb, bestEnemyVisibleNow, out IntVec3 destCell, Validator_Attack, warmup == null, true))
+						if (TryAttack(new LocalTargetInfo(bestEnemy), verb, bestEnemyVisibleNow, out IntVec3 destCell, null, warmup == null, true))
 						{
 							lastInterupted = lastMoved = GenTicks.TicksGame;
 							prevEnemyDir   = sightReader.GetEnemyDirection(destCell).normalized;
@@ -499,7 +510,7 @@ namespace CombatAI.Comps
 		{
 			bool  changedPos = false;
 			destCell = selPawn.Position;
-			if (enemy.Thing != null && selPawn.Position.DistanceToSquared(enemy.Cell) < 25 && canAttackNow)
+			if (enemy.Thing != null && canAttackNow && enemyVisibleNow)
 			{
 				if (updateDebugData)
 				{
@@ -580,7 +591,7 @@ namespace CombatAI.Comps
 					request.caster             = selPawn;
 					request.target             = new LocalTargetInfo(enemy.Cell);
 					request.verb               = verb;
-					request.maxRangeFromCaster = Mathf.Clamp(moveSpeed * 3 / (selPawn.BodySize + 0.01f), 4, 15);
+					request.maxRangeFromCaster = Mathf.Clamp(moveSpeed * 4 / (selPawn.BodySize + 0.01f), 4, 15);
 					request.checkBlockChance   = true;
 					if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && cell != selPawn.Position)
 					{
@@ -645,7 +656,7 @@ namespace CombatAI.Comps
 					selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
 					return true;
 				}
-			}
+			} 
 			if (attackOnFallback)
 			{
 				if (verb is { IsMeleeAttack: false })
@@ -927,31 +938,31 @@ namespace CombatAI.Comps
 		}
 
 		/// <summary>
-		///     Enqueue enemies for reaction processing.
-		/// </summary>
-		/// <param name="things">Spotted enemies</param>
-		public void Notify_EnemiesVisible(IEnumerable<Thing> things)
-		{
-			if (!scanning)
-			{
-				Log.Warning($"ISMA: Notify_EnemiesVisible called while not scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
-				return;
-			}
-			visibleEnemies.AddRange(things);
-		}
-
-		/// <summary>
 		///     Enqueue enemy for reaction processing.
 		/// </summary>
 		/// <param name="things">Spotted enemy</param>
-		public void Notify_EnemyVisible(Thing thing)
+		public void Notify_Enemy(AIEnvAgentInfo info)
 		{
 			if (!scanning)
 			{
-				Log.Warning($"ISMA: Notify_EnemiesVisible called while not scanning. ({visibleEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
+				Log.Warning($"ISMA: Notify_EnemiesVisible called while not scanning. ({allEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
 				return;
 			}
-			visibleEnemies.Add(thing);
+			allEnemies.Add(info);
+		}
+		
+		/// <summary>
+		///     Enqueue ally for reaction processing.
+		/// </summary>
+		/// <param name="things">Spotted enemy</param>
+		public void Notify_Ally(AIEnvAgentInfo info)
+		{
+			if (!scanning)
+			{
+				Log.Warning($"ISMA: Notify_EnemiesVisible called while not scanning. ({allEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
+				return;
+			}
+			allAllies.Add(info);
 		}
 
 		/// <summary>
@@ -975,6 +986,8 @@ namespace CombatAI.Comps
 		public override void PostExposeData()
 		{
 			base.PostExposeData();
+			Scribe_Deep.Look(ref data, "AIAgentData.0");
+			data ??= new AIAgentData();
 			Scribe_Deep.Look(ref duties, "duties2");
 			Scribe_Deep.Look(ref abilities, "abilities2");
 			Scribe_TargetInfo.Look(ref forcedTarget, "forcedTarget");
@@ -1122,7 +1135,7 @@ namespace CombatAI.Comps
 						Vector2 drawPosUI = drawPos.MapToUIPosition();
 						Text.Font = GameFont.Tiny;
 						string state = GenTicks.TicksGame - lastInterupted > 120 ? "<color=blue>O</color>" : "<color=yellow>X</color>";
-						Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}:{_last}");
+						Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}:{_last}:{data.AllEnemies.Count}:{data.NumAllies}");
 					});
 					bool bugged = nearbyVisiblePawns.Count != _visibleEnemies.Count;
 					if (bugged)
