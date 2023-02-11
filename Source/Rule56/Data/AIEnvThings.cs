@@ -124,7 +124,7 @@ namespace CombatAI
             {
                 things.RemoveAll(t => t.thing == null || t.thing.Destroyed);
             }
-            Scribe_Collections.Look(ref things, "collectionThings", LookMode.Deep);
+//            Scribe_Collections.Look(ref things, "collectionThings", LookMode.Deep);
             if (Scribe.mode != LoadSaveMode.Saving)
             {
                 things ??= new List<AIEnvAgentInfo>();
