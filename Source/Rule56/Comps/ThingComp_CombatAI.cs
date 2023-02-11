@@ -482,7 +482,7 @@ namespace CombatAI.Comps
 //						}
 						if (TryRetreat(new LocalTargetInfo(bestEnemy), retreatDist, verb, null, warmup == null, true))
 						{
-							lastRetreated = GenTicks.TicksGame - Rand.Int % Mathf.FloorToInt(50 * (2 - verb.verbProps.warmupTime));
+							lastRetreated = GenTicks.TicksGame - Rand.Int % Maths.Max(Mathf.FloorToInt(50 * (2 - verb.verbProps.warmupTime)), 1);
 						}
 					}
 					else if (!fastCheck)
