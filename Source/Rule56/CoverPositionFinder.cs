@@ -53,7 +53,7 @@ namespace CombatAI
 				              {
 					              return;
 				              }
-				              float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - interceptors.grid.Get(node.cell) * 2 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.25f;
+				              float c = (node.dist - node.distAbs) / (node.distAbs + 1f) * 2 - interceptors.grid.Get(node.cell) * 2 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.25f;
 				              if (rootDutyDestDist > 0)
 				              {
 					              c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -1f, 1f);
@@ -139,7 +139,7 @@ namespace CombatAI
 					              return;
 				              }
 				              // do math
-				              float c = (node.dist - node.distAbs) / (node.distAbs + 1f) + avoidanceReader.GetProximity(node.cell) * 0.5f - interceptors.grid.Get(node.cell) + (sightReader.GetThreat(node.cell) - rootThreat) * 0.75f;
+				              float c = (node.dist - node.distAbs) / (node.distAbs + 1f) * 2 + avoidanceReader.GetProximity(node.cell) * 0.5f - interceptors.grid.Get(node.cell) + (sightReader.GetThreat(node.cell) - rootThreat) * 0.75f;
 				              if (rootDutyDestDist > 0)
 				              {
 					              c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 5) - rootDutyDestDist) * 0.25f, -1f, 1f);
