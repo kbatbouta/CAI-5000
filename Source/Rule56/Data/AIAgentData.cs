@@ -133,13 +133,13 @@ namespace CombatAI
 
         public void ExposeData()
         {
-            int v = 0;
-            Scribe_Deep.Look(ref enemies, $"EnvEnemies.{v}");
-            enemies    ??= new AIEnvThings();
-            NumEnemies =   enemies.Count;
-            Scribe_Deep.Look(ref allies, $"EnvAllies.{v}");
-            allies     ??= new AIEnvThings();
-            NumAllies  =   allies.Count;
+//            int v = 0;
+//            Scribe_Deep.Look(ref enemies, $"EnvEnemies.{v}");
+//            enemies    ??= new AIEnvThings();
+//            NumEnemies =   enemies.Count;
+//            Scribe_Deep.Look(ref allies, $"EnvAllies.{v}");
+//            allies     ??= new AIEnvThings();
+//            NumAllies  =   allies.Count;
         }
     }
 }
