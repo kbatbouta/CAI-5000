@@ -13,6 +13,7 @@ namespace CombatAI
         private const    int                        COVERCARRYLIMIT = 6;
         private readonly AsyncActions               asyncActions;
         private readonly IBuckets<IBucketableThing> buckets;
+        private readonly CellFlooder                flooder;
         private readonly List<Vector3>              buffer = new List<Vector3>(1024);
         /// <summary>
         ///     Sight grid contains all sight data.
@@ -89,6 +90,7 @@ namespace CombatAI
             suRect_Combatant.minZ = map.cellIndices.mapSizeZ;
             suRect_Combatant.maxZ = 0;
             suRectPrev_Combatant  = CellRect.Empty;
+            flooder               = new CellFlooder(map);
         }
         /// <summary>
         ///     Tracks the number of factions tracked.
@@ -452,9 +454,10 @@ namespace CombatAI
                         if (flag != 0)
                         {
                             ISpotRecord spotting = new ISpotRecord();
-                            spotting.cell       = cell;
-                            spotting.flag       = flag;
-                            spotting.visibility = visibility;
+                            spotting.cell  = cell;
+                            spotting.flag  = flag;
+                            spotting.state = (int)AIEnvAgentState.visible;
+                            spotting.score = visibility;
                             item.spottings.Add(spotting);
                         }
                     }
@@ -467,14 +470,31 @@ namespace CombatAI
                 {
                     ShadowCastingUtility.CastWeighted(map, pos, item.CctvTop.LookDirection, setAction, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), item.CctvTop.BaseWidth, settings.carryLimit, buffer);
                 }
+                flooder.Flood(origin, node =>
+                {
+                    grid.Set(node.cell, item.cachedDamage.attributes | availability);
+                    grid_regions.Set(node.cell);
+                    if (scanForEnemies)
+                    {
+                        ulong flag = reader.GetEnemyFlags(node.cell) | reader.GetFriendlyFlags(node.cell);
+                        if (flag != 0)
+                        {
+                            ISpotRecord spotting = new ISpotRecord();
+                            spotting.cell  = node.cell;
+                            spotting.flag  = flag;
+                            spotting.state = (int)AIEnvAgentState.nearby;
+                            spotting.score = node.distAbs;
+                            item.spottings.Add(spotting);
+                        }
+                    }
+                }, maxDist: 10);
                 grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Set(pos, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Next(0, 0, item.cachedDamage.attributes);
                 grid.Set(flagPos, item.pawn == null || !item.pawn.Downed ? GetFlags(item) : 0);
                 if (scanForEnemies)
                 {
-                    item.ai.enemiesInRangeNum = item.spottings.Count;
-                    if (item.spottings.Count > 0 || (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight))
+                    if (item.ai.data.NumEnemies > 0 || item.ai.data.NumAllies > 0 || item.spottings.Count > 0 || (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight))
                     {
                         // on the main thread check for enemies on or near this cell.
                         asyncActions.EnqueueMainThreadAction(delegate
@@ -482,21 +502,30 @@ namespace CombatAI
                             if (!item.thing.Destroyed && item.thing.Spawned)
                             {
                                 for (int i = 0; i < item.spottings.Count; i++)
-                                {
+                                {                                    
                                     ISpotRecord record = item.spottings[i];
-                                    Thing       enemy;
                                     thingBuffer1.Clear();
                                     sightTracker.factionedUInt64Map.GetThings(record.flag, thingBuffer1);
+//                                    if (Find.Selector.selected.Contains(item.thing))
+//                                    {
+//                                        map.debugDrawer.FlashCell(record.cell);
+//                                    }
                                     for (int j = 0; j < thingBuffer1.Count; j++)
                                     {
-                                        enemy = thingBuffer1[j];
-                                        if (enemy.Spawned
-                                            && !enemy.Destroyed
-                                            && (enemy.Position.DistanceToSquared(record.cell) < 225 || enemy is Pawn enemyPawn && PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 70).DistanceToSquared(record.cell) < 255)
-                                            && enemy.HostileTo(item.thing)
-                                            && !enemy.IsDormant())
+                                        Thing agent = thingBuffer1[j];
+                                        if (agent != item.thing
+                                            && agent.Spawned
+                                            && (agent.Position.DistanceToSquared(record.cell) < 225 || agent is Pawn enemyPawn && PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 70).DistanceToSquared(record.cell) < 255)
+                                            && !agent.IsDormant())
                                         {
-                                            item.ai.Notify_EnemyVisible(enemy);
+                                            if (agent.HostileTo(item.thing))
+                                            {
+                                                item.ai.Notify_Enemy(new AIEnvAgentInfo(agent, (AIEnvAgentState) record.state));
+                                            }
+                                            else
+                                            {
+                                                item.ai.Notify_Ally(new AIEnvAgentInfo(agent, (AIEnvAgentState) record.state));
+                                            }                                          
                                         }
                                     }
                                 }
@@ -592,9 +621,13 @@ namespace CombatAI
             /// </summary>
             public IntVec3 cell;
             /// <summary>
+            /// state
+            /// </summary>
+            public int state;
+            /// <summary>
             ///     Cell visibility.
             /// </summary>
-            public float visibility;
+            public float score;
         }
 
         private class IBucketableThing : IBucketable
@@ -638,7 +671,7 @@ namespace CombatAI
             /// <summary>
             ///     Contains spotting records that are to be processed on the main thread once the scan is finished.
             /// </summary>
-            public readonly List<ISpotRecord> spottings = new List<ISpotRecord>(64);
+            public readonly List<ISpotRecord> spottings = new List<ISpotRecord>(16);
             /// <summary>
             ///     Thing.
             /// </summary>
