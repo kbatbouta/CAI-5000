@@ -7,7 +7,6 @@ namespace CombatAI.Comps
 		public bool powered;
 		public int  radius;
 		public int? radiusNight;
-
 		public CompProperties_Sighter()
 		{
 			compClass = typeof(ThingComp_Sighter);
