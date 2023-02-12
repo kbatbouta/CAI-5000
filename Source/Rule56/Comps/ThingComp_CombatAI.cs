@@ -499,7 +499,7 @@ namespace CombatAI.Comps
 		{
 			bool  changedPos = false;
 			destCell = selPawn.Position;
-			if (enemy.Thing != null && selPawn.Position.DistanceToSquared(enemy.Cell) < 25 && canAttackNow)
+			if (enemy.Thing != null && selPawn.Position.DistanceToSquared(enemy.Cell) < 15 && canAttackNow)
 			{
 				if (updateDebugData)
 				{
