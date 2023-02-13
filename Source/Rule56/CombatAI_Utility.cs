@@ -14,6 +14,26 @@ namespace CombatAI
 		{
 			return def != null && other != null && def == other;
 		}
+		
+		public static bool Is<T>(this Job job, T other) where T : Def
+		{
+			return job != null && other != null && job.def == other;
+		}
+		
+		public static bool Is<T>(this PawnDuty duty, T other) where T : Def
+		{
+			return duty != null && other != null && duty.def == other;
+		}
+		
+		public static bool Is<T>(this Thing thing, T other) where T : Def
+		{
+			return thing != null && other != null && thing.def == other;
+		}
+		
+		public static bool Is<T>(this Thing thing, Thing other) where T : Def
+		{
+			return thing != null && other != null && thing == other;
+		}
 
 		public static bool IsDormant(this Thing thing)
 		{

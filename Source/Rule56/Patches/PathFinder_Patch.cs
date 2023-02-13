@@ -109,7 +109,13 @@ namespace CombatAI.Patches
 					}
 
 					float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-					if (dig = Finder.Settings.Pather_KillboxKiller && !dump && comp != null && comp.CanSappOrEscort && pawn.mindState?.duty?.def != DutyDefOf.Sapper && pawn.CurJob?.def != JobDefOf.Mine && !comp.IsSapping && !comp.TookDamageRecently(360) && sightReader != null && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction)
+					if (dig = Finder.Settings.Pather_KillboxKiller 
+					          && !dump && comp != null && comp.data.LastSawEnemies > 600 
+					          && comp.CanSappOrEscort && pawn.mindState?.duty?.def != DutyDefOf.Sapper 
+					          && pawn.CurJob?.def != JobDefOf.Mine && !comp.IsSapping 
+					          && !comp.TookDamageRecently(360) && sightReader != null 
+					          && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 
+					          && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction)
 					          && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual || pawn.mindState?.duty?.def == DutyDefOf.Defend))
 					{
 						raiders = true;

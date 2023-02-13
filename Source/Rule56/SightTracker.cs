@@ -581,7 +581,7 @@ namespace CombatAI
 						val = armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
 					}
 				}
-				val = Maths.Max((float)GetEnemyAvailability(index) * val, val);
+				val = Maths.Max((float)GetEnemyAvailability(index) * val / 2f, val);
 				return val;
 			}
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

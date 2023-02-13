@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -25,10 +26,10 @@ namespace CombatAI.Comps
 		/// <summary>
 		///     Set of visible enemies. A queue for visible enemies during scans.
 		/// </summary>
-		private readonly HashSet<AIEnvAgentInfo> allEnemies;
-		private readonly HashSet<AIEnvAgentInfo> allAllies;
-		
-		
+		private readonly List<Thing> rangedEnemiesTargetingSelf = new List<Thing>(4);
+		private readonly Dictionary<Thing, AIEnvAgentInfo> allEnemies;
+		private readonly Dictionary<Thing, AIEnvAgentInfo> allAllies;
+
 		private          int         _sap;
 
 		/// <summary>
@@ -85,8 +86,8 @@ namespace CombatAI.Comps
 
 		public ThingComp_CombatAI()
 		{
-			allEnemies = new HashSet<AIEnvAgentInfo>(32);
-			allAllies  = new HashSet<AIEnvAgentInfo>(32);
+			allEnemies = new Dictionary<Thing, AIEnvAgentInfo>(32);
+			allAllies  = new Dictionary<Thing, AIEnvAgentInfo>(32);
 			data       = new AIAgentData();
 		}
 
@@ -146,11 +147,28 @@ namespace CombatAI.Comps
 			}
 			if (abilities != null)
 			{
-//				abilities.TickRare(visibleEnemies);
+				// abilities.TickRare(visibleEnemies);
+			}
+			if (selPawn.CurJobDef.Is(JobDefOf.AttackMelee) && selPawn.CurJob.targetA.Thing is Pawn { Spawned: true } enemyPawn && enemyPawn.Position.DistanceToSquared(selPawn.Position) < 225 && enemyPawn.HostileTo(selPawn))
+			{
+				ThingComp_CombatAI comp = enemyPawn.GetComp_Fast<ThingComp_CombatAI>();
+				if (comp != null)
+				{
+					comp.Notify_BeingTargeted(selPawn, selPawn.CurrentEffectiveVerb);
+				}
 			}
 			if (IsSapping && !IsDeadOrDowned)
 			{
-				if (sapperNodes[0].GetEdifice(parent.Map) == null)
+				// end if this pawn is in
+				if (data.SawEnemiesRecently(300))
+				{
+					ReleaseEscorts();
+					sapperNodes.Clear();
+					cellBefore      = IntVec3.Invalid;
+					sapperStartTick = -1;
+					releasedTick    = GenTicks.TicksGame;
+				}
+				else if (sapperNodes[0].GetEdifice(parent.Map) == null)
 				{
 					cellBefore = sapperNodes[0];
 					sapperNodes.RemoveAt(0);
@@ -251,7 +269,7 @@ namespace CombatAI.Comps
 				allAllies.Clear();
 			}
 			scanning    = true;
-			lastScanned = GenTicks.TicksGame;
+			data.LastScanned = lastScanned = GenTicks.TicksGame;
 		}
 
 		/// <summary>
@@ -266,10 +284,18 @@ namespace CombatAI.Comps
 				Log.Warning($"ISMA: OnScanFinished called while not scanning. ({allEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
 				return;
 			}
-			scanning          = false;
-			// set the agent data.
+			scanning = false;
+			// set enemies.
 			data.ReSetEnemies(allEnemies);
+			// set allies.
 			data.ReSetAllies(allAllies);
+			// update when this pawn last saw enemies
+			data.LastSawEnemies = data.NumEnemies > 0 ? GenTicks.TicksGame : -1;
+			// skip for animals.
+			if (selPawn.mindState == null || selPawn.RaceProps.Animal || IsDeadOrDowned)
+			{
+				return;
+			}
 			// skip for player pawns with no forced target.
 			if (selPawn.Faction.IsPlayerSafe() && !forcedTarget.IsValid)
 			{
@@ -279,7 +305,20 @@ namespace CombatAI.Comps
 			if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
 			{
 				_visibleEnemies.Clear();
-				_visibleEnemies.AddRange(allEnemies.Where(t => t.thing is Pawn).Select(t => t.thing as Pawn));
+				IEnumerator<AIEnvAgentInfo> enumerator = data.Enemies();
+				while (enumerator.MoveNext())
+				{
+					AIEnvAgentInfo info = enumerator.Current;
+					if (info.thing == null)
+					{
+						Log.Warning("Found null thing (1)");
+						continue;
+					}
+					if (info.thing.Spawned && info.thing is Pawn pawn)
+					{
+						_visibleEnemies.Add(pawn);
+					}
+				}
 				if (_path.Count == 0 || _path.Last() != parent.Position)
 				{
 					_path.Add(parent.Position);
@@ -303,17 +342,21 @@ namespace CombatAI.Comps
 				}
 			}
 #endif
-			// if no enemies are visible skip.
-			if (allEnemies.Count == 0)
+			List<Thing> targetedBy = data.BeingTargetedBy;
+			// update when last saw enemies
+			data.LastSawEnemies = data.NumEnemies > 0 ? GenTicks.TicksGame : data.LastSawEnemies;
+			// if no enemies are visible nor anyone targeting self skip.
+			if (data.NumEnemies == 0 && targetedBy.Count == 0)
 			{
 				return;
 			}
 			// check if the TPS is good enough.
+			// reduce cooldown if the pawn hasn't seen enemies for a few ticks
 			if (!Finder.Performance.TpsCriticallyLow)
 			{
 				// if the pawn haven't seen enemies in a while and recently reacted then reset lastInterupted.
 				// This is done to ensure fast reaction times when exiting then entering combat.
-				if (GenTicks.TicksGame - lastInterupted < 100 && GenTicks.TicksGame - lastSawEnemies > 90)
+				if (GenTicks.TicksGame - lastSawEnemies > 90)
 				{
 					lastInterupted = -1;
 					if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
@@ -323,53 +366,242 @@ namespace CombatAI.Comps
 				}
 				lastSawEnemies = GenTicks.TicksGame;
 			}
-			if (!(selPawn.RaceProps?.Animal ?? true))
+			// get body size and use it in cooldown math.
+			float bodySize = selPawn.RaceProps.baseBodySize;
+			// pawn reaction cooldown changes with their body size.
+			if (GenTicks.TicksGame - Maths.Min(lastInterupted, lastRetreated) < 30 * bodySize)
 			{
-				float bodySize = selPawn.RaceProps.baseBodySize;
-				// pawn reaction cooldown changes with their bodysize.
-				if (GenTicks.TicksGame - lastInterupted < 60 * bodySize || GenTicks.TicksGame - lastRetreated < 65 * bodySize)
+				return;
+			}
+			// if the pawn is kidnapping a pawn skip.
+			if (selPawn.CurJobDef.Is(JobDefOf.Kidnap))
+			{
+				return;
+			}
+			// if the pawn is sapping, stop sapping.
+			if (selPawn.CurJobDef.Is(JobDefOf.Mine))
+			{
+				selPawn.jobs.StopAll();
+			}
+			// Skip if some vanilla duties are active.
+			PawnDuty duty = selPawn.mindState.duty;
+			if (duty.Is(DutyDefOf.Build) || duty.Is(DutyDefOf.SleepForever) || duty.Is(DutyDefOf.TravelOrLeave))
+			{
+				lastInterupted = GenTicks.TicksGame + Rand.Int % 240;
+				return;
+			}
+			IntVec3 selPos                = selPawn.Position;
+			Pawn    nearestMeleeEnemy     = null;
+			float   nearestMeleeEnemyDist = 1e5f;
+			Thing   nearestEnemy          = null;
+			float   nearestEnemyDist      = 1e5f;
+			// used to update nearest enemy THing
+			void UpdateNearestEnemy(Thing enemy)
+			{
+				float dist = selPawn.DistanceTo_Fast(enemy);
+				if (dist < nearestEnemyDist)
 				{
-					return;
+					nearestEnemyDist = dist;
+					nearestEnemy     = enemy;
 				}
-				// if the pawn is kidnaping a pawn skip.
-				if (selPawn.CurJobDef.Is(JobDefOf.Kidnap))
+			}
+			// used to update nearest melee pawn 
+			void UpdateNearestEnemyMelee(Thing enemy)
+			{
+				if (enemy is Pawn enemyPawn)
 				{
-					return;
+					float dist = selPawn.DistanceTo_Fast(enemy);
+					if (dist < nearestMeleeEnemyDist)
+					{
+						nearestMeleeEnemyDist = dist;
+						nearestMeleeEnemy     = enemyPawn;
+					}
 				}
-				// Skip if some vanilla duties are active.
-				PawnDuty duty = selPawn.mindState.duty;
-				if (duty != null && (duty.def.Is(DutyDefOf.Build) || duty.def.Is(DutyDefOf.SleepForever) || duty.def.Is(DutyDefOf.TravelOrLeave)))
+			}
+			// check if the chance of survivability is high enough
+			// defensive actions
+			Verb        verb                = selPawn.CurrentEffectiveVerb;
+			if (verb != null && verb.WarmupStance != null && verb.WarmupStance.ticksLeft < 40)
+			{
+				return;
+			}
+			AIEnvThings enemies             = data.AllEnemies;
+			float       possibleDmgDistance = 0f;
+			float       possibleDmgWarmup = 0f;
+			float       possibleDmg         = 0f;
+			rangedEnemiesTargetingSelf.Clear();
+			for (int i = 0; i < targetedBy.Count; i++)
+			{
+				Thing          enemy = targetedBy[i];
+#if DEBUG_REACTION
+				if (enemy == null)
 				{
-					lastInterupted = GenTicks.TicksGame + Rand.Int % 240;
-					return;
+					Log.Error("Found null thing (2)");
+					continue;
 				}
-				// pawns above a certain bodysize who are worming up should be skiped.
-				// This is mainly for large mech pawns.
-				Stance_Warmup warmup = (selPawn.stances?.curStance ?? null) as Stance_Warmup;
-				if (warmup != null && (bodySize > 2.5f || warmup.ticksLeft < 60 && Rand.Chance(1.0f - Maths.Sqr(warmup.ticksLeft / 60f) )))
+#endif
+				if (GetEnemyAttackTargetId(enemy) == selPawn.thingIDNumber)
 				{
-					return;
+					DamageReport   damageReport = DamageUtility.GetDamageReport(enemy);
+					if (verb?.IsMeleeAttack == true && enemy.DistanceTo_Fast(selPawn) <= 8 && damageReport.primaryIsRanged)
+					{
+						continue;
+					}
+					if (damageReport.IsValid && (!(enemy is Pawn enemyPawn) || enemyPawn.mindState?.MeleeThreatStillThreat == false))
+					{
+						UpdateNearestEnemy(enemy);
+						if (!damageReport.primaryIsRanged)
+						{
+							UpdateNearestEnemyMelee(enemy);
+						}
+						float damage = damageReport.SimulatedDamage(armor);
+						if (!damageReport.primaryIsRanged)
+						{
+							// reduce the possible damage for far away melee pawns.
+							damage *= (5f - Mathf.Clamp(Maths.Sqrt_Fast(selPos.DistanceToSquared(enemy.Position), 4), 0f, 5f)) / 5f;
+						}						
+						possibleDmg         += damage;
+						possibleDmgDistance += enemy.DistanceTo_Fast(selPawn);
+						if (damageReport.primaryIsRanged)
+						{
+							possibleDmgWarmup += damageReport.primaryVerbProps.warmupTime;
+							rangedEnemiesTargetingSelf.Add(enemy);
+						}
+					}
 				}
-				Verb verb = parent.TryGetAttackVerb();
-				if (verb == null || verb.Bursting)
+			}
+			if (rangedEnemiesTargetingSelf.Count > 0)
+			{
+				possibleDmgDistance /= rangedEnemiesTargetingSelf.Count;
+				possibleDmgWarmup   /= rangedEnemiesTargetingSelf.Count;
+			}
+			if (!selPawn.mindState.MeleeThreatStillThreat)
+			{
+				int retreatRoll = Rand.Range(0, 30);
+				// try minor retreat (duck for cover fast)
+				if (possibleDmg - retreatRoll * 0.5f > 0.001f && possibleDmg >= 15 && rangedEnemiesTargetingSelf.Count > 0)
 				{
-					return;
+					// selPawn.Map.debugDrawer.FlashCell(selPos, 1.0f, $"{possibleDmg}, {targetedBy.Count}, {rangedEnemiesTargetingSelf.Count}");
+					CoverPositionRequest request = new CoverPositionRequest();
+					request.caster             = selPawn;
+					request.majorThreats       = rangedEnemiesTargetingSelf;
+					request.checkBlockChance   = true;
+					request.maxRangeFromCaster = Mathf.Clamp(possibleDmgWarmup * 5f,4f, 20f);
+					if (CoverPositionFinder.TryFindDuckPosition(request, out IntVec3 cell))
+					{
+						// run to cover
+						if (cell != selPos)
+						{
+							_last = 10;
+							Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Duck, cell);
+							job_goto.playerForced      = forcedTarget.IsValid;
+							job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+							selPawn.jobs.ClearQueuedJobs();
+							selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
+							data.lastRetreated = lastRetreated = GenTicks.TicksGame;
+						}
+						else 
+						{
+							_last = 11;
+							Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 50 + 50);
+							job_waitCombat.playerForced          = forcedTarget.IsValid;
+							job_waitCombat.checkOverrideOnExpire = true;
+							selPawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);
+							data.lastRetreated = lastRetreated = GenTicks.TicksGame;
+						}
+						return;
+					}
 				}
-				if (selPawn.CurJobDef == JobDefOf.Mine)
+				// major retreat attempt if the pawn is doomed
+				if (possibleDmg - retreatRoll > 0.001f && possibleDmg >= 30)
 				{
-					selPawn.jobs.StopAll();
+					CoverPositionRequest request = new CoverPositionRequest();
+					request.caster             = selPawn;
+					request.target             = nearestMeleeEnemy;
+					request.majorThreats       = rangedEnemiesTargetingSelf;
+					request.checkBlockChance   = true;
+					request.maxRangeFromCaster = 10;
+					if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell))
+					{
+						if (cell != selPos)
+						{
+							_last = 20;
+							Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Retreat, cell);
+							job_goto.playerForced      = forcedTarget.IsValid;
+							job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+							selPawn.jobs.ClearQueuedJobs();
+							selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
+							data.lastRetreated = GenTicks.TicksGame;
+						}
+						return;
+					}
 				}
+			}
+			// offensive actions
+			if (verb != null)
+			{
+				// if the pawn is retreating and the pawn is still in danger or recently took damage, skip any offensive reaction.
 				if (verb.IsMeleeAttack)
 				{
+					if ((selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Retreat) || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover)) && (rangedEnemiesTargetingSelf.Count == 0 || possibleDmg < 2.5f))
+					{
+						_last = 30;
+						selPawn.jobs.StopAll();
+					}
+					bool bestEnemyIsMeleeAttackingAlly = false;
 					// TODO create melee reactions.
-//					foreach (Thing enemy in visibleEnemies)
-//					{
-//						if (enemy is { Spawned: true, Destroyed: false })
-//						{
-//							
-//						}
-//					}
+					IEnumerator<AIEnvAgentInfo> enumeratorEnemies = data.EnemiesWhere(AIEnvAgentState.nearby);
+					while (enumeratorEnemies.MoveNext())
+					{
+						AIEnvAgentInfo info = enumeratorEnemies.Current;
+#if DEBUG_REACTION
+						if (info.thing == null)
+						{
+							Log.Error("Found null thing (2)");
+							continue;
+						}
+#endif
+						if (info.thing.Spawned && selPawn.CanReach(info.thing, PathEndMode.Touch, Danger.Unspecified))
+						{
+							if (info.thing is Pawn enemyPawn && enemyPawn.CurrentEffectiveVerb?.IsMeleeAttack == true && enemyPawn.CurJob.Is(JobDefOf.AttackMelee) && enemyPawn.CurJob.targetA.Thing?.TryGetAttackVerb()?.IsMeleeAttack == false)
+							{ 
+								if (!bestEnemyIsMeleeAttackingAlly)
+								{
+									bestEnemyIsMeleeAttackingAlly = true;
+									nearestEnemyDist              = 1e5f;
+									nearestEnemy                  = null;
+								}
+								UpdateNearestEnemy(info.thing);
+							}
+							else if (!bestEnemyIsMeleeAttackingAlly)
+							{
+								UpdateNearestEnemy(info.thing);
+							}
+						}
+					}
+					if (nearestEnemy == null)
+					{
+						nearestEnemy = selPawn.mindState.enemyTarget;
+					}
+					if (nearestEnemy == null || selPawn.CurJob.Is(JobDefOf.AttackMelee) && selPawn.CurJob.targetA.Thing == nearestEnemy)
+					{
+						return;
+					}
+					if (!selPawn.mindState.MeleeThreatStillThreat || selPawn.stances?.stagger?.Staggered == false)
+					{
+						_last = 31;
+						Job job_melee = JobMaker.MakeJob(JobDefOf.AttackMelee, nearestEnemy);
+						job_melee.playerForced      = forcedTarget.IsValid;
+						job_melee.locomotionUrgency = LocomotionUrgency.Jog;
+						selPawn.jobs.ClearQueuedJobs();
+						selPawn.jobs.StartJob(job_melee, JobCondition.InterruptForced);
+						// no enemy cannot be approached solo
+						// TODO
+						// no enemy can be approached solo
+						// TODO
+					}
 				}
+				// ranged
 				else
 				{
 					// if CE is active skip reaction if the pawn is reloading or hunkering down.
@@ -381,299 +613,162 @@ namespace CombatAI.Comps
 					if (!verb.Available() || Mod_CE.active && Mod_CE.IsAimingCE(verb))
 					{
 						return;
-					}
+					} 
+					bool retreatMeleeThreat;
+					bool bestEnemyVisibleNow = false;
+					bool bestEnemyVisibleSoon = false;
 					// A not fast check will check for retreat and for reactions to enemies that are visible or soon to be visible.
 					// A fast check will check only for retreat.
-					bool    fastCheck           = warmup != null && (warmup.ticksLeft + GenTicks.TicksGame - warmup.startedTick > 120 || warmup.ticksLeft < 30);
-					Thing   bestEnemy           = selPawn.mindState.enemyTarget;
-					IntVec3 bestEnemyPositon    = IntVec3.Invalid;
-					IntVec3 pawnPosition        = selPawn.Position;
-					float   bestEnemyScore      = verb.currentTarget.IsValid && verb.currentTarget.Cell.IsValid ? verb.currentTarget.Cell.DistanceToSquared(pawnPosition) : 1e6f;
-					bool    bestEnemyVisibleNow = false;
-					bool    retreat             = false;
-					bool    canRetreat          = Finder.Settings.Retreat_Enabled && selPawn.RaceProps.baseHealthScale <= 2.0f && selPawn.RaceProps.baseBodySize <= 2.2f;
-					float   retreatDistSqr      = Maths.Sqr(Maths.Min(verb.EffectiveRange / 4 * verb.verbProps.warmupTime, 9));
-					foreach (AIEnvAgentInfo enemyInfo in allEnemies)
+					IEnumerator<AIEnvAgentInfo> enumerator = data.Enemies();
+					while (enumerator.MoveNext())
 					{
-						Thing enemy = enemyInfo.thing;
-						if (enemy is { Spawned: true, Destroyed: false })
+						AIEnvAgentInfo info = enumerator.Current;
+#if DEBUG_REACTION
+						if (info.thing == null)
 						{
-							IntVec3 enemyPosition = enemy.Position;
-							Pawn    enemyPawn  = enemy as Pawn;
-							if (enemyPawn != null)
+							Log.Error("Found null thing (3)");
+							continue;
+						}
+#endif
+						if (info.thing.Spawned)
+						{
+							Pawn enemyPawn = info.thing as Pawn;
+							if (verb.CanHitTarget(info.thing))
 							{
-								// skip for children
-								DevelopmentalStage stage = enemyPawn.DevelopmentalStage;
-								if (stage <= DevelopmentalStage.Child && stage != DevelopmentalStage.None)
+								if (!bestEnemyVisibleNow)
 								{
-									continue;
+									nearestEnemy        = null;
+									nearestEnemyDist    = 1e4f;
+									bestEnemyVisibleNow = true;
 								}
+								UpdateNearestEnemy(info.thing);
 							}
-							float distSqr        = pawnPosition.DistanceToSquared(enemyPosition);
-							if (enemyPawn != null)
+							else if (enemyPawn != null && !bestEnemyVisibleNow)
 							{
-								float distSqrShifted = PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 120).DistanceToSquared(pawnPosition);
-								if (canRetreat && distSqrShifted < retreatDistSqr)
+								if (verb.CanHitTarget(PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 120)))
 								{
-									bestEnemy        = enemy;
-									bestEnemyScore   = distSqr;
-									bestEnemyPositon = enemyPosition;
-									retreat          = true;
-								}
-							}
-							if (!fastCheck && !retreat)
-							{
-								if (verb.CanHitTarget(enemyPosition))
-								{
-									if (!bestEnemyVisibleNow)
+									if (!bestEnemyVisibleSoon)
 									{
-										bestEnemyVisibleNow = true;
-										bestEnemy           = enemy;
-										bestEnemyScore      = distSqr;
-										bestEnemyPositon    = enemyPosition;
+										nearestEnemy         = null;
+										nearestEnemyDist     = 1e4f;
+										bestEnemyVisibleSoon = true;
 									}
-									else
-									{
-										if (bestEnemyScore > distSqr)
-										{
-											bestEnemy        = enemy;
-											bestEnemyScore   = distSqr;
-											bestEnemyPositon = enemyPosition;
-										}
-									}
+									UpdateNearestEnemy(info.thing);
 								}
-								else if (!bestEnemyVisibleNow)
+								else if (!bestEnemyVisibleSoon)
 								{
-									if (selPawn.CanReach(enemy, PathEndMode.InteractionCell, Danger.Unspecified, true, true))
-									{
-										distSqr = pawnPosition.DistanceToSquared(enemyPosition);
-										if (bestEnemyScore > distSqr)
-										{
-											bestEnemy        = enemy;
-											bestEnemyScore   = distSqr;
-											bestEnemyPositon = enemyPosition;
-										}
-									}
+									UpdateNearestEnemy(info.thing);
 								}
 							}
-						}
-					}
-					if (bestEnemy == null)
-					{
-						return;
-					}
-					if (Prefs.DevMode && DebugSettings.godMode)
-					{
-						_bestEnemy = bestEnemy;
-					}
-					if (retreat)
-					{
-						float retreatDist = Maths.Sqrt_Fast(retreatDistSqr, 4);
-//						bool Validator_Retreat(IntVec3 cell)
-//						{
-//							float mul = 1f; 
-//							float vis = sightReader.GetVisibilityToEnemies(pawnPosition);
-//							if (retreatDistSqr > bestEnemyPositon.DistanceToSquared(cell) && warmup != null )
-//							{
-//								mul = 0.25f;
-//							}
-//							return Rand.Chance(mul * (vis - sightReader.GetVisibilityToEnemies(cell))) || 
-//							       Rand.Chance(mul * (sightReader.GetThreat(pawnPosition) - sightReader.GetThreat(cell)));
-//						}
-						if (TryRetreat(new LocalTargetInfo(bestEnemy), retreatDist, verb, null, warmup == null, true))
-						{
-							lastRetreated = GenTicks.TicksGame - Rand.Int % Maths.Max(Mathf.FloorToInt(50 * (2 - verb.verbProps.warmupTime)), 1);
-						}
-					}
-					else if (!fastCheck)
-					{
-						if (TryAttack(new LocalTargetInfo(bestEnemy), verb, bestEnemyVisibleNow, out IntVec3 destCell, null, warmup == null, true))
-						{
-							lastInterupted = lastMoved = GenTicks.TicksGame;
-							prevEnemyDir   = sightReader.GetEnemyDirection(destCell).normalized;
-						}
-						else
-						{
-							lastInterupted = GenTicks.TicksGame - Rand.Int % 30;
-						}
-					}
-				}
-			}
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private bool TryAttack(LocalTargetInfo enemy, Verb verb, bool enemyVisibleNow, Func<IntVec3, bool> validator = null, bool canAttackNow = false, bool updateDebugData = false)
-		{ 
-			return TryAttack(enemy, verb, enemyVisibleNow, out IntVec3 _, validator, canAttackNow, updateDebugData);
-		}
-
-		private bool TryAttack(LocalTargetInfo enemy, Verb verb, bool enemyVisibleNow, out IntVec3 destCell, Func<IntVec3, bool> validator = null, bool canAttackNow = false, bool updateDebugData = false)
-		{
-			bool  changedPos = false;
-			destCell = selPawn.Position;
-			if (enemy.Thing != null && canAttackNow && enemyVisibleNow)
-			{
-				if (updateDebugData)
-				{
-					_last = 4;
-				}
-				waitJob                       = null;
-				selPawn.mindState.enemyTarget = enemy.Thing;
-				Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
-				job_waitCombat.playerForced = forcedTarget.IsValid;
-				selPawn.jobs.ClearQueuedJobs();
-				selPawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
-			}
-			else
-			{
-				float moveSpeed = selPawn.GetStatValue_Fast(StatDefOf.MoveSpeed, 450);
-				if (selPawn.stances?.stagger?.Staggered ?? false)
-				{
-					moveSpeed = selPawn.stances.stagger.StaggerMoveSpeedFactor;
-				}
-				if (enemyVisibleNow && enemy.Thing != null)
-				{
-					if (updateDebugData)
-					{
-						_last = 2;
-					}
-					waitJob                       = null;
-					CastPositionRequest request = new CastPositionRequest();
-					request.caster              = selPawn;
-					request.target              = enemy.Thing;
-					request.verb                = verb;
-					request.maxRangeFromTarget  = 9999;
-					request.maxRangeFromCaster  = Mathf.Clamp(moveSpeed * 3 / (selPawn.BodySize + 0.01f), 4, 15);
-					request.wantCoverFromTarget = true;
-					if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell))
-					{
-						if ( cell != selPawn.Position && (validator == null || validator(cell)))
-						{
-							if (updateDebugData)
+							if (enemyPawn != null && enemyPawn.CurrentEffectiveVerb.IsMeleeAttack)
 							{
-								_last = 21;
+								UpdateNearestEnemyMelee(enemyPawn);
 							}
-							Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-							job_goto.playerForced = forcedTarget.IsValid;
-							job_goto.locomotionUrgency  = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
-							Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
-							job_waitCombat.playerForced                = forcedTarget.IsValid;
-							job_waitCombat.checkOverrideOnExpire = true;
-							selPawn.jobs.ClearQueuedJobs();
-							selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-							selPawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);
-							selPawn.mindState.enemyTarget = enemy.Thing;
-							changedPos                    = true;
-							destCell                      = cell;
 						}
-						else if (canAttackNow)
+					}
+					void StartOrQueueCoverJob(IntVec3 cell, int codeOffset)
+					{
+						if (selPawn.CurJob.Is(JobDefOf.Wait_Combat))
 						{
-							if (updateDebugData)
-							{
-								_last = 22;
-							}
-							selPawn.mindState.enemyTarget = enemy.Thing;
+							_last = 50 + codeOffset;
+							Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Cover, cell);
+							job_goto.playerForced      = forcedTarget.IsValid;
+							job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 							Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
 							job_waitCombat.playerForced          = forcedTarget.IsValid;
 							job_waitCombat.checkOverrideOnExpire = true;
 							selPawn.jobs.ClearQueuedJobs();
-							selPawn.jobs.StartJob(waitJob = job_waitCombat, JobCondition.InterruptForced);
-							changedPos = true;
+							selPawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);;
+							selPawn.jobs.jobQueue.EnqueueFirst(waitJob = job_goto);
+							data.LastInterrupted = GenTicks.TicksGame;
 						}
-					}
-				}
-				else
-				{
-					if (updateDebugData)
-					{
-						_last = 3;
-					}
-					CoverPositionRequest request = new CoverPositionRequest();
-					request.caster             = selPawn;
-					request.target             = new LocalTargetInfo(enemy.Cell);
-					request.verb               = verb;
-					request.maxRangeFromCaster = Mathf.Clamp(moveSpeed * 4 / (selPawn.BodySize + 0.01f), 4, 15);
-					request.checkBlockChance   = true;
-					if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && cell != selPawn.Position)
-					{
-						if (validator == null || validator(cell))
+						else
 						{
-							if (updateDebugData)
-							{
-								_last = 31;
-							}
-							if (enemy.Thing != null)
-							{
-								selPawn.mindState.enemyTarget = enemy.Thing;
-							}
-							Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-							job_goto.playerForced = forcedTarget.IsValid;
-							job_goto.locomotionUrgency  = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+							_last                         = 51 + codeOffset;
+							selPawn.mindState.enemyTarget = nearestEnemy;
+							Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Cover, cell);
+							job_goto.playerForced      = forcedTarget.IsValid;
+							job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 							Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
-							job_waitCombat.playerForced                = forcedTarget.IsValid;
+							job_waitCombat.playerForced          = forcedTarget.IsValid;
 							job_waitCombat.checkOverrideOnExpire = true;
 							selPawn.jobs.ClearQueuedJobs();
 							selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-							selPawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);
-							changedPos   = true;
-							destCell     = cell;
+							selPawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);;
+							data.LastInterrupted = GenTicks.TicksGame;
+						}
+					}
+					retreatMeleeThreat = nearestMeleeEnemy != null && (nearestMeleeEnemy.pather?.MovingNow ?? false) && nearestMeleeEnemyDist < 6;
+					// retreat because of a close melee threat
+					if (retreatMeleeThreat)
+					{
+						_last = 40;
+						CoverPositionRequest request = new CoverPositionRequest();
+						request.caster             = selPawn;
+						request.target             = nearestMeleeEnemy;
+						request.majorThreats       = rangedEnemiesTargetingSelf;
+						request.checkBlockChance   = true;
+						request.maxRangeFromCaster = 10;
+						if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell))
+						{
+							if (cell != selPos)
+							{
+								_last = 41;
+								Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Retreat, cell);
+								job_goto.playerForced      = forcedTarget.IsValid;
+								job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+								selPawn.jobs.ClearQueuedJobs();
+								selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
+								data.lastRetreated = GenTicks.TicksGame;
+							}
+						}
+					}
+					// best enemy is insight
+					else if(nearestEnemy != null)
+					{
+						if (bestEnemyVisibleNow)
+						{
+							CastPositionRequest request = new CastPositionRequest();
+							request.caster              = selPawn;
+							request.target              = nearestEnemy;
+							request.maxRangeFromTarget  = 9999;
+							request.verb                = verb;
+							request.maxRangeFromCaster  = 10;
+							request.wantCoverFromTarget = true;
+							if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell))
+							{
+								StartOrQueueCoverJob(cell, 0);
+							}
+							else if(!selPawn.CurJob.Is(JobDefOf.Wait_Combat))
+							{
+								_last = 52;
+								Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
+								job_waitCombat.playerForced = forcedTarget.IsValid;
+								selPawn.jobs.ClearQueuedJobs();
+								selPawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
+							}
+						}
+						// best enemy is approaching but not yet in view
+						else if (bestEnemyVisibleSoon || selPawn.mindState.duty.Is(DutyDefOf.HuntEnemiesIndividual))
+						{
+							CoverPositionRequest request = new CoverPositionRequest();
+							request.caster = selPawn;
+							request.verb   = verb;
+							request.target = nearestEnemy;
+							if (!bestEnemyVisibleSoon)
+							{
+								request.majorThreats  = rangedEnemiesTargetingSelf;
+							}
+							request.checkBlockChance   = true;
+							request.maxRangeFromCaster = 10;
+							if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
+							{
+								StartOrQueueCoverJob(cell, 10);
+							}
 						}
 					}
 				}
 			}
-			return changedPos;
-		}
-
-		private bool TryRetreat(LocalTargetInfo enemy, float retreatDist, Verb verb, Func<IntVec3, bool> validator = null, bool attackOnFallback = false, bool updateDebugData = false)
-		{
-			if (updateDebugData)
-			{
-				_last = 1;
-			}
-			waitJob = null;
-			if(enemy.Thing != null)
-			{
-				selPawn.mindState.enemyTarget = enemy.Thing;
-			}
-			CoverPositionRequest request = new CoverPositionRequest();
-			request.caster             = selPawn;
-			request.target             = enemy;
-			request.verb               = verb;
-			request.maxRangeFromCaster = Maths.Min(Mathf.Max(retreatDist * 2 / (selPawn.BodySize + 0.01f), 5), 15);
-			request.checkBlockChance   = true;
-			if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell) && cell != selPawn.Position)
-			{
-				if (updateDebugData)
-				{
-					_last = 11;
-				}
-				if (validator == null || validator(cell))
-				{
-					Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, cell);
-					job_goto.playerForced = forcedTarget.IsValid;
-					job_goto.locomotionUrgency  = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
-					selPawn.jobs.ClearQueuedJobs();
-					selPawn.jobs.StopAll();
-					selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-					return true;
-				}
-			} 
-			if (attackOnFallback)
-			{
-				if (verb is { IsMeleeAttack: false })
-				{
-					if (updateDebugData)
-					{
-						_last = 12;
-					}
-					Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
-					job_waitCombat.playerForced = forcedTarget.IsValid;
-					selPawn.jobs.ClearQueuedJobs();
-					selPawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
-					return true;
-				}
-			}
-			return false;
 		}
 
 		/// <summary>
@@ -703,19 +798,19 @@ namespace CombatAI.Comps
 							float armorVal = armor.GetArmor(dInfo.Def);
 							if (armorVal == 0 || Rand.Chance(dInfo.ArmorPenetrationInt / armorVal) || GenTicks.TicksGame - lastTookDamage < 30 && Rand.Chance(0.50f))
 							{
-								bool Validator(IntVec3 cell) => (Rand.Chance(sightReader.GetVisibilityToEnemies(selPawn.Position) - sightReader.GetVisibilityToEnemies(cell)) || 
-								                                 Rand.Chance(sightReader.GetThreat(selPawn.Position) - sightReader.GetThreat(cell)));
-								float               enemyRange = dInfo.Instigator.TryGetAttackVerb()?.EffectiveRange ?? 5f;
-								if (TryRetreat(new LocalTargetInfo(dInfo.Instigator), enemyRange, selPawn.CurrentEffectiveVerb, Validator, false, false))
-								{
-									lastRetreated = GenTicks.TicksGame - Rand.Int % 50;
-								}
+//								bool Validator(IntVec3 cell) => (Rand.Chance(sightReader.GetVisibilityToEnemies(selPawn.Position) - sightReader.GetVisibilityToEnemies(cell)) || 
+//								                                 Rand.Chance(sightReader.GetThreat(selPawn.Position) - sightReader.GetThreat(cell)));
+//								float               enemyRange = dInfo.Instigator.TryGetAttackVerb()?.EffectiveRange ?? 5f;
+//								if (TryRetreat(new LocalTargetInfo(dInfo.Instigator), enemyRange, selPawn.CurrentEffectiveVerb, Validator, false, false))
+//								{
+//									lastRetreated = GenTicks.TicksGame - Rand.Int % 50;
+//								}
 							}
 						}
 					}
 				}
 			}
-			lastTookDamage = GenTicks.TicksGame;
+			data.LastTookDamage = lastTookDamage = GenTicks.TicksGame;
 		}
 
 		/// <summary>
@@ -769,6 +864,24 @@ namespace CombatAI.Comps
 						map.debugDrawer.FlashCell(cell, 1, "XXXXXXX", duration: 150);
 					}
 				};
+				
+				Command_Action duck = new Command_Action();
+				duck.defaultLabel = "DEV: Duck position search";
+				duck.action = delegate
+				{
+					CoverPositionRequest request = new CoverPositionRequest();
+					request.majorThreats       = data.BeingTargetedBy;
+					request.caster             = selPawn;
+					request.verb               = verb;
+					request.maxRangeFromCaster = 5;
+					request.checkBlockChance   = true;
+					CoverPositionFinder.TryFindDuckPosition(request, out IntVec3 cell, (cell, val) => map.debugDrawer.FlashCell(cell, Mathf.Clamp((val + 15f) / 30f, 0.01f, 0.99f), $"{Math.Round(val, 3)}"));
+					if (cell.IsValid)
+					{
+						map.debugDrawer.FlashCell(cell, 1, "XXXXXXX", duration: 150);
+					}
+				};
+				
 				Command_Action cover = new Command_Action();
 				cover.defaultLabel = "DEV: Cover position search";
 				cover.action = delegate
@@ -822,6 +935,7 @@ namespace CombatAI.Comps
 					}
 				};
 				yield return retreat;
+				yield return duck;
 				yield return cover;
 				yield return cast;
 			}
@@ -938,6 +1052,24 @@ namespace CombatAI.Comps
 			escorts.Clear();
 		}
 
+		
+		/// <summary>
+		///		Add enemy targeting self to Env data.
+		/// </summary>
+		/// <param name="enemy"></param>
+		/// <param name="ticksToBurst"></param>
+		public void Notify_BeingTargeted(Thing enemy, Verb verb)
+		{
+			if (enemy != null)
+			{
+				data.BeingTargeted(enemy);
+			}
+			else 
+			{
+				Log.Error($"{selPawn} received a null thing in Notify_BeingTargeted");
+			}
+		}
+
 		/// <summary>
 		///     Enqueue enemy for reaction processing.
 		/// </summary>
@@ -949,7 +1081,25 @@ namespace CombatAI.Comps
 				Log.Warning($"ISMA: Notify_EnemiesVisible called while not scanning. ({allEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
 				return;
 			}
-			allEnemies.Add(info);
+			if (info.thing is Pawn enemy)
+			{
+				// skip if the enemy is downed
+				if (enemy.Downed)
+				{
+					return;
+				}
+				// skip for children
+				DevelopmentalStage stage = enemy.DevelopmentalStage;
+				if (stage <= DevelopmentalStage.Child && stage != DevelopmentalStage.None)
+				{
+					return;
+				}
+			}
+			if (allEnemies.TryGetValue(info.thing, out var store))
+			{
+				info = store.Combine(info);
+			}
+			allEnemies[info.thing] = info;
 		}
 		
 		/// <summary>
@@ -963,7 +1113,25 @@ namespace CombatAI.Comps
 				Log.Warning($"ISMA: Notify_EnemiesVisible called while not scanning. ({allEnemies.Count}, {Thread.CurrentThread.ManagedThreadId})");
 				return;
 			}
-			allAllies.Add(info);
+			if (info.thing is Pawn ally)
+			{
+				// skip if the ally is downed
+				if (ally.Downed)
+				{
+					return;
+				}
+				// skip for children
+				DevelopmentalStage stage = ally.DevelopmentalStage;
+				if (stage <= DevelopmentalStage.Child && stage != DevelopmentalStage.None)
+				{
+					return;
+				}
+			}
+			if (allAllies.TryGetValue(info.thing, out var store))
+			{
+				info = store.Combine(info);
+			}
+			allAllies[info.thing] = info;
 		}
 
 		/// <summary>
@@ -1071,6 +1239,32 @@ namespace CombatAI.Comps
 				}
 			}
 		}
+		
+		private static int GetEnemyAttackTargetId(Thing enemy)
+		{
+			if (!TKVCache<int, LocalTargetInfo, int>.TryGet(enemy.thingIDNumber, out int attackTarget, expiry: 120) || attackTarget == -1)
+			{
+				Verb enemyVerb = enemy.TryGetAttackVerb();
+				if (enemyVerb == null)
+				{
+					attackTarget = -1;
+				}
+				else if (enemyVerb.currentTarget is { IsValid: true, HasThing: true })
+				{
+					attackTarget = enemyVerb.currentTarget.Thing.thingIDNumber;
+				}
+				else if (enemyVerb.IsMeleeAttack && enemy is Pawn enemyPawn && enemyPawn.CurJobDef.Is(JobDefOf.AttackMelee) && enemyPawn.CurJob.targetA.IsValid)
+				{
+					attackTarget = enemyPawn.CurJob.targetA.Thing.thingIDNumber;
+				}
+				else
+				{
+					attackTarget = -1;
+				}
+				TKVCache<int, LocalTargetInfo, int>.Put(enemy.thingIDNumber, attackTarget);
+			}
+			return attackTarget;
+		}
 
 		#region TimeStamps
 
@@ -1136,13 +1330,13 @@ namespace CombatAI.Comps
 						Vector2 drawPosUI = drawPos.MapToUIPosition();
 						Text.Font = GameFont.Tiny;
 						string state = GenTicks.TicksGame - lastInterupted > 120 ? "<color=blue>O</color>" : "<color=yellow>X</color>";
-						Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}:{_last}:{data.AllEnemies.Count}:{data.NumAllies}");
+						Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}:{_last}:{data.AllEnemies.Count}:{data.NumAllies}:{data.BeingTargetedBy.Count}");
 					});
-					bool bugged = nearbyVisiblePawns.Count != _visibleEnemies.Count;
+					bool    bugged = nearbyVisiblePawns.Count != _visibleEnemies.Count;
+					Vector2 a      = drawPos.MapToUIPosition();
 					if (bugged)
 					{
 						Rect    rect;
-						Vector2 a = drawPos.MapToUIPosition();
 						Vector2 b;
 						Vector2 mid;
 						foreach (Pawn other in nearbyVisiblePawns.Where(p => !_visibleEnemies.Contains(p)))
@@ -1175,23 +1369,67 @@ namespace CombatAI.Comps
 							Widgets.DrawLine((_path.Last().ToVector3().Yto0() + new Vector3(0.5f, 0, 0.5f)).MapToUIPosition(), v, _colors.Last(), 1);
 							Widgets.DrawBoxSolid(new Rect(v - new Vector2(5, 5), new Vector2(10, 10)), _colors.Last());
 						}
-						if (!_visibleEnemies.EnumerableNullOrEmpty())
+						int     index = 0;
+						foreach (AIEnvAgentInfo ally in data.AllAllies)
 						{
-							Vector2 a = pawn.DrawPos.MapToUIPosition();
-							Vector2 b;
-							Vector2 mid;
-							Rect    rect;
-							int     index = 0;
-							foreach (Pawn other in _visibleEnemies)
+							if (ally.thing != null)
 							{
-								b = other.DrawPos.MapToUIPosition();
-								Widgets.DrawLine(a, b, Color.blue, 1);
+								Vector2 b = ally.thing.DrawPos.MapToUIPosition();
+								Widgets.DrawLine(a, b, Color.green, 1);
 
-								mid  = (a + b) / 2;
-								rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
+								Vector2 mid  = (a + b) / 2;
+								Rect    rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
 								Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
 								Widgets.DrawBox(rect);
-								Widgets.Label(rect, $"<color=gray>({index++}).</color> {Math.Round(other.Position.DistanceTo(pawn.Position), 1)}");
+								DamageReport report = DamageUtility.GetDamageReport(ally.thing);
+								if (report.IsValid)
+								{
+									Widgets.Label(rect, $"{Math.Round(report.SimulatedDamage(armor), 2)}");
+								}
+							}
+						}
+						AIEnvThings enemies = data.AllEnemies;
+						foreach (AIEnvAgentInfo enemy in enemies)
+						{
+							if (enemy.thing != null)
+							{
+								Vector2 b = enemy.thing.DrawPos.MapToUIPosition();
+								Widgets.DrawLine(a, b, Color.yellow, 1);
+
+								Vector2 mid  = (a + b) / 2;
+								Rect    rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
+								Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
+								Widgets.DrawBox(rect);
+								DamageReport report = DamageUtility.GetDamageReport(enemy.thing);
+								if (report.IsValid)
+								{
+									Widgets.Label(rect, $"{Math.Round(report.SimulatedDamage(armor), 2)}");
+								}
+							}
+						}
+						foreach (Thing enemy in data.BeingTargetedBy)
+						{
+							if (enemy != null && enemy.TryGetAttackVerb() is Verb enemyVerb && GetEnemyAttackTargetId(enemy) == selPawn.thingIDNumber)
+							{
+								Vector2 b    = enemy.DrawPos.MapToUIPosition();
+								Ray2D   ray  = new Ray2D(a, b - a);
+								float   dist = Vector2.Distance(a, b);
+								if (dist > 0)
+								{
+									for (int i = 1; i < dist; i++)
+									{
+										Widgets.DrawLine(ray.GetPoint(i - 1), ray.GetPoint(i), i % 2 == 1 ? Color.black : Color.magenta, 2);
+									}
+									Vector2 mid  = (a + b) / 2;
+									Rect    rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
+									Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
+									Widgets.DrawBox(rect);
+									DamageReport report = DamageUtility.GetDamageReport(enemy);
+									if (report.IsValid)
+									{
+										Widgets.Label(rect, $"{Math.Round(report.SimulatedDamage(armor), 2)}");
+									}
+								}
 							}
 						}
 					}

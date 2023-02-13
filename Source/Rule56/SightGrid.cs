@@ -487,7 +487,7 @@ namespace CombatAI
                             item.spottings.Add(spotting);
                         }
                     }
-                }, maxDist: 10);
+                }, maxDist: 15);
                 grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Set(pos, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Next(0, 0, item.cachedDamage.attributes);
@@ -506,10 +506,6 @@ namespace CombatAI
                                     ISpotRecord record = item.spottings[i];
                                     thingBuffer1.Clear();
                                     sightTracker.factionedUInt64Map.GetThings(record.flag, thingBuffer1);
-//                                    if (Find.Selector.selected.Contains(item.thing))
-//                                    {
-//                                        map.debugDrawer.FlashCell(record.cell);
-//                                    }
                                     for (int j = 0; j < thingBuffer1.Count; j++)
                                     {
                                         Thing agent = thingBuffer1[j];

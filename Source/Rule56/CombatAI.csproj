@@ -30,7 +30,7 @@
         <OutputPath>..\..\1.4\Assemblies</OutputPath>
         <DefineConstants>TRACE;DEBUG_REACTION;DEBUG;NETFRAMEWORK;NET472;</DefineConstants>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
         <DebugType>full</DebugType>
     </PropertyGroup>
     <ItemGroup>

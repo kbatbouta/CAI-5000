@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Verse;
 namespace CombatAI
 {
@@ -19,5 +20,7 @@ namespace CombatAI
 		public bool checkBlockChance;
 
 		public Func<IntVec3, bool> validator;
+
+		public List<Thing> majorThreats;
 	}
 }

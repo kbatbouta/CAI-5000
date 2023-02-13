@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+    <JobDef>
+        <defName>CombatAI_Goto_Retreat</defName>
+        <driverClass>JobDriver_Goto</driverClass>
+        <reportString>retreating.</reportString>
+        <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+        <carryThingAfterJob>true</carryThingAfterJob>
+        <dropThingBeforeJob>false</dropThingBeforeJob>
+      </JobDef>
+
+      <JobDef>
+        <defName>CombatAI_Goto_Duck</defName>
+        <driverClass>JobDriver_Goto</driverClass>
+        <reportString>moving.</reportString>
+        <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+        <carryThingAfterJob>true</carryThingAfterJob>
+        <dropThingBeforeJob>false</dropThingBeforeJob>
+      </JobDef>
+
+      <JobDef>
+        <defName>CombatAI_Goto_Cover</defName>
+        <driverClass>JobDriver_Goto</driverClass>
+        <reportString>moving.</reportString>
+        <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+        <carryThingAfterJob>true</carryThingAfterJob>
+        <dropThingBeforeJob>false</dropThingBeforeJob>
+      </JobDef>     
+</Defs>
