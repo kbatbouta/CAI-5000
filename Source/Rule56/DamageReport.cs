@@ -192,13 +192,18 @@ namespace CombatAI
 				}
 			}
 		}
-
+		
 		public float SimulatedDamage(ArmorReport armorReport, int iterations = 5)
 		{
-			float damage = 0f;
+			float damage           = 0f;
+//			bool  hasWorkingShield = includeShields && armorReport.shield?.PawnOwner != null;
 			for (int i = 0; i < iterations; i++)
 			{
 				damage += SimulatedDamage_Internal(armorReport, (i + 1f) / (iterations + 2f));
+//				if (!hasWorkingShield || armorReport.shield.Energy - damage * armorReport.shield.Props.energyLossPerDamage <= 0)
+//				{
+//					damage += temp;
+//				}
 			}
 			return damage / iterations;
 		}

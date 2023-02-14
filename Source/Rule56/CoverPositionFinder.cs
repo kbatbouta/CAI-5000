@@ -356,7 +356,7 @@ namespace CombatAI
 			              (int)Maths.Min(request.maxRangeFromLocus, 30)
 			);
 			coverCell = bestCell;
-			return bestCell.IsValid && (bestVisibleTo <= request.majorThreats.Count / 3f || bestVisibleTo == 0);
+			return bestCell.IsValid && bestVisibleTo == 0;
 		}
 
 		private static Func<IntVec3, bool> GetCanHitTargetFunc(Thing thing, Verb enemyVerb)

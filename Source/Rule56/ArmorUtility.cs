@@ -90,6 +90,10 @@ namespace CombatAI
 					report.hasShieldBelt |= isShield;
 					if (apparel != null && apparel.def.apparel != null)
 					{
+						if (isShield)
+						{
+							report.shield ??= apparel.GetComp<CompShield>();
+						}
 						float c = bodyApparels.Coverage(apparel.def.apparel);
 						coverage    += c;
 						float blunt = apparel.GetStatValue_Fast(StatDefOf.ArmorRating_Blunt, 2700);

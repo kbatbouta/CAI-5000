@@ -402,7 +402,9 @@ namespace CombatAI
                     }
                 }
             }
-            ISightRadius sightRadius = item.cachedSightRadius;
+            bool         engagedInMelee = item.pawn?.mindState.MeleeThreatStillThreat == true;
+            scanForEnemies &= !engagedInMelee;
+            ISightRadius sightRadius    = item.cachedSightRadius;
             Action action = () =>
             {
                 if (playerAlliance && sightRadius.fog > 0)
@@ -426,9 +428,9 @@ namespace CombatAI
                 {
                     float d2         = pos.DistanceToSquared(cell);
                     float visibility = 0f;
-                    if (d2 < rSqr_sight)
+                    if (!engagedInMelee && d2 < rSqr_sight)
                     {
-                        visibility = (float)(sightRadius.sight - dist) / sightRadius.sight * (1 - coverRating);
+                        visibility = (1f - coverRating);
                         if (visibility > 0f)
                         {
                             grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
@@ -487,7 +489,7 @@ namespace CombatAI
                             item.spottings.Add(spotting);
                         }
                     }
-                }, maxDist: 15);
+                }, maxDist: 20);
                 grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Set(pos, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Next(0, 0, item.cachedDamage.attributes);

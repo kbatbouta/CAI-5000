@@ -63,6 +63,8 @@ namespace CombatAI
 				throw new Exception($"ISMA: GetSightRadius got an object that is niether a pawn, turret nor does it have sighter. {thing}");
 			}
 		finalize:
+			result.scan      = Maths.Max(result.scan, 48);
+			result.sight     = Maths.Max(result.sight,  48);
 			result.createdAt = GenTicks.TicksGame;
 			return result;
 		}

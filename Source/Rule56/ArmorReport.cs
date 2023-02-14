@@ -42,6 +42,10 @@ namespace CombatAI
 		/// </summary>
 		public int createdAt;
 		/// <summary>
+		///		Comp shield for the shield belt.
+		/// </summary>
+		public CompShield shield;
+		/// <summary>
 		///     Weak attributes.
 		/// </summary>
 		public MetaCombatAttribute weaknessAttributes;
