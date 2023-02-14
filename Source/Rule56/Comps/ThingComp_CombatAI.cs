@@ -445,7 +445,7 @@ namespace CombatAI.Comps
 					if (GetEnemyAttackTargetId(enemy) == selPawn.thingIDNumber)
 					{
 						DamageReport damageReport = DamageUtility.GetDamageReport(enemy);
-						if (verb?.IsMeleeAttack == true && enemy.DistanceTo_Fast(selPawn) <= 8 && damageReport.primaryIsRanged)
+						if (verb?.IsMeleeAttack == true)
 						{
 							continue;
 						}
@@ -472,19 +472,6 @@ namespace CombatAI.Comps
 						}
 					}
 				}
-//			if (armor.hasShieldBelt && armor.shield?.PawnOwner != null)
-//			{
-//				possibleDmg       = Maths.Max(0, possibleDmg - armor.shield.Energy * armor.shield.Props.energyLossPerDamage * 2f);
-//				possibleDmgWarmup = Maths.Max(0, possibleDmg - armor.shield.Energy * armor.shield.Props.energyLossPerDamage * 2f);
-//			}
-//				if (targetedBy.Count > 0)
-//				{
-//					possibleDmg /= Maths.Max(targetedBy.Count - 1, 1);
-//				}
-//				if (rangedEnemiesTargetingSelf.Count > 0)
-//				{
-//					possibleDmgWarmup /= rangedEnemiesTargetingSelf.Count;
-//				}
 				if (!selPawn.mindState.MeleeThreatStillThreat)
 				{
 					int retreatRoll = Rand.Range(0, 80);
@@ -526,6 +513,7 @@ namespace CombatAI.Comps
 					// major retreat attempt if the pawn is doomed
 					if (possibleDmg - retreatRoll > 0.001f && possibleDmg >= 50)
 					{
+						_bestEnemy = nearestMeleeEnemy;
 						CoverPositionRequest request = new CoverPositionRequest();
 						request.caster             = selPawn;
 						request.target             = nearestMeleeEnemy;
@@ -618,6 +606,7 @@ namespace CombatAI.Comps
 					{
 						return;
 					}
+					_bestEnemy = nearestEnemy;
 					if (!selPawn.mindState.MeleeThreatStillThreat || selPawn.stances?.stagger?.Staggered == false)
 					{
 						_last = 31;
@@ -732,6 +721,7 @@ namespace CombatAI.Comps
 						}
 					}
 					retreatMeleeThreat = nearestMeleeEnemy != null && (nearestMeleeEnemy.pather?.MovingNow ?? false) && nearestMeleeEnemyDist < 6;
+					_bestEnemy         = retreatMeleeThreat ? nearestMeleeEnemy : nearestEnemy;
 					// retreat because of a close melee threat
 					if (retreatMeleeThreat)
 					{
@@ -766,7 +756,7 @@ namespace CombatAI.Comps
 							request.target              = nearestEnemy;
 							request.maxRangeFromTarget  = 9999;
 							request.verb                = verb;
-							request.maxRangeFromCaster  = 10;
+							request.maxRangeFromCaster  = Maths.Max(Maths.Min(verb.EffectiveRange, nearestEnemyDist) / 2f, 10f);
 							request.wantCoverFromTarget = true;
 							if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell))
 							{
@@ -793,7 +783,7 @@ namespace CombatAI.Comps
 								request.majorThreats  = rangedEnemiesTargetingSelf;
 							}
 							request.checkBlockChance   = true;
-							request.maxRangeFromCaster = 10;
+							request.maxRangeFromCaster = Maths.Max(verb.EffectiveRange / 2f, 10f);
 							if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
 							{
 								StartOrQueueCoverJob(cell, 10);
