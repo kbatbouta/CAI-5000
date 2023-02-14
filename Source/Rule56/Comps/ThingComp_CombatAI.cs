@@ -369,7 +369,7 @@ namespace CombatAI.Comps
 			// get body size and use it in cooldown math.
 			float bodySize = selPawn.RaceProps.baseBodySize;
 			// pawn reaction cooldown changes with their body size.
-			if (GenTicks.TicksGame - Maths.Min(lastInterupted, lastRetreated) < 30 * bodySize)
+			if (data.InterruptedRecently((int) (100 * bodySize)) || data.RetreatedRecently((int) (60 * bodySize)))
 			{
 				return;
 			}
