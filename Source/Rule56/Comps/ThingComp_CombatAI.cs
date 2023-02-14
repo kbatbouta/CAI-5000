@@ -369,7 +369,7 @@ namespace CombatAI.Comps
 			// get body size and use it in cooldown math.
 			float bodySize = selPawn.RaceProps.baseBodySize;
 			// pawn reaction cooldown changes with their body size.
-			if (data.InterruptedRecently((int) (100 * bodySize)) || data.RetreatedRecently((int) (60 * bodySize)))
+			if (data.InterruptedRecently((int) (30 * bodySize)) || data.RetreatedRecently((int) (60 * bodySize)))
 			{
 				return;
 			}
@@ -766,7 +766,8 @@ namespace CombatAI.Comps
 							{
 								_last = 52;
 								Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
-								job_waitCombat.playerForced = forcedTarget.IsValid;
+								job_waitCombat.playerForced                   = forcedTarget.IsValid;
+								job_waitCombat.endIfCantShootTargetFromCurPos = true;
 								selPawn.jobs.ClearQueuedJobs();
 								selPawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
 							}
