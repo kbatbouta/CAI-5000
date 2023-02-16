@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using Verse;
@@ -296,6 +297,21 @@ namespace CombatAI
 				}
 			}
 		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool IsSet(IntVec3 cell)
+		{
+			return IsSet(indices.CellToIndex(cell));
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool IsSet(int index)
+		{
+			if (index >= 0 && index < NumGridCells)
+			{
+				return cells[index].sig == r_sig;
+			}
+			return false;
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public int GetSignalNum(IntVec3 cell)
@@ -321,26 +337,16 @@ namespace CombatAI
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[Obsolete()]
 		public float GetRawSignalStrengthAt(IntVec3 cell)
 		{
 			return GetRawSignalStrengthAt(indices.CellToIndex(cell));
 		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[Obsolete()]
 		public float GetRawSignalStrengthAt(int index)
 		{
-			if (index >= 0 && index < NumGridCells)
-			{
-				IFieldInfo cell = cells[index];
-				switch (CycleNum - cell.cycle)
-				{
-					case 0:
-						IField<float> strength = cells_strength[index];
-
-						return Maths.Max(strength.value, strength.valuePrev);
-					case 1:
-						return cells_strength[index].value;
-				}
-			}
-			return 0;
+			return GetSignalStrengthAt(index);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -357,10 +363,10 @@ namespace CombatAI
 				{
 					case 0:
 						IField<float> strength = cells_strength[index];
-
-						return Maths.Max(strength.value, strength.valuePrev) * 0.9f + Maths.Max(cell.num, cell.numPrev) * 0.1f;
+						
+						return Maths.Max(strength.value, strength.valuePrev);
 					case 1:
-						return cells_strength[index].value * 0.9f + cell.num * 0.1f;
+						return cells_strength[index].value;
 				}
 			}
 			return 0;
@@ -381,10 +387,10 @@ namespace CombatAI
 					case 0:
 						IField<float> strength = cells_strength[index];
 						signalNum = Maths.Max(cell.num, cell.numPrev);
-						return Maths.Max(strength.value, strength.valuePrev) * 0.9f + signalNum * 0.1f;
+						return Maths.Max(strength.value, strength.valuePrev);
 					case 1:
 						signalNum = cell.num;
-						return cells_strength[index].value * 0.9f + signalNum * 0.1f;
+						return cells_strength[index].value;
 				}
 			}
 			return signalNum = 0;

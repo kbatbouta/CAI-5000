@@ -190,7 +190,7 @@ namespace CombatAI
 				string color = Finder.Settings.Pathfinding_DestWeight < 0.75f ? "red" : "while";
 				string extra = Finder.Settings.Pathfinding_DestWeight < 0.75f ? " <color=yellow>WILL IMPACT PERFORMANCE</color>" : "";
 				Text.CurFontStyle.fontStyle            = FontStyle.Bold;
-				Finder.Settings.Pathfinding_DestWeight = HorizontalSlider_NewTemp(rect, Finder.Settings.Pathfinding_DestWeight, 0.95f, Finder.Settings.AdvancedUser ? 0.3f : 0.65f, true, $"<color={color}>{Math.Round(Finder.Settings.Pathfinding_DestWeight * 100f, 1)}%</color>{extra}", 0.05f);
+				Finder.Settings.Pathfinding_DestWeight = HorizontalSlider_NewTemp(rect, Finder.Settings.Pathfinding_DestWeight, 0.3f, 0.95f, true, $"<color={color}>{Math.Round(Finder.Settings.Pathfinding_DestWeight * 100f, 1)}%</color>{extra}", 0.05f);
 			}, useMargins: true);
 
 			collapsible.Line(2);
@@ -335,6 +335,8 @@ namespace CombatAI
 			collapsible.CheckboxLabeled("Draw threat (pawn armor vs enemy)", ref Finder.Settings.Debug_DrawThreatCasts);
 			collapsible.CheckboxLabeled("Draw proximity grid", ref Finder.Settings.Debug_DrawAvoidanceGrid_Proximity);
 			collapsible.CheckboxLabeled("Draw danger grid", ref Finder.Settings.Debug_DrawAvoidanceGrid_Danger);
+			collapsible.CheckboxLabeled("Draw path cost", ref Finder.Settings.Debug_DebugPathfinding);
+			collapsible.CheckboxLabeled("Draw availability", ref Finder.Settings.Debug_DebugAvailability);
 			collapsible.CheckboxLabeled("Debug things tracker", ref Finder.Settings.Debug_DebugThingsTracker);
 			collapsible.CheckboxLabeled("Debug validate sight <color=red>EXTREMELY BAD FOR PERFORMANCE</color>", ref Finder.Settings.Debug_ValidateSight);
 			collapsible.Line(1);

@@ -78,7 +78,7 @@ namespace CombatAI
 			}
 			//
 			// debugging stuff.
-			if ((Finder.Settings.Debug_DrawShadowCasts || Finder.Settings.Debug_DrawThreatCasts) && GenTicks.TicksGame % 15 == 0)
+			if ((Finder.Settings.Debug_DrawShadowCasts || Finder.Settings.Debug_DrawThreatCasts || Finder.Settings.Debug_DebugAvailability) && GenTicks.TicksGame % 15 == 0)
 			{
 				_drawnCells.Clear();
 				if (!Find.Selector.SelectedPawns.NullOrEmpty())
@@ -128,7 +128,7 @@ namespace CombatAI
 						}
 					}
 				}
-				else if (Finder.Settings.Debug_DrawShadowCasts)
+				else if (Finder.Settings.Debug_DrawShadowCasts || Finder.Settings.Debug_DebugAvailability)
 				{
 					IntVec3 center = UI.MouseMapPosition().ToIntVec3();
 					if (center.InBounds(map))
@@ -141,14 +141,28 @@ namespace CombatAI
 								if (cell.InBounds(map) && !_drawnCells.Contains(cell))
 								{
 									_drawnCells.Add(cell);
-//									float value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2) + insectsAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4);
-									Region region = cell.GetRegion(map);
-									if (region != null)
+									if (Finder.Settings.Debug_DrawShadowCasts)
 									{
-										float value = raidersAndHostiles.grid_regions.GetSignalNumByRegion(region) + colonistsAndFriendlies.grid_regions.GetSignalNumByRegion(region);
+										float value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2) + insectsAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4);
 										if (value > 0)
 										{
-											map.debugDrawer.FlashCell(cell, Mathf.Clamp(value / 7f, 0.1f, 0.99f), $"{Math.Round(value, 3)}", 15);
+											map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
+										}
+										else
+										{
+											MetaCombatAttribute attr = raidersAndHostiles.grid.GetCombatAttributesAt(cell) | colonistsAndFriendlies.grid.GetCombatAttributesAt(cell) | insectsAndMechs.grid.GetCombatAttributesAt(cell);
+											if ((attr & MetaCombatAttribute.Free) == MetaCombatAttribute.Free)
+											{
+												map.debugDrawer.FlashCell(cell, 0.001f, "F", 15);
+											}
+										}
+									}
+									else if(Finder.Settings.Debug_DebugAvailability)
+									{
+										float value = raidersAndHostiles.grid.GetAvailability(cell) + colonistsAndFriendlies.grid.GetAvailability(cell) + insectsAndMechs.grid.GetAvailability(cell);
+										if (value > 0)
+										{
+											map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
 										}
 									}
 								}
@@ -581,7 +595,8 @@ namespace CombatAI
 						val = armor.createdAt != 0 ? Mathf.Clamp01(Maths.Max(GetBlunt(index) / (armor.Blunt + 0.001f), GetSharp(index) / (armor.Sharp + 0.001f), 0f)) : 0f;
 					}
 				}
-				val = Maths.Max((float)GetEnemyAvailability(index) * val / 2f, val);
+				//
+				// val = Maths.Max((float)GetEnemyAvailability(index) * val / 2f, val);
 				return val;
 			}
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

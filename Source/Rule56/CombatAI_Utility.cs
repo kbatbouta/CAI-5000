@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -82,6 +83,28 @@ namespace CombatAI
 			return dutyDest;
 		}
 
+		public static bool IsApproachingMeleeTarget(this Pawn pawn, float distLimit = 5, bool allowCached = true)
+		{
+			if (!allowCached || !TKVCache<int, IsApproachingMeleeTargetCache, bool>.TryGet(pawn.thingIDNumber, out bool result, expiry: 5))
+			{
+				result = IsApproachingMeleeTarget(pawn, out _, distLimit);
+				if (allowCached)
+				{
+					TKVCache<int, IsApproachingMeleeTargetCache, bool>.Put(pawn.thingIDNumber, result);
+				}
+			}
+			return result;
+		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool IsApproachingMeleeTarget(this Pawn pawn, out Thing target, float distLimit = 5)
+		{
+			target = null;
+			Job attackJob;
+			return (attackJob = pawn.CurJob).Is(JobDefOf.AttackMelee) && attackJob.targetA.IsValid && attackJob.targetA.Cell.DistanceToSquared(pawn.Position) <= distLimit * distLimit && (target = attackJob.targetA.Thing) != null;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Verb TryGetAttackVerb(this Thing thing)
 		{
 			if (thing is Pawn pawn)
@@ -137,6 +160,10 @@ namespace CombatAI
 		public static int GetThingFlagsIndex(this Thing thing)
 		{
 			return thing.thingIDNumber % 64;
+		}
+		
+		private class IsApproachingMeleeTargetCache
+		{
 		}
 	}
 }

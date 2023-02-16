@@ -390,15 +390,29 @@ namespace CombatAI
             if (item.thing != null)
             {
                 Verb verb = item.thing.TryGetAttackVerb();
-                if (verb != null && !verb.IsMeleeAttack)
+                if (verb != null)
                 {
-                    if (verb.state != VerbState.Idle || verb.WarmingUp)
+                    if (!verb.IsMeleeAttack)
                     {
-                        availability = MetaCombatAttribute.Occupied;
+                        if (verb.WarmingUp || verb.Bursting)
+                        {
+                            availability = MetaCombatAttribute.Occupied;
+                        }
+                        else
+                        {
+                            availability = MetaCombatAttribute.Free;
+                        }
                     }
-                    else
+                    else if(item.pawn != null)
                     {
-                        availability = MetaCombatAttribute.Free;
+                        if (item.pawn.mindState.MeleeThreatStillThreat)
+                        {
+                            availability = MetaCombatAttribute.Occupied;
+                        }
+                        else
+                        {
+                            availability = MetaCombatAttribute.Free;
+                        }
                     }
                 }
             }
@@ -416,8 +430,9 @@ namespace CombatAI
                         gridFog.Set(item.path[i], 1.0f);
                     }
                 }
-                grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes | availability);
-                grid_regions.Next(GetFlags(item), item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, item.cachedDamage.attributes | availability);
+                MetaCombatAttribute attr = item.cachedDamage.attributes | availability;
+                grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, attr);
+                grid_regions.Next(GetFlags(item), item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, attr);
                 float r_fade     = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
                 float d_fade     = sightRadius.fog - r_fade;
                 float rSqr_sight = Maths.Sqr(sightRadius.sight);
@@ -430,7 +445,7 @@ namespace CombatAI
                     float visibility = 0f;
                     if (!engagedInMelee && d2 < rSqr_sight)
                     {
-                        visibility = (1f - coverRating);
+                        visibility = Maths.Max((1f - coverRating), 0.20f);
                         if (visibility > 0f)
                         {
                             grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
@@ -474,8 +489,11 @@ namespace CombatAI
                 }
                 flooder.Flood(origin, node =>
                 {
-                    grid.Set(node.cell, item.cachedDamage.attributes | availability);
-                    grid_regions.Set(node.cell);
+                    if (!grid.IsSet(node.cell))
+                    {
+                        grid.Set(node.cell, 0.198f, new Vector2(node.cell.x - node.parent.x, node.cell.z - node.parent.z));
+                        grid_regions.Set(node.cell);
+                    }
                     if (scanForEnemies)
                     {
                         ulong flag = reader.GetEnemyFlags(node.cell) | reader.GetFriendlyFlags(node.cell);
@@ -489,7 +507,8 @@ namespace CombatAI
                             item.spottings.Add(spotting);
                         }
                     }
-                }, maxDist: 20);
+                }, maxDist: 12, maxCellNum: 225, passThroughDoors: true);
+                
                 grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Set(pos, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Next(0, 0, item.cachedDamage.attributes);

@@ -19,19 +19,24 @@ namespace CombatAI.Patches
 		{
 			//private static IGridBufferedWriter gridWriter;
 			private static          ThingComp_CombatAI               comp;
-			private static          DataWriter_Path                  pathWriter;
-			private static          bool                             dump;
+//			private static          DataWriter_Path                  pathWriter;
+//			private static          bool                             dump;
+	
+			private static          bool                             checkAvoidance;
+			private static          bool                             checkVisibility;
 			private static          bool                             dig;
 			private static          Pawn                             pawn;
 			private static          Map                              map;
+			private static          IntVec3                          destPos;
 			private static          PathFinder                       instance;
 			private static          SightTracker.SightReader         sightReader;
 			private static          AvoidanceTracker.AvoidanceReader avoidanceReader;
-			private static          bool                             raiders;
 			private static          int                              counter;
-			private static          ArmorReport                      armor;
+			private static          bool                             flashCost;
+			private static          bool                             isRaider;
 			private static          bool                             isPlayer;
 			private static          float                            threatAtDest;
+			private static          float                            availabilityAtDest;
 			private static          float                            visibilityAtDest;
 			private static          float                            multiplier = 1.0f;
 			private static readonly List<IntVec3>                    blocked    = new List<IntVec3>(128);
@@ -43,113 +48,69 @@ namespace CombatAI.Patches
 			[HarmonyPriority(int.MaxValue)]
 			internal static bool Prefix(PathFinder __instance, ref PawnPath __result, IntVec3 start, LocalTargetInfo dest, ref TraverseParms traverseParms, PathEndMode peMode, ref PathFinderCostTuning tuning, out bool __state)
 			{
+				flashCost = false;	
 				if (fallbackCall)
 				{
 					return __state = true;
 				}
-				dump = false;
+				// only allow factioned pawns.
 				if (Finder.Settings.Pather_Enabled && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
 				{
+					destPos                = dest.Cell;
 					original_traverseParms = traverseParms;
 					origina_peMode         = peMode;
 					// prepare the modifications
 					instance = __instance;
 					map      = __instance.map;
-					pawn     = traverseParms.pawn;
+					// set faction params.
 					isPlayer = pawn.Faction.IsPlayerSafe();
-					if (!isPlayer)
-					{
-						multiplier = 1;
-					}
-					else if (!pawn.Drafted)
-					{
-						multiplier = 0.75f;
-					}
-					else
-					{
-						multiplier = 0.25f;
-					}
-					// make tankier pawns unless affect.
-					armor = pawn.GetArmorReport();
-					if (armor.createdAt != 0)
-					{
-						multiplier = Maths.Max(multiplier, 1 - armor.TankInt, 0.25f);
-					}
-					// retrive CE elements
+					isRaider  = !isPlayer && (pawn.HostileTo(Faction.OfPlayerSilentFail) || (map.ParentFaction != null && pawn.Faction.HostileTo(map.ParentFaction)));
+					// grab different readers.
+					pawn.TryGetAvoidanceReader(out avoidanceReader);
 					pawn.TryGetSightReader(out sightReader);
+					// prepare sapping data
 					if (sightReader != null)
 					{
-						sightReader.armor = armor;
-						threatAtDest      = sightReader.GetThreat(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
-
-					}
-					pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out avoidanceReader);
-					comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
-					/*
-                     * dump pathfinding data
-                     */
-					if (dump = Finder.Settings.Debug_DebugDumpData && !isPlayer && sightReader != null && avoidanceReader != null && Finder.Settings.Debug && Prefs.DevMode)
-					{
-						//if (gridWriter == null)
-						//{
-						//    gridWriter = new IGridBufferedWriter(__instance.map, "pathing", "path_1", new string[]
-						//    {
-						//    "pref", "enRel", "enAbs", "frRel", "frAbs", "path", "dang"
-						//    }, new Type[]
-						//    {
-						//    typeof(float), typeof(float), typeof(float), typeof(float), typeof(float), typeof(float), typeof(float)
-						//    });
-						//}
-						//gridWriter.Clear();
-						if (pathWriter == null)
+						threatAtDest       = sightReader.GetThreat(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
+						availabilityAtDest = sightReader.GetEnemyAvailability(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
+						visibilityAtDest   = sightReader.GetVisibilityToEnemies(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
+						comp               = pawn.GetComp_Fast<ThingComp_CombatAI>();
+						if (dig = Finder.Settings.Pather_KillboxKiller 
+						          && isRaider
+						          && comp != null && !comp.TookDamageRecently(360) && comp.CanSappOrEscort && !comp.IsSapping
+						          && !pawn.mindState.duty.Is(DutyDefOf.Sapper) && !pawn.CurJob.Is(JobDefOf.Mine) && !pawn.mindState.duty.Is(DutyDefOf.ExitMapRandom) && !pawn.mindState.duty.Is(DutyDefOf.Escort))
 						{
-							pathWriter = new DataWriter_Path("pathing_csv", "pather_1");
-						}
-						pathWriter.Clear();
-					}
-
-					float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-					if (dig = Finder.Settings.Pather_KillboxKiller 
-					          && !dump && comp != null && comp.data.LastSawEnemies > 600 
-					          && comp.CanSappOrEscort && pawn.mindState?.duty?.def != DutyDefOf.Sapper 
-					          && pawn.CurJob?.def != JobDefOf.Mine && !comp.IsSapping 
-					          && !comp.TookDamageRecently(360) && sightReader != null 
-					          && sightReader.GetAbsVisibilityToEnemies(pawn.Position) == 0 
-					          && pawn.RaceProps.Humanlike && pawn.HostileTo(map.ParentFaction)
-					          && (pawn.mindState?.duty?.def == DutyDefOf.AssaultColony || pawn.mindState?.duty?.def == DutyDefOf.AssaultThing || pawn.mindState?.duty?.def == DutyDefOf.HuntEnemiesIndividual || pawn.mindState?.duty?.def == DutyDefOf.Defend))
-					{
-						raiders = true;
-						TraverseParms parms = traverseParms;
-						parms.canBashDoors  = true;
-						parms.canBashFences = true;
-						parms.mode          = TraverseMode.PassAllDestroyableThings;
-						parms.maxDanger     = Danger.Unspecified;
-						traverseParms       = parms;
-						if (tuning == null)
-						{
-							tuning                                     = new PathFinderCostTuning();
-							tuning.costBlockedDoor                     = 34;
-							tuning.costBlockedDoorPerHitPoint          = 0;
-							tuning.costBlockedWallBase                 = (int)(Maths.Max(10 * Maths.Max(13 - miningSkill, 0), 24) * Finder.Settings.Pathfinding_SappingMul);
-							tuning.costBlockedWallExtraForNaturalWalls = (int)(Maths.Max(45 * Maths.Max(10 - miningSkill, 0), 45) * Finder.Settings.Pathfinding_SappingMul);
-							tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(3 - miningSkill, 0) * Finder.Settings.Pathfinding_SappingMul;
-							tuning.costOffLordWalkGrid                 = 0;
+							float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
+							isRaider = true;
+							TraverseParms parms = traverseParms;
+							parms.canBashDoors  = true;
+							parms.canBashFences = true;
+							bool humanlike = pawn.RaceProps.Humanlike;
+							if (humanlike)
+							{
+								parms.mode      = TraverseMode.PassAllDestroyableThings;
+								parms.maxDanger = Danger.Unspecified;
+							}
+							traverseParms = parms;
+							if (tuning == null)
+							{
+								tuning                            = new PathFinderCostTuning();
+								tuning.costBlockedDoor            = 25;
+								tuning.costBlockedDoorPerHitPoint = 0;
+								if (humanlike)
+								{
+									tuning.costBlockedWallBase                 = 32;
+									tuning.costBlockedWallExtraForNaturalWalls = 32;
+									tuning.costBlockedWallExtraPerHitPoint     = (20f - Mathf.Clamp(miningSkill, 5, 15)) / 100 * Finder.Settings.Pathfinding_SappingMul;
+									tuning.costOffLordWalkGrid                 = 0;
+								}
+							}
 						}
 					}
-					// get the visibility at the destination
-					if (sightReader != null)
-					{
-						if (!Finder.Performance.TpsCriticallyLow)
-						{
-							visibilityAtDest = Maths.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * Finder.Settings.Pathfinding_DestWeight, 5);
-						}
-						else
-						{
-							visibilityAtDest = Maths.Min(sightReader.GetVisibilityToEnemies(dest.Cell) * 0.875f, 5);
-						}
-					}
-					raiders |= pawn.HostileTo(Faction.OfPlayerSilentFail);
-					counter =  0;
+					checkAvoidance  = Finder.Settings.Flank_Enabled && avoidanceReader != null && !isPlayer;
+					checkVisibility = sightReader != null;
+					counter         = 0;
+					flashCost       = Finder.Settings.Debug_DebugPathfinding && Find.Selector.SelectedPawns.Contains(pawn);
 					return __state = true;
 				}
 				__state = false;
@@ -164,16 +125,9 @@ namespace CombatAI.Patches
 				{
 					return;
 				}
-				if (dump)
-				{
-					if (pathWriter != null)
-					{
-						pathWriter.Write();
-					}
-				}
 				if (__state)
 				{
-					if (Finder.Settings.Pather_KillboxKiller && dig && __result != null && !__result.nodes.NullOrEmpty() && (pawn?.RaceProps.Humanlike ?? false))
+					if (dig && !(__result?.nodes.NullOrEmpty() ?? true))
 					{
 						blocked.Clear();
 						Thing blocker;
@@ -188,7 +142,7 @@ namespace CombatAI.Patches
 									dig                                        = false;
 									tuning.costBlockedWallBase                 = Maths.Max(tuning.costBlockedWallBase * 3, 128);
 									tuning.costBlockedWallExtraForNaturalWalls = Maths.Max(tuning.costBlockedWallExtraForNaturalWalls * 3, 128);
-									tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 4);
+									tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 10);
 									__result                                   = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
 								}
 								catch (Exception er)
@@ -218,16 +172,17 @@ namespace CombatAI.Patches
 			public static void Reset()
 			{
 				avoidanceReader  = null;
-				raiders          = false;
+				isRaider        = false;
+				isPlayer         = false;
 				multiplier       = 1f;
 				sightReader      = null;
 				counter          = 0;
 				dig              = false;
 				threatAtDest     = 0;
-				armor            = default(ArmorReport);
 				instance         = null;
 				visibilityAtDest = 0f;
 				map              = null;
+				flashCost        = false;
 				pawn             = null;
 			}
 
@@ -262,93 +217,45 @@ namespace CombatAI.Patches
 			{
 				if (map != null)
 				{
-					int   value      = 0;
-					float visibility = 0f;
-					float threat     = 0f;
-					float path       = 1f;
-					if (sightReader != null)
+					int   value = 0;
+					if (checkVisibility)
 					{
-						visibility = sightReader.GetVisibilityToEnemies(index);
-						if (visibility > visibilityAtDest)
+						float visibility = Maths.Max((sightReader.GetVisibilityToEnemies(index) - visibilityAtDest) * 0.5f + (sightReader.GetEnemyAvailability(index) - availabilityAtDest) * 0.5f, 0);
+						if (visibility > 0)
 						{
-							value  += (int)(visibility * 65);
-							threat =  sightReader.GetThreat(index);
-							if (threat >= threatAtDest)
+							// this allows us to reduce the cost as we approach the target.
+							int     dist = (destPos - map.cellIndices.IndexToCell(index)).LengthManhattan;
+							float   mul  = dist < 15 ? dist / 15 : 1f;
+							value  += (int)(visibility * 11f * mul);
+							float threat = Maths.Max(sightReader.GetThreat(index) - threatAtDest, 0);
+							if (threat > 0)
 							{
-								value += (int)(threat * 64f);
-							}
-						}
-						if (!isPlayer)
-						{
-							MetaCombatAttribute attributes = sightReader.GetMetaAttributes(index);
-							if ((attributes & MetaCombatAttribute.AOELarge) != MetaCombatAttribute.None)
-							{
-								path = 2f;
+								value += (int)(threat * 22f * mul);
 							}
 						}
 					}
-					if (avoidanceReader != null && !isPlayer && Finder.Settings.Flank_Enabled)
+					if (checkAvoidance)
 					{
-						if (value > 3)
+						// we only care if the paths are parallel to each ohers.
+						int path    = Maths.Min(avoidanceReader.GetPath(index),  avoidanceReader.GetPath(parentIndex));
+						if (value > 0)
 						{
-							value += (int)(avoidanceReader.GetPath(index) * Maths.Min(visibility, 5) * 21f * path);
+							value += path * 11;
 						}
-						else
-						{
-							value += (int)(Maths.Min(avoidanceReader.GetPath(index), 4) * 42 * path);
-						}
-						float danger = avoidanceReader.GetDanger(index);
-						if (danger > 0)
-						{
-							value += 23;
-						}
-						value += (int)danger;
+						value += (int)(avoidanceReader.GetDanger(index) * 11) + avoidanceReader.GetProximity(index) * 11;
 					}
-					if (dump)
-					{
-						/*
-						 * fields
-						 * "pref", "enRel", "enAbs", "frRel", "frAbs", "path", "dang"
-						 */
-						//if (gridWriter != null)
-						//{
-						//    gridWriter["pref"].SetValue(value, index);
-						//    gridWriter["enRel"].SetValue(sightReader.GetVisibilityToEnemies(index), index);
-						//    gridWriter["enAbs"].SetValue(sightReader.GetAbsVisibilityToEnemies(index), index);
-						//    gridWriter["frRel"].SetValue(sightReader.GetVisibilityToFriendlies(index), index);
-						//    gridWriter["frAbs"].SetValue(sightReader.GetAbsVisibilityToFriendlies(index), index);
-						//    gridWriter["path"].SetValue(avoidanceReader.GetPath(index), index);
-						//    gridWriter["dang"].SetValue(avoidanceReader.GetDanger(index), index);
-						//}
-						if (pathWriter != null)
-						{
-							pathWriter.Push(new DataWriter_Path.PathCell
-							{
-								pref  = value,
-								enRel = sightReader.GetVisibilityToEnemies(index),
-								enAbs = sightReader.GetAbsVisibilityToEnemies(index),
-								frRel = sightReader.GetVisibilityToFriendlies(index),
-								frAbs = sightReader.GetAbsVisibilityToFriendlies(index),
-								dang  = avoidanceReader.GetDanger(index),
-								prox  = avoidanceReader.GetProximity(index),
-								path  = avoidanceReader.GetPath(index)
-							});
-						}
-					}
-					//Log.Message($"{value} {sightReader != null} {sightReader.hostile != null} {sightReader.GetVisibility(index)} {sightReader.hostile.GetSignalStrengthAt(index)}");
-					//map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), sightReader.hostile.GetSignalStrengthAt(index), $"{value}_ ");
-					if (value > 10f)
+					if (value > 5)
 					{
 						counter++;
-						//
-						// TODO make this into a maxcost -= something system
-						float l1 = 350 * (1f - Mathf.Lerp(0f, 0.75f, counter / (openNum + 1f))) * (1f - Maths.Min(openNum, 5000) / 7500);
-						float l2 = 250 * (1f - Mathf.Clamp01(PathFinder.calcGrid[parentIndex].knownCost / 2500));
-						//we use this so the game doesn't die
-						float v = Maths.Min(value, l1 + l2) * multiplier * 1;
-						//map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), v, $" {l1 + l2}");                        
-						return (int)(Maths.Min(value, l1 + l2) * multiplier * Finder.P75);
-						//return (int)(Maths.Min(value, 1000f) * factionMultiplier * 1);
+//						//
+//						// TODO make this into a maxcost -= something system
+						if (flashCost)
+						{
+							float val = (int) (value * multiplier * Finder.P50);
+							map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), val / 1000f, $"{Math.Round(val, 1)}");
+							return (int) val;
+						}
+						return (int) (value * multiplier * Finder.P50);
 					}
 				}
 				return 0;

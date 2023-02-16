@@ -7,23 +7,23 @@ namespace CombatAI
 	{
 		private readonly CellIndices cellIndices;
 		private readonly float[]     grid;
+		private readonly float[]     gridNoDoors;
 
 		public WallGrid(Map map) : base(map)
 		{
 			cellIndices = map.cellIndices;
 			grid        = new float[cellIndices.NumGridCells];
+			gridNoDoors = new float[cellIndices.NumGridCells];
 		}
 
 		public float this[IntVec3 cell]
 		{
 			get => this[cellIndices.CellToIndex(cell)];
-			set => this[cellIndices.CellToIndex(cell)] = value;
 		}
 
 		public float this[int index]
 		{
 			get => grid[index];
-			set => grid[index] = value;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -45,6 +45,26 @@ namespace CombatAI
 			}
 			return FillCategory.Full;
 		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public FillCategory GetFillCategoryNoDoors(IntVec3 cell)
+		{
+			return GetFillCategoryNoDoors(cellIndices.CellToIndex(cell));
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public FillCategory GetFillCategoryNoDoors(int index)
+		{
+			float f = gridNoDoors[index];
+			if (f == 0)
+			{
+				return FillCategory.None;
+			}
+			if (f < 1f)
+			{
+				return FillCategory.Partial;
+			}
+			return FillCategory.Full;
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool CanBeSeenOver(IntVec3 cell)
@@ -55,6 +75,17 @@ namespace CombatAI
 		public bool CanBeSeenOver(int index)
 		{
 			return grid[index] < 0.998f;
+		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool CanBeSeenOverNoDoors(IntVec3 cell)
+		{
+			return CanBeSeenOverNoDoors(cellIndices.CellToIndex(cell));
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool CanBeSeenOverNoDoors(int index)
+		{
+			return gridNoDoors[index] < 0.998f;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -72,30 +103,31 @@ namespace CombatAI
 					{
 						if (t is Plant plant)
 						{
-							grid[index] = plant.Growth * t.def.fillPercent / 4f;
+							gridNoDoors[index] = grid[index] = plant.Growth * t.def.fillPercent / 4f;
 						}
 						else
 						{
-							grid[index] = t.def.fillPercent / 4f;
+							gridNoDoors[index] = grid[index] = t.def.fillPercent / 4f;
 						}
 					}
 				}
 				else if (t is Building_Door door)
 				{
-					grid[index] = 1 - door.OpenPct;
+					grid[index]        = 1 - door.OpenPct;
+					gridNoDoors[index] = 0;
 				}
 				else if (t is Building ed && ed.def.Fillage == FillCategory.Full)
 				{
-					grid[index] = 1.0f;
+					gridNoDoors[index] = grid[index] = 1.0f;
 				}
 				else
 				{
-					grid[index] = t.def.fillPercent;
+					gridNoDoors[index] = grid[index] = t.def.fillPercent;
 				}
 			}
 			else
 			{
-				grid[index] = 0;
+				gridNoDoors[index] = grid[index] = 0;
 			}
 		}
 	}
