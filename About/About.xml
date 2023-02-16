@@ -22,6 +22,7 @@
         <li>brrainz.harmony</li>
     </loadAfter>
     <incompatibleWith>
+        <li>Victor.WallsAreSolid</li>
         <li>fed1sPlay.PawnTargetFix</li>
         <li>brrainz.lineofsightfix</li>
         <li>majorhoff.rimthreaded</li>
