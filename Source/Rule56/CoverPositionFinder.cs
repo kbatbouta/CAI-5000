@@ -23,7 +23,7 @@ namespace CombatAI
 			
 			metric_cover.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)), 0.25f);
 			metric_cover.Add("threat", ((reader,     cell) => reader.GetThreat(cell)), 0.25f);
-			metric_cover.Add("proximity", (reader, cell) => reader.GetProximity(cell), 0.25f);
+//			metric_cover.Add("proximity", (reader, cell) => reader.GetProximity(cell), 0.01f);
 			
 			metric_coverPath.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)));
 			metric_coverPath.Add("dir", (reader,   cell) =>  Mathf.Sqrt(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude())), -1);

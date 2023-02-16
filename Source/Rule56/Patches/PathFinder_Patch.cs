@@ -88,14 +88,14 @@ namespace CombatAI.Patches
 							bool humanlike = pawn.RaceProps.Humanlike;
 							if (humanlike)
 							{
-								parms.mode      = TraverseMode.PassAllDestroyableThings;
+								parms.mode      = TraverseMode.PassAllDestroyableThingsNotWater;
 								parms.maxDanger = Danger.Unspecified;
 							}
 							traverseParms = parms;
 							if (tuning == null)
 							{
 								tuning                            = new PathFinderCostTuning();
-								tuning.costBlockedDoor            = 25;
+								tuning.costBlockedDoor            = 15;
 								tuning.costBlockedDoorPerHitPoint = 0;
 								if (humanlike)
 								{

@@ -695,7 +695,7 @@ namespace CombatAI.Comps
                             Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Cover, cell);
                             job_goto.playerForced      = forcedTarget.IsValid;
                             job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
-                            Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 150 + 100);
+                            Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 150 + 200);
                             job_waitCombat.playerForced                   = forcedTarget.IsValid;
                             job_waitCombat.endIfCantShootTargetFromCurPos = true;
                             job_waitCombat.checkOverrideOnExpire          = true;
@@ -711,7 +711,7 @@ namespace CombatAI.Comps
                             Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Cover, cell);
                             job_goto.playerForced      = forcedTarget.IsValid;
                             job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
-                            Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 150 + 100);
+                            Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 150 + 200);
                             job_waitCombat.playerForced                   = forcedTarget.IsValid;
                             job_waitCombat.endIfCantShootTargetFromCurPos = true;
                             job_waitCombat.checkOverrideOnExpire          = true;
