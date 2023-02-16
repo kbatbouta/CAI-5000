@@ -364,8 +364,13 @@ namespace CombatAI
                     }
                 }
             }
+            bool defenseMode = false;
             if (scanForEnemies)
             {
+                if (item.pawn != null && item.pawn.mindState.duty.Is(DutyDefOf.Defend) && item.pawn.CurJob.Is(JobDefOf.Wait_Wander))
+                {
+                    defenseMode = true;
+                }
                 item.lastScannedForEnemies = ticks;
                 try
                 {
@@ -507,7 +512,7 @@ namespace CombatAI
                             item.spottings.Add(spotting);
                         }
                     }
-                }, maxDist: 12, maxCellNum: 225, passThroughDoors: true);
+                }, maxDist: defenseMode ? 32 : 12, maxCellNum: defenseMode ? 325 : 225, passThroughDoors: true);
                 
                 grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Set(pos, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));

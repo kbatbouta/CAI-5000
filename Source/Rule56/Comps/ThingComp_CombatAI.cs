@@ -792,6 +792,7 @@ namespace CombatAI.Comps
                         // best enemy is approaching but not yet in view
                         else if (bestEnemyVisibleSoon || duty.Is(DutyDefOf.Escort) || duty.Is(DutyDefOf.Defend) || duty.Is(DutyDefOf.HuntEnemiesIndividual))
                         {
+                            _last = 60;
                             CoverPositionRequest request = new CoverPositionRequest();
                             request.caster = selPawn;
                             request.verb   = verb;
@@ -801,10 +802,24 @@ namespace CombatAI.Comps
                                 request.majorThreats = rangedEnemiesTargetingSelf;
                             }
                             request.checkBlockChance   = true;
-                            request.maxRangeFromCaster = Maths.Max(verb.EffectiveRange / 2f, 10f);
-                            if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell) && ShouldMoveTo(cell))
+                            request.maxRangeFromCaster = Maths.Max(verb.EffectiveRange, 10f);
+                            if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
                             {
-                                StartOrQueueCoverJob(cell, 10);
+                                if (ShouldMoveTo(cell))
+                                {
+                                    StartOrQueueCoverJob(cell, 10);
+                                }
+                                else if(nearestEnemy is Pawn enemyPawn)
+                                {
+                                    _last = 71;
+                                    // fallback
+                                    request.target             = PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 90);
+                                    request.maxRangeFromCaster = Mathf.Min(request.maxRangeFromCaster, 5);
+                                    if (verb.CanHitFromCellIgnoringRange(selPos, request.target, out _) && CoverPositionFinder.TryFindCoverPosition(request, out cell) && ShouldMoveTo(cell))
+                                    {
+                                        StartOrQueueCoverJob(cell, 20);
+                                    }
+                                }
                             }
                         }
                     }
@@ -814,10 +829,17 @@ namespace CombatAI.Comps
 
         private bool ShouldMoveTo(IntVec3 newPos)
         {
-            IntVec3 pos        = selPawn.Position;
-            float   visDiff    = sightReader.GetVisibilityToEnemies(pos) - sightReader.GetVisibilityToEnemies(newPos);
-            float   magDiff    = Mathf.Sqrt(Mathf.Abs(sightReader.GetEnemyDirection(pos).sqrMagnitude)) - Mathf.Sqrt(Mathf.Abs(sightReader.GetEnemyDirection(newPos).sqrMagnitude));
-            float   threatDiff = sightReader.GetThreat(pos) - sightReader.GetThreat(newPos);
+            IntVec3 pos           = selPawn.Position;
+            float   curVisibility = sightReader.GetVisibilityToEnemies(pos);
+            float   curThreat     = sightReader.GetVisibilityToEnemies(pos);
+            Job     job           = selPawn.CurJob;
+            if (curThreat == 0 && curVisibility == 0 && !(job.Is(JobDefOf.Wait_Combat) || job.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) || job.Is(CombatAI_JobDefOf.CombatAI_Goto_Duck) || job.Is(CombatAI_JobDefOf.CombatAI_Goto_Retreat)))
+            {
+                return sightReader.GetVisibilityToEnemies(newPos) <= 2f && sightReader.GetThreat(newPos) < 1f;
+            }
+            float   visDiff       = curVisibility - sightReader.GetVisibilityToEnemies(newPos);
+            float   magDiff       = Mathf.Sqrt(Mathf.Abs(sightReader.GetEnemyDirection(pos).sqrMagnitude)) - Mathf.Sqrt(Mathf.Abs(sightReader.GetEnemyDirection(newPos).sqrMagnitude));
+            float   threatDiff    = curThreat - sightReader.GetThreat(newPos);
             return Rand.Chance(visDiff) && Rand.Chance(threatDiff) && Rand.Chance(magDiff);
         }
 
@@ -1072,6 +1094,25 @@ namespace CombatAI.Comps
                     }
                     escort.GetComp_Fast<ThingComp_CombatAI>().duties.FinishAllDuties(DutyDefOf.Escort, parent);
                 }
+            }
+            if (success)
+            {
+                Predicate<Thing> validator = t =>
+                {
+                    if (!t.HostileTo(selPawn))
+                    {
+                        ThingComp_CombatAI comp = t.GetComp_Fast<ThingComp_CombatAI>();
+                        if (comp != null && comp.IsSapping && comp.sapperNodes.Count > 3)
+                        {
+                            ReleaseEscorts(false);
+                            comp.cellBefore     = IntVec3.Invalid;
+                            comp.sapperStartTick = GenTicks.TicksGame + 800;
+                            comp.sapperNodes.Clear();
+                        }
+                    }
+                    return false;
+                };
+                Verse.GenClosest.RegionwiseBFSWorker(selPawn.Position, selPawn.Map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 4, 15, out int _);
             }
             escorts.Clear();
         }
