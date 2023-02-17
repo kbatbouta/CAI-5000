@@ -1319,7 +1319,7 @@ namespace CombatAI.Comps
             if (!TKVCache<int, LocalTargetInfo, int>.TryGet(enemy.thingIDNumber, out int attackTarget, 15) || attackTarget == -1)
             {
                 Verb enemyVerb = enemy.TryGetAttackVerb();
-                if (enemyVerb == null)
+                if (enemyVerb == null || enemyVerb is Verb_CastPsycast || enemyVerb is Verb_CastAbility)
                 {
                     attackTarget = -1;
                 }
@@ -1341,11 +1341,7 @@ namespace CombatAI.Comps
         }
 
         #region TimeStamps
-
-        /// <summary>
-        ///     When the pawn was last order to move by CAI.
-        /// </summary>
-//		private int lastMoved;
+        
         /// <summary>
         ///     When the last injury occured/damage.
         /// </summary>
