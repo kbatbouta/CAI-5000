@@ -54,7 +54,7 @@ namespace CombatAI
 		{
 			Pawn_CustomDutyTracker.CustomPawnDuty custom = new Pawn_CustomDutyTracker.CustomPawnDuty
 			{
-				duty = new PawnDuty(DutyDefOf.Escort, escortee, radius)
+				duty = new PawnDuty(CombatAI_DutyDefOf.CombatAI_Escort, escortee, radius)
 				{
 					locomotion = LocomotionUrgency.Sprint
 				},
@@ -73,7 +73,7 @@ namespace CombatAI
 		{
 			Pawn_CustomDutyTracker.CustomPawnDuty custom = new Pawn_CustomDutyTracker.CustomPawnDuty
 			{
-				duty = new PawnDuty(DutyDefOf.Defend, dest, switchAssaultRadius)
+				duty = new PawnDuty(CombatAI_DutyDefOf.CombatAI_AssaultPoint, dest, switchAssaultRadius)
 				{
 					locomotion = LocomotionUrgency.Sprint
 				},

@@ -21,7 +21,8 @@ namespace CombatAI.Patches
 			private static          ThingComp_CombatAI               comp;
 //			private static          DataWriter_Path                  pathWriter;
 //			private static          bool                             dump;
-	
+
+			private static          FloatRange                       temperatureRange;
 			private static          bool                             checkAvoidance;
 			private static          bool                             checkVisibility;
 			private static          bool                             dig;
@@ -62,6 +63,14 @@ namespace CombatAI.Patches
 					// prepare the modifications
 					instance = __instance;
 					map      = __instance.map;
+					// get temperature data.
+					temperatureRange = new FloatRange(pawn.GetStatValue_Fast(StatDefOf.ComfyTemperatureMin, 1600), pawn.GetStatValue_Fast(StatDefOf.ComfyTemperatureMax, 1600));
+					temperatureRange = temperatureRange.ExpandedBy(12);
+					if (temperatureRange.min >= temperatureRange.max)
+					{
+						temperatureRange.min = -32;
+						temperatureRange.max = 128;
+					}
 					// set faction params.
 					isPlayer = pawn.Faction.IsPlayerSafe();
 					isRaider  = !isPlayer && (pawn.HostileTo(Faction.OfPlayerSilentFail) || (map.ParentFaction != null && pawn.Faction.HostileTo(map.ParentFaction)));
@@ -218,6 +227,21 @@ namespace CombatAI.Patches
 				if (map != null)
 				{
 					int   value = 0;
+					if (Finder.Settings.Temperature_Enabled)
+					{
+						float temperature = GenTemperature.TryGetTemperature(index, map);
+						if (!temperatureRange.Includes(temperature))
+						{
+							if (temperatureRange.min > temperature)
+							{
+								value += (int)Maths.Min(temperatureRange.min - temperature, 32) * 3;
+							}
+							else
+							{
+								value += (int)Maths.Min(temperature - temperatureRange.max, 32) * 3;
+							}
+						}
+					}
 					if (checkVisibility)
 					{
 						float visibility = Maths.Max((sightReader.GetVisibilityToEnemies(index) - visibilityAtDest) * 0.5f + (sightReader.GetEnemyAvailability(index) - availabilityAtDest) * 0.5f, 0);
@@ -247,8 +271,8 @@ namespace CombatAI.Patches
 					if (value > 5)
 					{
 						counter++;
-//						//
-//						// TODO make this into a maxcost -= something system
+						//
+						// TODO make this into a maxcost -= something system
 						if (flashCost)
 						{
 							float val = (int) (value * multiplier * Finder.P50);

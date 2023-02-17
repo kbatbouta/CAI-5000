@@ -367,7 +367,7 @@ namespace CombatAI
             bool defenseMode = false;
             if (scanForEnemies)
             {
-                if (item.pawn != null && item.pawn.mindState.duty.Is(DutyDefOf.Defend) && item.pawn.CurJob.Is(JobDefOf.Wait_Wander))
+                if (item.pawn != null && (item.pawn.mindState.duty.Is(DutyDefOf.Defend) || item.pawn.mindState.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint)) && item.pawn.CurJob.Is(JobDefOf.Wait_Wander))
                 {
                     defenseMode = true;
                 }

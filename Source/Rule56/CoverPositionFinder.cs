@@ -23,35 +23,33 @@ namespace CombatAI
 			
 			metric_cover.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)), 0.25f);
 			metric_cover.Add("threat", ((reader,     cell) => reader.GetThreat(cell)), 0.25f);
-//			metric_cover.Add("proximity", (reader, cell) => reader.GetProximity(cell), 0.01f);
-			
+
 			metric_coverPath.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)));
 			metric_coverPath.Add("dir", (reader,   cell) =>  Mathf.Sqrt(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude())), -1);
 			metric_coverPath.Add("traverse", (map, cell) => (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0), 1, false);
-			metric_coverPath.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), 0.25f);
+			metric_coverPath.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), -0.05f);
 			
 			// retreating
 			
-			metric_retreat.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)), 0.25f);
-			metric_retreat.Add("threat", ((reader,     cell) => reader.GetThreat(cell)), 0.25f);
-			metric_retreat.Add("proximity", (reader, cell) => reader.GetProximity(cell), 0.25f);
-			metric_retreat.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), 0.10f);
-			
+			metric_retreat.Add("visibilityEnemies", ((reader,    cell) => reader.GetVisibilityToEnemies(cell)), 0.25f);
+			metric_retreat.Add("threat", ((reader,               cell) => reader.GetThreat(cell)), 0.25f);
+			metric_retreat.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), -0.10f);
+
 			metric_retreatPath.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)), 1);
 			metric_retreatPath.Add("dir", (reader,   cell) => Mathf.Sqrt(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude())), -1);
 			metric_retreatPath.Add("traverse", (map, cell) => (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0), 1, false);
-			metric_retreatPath.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), 0.25f);
+			metric_retreatPath.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), -0.05f);
+			metric_retreatPath.Add("danger", ((reader, cell) => reader.GetDanger(cell)), 0.05f);
 			
 			// ducking
 			
 			metric_duck.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)), 0.25f);
 			metric_duck.Add("threat", ((reader,     cell) => reader.GetThreat(cell)), 0.25f);
-			metric_duck.Add("proximity", (reader, cell) => reader.GetProximity(cell), 0.25f);
-			
+		
 			metric_duckPath.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)), 1);
 			metric_duckPath.Add("dir", (reader,   cell) =>  Mathf.Sqrt(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude())), -1);
 			metric_duckPath.Add("traverse", (map, cell) => (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0), 1, false);
-			metric_duckPath.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), 0.25f);
+			metric_duckPath.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), -0.05f);
  		}
 		
 		private static readonly List<Func<IntVec3, bool>>    enemyVerbs = new List<Func<IntVec3, bool>>();
@@ -224,7 +222,7 @@ namespace CombatAI
 			float              adjustedMaxDistSqr = adjustedMaxDist * adjustedMaxDist;
 			CellFlooder        flooder            = map.GetCellFlooder();
 			IntVec3            bestCell           = IntVec3.Invalid;
-			float              bestCellDist       = request.locus.DistanceToSquared(enemyLoc);
+			float              bestCellDist       = 0;
 			float              bestCellScore      = 1e8f;
 			flooder.Flood(request.locus,
 			              node =>
@@ -275,7 +273,7 @@ namespace CombatAI
 						              }
 					              }
 				              }
-				              return cost;
+				              return Mathf.Abs(cost);
 			              },
 			              cell =>
 			              {

@@ -162,6 +162,26 @@ namespace CombatAI.R
                    _CombatAI_Quick_Difficulty : _CombatAI_Quick_Difficulty = "CombatAI.Quick.Difficulty".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Quick_Difficulty_Selected = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Quick.Difficulty.Selected</c>. inner text:
+        ///
+        /// <code>{0} difficulty level applied!</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Quick_Difficulty_Selected {
+            get => _CombatAI_Quick_Difficulty_Selected != null ? 
+                   _CombatAI_Quick_Difficulty_Selected : _CombatAI_Quick_Difficulty_Selected = "CombatAI.Quick.Difficulty.Selected".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Quick_Difficulty_Selected_Warning = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Quick.Difficulty.Selected.Warning</c>. inner text:
+        ///
+        /// <code>WARNING: {0} difficulty level might cause performance issues!</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Quick_Difficulty_Selected_Warning {
+            get => _CombatAI_Quick_Difficulty_Selected_Warning != null ? 
+                   _CombatAI_Quick_Difficulty_Selected_Warning : _CombatAI_Quick_Difficulty_Selected_Warning = "CombatAI.Quick.Difficulty.Selected.Warning".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_PlaceWorker_WallMounted = null;
         /// <summary> Keyed string. key=<c>CombatAI.PlaceWorker.WallMounted</c>. inner text:
         ///
@@ -252,6 +272,16 @@ namespace CombatAI.R
                    _CombatAI_Settings_Basic_Presets_Hard : _CombatAI_Settings_Basic_Presets_Hard = "CombatAI.Settings.Basic.Presets.Hard".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_Temperature = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Temperature</c>. inner text:
+        ///
+        /// <code>Make the AI aware of cell temperature</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_Temperature {
+            get => _CombatAI_Settings_Basic_Temperature != null ? 
+                   _CombatAI_Settings_Basic_Temperature : _CombatAI_Settings_Basic_Temperature = "CombatAI.Settings.Basic.Temperature".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic_Presets_Deathwish = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Deathwish</c>. inner text:
         ///
@@ -295,7 +325,7 @@ namespace CombatAI.R
         private static TaggedString _CombatAI_Settings_Basic_Sprinting_Description = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Sprinting.Description</c>. inner text:
         ///
-        /// <code>If this is disabled: Pathetic F F...\n if not: Chad :thumbsup</code>
+        /// <code>Allows the AI to use sprinting when dashing for cover. Turn this off if you don't like kitting simulators.</code>
         /// </summary>       
         public static TaggedString CombatAI_Settings_Basic_Sprinting_Description {
             get => _CombatAI_Settings_Basic_Sprinting_Description != null ? 

@@ -10,6 +10,7 @@ namespace CombatAI
                 case Difficulty.Easy:
 	                Finder.Settings.Pathfinding_DestWeight = 0.875f;
 	                Finder.Settings.Caster_Enabled         = false;
+	                Finder.Settings.Temperature_Enabled    = true;
 	                Finder.Settings.Targeter_Enabled       = false;
 	                Finder.Settings.Pather_Enabled         = true;
 	                Finder.Settings.Pather_KillboxKiller   = false;
@@ -41,6 +42,7 @@ namespace CombatAI
                 case Difficulty.Normal:
 	                Finder.Settings.Pathfinding_DestWeight                      = 0.725f;
 	                Finder.Settings.Caster_Enabled                              = true;
+	                Finder.Settings.Temperature_Enabled                         = true;
 	                Finder.Settings.Targeter_Enabled                            = true;
 	                Finder.Settings.Pather_Enabled                              = true;
 	                Finder.Settings.Pather_KillboxKiller                        = true;
@@ -70,6 +72,7 @@ namespace CombatAI
                 case Difficulty.Hard:
 	                Finder.Settings.Pathfinding_DestWeight = 0.625f;
 	                Finder.Settings.Caster_Enabled         = true;
+	                Finder.Settings.Temperature_Enabled    = true;
 	                Finder.Settings.Targeter_Enabled       = true;
 	                Finder.Settings.Pather_Enabled         = true;
 	                Finder.Settings.Pather_KillboxKiller   = true;
@@ -101,6 +104,7 @@ namespace CombatAI
                 case Difficulty.DeathWish:
 	                Finder.Settings.Pathfinding_DestWeight = 0.45f;
 	                Finder.Settings.Caster_Enabled         = true;
+	                Finder.Settings.Temperature_Enabled    = true;
 	                Finder.Settings.Targeter_Enabled       = true;
 	                Finder.Settings.Pather_Enabled         = true;
 	                Finder.Settings.Pather_KillboxKiller   = true;

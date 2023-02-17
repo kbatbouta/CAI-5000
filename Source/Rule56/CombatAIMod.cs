@@ -28,16 +28,17 @@ namespace CombatAI
 		private bool collapsibleGroupInited;
 		public CombatAIMod(ModContentPack contentPack) : base(contentPack)
 		{
-			Finder.Mod     = this;
-			Finder.Harmony = new Harmony("Krkr.Rule56");
-			Finder.Harmony.PatchAll();
+			Finder.Mod      = this;
 			Finder.Settings = GetSettings<Settings>();
+			Finder.Harmony  = new Harmony("Krkr.Rule56");
+			Finder.Harmony.PatchAll();
 			if (Finder.Settings == null)
 			{
 				Finder.Settings = new Settings();
 			}
 			LongEventHandler.QueueLongEvent(ArmorUtility.Initialize, "CombatAI.Preparing", false, null);
 			LongEventHandler.QueueLongEvent(CompatibilityManager.Initialize, "CombatAI.Preparing", false, null);
+			LongEventHandler.QueueLongEvent(ThinkNodeDatabase.Initialize, "CombatAI.Preparing", false, null);
 		}
 
 		public override string SettingsCategory()
@@ -129,6 +130,7 @@ namespace CombatAI
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_KillBoxKiller, ref Finder.Settings.Pather_KillboxKiller);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Pather, ref Finder.Settings.Pather_Enabled);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Caster, ref Finder.Settings.Caster_Enabled);
+			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Temperature, ref Finder.Settings.Temperature_Enabled);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Targeter, ref Finder.Settings.Targeter_Enabled);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Reaction, ref Finder.Settings.React_Enabled);
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Flanking, ref Finder.Settings.Flank_Enabled);
@@ -356,6 +358,9 @@ namespace CombatAI
 				collapsible_performance.Group = collapsible_groupRight;
 				collapsible_groupRight.Register(collapsible_performance);
 
+				collapsible_advance.Group = collapsible_groupRight;
+				collapsible_groupRight.Register(collapsible_advance);
+
 				collapsible_fog.Group = collapsible_groupLeft;
 				collapsible_groupLeft.Register(collapsible_fog);
 
@@ -388,7 +393,6 @@ namespace CombatAI
 			// Right section
 			Rect rectRight = inRect.RightHalf();
 			rectRight.xMin               += 5;
-			collapsible_advance.Expanded =  true;
 			collapsible_advance.Begin(rectRight, Keyed.CombatAI_Settings_Advance);
 			FillCollapsible_Advance(collapsible_advance);
 			collapsible_advance.End(ref rectRight);
@@ -397,14 +401,14 @@ namespace CombatAI
 			// debug settings
 			if (Finder.Settings.AdvancedUser)
 			{
-				collapsible_performance.Begin(rectRight, Keyed.CombatAI_Settings_Advance_Sight_Performance);
-				FillCollapsible_Performance(collapsible_performance);
-				collapsible_performance.End(ref rectRight);
-				rectRight.yMin += 5;
-
 				collapsible_debug.Begin(rectRight, Keyed.CombatAI_Settings_Debugging);
 				FillCollapsible_Debugging(collapsible_debug);
 				collapsible_debug.End(ref rectRight);
+				rectRight.yMin += 5;
+				
+				collapsible_performance.Begin(rectRight, Keyed.CombatAI_Settings_Advance_Sight_Performance);
+				FillCollapsible_Performance(collapsible_performance);
+				collapsible_performance.End(ref rectRight);
 				rectRight.yMin += 5;
 			}
 			WriteSettings();

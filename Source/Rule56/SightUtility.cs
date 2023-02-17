@@ -29,7 +29,7 @@ namespace CombatAI
 			{
 				result = GetSightRadius_Pawn(pawn);
 				Faction f = thing.Faction;
-				isSmartPawn = !pawn.RaceProps.Animal;
+				isSmartPawn = !pawn.RaceProps.Animal && !(pawn.Dead || pawn.Downed);
 				if (f != null && (f.IsPlayerSafe() || !f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies))
 				{
 					if (pawn.RaceProps.Animal)

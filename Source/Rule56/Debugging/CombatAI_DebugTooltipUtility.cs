@@ -20,5 +20,11 @@ namespace CombatAI
 		{
 			return $"Tile index:\t\t{tile}";
 		}
+		
+		[CombatAI_DebugTooltip(CombatAI_DebugTooltipType.Map)]
+		public static string CellTemp(Map map, IntVec3 cell)
+		{
+			return $"Temp: {GenTemperature.TryGetTemperature(cell, map)}";
+		}
 	}
 }

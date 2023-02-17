@@ -64,6 +64,7 @@ namespace CombatAI
 		public bool  Pather_KillboxKiller   = true;
 		public float Pathfinding_DestWeight = 0.85f;
 		public float Pathfinding_SappingMul = 1.0f;
+		public bool  Temperature_Enabled    = true;
 		public bool  PerformanceOpt_Enabled = true;
 		public bool  React_Enabled          = true;
 		public bool  Retreat_Enabled        = true;
@@ -116,6 +117,7 @@ namespace CombatAI
 			Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
 			Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);
 			Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
+			Scribe_Values.Look(ref Temperature_Enabled, $"Temperature_Enabled.{version}", true);
 			Scribe_Values.Look(ref React_Enabled, $"React_Enabled.{version}", true);
 			Scribe_Values.Look(ref Retreat_Enabled, $"Retreat_Enabled.{version}", true);
 			Scribe_Values.Look(ref Flank_Enabled, $"Flank_Enabled.{version}", true);

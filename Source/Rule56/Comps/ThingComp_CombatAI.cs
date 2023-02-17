@@ -36,7 +36,10 @@ namespace CombatAI.Comps
         ///     Pawn ability caster.
         /// </summary>
         public Pawn_AbilityCaster abilities;
-
+        /// <summary>
+        /// Saves job logs. for debugging only.
+        /// </summary>
+        public List<JobLog> jobLogs;
         /// <summary>
         ///     Parent armor report.
         /// </summary>
@@ -78,10 +81,6 @@ namespace CombatAI.Comps
         ///     Parent sight reader.
         /// </summary>
         public SightTracker.SightReader sightReader;
-        /// <summary>
-        ///     Wait job started/queued by this comp.
-        /// </summary>
-        public Job waitJob;
 
         public ThingComp_CombatAI()
         {
@@ -222,16 +221,7 @@ namespace CombatAI.Comps
             // update the current armor report.
             armor = selPawn.GetArmorReport();
         }
-
-        /// <summary>
-        ///     Returns whether the parent has retreated in the last number of ticks.
-        /// </summary>
-        /// <param name="ticks">The number of ticks</param>
-        /// <returns>Whether the pawn retreated in the last number of ticks</returns>
-        public bool RetreatedRecently(int ticks)
-        {
-            return data.RetreatedRecently(ticks);
-        }
+        
         /// <summary>
         ///     Returns whether the parent has took damage in the last number of ticks.
         /// </summary>
@@ -531,7 +521,7 @@ namespace CombatAI.Comps
                             Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 50 + 50);
                             job_waitCombat.playerForced          = forcedTarget.IsValid;
                             job_waitCombat.checkOverrideOnExpire = true;
-                            selPawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);
+                            selPawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
                             data.lastRetreated = lastRetreated = GenTicks.TicksGame;
                         }
                         return;
@@ -700,8 +690,8 @@ namespace CombatAI.Comps
                             job_waitCombat.endIfCantShootTargetFromCurPos = true;
                             job_waitCombat.checkOverrideOnExpire          = true;
                             selPawn.jobs.ClearQueuedJobs();
-                            selPawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);
-                            selPawn.jobs.jobQueue.EnqueueFirst(waitJob = job_goto);
+                            selPawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
+                            selPawn.jobs.jobQueue.EnqueueFirst(job_goto);
                             data.LastInterrupted = GenTicks.TicksGame;
                         }
                         else
@@ -717,7 +707,7 @@ namespace CombatAI.Comps
                             job_waitCombat.checkOverrideOnExpire          = true;
                             selPawn.jobs.ClearQueuedJobs();
                             selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-                            selPawn.jobs.jobQueue.EnqueueFirst(waitJob = job_waitCombat);
+                            selPawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
                             data.LastInterrupted = GenTicks.TicksGame;
                         }
                     }
@@ -790,7 +780,7 @@ namespace CombatAI.Comps
                             }
                         }
                         // best enemy is approaching but not yet in view
-                        else if (bestEnemyVisibleSoon || duty.Is(DutyDefOf.Escort) || duty.Is(DutyDefOf.Defend) || duty.Is(DutyDefOf.HuntEnemiesIndividual))
+                        else if (bestEnemyVisibleSoon || duty.Is(DutyDefOf.Escort) || duty.Is(CombatAI_DutyDefOf.CombatAI_Escort) || duty.Is(DutyDefOf.Defend) || duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) || duty.Is(DutyDefOf.HuntEnemiesIndividual))
                         {
                             _last = 60;
                             CoverPositionRequest request = new CoverPositionRequest();
@@ -827,6 +817,11 @@ namespace CombatAI.Comps
             }
         }
 
+        /// <summary>
+        /// Returns whether parent pawn should move to a new position.
+        /// </summary>
+        /// <param name="newPos">New position</param>
+        /// <returns>Whether to move or not</returns>
         private bool ShouldMoveTo(IntVec3 newPos)
         {
             IntVec3 pos           = selPawn.Position;
@@ -886,6 +881,22 @@ namespace CombatAI.Comps
         {
             if (Prefs.DevMode && DebugSettings.godMode)
             {
+                if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
+                {
+                    Command_Action jobs = new Command_Action();
+                    jobs.defaultLabel = "DEV: view job logs";
+                    jobs.action = delegate
+                    {
+                        if (Find.WindowStack.windows.Any(w => w is Window_JobLogs logs && logs.comp == this))
+                        {
+                            return;
+                        }
+                        jobLogs ??= new List<JobLog>();
+                        Window_JobLogs window = new Window_JobLogs(this);
+                        Find.WindowStack.Add(window);
+                    };
+                    yield return jobs;
+                }
                 Verb           verb           = selPawn.TryGetAttackVerb();
                 float          retreatDistSqr = Maths.Max(verb.EffectiveRange * verb.EffectiveRange / 9, 36);
                 Map            map            = selPawn.Map;
@@ -924,7 +935,6 @@ namespace CombatAI.Comps
                         map.debugDrawer.FlashCell(cell, 1, "XXXXXXX", 150);
                     }
                 };
-
                 Command_Action cover = new Command_Action();
                 cover.defaultLabel = "DEV: Cover position search";
                 cover.action = delegate
@@ -1092,7 +1102,7 @@ namespace CombatAI.Comps
                     {
                         escort.GetComp_Fast<ThingComp_CombatAI>().releasedTick = GenTicks.TicksGame;
                     }
-                    escort.GetComp_Fast<ThingComp_CombatAI>().duties.FinishAllDuties(DutyDefOf.Escort, parent);
+                    escort.GetComp_Fast<ThingComp_CombatAI>().duties.FinishAllDuties(CombatAI_DutyDefOf.CombatAI_Escort, parent);
                 }
             }
             if (success)
@@ -1247,7 +1257,7 @@ namespace CombatAI.Comps
                 sapperNodes.Clear();
                 return;
             }
-            if (selPawn.Destroyed || IsDeadOrDowned || selPawn.mindState.duty == null || !(selPawn.mindState.duty.Is(DutyDefOf.AssaultColony) || selPawn.mindState.duty.Is(DutyDefOf.Defend) || selPawn.mindState.duty.Is(DutyDefOf.AssaultThing) || selPawn.mindState.duty.Is(DutyDefOf.Breaching)))
+            if (selPawn.Destroyed || IsDeadOrDowned || selPawn.mindState.duty == null || !(selPawn.mindState.duty.Is(DutyDefOf.AssaultColony) || selPawn.mindState.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) || selPawn.mindState.duty.Is(DutyDefOf.AssaultThing)))
             {
                 ReleaseEscorts(false);
                 return;
@@ -1273,12 +1283,12 @@ namespace CombatAI.Comps
                         {
                             if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
                                 && !ally.CurJobDef.Is(JobDefOf.Mine)
-                                && ally.mindState?.duty?.def != DutyDefOf.Escort
+                                && ally.mindState?.duty?.def != CombatAI_DutyDefOf.CombatAI_Escort
                                 && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
                                 && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
                             {
                                 ThingComp_CombatAI comp = ally.GetComp_Fast<ThingComp_CombatAI>();
-                                if (comp?.duties != null && comp.duties?.Any(DutyDefOf.Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick > 600)
+                                if (comp?.duties != null && comp.duties?.Any(CombatAI_DutyDefOf.CombatAI_Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick > 600)
                                 {
                                     Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(selPawn, 20, 100, 600 + Mathf.CeilToInt(12 * selPawn.Position.DistanceTo(cellBefore)) + 540 * sapperNodes.Count + Rand.Int % 600);
                                     if (ally.TryStartCustomDuty(custom))
@@ -1500,6 +1510,7 @@ namespace CombatAI.Comps
                 }
             }
         }
+
         private readonly HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
         private readonly List<IntVec3> _path           = new List<IntVec3>();
         private readonly List<Color>   _colors         = new List<Color>();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using CombatAI.Gui;
 using CombatAI.R;
 using HarmonyLib;
@@ -12,15 +13,19 @@ namespace CombatAI
 {
     public class Window_QuickSetup : Window
     {
+        private          Difficulty          difficulty;
+        private          bool                presetSelected = false;
         private readonly Listing_Collapsible collapsible;
+        private readonly Listing_Collapsible collapsible_fogOfWar;
 
         public Window_QuickSetup()
         {
-            this.drawShadow  = true;
-            this.forcePause  = true;
-            this.layer       = WindowLayer.Super;
-            this.draggable   = false;
-            this.collapsible = new Listing_Collapsible();
+            this.drawShadow           = true;
+            this.forcePause           = true;
+            this.layer                = WindowLayer.Super;
+            this.draggable            = false;
+            this.collapsible          = new Listing_Collapsible();
+            this.collapsible_fogOfWar = new Listing_Collapsible();
         }
 
         public override Vector2 InitialSize
@@ -38,8 +43,8 @@ namespace CombatAI
         {
             Rect titleRect = inRect.TopPartPixels(60);
             Rect optionsRect = inRect.BottomPartPixels(inRect.height - 60);
-            optionsRect.height -= 25;
-            inRect             =  inRect.BottomPartPixels(25);
+            optionsRect.height -= 60;
+            inRect             =  inRect.BottomPartPixels(60);
             Gui.GUIUtility.ExecuteSafeGUIAction(() =>
             {
                 Gui.GUIFont.Anchor = TextAnchor.MiddleCenter;
@@ -57,23 +62,51 @@ namespace CombatAI
                 DoDifficultySettings(rect);
             });
             collapsible.Line(1);
-            FillCollapsible_FogOfWar(collapsible);
+            collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_PerformanceOpt, ref Finder.Settings.PerformanceOpt_Enabled);
+            collapsible.Line(1);
+            collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_KillBoxKiller, ref Finder.Settings.Pather_KillboxKiller);
+            collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Sprinting, ref Finder.Settings.Enable_Sprinting, Keyed.CombatAI_Settings_Basic_Sprinting_Description);
             collapsible.End(ref optionsRect);
+            optionsRect.yMin              += 5;
+            collapsible_fogOfWar.Expanded =  true;
+            collapsible_fogOfWar.Begin(optionsRect, R.Keyed.CombatAI_Settings_Basic_FogOfWar, drawIcon: false);
+            FillCollapsible_FogOfWar(collapsible_fogOfWar);
+            collapsible_fogOfWar.End(ref optionsRect);
             Gui.GUIUtility.ExecuteSafeGUIAction(() =>
             {
+                if (presetSelected)
+                {
+                    DoSelected(inRect.TopHalf());
+                }
                 Text.Font = GameFont.Small;
-                GUI.color = Color.green;
-                if (Widgets.ButtonText(inRect.LeftHalf(), R.Keyed.CombatAI_Apply))
+                GUI.color = presetSelected ? Color.green : Color.red;
+                if (Widgets.ButtonText(inRect.BottomHalf(), R.Keyed.CombatAI_Apply))
                 {
-                    Finder.Settings.FinishedQuickSetup = true;
-                    Finder.Settings.Write();
-                    Close();
-                }
-                GUI.color = Color.red;
-                if (Widgets.ButtonText(inRect.RightHalf(), R.Keyed.CombatAI_Close))
-                {
-                    Close();
-                }
+                    if (!presetSelected)
+                    {
+                        Messages.Message(R.Keyed.CombatAI_Quick_Difficulty, MessageTypeDefOf.RejectInput);
+                    }
+                    else
+                    {
+                        Finder.Settings.FinishedQuickSetup = true;
+                        Finder.Settings.Write();
+                        Close();
+                    }
+                }               
+            });
+        }
+
+        private void DoSelected(Rect rect)
+        {
+            GUIUtility.ExecuteSafeGUIAction(() =>
+            {
+                rect.yMin += 2;
+                rect.yMax -= 2;
+                Widgets.DrawBox(rect.ContractedBy(1), 1);
+                rect.xMin      += 10;
+                GUIFont.Anchor =  TextAnchor.MiddleLeft;
+                GUIFont.Font   =  GUIFontSize.Small;
+                Widgets.Label(rect, difficulty < Difficulty.DeathWish ? R.Keyed.CombatAI_Quick_Difficulty_Selected.Formatted(difficulty.ToString()) : R.Keyed.CombatAI_Quick_Difficulty_Selected_Warning.Formatted(difficulty.ToString()));
             });
         }
 
@@ -88,7 +121,8 @@ namespace CombatAI
                     GUI.color = Color.green;
                     if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Easy))
                     {
-                        DifficultyUtility.SetDifficulty(Difficulty.Easy);
+                        presetSelected = true;
+                        DifficultyUtility.SetDifficulty(difficulty = Difficulty.Easy);
                         Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Easy, MessageTypeDefOf.TaskCompletion);
                     }
                 },
@@ -96,7 +130,8 @@ namespace CombatAI
                 {
                     if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Normal))
                     {
-                        DifficultyUtility.SetDifficulty(Difficulty.Normal);
+                        presetSelected = true;
+                        DifficultyUtility.SetDifficulty(difficulty = Difficulty.Normal);
                         Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Normal, MessageTypeDefOf.TaskCompletion);
                     }
                 },
@@ -104,7 +139,8 @@ namespace CombatAI
                 {
                     if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Hard))
                     {
-                        DifficultyUtility.SetDifficulty(Difficulty.Hard);
+                        presetSelected = true;
+                        DifficultyUtility.SetDifficulty(difficulty = Difficulty.Hard);
                         Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Hard, MessageTypeDefOf.TaskCompletion);
                     }
                 },
@@ -113,7 +149,8 @@ namespace CombatAI
                     GUI.color = Color.red;
                     if (Widgets.ButtonText(rect, Keyed.CombatAI_Settings_Basic_Presets_Deathwish))
                     {
-                        DifficultyUtility.SetDifficulty(Difficulty.DeathWish);
+                        presetSelected = true;
+                        DifficultyUtility.SetDifficulty(difficulty = Difficulty.DeathWish);
                         Messages.Message(Keyed.CombatAI_Settings_Basic_PerformanceOpt_Warning, MessageTypeDefOf.CautionInput);
                         Messages.Message(Keyed.CombatAI_Settings_Basic_Presets_Applied + " " + Keyed.CombatAI_Settings_Basic_Presets_Deathwish, MessageTypeDefOf.TaskCompletion);
                     }
@@ -131,26 +168,7 @@ namespace CombatAI
 				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Animals_SmartOnly, ref Finder.Settings.FogOfWar_AnimalsSmartOnly, disabled: !Finder.Settings.FogOfWar_Animals);
                 collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Allies, ref Finder.Settings.FogOfWar_Allies);
 				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Turrets, ref Finder.Settings.FogOfWar_Turrets);
-                
-//				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_Density);
-//				collapsible.Lambda(25, rect =>
-//				{
-//					Finder.Settings.FogOfWar_FogColor = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_FogColor, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_Density_Readouts.Formatted(Finder.Settings.FogOfWar_FogColor.ToString()), 0.05f);
-//				}, useMargins: true);
-//                
-//				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul);
-//				collapsible.Lambda(25, rect =>
-//				{
-//					Finder.Settings.FogOfWar_RangeMultiplier = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_RangeMultiplier, 0.75f, 2.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_RangeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeMultiplier.ToString()), 0.05f);
-//				}, useMargins: true);
-//
-//
-//				collapsible.Label(Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul);
-//				collapsible.Lambda(25, rect =>
-//				{
-//					Finder.Settings.FogOfWar_RangeFadeMultiplier = HorizontalSlider_NewTemp(rect, Finder.Settings.FogOfWar_RangeFadeMultiplier, 0.0f, 1.0f, false, Keyed.CombatAI_Settings_Basic_FogOfWar_FadeMul_Readouts.Formatted(Finder.Settings.FogOfWar_RangeFadeMultiplier.ToString()), 0.05f);
-//				}, useMargins: true);
-			}
+            }
         }
         
         private float HorizontalSlider_NewTemp(Rect rect, float val, float min, float max, bool middleAlinment, string label, float roundTo = -1)
