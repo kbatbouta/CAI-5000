@@ -65,7 +65,7 @@ namespace CombatAI.Patches
         private static bool Enabled
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight;
+            get => Finder.Settings.Debug && Finder.Settings.Debug_LogJobs;
         }
     }
 }

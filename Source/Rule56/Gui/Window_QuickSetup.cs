@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
-using CombatAI.Gui;
 using CombatAI.R;
-using HarmonyLib;
 using RimWorld;
 using UnityEngine;
-using UnityEngine.Experimental.Playables;
 using Verse;
 using GUIUtility = CombatAI.Gui.GUIUtility;
-namespace CombatAI
+namespace CombatAI.Gui
 {
     public class Window_QuickSetup : Window
     {

@@ -14,7 +14,7 @@ namespace CombatAI.Patches
         {
             public static void Postfix(Pawn_JobTracker __instance)
             {
-                if (__instance.pawn.Faction.IsPlayerSafe() && __instance.pawn.GetComp<ThingComp_CombatAI>() is var comp)
+                if (__instance.pawn.Faction.IsPlayerSafe() && __instance.pawn.GetComp<ThingComp_CombatAI>() is ThingComp_CombatAI comp)
                 {
                     comp.forcedTarget = LocalTargetInfo.Invalid;
                 }
@@ -26,7 +26,7 @@ namespace CombatAI.Patches
         {
             public static void Postfix(Pawn_JobTracker __instance, Job newJob, JobCondition lastJobEndCondition, ThinkNode jobGiver, bool cancelBusyStances)
             {
-                if (Finder.Settings.Debug_ValidateSight && Finder.Settings.Debug && __instance.pawn.GetComp<ThingComp_CombatAI>() is ThingComp_CombatAI comp)
+                if (Finder.Settings.Debug_LogJobs && Finder.Settings.Debug && __instance.pawn.GetComp<ThingComp_CombatAI>() is ThingComp_CombatAI comp)
                 {
                     comp.jobLogs ??= new List<JobLog>();
                     if (!comp.jobLogs.Any(j => j.id == newJob.loadID))

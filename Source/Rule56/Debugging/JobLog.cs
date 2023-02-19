@@ -89,5 +89,25 @@ namespace CombatAI
             log.timestamp = GenTicks.TicksGame;
             return log;
         }
+
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendFormat("job:\t{0} ({1})\n", job, id);
+            builder.AppendFormat("duty:\t{0}\n", duty);
+            builder.AppendLine();
+            builder.Append("thinknode trace:\n");
+            for (int i = 0; i < thinknode.Count; i++)
+            {
+                builder.AppendFormat("  {0}. {1}\n", i + 1, thinknode[i]);
+            }
+            builder.AppendLine();
+            builder.Append("stacktrace:\n");
+            for (int i = 0; i < stacktrace.Count; i++)
+            {
+                builder.AppendFormat("  {0}. {1}\n", i + 1, stacktrace[i]);
+            }
+            return builder.ToString();
+        }
     }
 }

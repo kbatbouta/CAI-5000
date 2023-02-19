@@ -105,6 +105,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="Zetrith.Prepatcher" Version="1.1.0" />
     </ItemGroup>
     <!-- ................ -->
     <!-- Process T4 files -->

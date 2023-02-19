@@ -879,24 +879,24 @@ namespace CombatAI.Comps
         /// <returns></returns>
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
         {
+            if (Finder.Settings.Debug && Finder.Settings.Debug_LogJobs)
+            {
+                Command_Action jobs = new Command_Action();
+                jobs.defaultLabel = "DEV: View job logs";
+                jobs.action = delegate
+                {
+                    if (Find.WindowStack.windows.Any(w => w is Window_JobLogs logs && logs.comp == this))
+                    {
+                        return;
+                    }
+                    jobLogs ??= new List<JobLog>();
+                    Window_JobLogs window = new Window_JobLogs(this);
+                    Find.WindowStack.Add(window);
+                };
+                yield return jobs;
+            }
             if (Prefs.DevMode && DebugSettings.godMode)
             {
-                if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
-                {
-                    Command_Action jobs = new Command_Action();
-                    jobs.defaultLabel = "DEV: view job logs";
-                    jobs.action = delegate
-                    {
-                        if (Find.WindowStack.windows.Any(w => w is Window_JobLogs logs && logs.comp == this))
-                        {
-                            return;
-                        }
-                        jobLogs ??= new List<JobLog>();
-                        Window_JobLogs window = new Window_JobLogs(this);
-                        Find.WindowStack.Add(window);
-                    };
-                    yield return jobs;
-                }
                 Verb           verb           = selPawn.TryGetAttackVerb();
                 float          retreatDistSqr = Maths.Max(verb.EffectiveRange * verb.EffectiveRange / 9, 36);
                 Map            map            = selPawn.Map;

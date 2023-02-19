@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using Verse;
 using GUITextState = System.Tuple<string, CombatAI.Gui.GUIFontSize, System.Tuple<float, float>, System.Tuple<int, int, int, int>, System.Tuple<UnityEngine.FontStyle, UnityEngine.FontStyle, UnityEngine.FontStyle, UnityEngine.FontStyle>>;
@@ -11,6 +12,7 @@ namespace CombatAI.Gui
 
 		private static readonly Dictionary<GUITextState, float> textHeightCache = new Dictionary<GUITextState, float>(512);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void Cleanup()
 		{
 			if (textHeightCache.Count > MAX_CACHE_SIZE)
@@ -21,13 +23,17 @@ namespace CombatAI.Gui
 
 		public static string Fit(this string text, Rect rect)
 		{
+			if (string.IsNullOrEmpty(text))
+			{
+				return text;
+			}
 			Cleanup();
 			float height = GetTextHeight(text, rect.width);
 			if (height <= rect.height)
 			{
 				return text;
 			}
-			return text.Substring(0, (int)(text.Length * height / rect.height)) + "...";
+			return text.Substring(0, Mathf.FloorToInt(Mathf.Clamp(text.Length * height / rect.height, 1, text.Length))) + "...";
 		}
 
 		public static float GetTextHeight(this string text, Rect rect)

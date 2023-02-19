@@ -331,6 +331,7 @@ namespace CombatAI
 		{
 			collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Debugging_Enable, ref Finder.Settings.Debug);
 			collapsible.CheckboxLabeled("Disable quick setup menu", ref Finder.Settings.FinishedQuickSetup);
+			collapsible.CheckboxLabeled("Enable job logging", ref Finder.Settings.Debug_LogJobs);
 			collapsible.CheckboxLabeled("Enable cinematic mode", ref Finder.Settings.Debug_DisablePawnGuiOverlay);
 			collapsible.CheckboxLabeled("Draw sight grid", ref Finder.Settings.Debug_DrawShadowCasts);
 			collapsible.CheckboxLabeled("Draw sight vector field", ref Finder.Settings.Debug_DrawShadowCastsVectors);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using CombatAI.Comps;
 using CombatAI.Gui;
 using RimWorld;
@@ -37,7 +38,7 @@ namespace CombatAI
 
         public override Vector2 InitialSize
         {
-            get => new Vector2(800, 600);
+            get => new Vector2(1000, 600);
         }
 
         public Pawn Pawn
@@ -49,9 +50,63 @@ namespace CombatAI
         {
             get => comp.jobLogs;
         }
+
+        public static void ShowTutorial()
+        {
+            HyperTextDef[] pages = new HyperTextDef[]
+            {
+                CombatAI_HyperTextDefOf.CombatAI_DevJobTutorial1,
+                CombatAI_HyperTextDefOf.CombatAI_DevJobTutorial2,
+                CombatAI_HyperTextDefOf.CombatAI_DevJobTutorial3,
+                CombatAI_HyperTextDefOf.CombatAI_DevJobTutorial4,
+            };
+            Window_Slides slides = new Window_Slides(pages, forcePause:true, skippable: false);
+            Find.WindowStack.Add(slides);
+        }
         
         public override void DoWindowContents(Rect inRect)
         {
+            GUIUtility.ExecuteSafeGUIAction(() =>
+            {
+                GUIFont.Font = GUIFontSize.Tiny;
+                GUIFont.CurFontStyle.fontStyle = FontStyle.Bold;
+                if (Find.Selector.SelectedPawns.Count == 0)
+                {
+                    string message = $"WARNING: No pawn selected or the previously selected pawn died!";
+                    Widgets.DrawBoxSolid(inRect.TopPartPixels(20).LeftPartPixels(message.GetWidthCached() + 20), Color.red);
+                    Widgets.Label(inRect.TopPartPixels(20), message);
+                }
+                else
+                {
+                    Widgets.Label(inRect.TopPartPixels(20), $"Viewing job logs for <color=green>{comp.parent}</color>");
+                }
+                GUIFont.Font                   = GUIFontSize.Tiny;
+                GUIFont.CurFontStyle.fontStyle = FontStyle.Normal;
+                if (Widgets.ButtonText(inRect.TopPartPixels(18).RightPartPixels(175).LeftPartPixels(175), "Open Job Log Tutorial"))
+                {
+                    ShowTutorial();
+                }
+                GUI.color = Color.green;
+                if (Widgets.ButtonText(inRect.TopPartPixels(18).RightPartPixels(350).LeftPartPixels(175), "Copy short report to clipboard") && comp.jobLogs.Count > 0)
+                {
+                    StringBuilder builder = new StringBuilder();
+                    int           limit   = Maths.Min(comp.jobLogs.Count, 10);
+                    builder.AppendFormat("{0} jobs copied", limit);
+                    builder.AppendLine("------------------------------------------------------");
+                    for (int i = 0; i < limit; i++)
+                    {
+                        builder.Append(comp.jobLogs[i].ToString());
+                        if (i < limit - 1)
+                        {
+                            builder.AppendLine();
+                            builder.AppendLine("------------------------------------------------------");
+                            builder.AppendLine();
+                        }
+                    }
+                    UnityEngine.GUIUtility.systemCopyBuffer = builder.ToString();
+                    Messages.Message("Short report copied to clipboard", MessageTypeDefOf.CautionInput);
+                }
+            });
             if (Find.Selector.SelectedPawns.Count == 1)
             {
                 var temp = Find.Selector.SelectedPawns[0].GetComp_Fast<ThingComp_CombatAI>();
@@ -62,7 +117,7 @@ namespace CombatAI
                     selectedLog = null;
                 }
             }
-            inRect.yMin += 10;
+            inRect.yMin += 20;
             Rect header = inRect.TopPartPixels(22);
             Widgets.DrawMenuSection(header);
             header.xMin += 10;
@@ -71,31 +126,31 @@ namespace CombatAI
                 (rect) =>
                 {
                     GUIFont.Anchor = TextAnchor.MiddleLeft;
-                    Widgets.Label(rect, "Job");
+                    Widgets.Label(rect, "Job".Fit(rect));
                 },
                 (rect) =>
                 {
                     GUIFont.Anchor = TextAnchor.MiddleLeft;
-                    Widgets.Label(rect, "ID");
+                    Widgets.Label(rect, "ID".Fit(rect));
                 },
                 (rect) =>
                 {
                     GUIFont.Anchor = TextAnchor.MiddleLeft;
-                    Widgets.Label(rect, "Duty");
+                    Widgets.Label(rect, "Duty".Fit(rect));
                 },
                 (rect) =>
                 {
                     GUIFont.Anchor = TextAnchor.MiddleLeft;
-                    Widgets.Label(rect, "ThinkTrace.First");
+                    Widgets.Label(rect, "ThinkTrace.First".Fit(rect));
                 },
                 (rect) =>
                 {
                     GUIFont.Anchor = TextAnchor.MiddleLeft;
-                    Widgets.Label(rect, "ThinkTrace.Lasts");
+                    Widgets.Label(rect, "ThinkTrace.Lasts".Fit(rect));
                 },
                 (rect) =>
                 {
-                    Widgets.Label(rect, "Timestamp");
+                    Widgets.Label(rect, "Timestamp".Fit(rect));
                 }
             }, false);
             inRect.yMin += 25;
@@ -133,6 +188,14 @@ namespace CombatAI
             this.collapsible.CollapsibleBGBorderColor = this.collapsible.CollapsibleBGColor;
             this.collapsible.Expanded                 = true;
             this.collapsible.Begin(inRect, $"Details: {selectedLog.job}", false,false);
+            this.collapsible.Lambda(20, (rect) =>
+            {
+                if (Widgets.ButtonText(rect.LeftPartPixels(150), "Copy job data to clipboard"))
+                {
+                    UnityEngine.GUIUtility.systemCopyBuffer = selectedLog.ToString();
+                    Messages.Message("Job info copied to clipboard", MessageTypeDefOf.CautionInput);
+                } 
+            });
             this.collapsible.Label($"JobDef.defName:\t{selectedLog.job}");
             this.collapsible.Line(1);
             this.collapsible.Label($"DutyDef.defName:\t{selectedLog.duty}");
@@ -211,27 +274,27 @@ namespace CombatAI
                 (rect) =>
                 {
                     rect.xMin += 5;
-                    Widgets.Label(rect, jobLog.job);
+                    Widgets.Label(rect, jobLog.job.Fit(rect));
                 },
                 (rect) =>
                 {
-                    Widgets.Label(rect, $"{jobLog.id}");
+                    Widgets.Label(rect, $"{jobLog.id}".Fit(rect));
                 },
                 (rect) =>
                 {
-                    Widgets.Label(rect, jobLog.duty);
+                    Widgets.Label(rect, jobLog.duty.Fit(rect));
                 },
                 (rect) =>
                 {
-                    Widgets.Label(rect, jobLog.thinknode.NullOrEmpty() ? "unknown" : jobLog.thinknode.First());
+                    Widgets.Label(rect, (jobLog.thinknode.NullOrEmpty() ? "unknown" : jobLog.thinknode.First()).Fit(rect));
                 },
                 (rect) =>
                 {
-                    Widgets.Label(rect, jobLog.thinknode.NullOrEmpty() ? "unknown" : jobLog.thinknode.Last());
+                    Widgets.Label(rect, (jobLog.thinknode.NullOrEmpty() ? "unknown" : jobLog.thinknode.Last()).Fit(rect));
                 },
                 (rect) =>
                 {
-                    Widgets.Label(rect, $"{Math.Round((GenTicks.TicksGame - jobLog.timestamp) / 60f, 0)} seconds ago");
+                    Widgets.Label(rect, $"{Math.Round((GenTicks.TicksGame - jobLog.timestamp) / 60f, 0)} seconds ago".Fit(rect));
                 }
             }, false, false);
         }
