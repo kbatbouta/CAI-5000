@@ -100,6 +100,10 @@ namespace CombatAI.Patches
 								parms.mode      = TraverseMode.PassAllDestroyableThingsNotWater;
 								parms.maxDanger = Danger.Unspecified;
 							}
+							else
+							{
+								parms.mode = TraverseMode.PassDoors;
+							}
 							traverseParms = parms;
 							if (tuning == null)
 							{
