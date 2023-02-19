@@ -109,7 +109,7 @@ namespace CombatAI.Comps
         /// </summary>
         public bool CanSappOrEscort
         {
-            get => !IsSapping && GenTicks.TicksGame - releasedTick > 900 && sightReader.GetAbsVisibilityToEnemies(selPawn.Position) == 0;
+            get => !IsSapping && GenTicks.TicksGame - releasedTick > 900;
         }
 
         public override void Initialize(CompProperties props)

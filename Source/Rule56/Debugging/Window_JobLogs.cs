@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using CombatAI.Comps;
 using CombatAI.Gui;
+using CombatAI.Patches;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
@@ -16,8 +17,11 @@ namespace CombatAI
     {
         private Map                 map;
         private Listing_Collapsible collapsible;
-        private float               viewRatio;
-        private bool                dragging;
+        private Listing_Collapsible collapsible_dutyTest;
+        private float               viewRatio1;
+        private float               viewRatio2;
+        private bool                dragging1;
+        private bool                dragging2;
         private JobLog              selectedLog;
         private Vector2             scorllPos;
         
@@ -26,7 +30,9 @@ namespace CombatAI
         public Window_JobLogs(ThingComp_CombatAI comp)
         {
             this.collapsible         = new Listing_Collapsible();
-            this.viewRatio           = 0.5f;
+            this.collapsible_dutyTest = new Listing_Collapsible();
+            this.viewRatio1          = 0.5f;
+            this.viewRatio2          = 0.8f;
             this.comp                = comp;
             this.map                 = comp.parent.Map;
             this.resizeable          = true;
@@ -63,8 +69,153 @@ namespace CombatAI
             Window_Slides slides = new Window_Slides(pages, forcePause:true, skippable: false);
             Find.WindowStack.Add(slides);
         }
-        
+
+
         public override void DoWindowContents(Rect inRect)
+        {
+            Rect right   = inRect.RightPart(1 - viewRatio2);
+            Rect left    = inRect.LeftPart(viewRatio2);
+            Rect barRect = right.LeftPartPixels(18);
+            right.xMin += 18;
+            Event current          = Event.current;
+            bool  mouseOverDragBar = Mouse.IsOver(barRect);
+            if (current.type == EventType.MouseDown && current.button == 0 && mouseOverDragBar)
+            {
+                dragging2 = true;
+                current.Use();
+            }
+            if (dragging2)
+            {
+                viewRatio2 = Mathf.Clamp((current.mousePosition.x - inRect.xMin) / (inRect.xMax - inRect.xMin), 0.6f, 0.9f);
+            }
+            if (current.type == EventType.MouseUp && current.button == 0 && dragging2)
+            {
+                dragging2 = false;
+                current.Use();
+            }
+            DrawDragBarVertical(barRect);
+            if (!(comp.parent?.Destroyed ?? true) && comp.parent.Spawned)
+            {
+                DoTestContents(right);
+            }
+            DoJobLogContents(left);
+        }
+
+        private void DoTestContents(Rect inRect)
+        {
+            Pawn pawn = comp.selPawn;
+            if (pawn == null)
+            {
+                return;
+            }
+            this.collapsible_dutyTest.Expanded = true;
+            this.collapsible_dutyTest.Begin(inRect, "Test tools", drawInfo:false, drawIcon: false);
+            this.collapsible_dutyTest.Label("Test suite");
+            this.collapsible_dutyTest.Gap(2);
+            if (ButtonText(collapsible_dutyTest, "Assault colony duty"))
+            {
+                foreach (Pawn other in Find.Selector.SelectedPawns)
+                {
+                    other.mindState.duty = new PawnDuty(DutyDefOf.AssaultColony);
+                }
+                Messages.Message($"Success: Assaulting colony", MessageTypeDefOf.CautionInput);
+            }
+            if (ButtonText(collapsible_dutyTest, "Defend position"))
+            {
+                
+                Find.Targeter.BeginTargeting(new TargetingParameters()
+                {
+                    canTargetAnimals   = false,
+                    canTargetBuildings = false,
+                    canTargetCorpses   = false,
+                    canTargetHumans    = false,
+                    canTargetSelf      = false,
+                    canTargetMechs     = false,
+                    canTargetLocations = true,
+                }, info =>
+                {
+                    if (info.Cell.IsValid)
+                    {
+                        foreach (Pawn other in Find.Selector.SelectedPawns)
+                        {
+                            other.mindState.duty = new PawnDuty(DutyDefOf.Defend, info);
+                        }
+                        Messages.Message($"Success: Defending current position", MessageTypeDefOf.CautionInput);
+                    }
+                });
+            }
+            if (ButtonText(collapsible_dutyTest, "Hunt down enemy"))
+            {
+                foreach (Pawn other in Find.Selector.SelectedPawns)
+                {
+                    other.mindState.duty = new PawnDuty(DutyDefOf.HuntEnemiesIndividual);
+                }
+                Messages.Message($"Success: Hunting enemies individuals", MessageTypeDefOf.CautionInput);
+            }
+            if (ButtonText(collapsible_dutyTest, "Escort"))
+            {
+                Find.Targeter.BeginTargeting(new TargetingParameters()
+                {
+                    canTargetAnimals = true,
+                    canTargetBuildings = false,
+                    canTargetCorpses =  false,
+                    canTargetHumans = true,
+                    canTargetSelf = false,
+                    canTargetLocations = false,
+                    canTargetMechs = false,
+                }, info =>
+                {
+                    if (info.Thing is Pawn escortee)
+                    {
+                        foreach (Pawn other in Find.Selector.SelectedPawns)
+                        {
+                            other.mindState.duty = new PawnDuty(DutyDefOf.Defend, escortee);
+                        }
+                        Messages.Message($"Success: Escorting {escortee}", MessageTypeDefOf.CautionInput);
+                    }
+                });
+            }
+            this.collapsible_dutyTest.Line(1);
+            if (ButtonText(collapsible_dutyTest, "Flash pathfinding to"))
+            {
+                Find.Targeter.BeginTargeting(new TargetingParameters()
+                {
+                    canTargetAnimals   = false,
+                    canTargetBuildings = false,
+                    canTargetCorpses   = false,
+                    canTargetHumans    = false,
+                    canTargetSelf      = false,
+                    canTargetMechs     = false,
+                    canTargetLocations = true,
+                }, info =>
+                {
+                    if (info.Cell.IsValid)
+                    {
+                        PathFinder_Patch.FlashSearch = true;
+                        try
+                        {
+                            PawnPath path = pawn.Map.pathFinder.FindPath(pawn.Position, info, pawn, PathEndMode.OnCell, null);
+                            if (path is { Found: true })
+                            {
+                                path.ReleaseToPool();
+                            }
+                        }
+                        catch (Exception er)
+                        {
+                            Log.Error(er.ToString());
+                        }
+                        finally
+                        {
+                            PathFinder_Patch.FlashSearch = false;
+                        }
+                    }
+                });
+            }
+            
+            this.collapsible_dutyTest.End(ref inRect);
+        }
+        
+        private void DoJobLogContents(Rect inRect)
         {
             GUIUtility.ExecuteSafeGUIAction(() =>
             {
@@ -154,29 +305,29 @@ namespace CombatAI
                 }
             }, false);
             inRect.yMin += 25;
-            CombatAI.Gui.GUIUtility.ScrollView(selectedLog != null ? inRect.TopPart(viewRatio) : inRect, ref scorllPos, Logs, GetHeight, DrawJobLog);
+            CombatAI.Gui.GUIUtility.ScrollView(selectedLog != null ? inRect.TopPart(viewRatio1) : inRect, ref scorllPos, Logs, GetHeight, DrawJobLog);
             if (selectedLog != null)
             {
-                Rect  botRect          = inRect.BottomPart(1 - viewRatio);
+                Rect  botRect          = inRect.BottomPart(1 - viewRatio1);
                 Rect  barRect          = botRect.TopPartPixels(18);
                 botRect.yMin += 18;
                 Event current          = Event.current;
                 bool  mouseOverDragBar = Mouse.IsOver(barRect);
                 if (current.type == EventType.MouseDown && current.button == 0 && mouseOverDragBar)
                 {
-                    dragging  = true;
+                    dragging1  = true;
                     current.Use();
                 }
-                if (dragging)
+                if (dragging1)
                 {
-                    viewRatio = Mathf.Clamp((current.mousePosition.y - inRect.yMin) / (inRect.yMax - inRect.yMin), 0.2f, 0.8f);
+                    viewRatio1 = Mathf.Clamp((current.mousePosition.y - inRect.yMin) / (inRect.yMax - inRect.yMin), 0.2f, 0.8f);
                 }
-                if (current.type == EventType.MouseUp && current.button == 0 && dragging)
+                if (current.type == EventType.MouseUp && current.button == 0 && dragging1)
                 {
-                    dragging  = false;
+                    dragging1  = false;
                     current.Use();
                 }
-                DrawDragBar(barRect);
+                DrawDragBarHorizontal(barRect);
                 DrawSelection(botRect);
             }
         }
@@ -243,7 +394,7 @@ namespace CombatAI
             this.collapsible.End(ref inRect);
         }
         
-        private void DrawDragBar(Rect inRect)
+        private void DrawDragBarHorizontal(Rect inRect)
         {
             if (Mouse.IsOver(inRect))
             {
@@ -252,10 +403,22 @@ namespace CombatAI
             inRect = inRect.ContractedBy(1);
             GUIUtility.ExecuteSafeGUIAction(() =>
             {
-                inRect.yMin += 4;
+                inRect.yMin += inRect.height / 2;
                 Widgets.DrawLine(new Vector2(inRect.xMin, inRect.yMin), new Vector2(inRect.xMax, inRect.yMin), Widgets.MenuSectionBGBorderColor, 1);
-                inRect.yMin += 8;
-                Widgets.DrawLine(new Vector2(inRect.xMin, inRect.yMin), new Vector2(inRect.xMax, inRect.yMin), Widgets.MenuSectionBGBorderColor, 1);
+            });
+        }
+        
+        private void DrawDragBarVertical(Rect inRect)
+        {
+            if (Mouse.IsOver(inRect))
+            {
+                Widgets.DrawHighlight(inRect);
+            }
+            inRect = inRect.ContractedBy(1);
+            GUIUtility.ExecuteSafeGUIAction(() =>
+            {
+                inRect.xMin += inRect.width / 2;
+                Widgets.DrawLine(new Vector2(inRect.xMin, inRect.yMin), new Vector2(inRect.xMin, inRect.yMax), Widgets.MenuSectionBGBorderColor, 1);
             });
         }
         
@@ -298,10 +461,26 @@ namespace CombatAI
                 }
             }, false, false);
         }
-        
+
         private float GetHeight(JobLog jobLog)
         {
             return 20;
+        }
+
+        private static bool ButtonText(Listing_Collapsible collapsible, string text)
+        {
+            bool result = false;
+            collapsible.Lambda(20, rect =>
+            {
+                GUI.color =  Color.yellow;
+                rect.xMin += 5;
+                if (Mouse.IsOver(rect))
+                {
+                    Widgets.DrawHighlight(rect);
+                }
+                result = Widgets.ButtonText(rect, text, false, overrideTextAnchor:TextAnchor.MiddleLeft);
+            });
+            return result;
         }
     }
 }

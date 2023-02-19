@@ -13,8 +13,8 @@ namespace CombatAI
         private const    int                        COVERCARRYLIMIT = 6;
         private readonly AsyncActions               asyncActions;
         private readonly IBuckets<IBucketableThing> buckets;
-        private readonly CellFlooder                flooder;
         private readonly List<Vector3>              buffer = new List<Vector3>(1024);
+        private readonly CellFlooder                flooder;
         /// <summary>
         ///     Sight grid contains all sight data.
         /// </summary>
@@ -207,15 +207,15 @@ namespace CombatAI
             if (trackFactions)
             {
                 IBucketableThing bucketable = buckets.GetById(thing.thingIDNumber);
-                if (bucketable != null && numsByFaction.TryGetValue(bucketable.faction, out int num))
+                if (bucketable != null && numsByFaction.TryGetValue(bucketable.registeredFaction, out int num))
                 {
                     if (num > 1)
                     {
-                        numsByFaction[bucketable.faction] = num - 1;
+                        numsByFaction[bucketable.registeredFaction] = num - 1;
                     }
                     else
                     {
-                        numsByFaction.Remove(bucketable.faction);
+                        numsByFaction.Remove(bucketable.registeredFaction);
                     }
                 }
             }
@@ -260,7 +260,7 @@ namespace CombatAI
 
         private bool Consistent(IBucketableThing item)
         {
-            if (item.faction != item.thing.Faction)
+            if (item.registeredFaction != item.thing.Faction)
             {
                 return false;
             }
@@ -282,7 +282,7 @@ namespace CombatAI
 
         private bool Valid(IBucketableThing item)
         {
-            return !item.thing.Destroyed && item.thing.Spawned && (item.pawn == null || !item.pawn.Dead);
+            return !item.thing.Destroyed && item.thing.Spawned && (item.Pawn == null || !item.Pawn.Dead);
         }
 
         private bool Skip(IBucketableThing item)
@@ -291,17 +291,17 @@ namespace CombatAI
             {
                 return !item.dormant.Awake || item.dormant.WaitingToWakeUp;
             }
-            if (item.pawn != null)
+            if (item.Pawn != null)
             {
-                return !playerAlliance && (GenTicks.TicksGame - item.pawn.needs?.rest?.lastRestTick <= 30 || item.pawn.Downed);
+                return !playerAlliance && (GenTicks.TicksGame - item.Pawn.needs?.rest?.lastRestTick <= 30 || item.Pawn.Downed);
             }
             if (item.sighter != null)
             {
                 return playerAlliance && !item.sighter.Active;
             }
-            if (item.turretGun != null)
+            if (item.TurretGun != null)
             {
-                return playerAlliance && (!item.turretGun.Active || item.turretGun.IsMannable && !(item.turretGun.mannableComp?.MannedNow ?? false));
+                return playerAlliance && (!item.TurretGun.Active || item.TurretGun.IsMannable && !(item.TurretGun.mannableComp?.MannedNow ?? false));
             }
             if (Mod_CE.active && item.thing is Building_Turret turret)
             {
@@ -343,22 +343,21 @@ namespace CombatAI
                 return false;
             }
             IntVec3 flagPos = pos;
-            if (item.pawn != null)
+            if (item.Pawn != null)
             {
-                flagPos = GetShiftedPosition(item.pawn, 60, null);
+                flagPos = GetShiftedPosition(item.Pawn, 60, null);
             }
             SightTracker.SightReader reader = item.ai?.sightReader ?? null;
             bool                     scanForEnemies;
-            bool                     moveAttackScan = false;
             if (scanForEnemies = Finder.Settings.React_Enabled && item.sighter == null && reader != null && item.ai != null && !item.ai.ReactedRecently(45) && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15))
             {
-                if (!item.isPlayer || (moveAttackScan = (item.ai?.forcedTarget.IsValid ?? false)))
+                if (!item.registeredFaction.IsPlayerSafe() || (item.ai?.forcedTarget.IsValid ?? false))
                 {
                     if (item.dormant != null && !item.dormant.Awake)
                     {
                         scanForEnemies = false;
                     }
-                    else if (item.pawn != null && item.pawn.mindState?.duty?.def == DutyDefOf.SleepForever)
+                    else if (item.Pawn != null && item.Pawn.mindState?.duty?.def == DutyDefOf.SleepForever)
                     {
                         scanForEnemies = false;
                     }
@@ -367,7 +366,7 @@ namespace CombatAI
             bool defenseMode = false;
             if (scanForEnemies)
             {
-                if (item.pawn != null && (item.pawn.mindState.duty.Is(DutyDefOf.Defend) || item.pawn.mindState.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint)) && item.pawn.CurJob.Is(JobDefOf.Wait_Wander))
+                if (item.Pawn != null && (item.Pawn.mindState.duty.Is(DutyDefOf.Defend) || item.Pawn.mindState.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint)) && item.Pawn.CurJob.Is(JobDefOf.Wait_Wander))
                 {
                     defenseMode = true;
                 }
@@ -408,9 +407,9 @@ namespace CombatAI
                             availability = MetaCombatAttribute.Free;
                         }
                     }
-                    else if(item.pawn != null)
+                    else if (item.Pawn != null)
                     {
-                        if (item.pawn.mindState.MeleeThreatStillThreat)
+                        if (item.Pawn.mindState.MeleeThreatStillThreat)
                         {
                             availability = MetaCombatAttribute.Occupied;
                         }
@@ -421,9 +420,9 @@ namespace CombatAI
                     }
                 }
             }
-            bool         engagedInMelee = item.pawn?.mindState.MeleeThreatStillThreat == true;
+            bool engagedInMelee = item.Pawn?.mindState.MeleeThreatStillThreat == true;
             scanForEnemies &= !engagedInMelee;
-            ISightRadius sightRadius    = item.cachedSightRadius;
+            ISightRadius sightRadius = item.cachedSightRadius;
             Action action = () =>
             {
                 if (playerAlliance && sightRadius.fog > 0)
@@ -450,7 +449,7 @@ namespace CombatAI
                     float visibility = 0f;
                     if (!engagedInMelee && d2 < rSqr_sight)
                     {
-                        visibility = Maths.Max((1f - coverRating), 0.20f);
+                        visibility = Maths.Max(1f - coverRating, 0.20f);
                         if (visibility > 0f)
                         {
                             grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
@@ -513,22 +512,22 @@ namespace CombatAI
                         }
                     }
                 }, maxDist: defenseMode ? 32 : 12, maxCellNum: defenseMode ? 325 : 225, passThroughDoors: true);
-                
+
                 grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Set(pos, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
                 grid.Next(0, 0, item.cachedDamage.attributes);
-                grid.Set(flagPos, item.pawn == null || !item.pawn.Downed ? GetFlags(item) : 0);
+                grid.Set(flagPos, item.Pawn == null || !item.Pawn.Downed ? GetFlags(item) : 0);
                 if (scanForEnemies)
                 {
-                    if (item.ai.data.NumEnemies > 0 || item.ai.data.NumAllies > 0 || item.spottings.Count > 0 || (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight))
+                    if (item.ai.data.NumEnemies > 0 || item.ai.data.NumAllies > 0 || item.spottings.Count > 0 || Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
                     {
                         // on the main thread check for enemies on or near this cell.
                         asyncActions.EnqueueMainThreadAction(delegate
-                        {                         
+                        {
                             if (!item.thing.Destroyed && item.thing.Spawned)
                             {
                                 for (int i = 0; i < item.spottings.Count; i++)
-                                {                                    
+                                {
                                     ISpotRecord record = item.spottings[i];
                                     thingBuffer1.Clear();
                                     sightTracker.factionedUInt64Map.GetThings(record.flag, thingBuffer1);
@@ -542,12 +541,12 @@ namespace CombatAI
                                         {
                                             if (agent.HostileTo(item.thing))
                                             {
-                                                item.ai.Notify_Enemy(new AIEnvAgentInfo(agent, (AIEnvAgentState) record.state));
+                                                item.ai.Notify_Enemy(new AIEnvAgentInfo(agent, (AIEnvAgentState)record.state));
                                             }
                                             else
                                             {
-                                                item.ai.Notify_Ally(new AIEnvAgentInfo(agent, (AIEnvAgentState) record.state));
-                                            }                                          
+                                                item.ai.Notify_Ally(new AIEnvAgentInfo(agent, (AIEnvAgentState)record.state));
+                                            }
                                         }
                                     }
                                 }
@@ -643,7 +642,7 @@ namespace CombatAI
             /// </summary>
             public IntVec3 cell;
             /// <summary>
-            /// state
+            ///     state
             /// </summary>
             public int state;
             /// <summary>
@@ -667,25 +666,17 @@ namespace CombatAI
             /// </summary>
             public readonly CompCanBeDormant dormant;
             /// <summary>
-            ///     Thing's faction on IBucketableThing instance creation.
-            /// </summary>
-            public readonly Faction faction;
-            /// <summary>
             ///     Current sight grid.
             /// </summary>
             public readonly SightGrid grid;
-            /// <summary>
-            ///     Thing.
-            /// </summary>
-            public readonly bool isPlayer;
             /// <summary>
             ///     Pawn pawn
             /// </summary>
             public readonly List<IntVec3> path = new List<IntVec3>(16);
             /// <summary>
-            ///     Thing.
+            ///     Thing's faction on IBucketableThing instance creation.
             /// </summary>
-            public readonly Pawn pawn;
+            public readonly Faction registeredFaction;
             /// <summary>
             ///     Sighting component.
             /// </summary>
@@ -698,10 +689,6 @@ namespace CombatAI
             ///     Thing.
             /// </summary>
             public readonly Thing thing;
-            /// <summary>
-            ///     Thing.
-            /// </summary>
-            public readonly Building_TurretGun turretGun;
             /// <summary>
             ///     Thing potential damage report.
             /// </summary>
@@ -723,17 +710,28 @@ namespace CombatAI
             {
                 this.grid         = grid;
                 this.thing        = thing;
-                pawn              = thing as Pawn;
-                turretGun         = thing as Building_TurretGun;
-                isPlayer          = thing.Faction.IsPlayerSafe();
                 dormant           = thing.GetComp_Fast<CompCanBeDormant>();
                 ai                = thing.GetComp_Fast<ThingComp_CombatAI>();
                 sighter           = thing.GetComp_Fast<ThingComp_Sighter>();
-                faction           = thing.Faction;
+                registeredFaction = thing.Faction;
                 BucketIndex       = bucketIndex;
                 cachedDamage      = DamageUtility.GetDamageReport(thing);
                 cachedSightRadius = SightUtility.GetSightRadius(thing);
                 CctvTop           = thing.GetComp_Fast<ThingComp_CCTVTop>();
+            }
+            /// <summary>
+            ///     Thing.
+            /// </summary>
+            public Pawn Pawn
+            {
+                get => thing as Pawn;
+            }
+            /// <summary>
+            ///     Thing.
+            /// </summary>
+            public Building_TurretGun TurretGun
+            {
+                get => thing as Building_TurretGun;
             }
             /// <summary>
             ///     Bucket index.

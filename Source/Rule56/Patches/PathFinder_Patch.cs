@@ -13,15 +13,16 @@ namespace CombatAI.Patches
 {
 	public static class PathFinder_Patch
 	{
-
+		public static bool FlashSearch;
+		
 		[HarmonyPatch(typeof(PathFinder), nameof(PathFinder.FindPath), typeof(IntVec3), typeof(LocalTargetInfo), typeof(TraverseParms), typeof(PathEndMode), typeof(PathFinderCostTuning))]
 		private static class PathFinder_FindPath_Patch
 		{
-			//private static IGridBufferedWriter gridWriter;
+			// debugging only
+			#if DEBUG
+			private static PathFinder  flashInstance;
+			#endif
 			private static          ThingComp_CombatAI               comp;
-//			private static          DataWriter_Path                  pathWriter;
-//			private static          bool                             dump;
-
 			private static          FloatRange                       temperatureRange;
 			private static          bool                             checkAvoidance;
 			private static          bool                             checkVisibility;
@@ -31,6 +32,7 @@ namespace CombatAI.Patches
 			private static          IntVec3                          destPos;
 			private static          PathFinder                       instance;
 			private static          SightTracker.SightReader         sightReader;
+			private static          WallGrid                         walls;
 			private static          AvoidanceTracker.AvoidanceReader avoidanceReader;
 			private static          int                              counter;
 			private static          bool                             flashCost;
@@ -49,11 +51,13 @@ namespace CombatAI.Patches
 			[HarmonyPriority(int.MaxValue)]
 			internal static bool Prefix(PathFinder __instance, ref PawnPath __result, IntVec3 start, LocalTargetInfo dest, ref TraverseParms traverseParms, PathEndMode peMode, ref PathFinderCostTuning tuning, out bool __state)
 			{
-				flashCost = false;	
 				if (fallbackCall)
 				{
 					return __state = true;
 				}
+				#if DEBUG
+				flashInstance = flashCost ? __instance : null;
+				#endif
 				// only allow factioned pawns.
 				if (Finder.Settings.Pather_Enabled && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
 				{
@@ -63,6 +67,7 @@ namespace CombatAI.Patches
 					// prepare the modifications
 					instance = __instance;
 					map      = __instance.map;
+					walls    = __instance.map.GetComp_Fast<WallGrid>();
 					// get temperature data.
 					temperatureRange = new FloatRange(pawn.GetStatValue_Fast(StatDefOf.ComfyTemperatureMin, 1600), pawn.GetStatValue_Fast(StatDefOf.ComfyTemperatureMax, 1600));
 					temperatureRange = temperatureRange.ExpandedBy(12);
@@ -86,10 +91,12 @@ namespace CombatAI.Patches
 						comp               = pawn.GetComp_Fast<ThingComp_CombatAI>();
 						if (dig = Finder.Settings.Pather_KillboxKiller 
 						          && isRaider
-						          && comp != null && !comp.TookDamageRecently(360) && comp.CanSappOrEscort && !comp.IsSapping
+						          && comp != null && comp.CanSappOrEscort && !comp.IsSapping
 						          && !pawn.mindState.duty.Is(DutyDefOf.Sapper) && !pawn.CurJob.Is(JobDefOf.Mine) && !pawn.mindState.duty.Is(DutyDefOf.ExitMapRandom) && !pawn.mindState.duty.Is(DutyDefOf.Escort))
 						{
-							float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
+							float costMultiplier = 1;
+							costMultiplier *= comp.TookDamageRecently(360) ? 4 : 1;
+							float miningSkill    = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
 							isRaider = true;
 							TraverseParms parms = traverseParms;
 							parms.canBashDoors  = true;
@@ -108,13 +115,13 @@ namespace CombatAI.Patches
 							if (tuning == null)
 							{
 								tuning                            = new PathFinderCostTuning();
-								tuning.costBlockedDoor            = 15;
-								tuning.costBlockedDoorPerHitPoint = 0;
+								tuning.costBlockedDoor            = (int)(15f * costMultiplier);
+								tuning.costBlockedDoorPerHitPoint = costMultiplier - 1;
 								if (humanlike)
 								{
-									tuning.costBlockedWallBase                 = 32;
-									tuning.costBlockedWallExtraForNaturalWalls = 32;
-									tuning.costBlockedWallExtraPerHitPoint     = (20f - Mathf.Clamp(miningSkill, 5, 15)) / 100 * Finder.Settings.Pathfinding_SappingMul;
+									tuning.costBlockedWallBase                 = (int)(32f * costMultiplier);
+									tuning.costBlockedWallExtraForNaturalWalls = (int)(32f * costMultiplier);
+									tuning.costBlockedWallExtraPerHitPoint     = (20f - Mathf.Clamp(miningSkill, 5, 15)) / 100 * Finder.Settings.Pathfinding_SappingMul * costMultiplier;
 									tuning.costOffLordWalkGrid                 = 0;
 								}
 							}
@@ -179,13 +186,17 @@ namespace CombatAI.Patches
 						tracker.Notify_PathFound(pawn, __result);
 					}
 				}
+				if (FlashSearch)
+				{
+					FlashSearch = false;
+				}
 				Reset();
 			}
 
 			public static void Reset()
 			{
 				avoidanceReader  = null;
-				isRaider        = false;
+				isRaider         = false;
 				isPlayer         = false;
 				multiplier       = 1f;
 				sightReader      = null;
@@ -195,6 +206,7 @@ namespace CombatAI.Patches
 				instance         = null;
 				visibilityAtDest = 0f;
 				map              = null;
+				walls            = null;
 				flashCost        = false;
 				pawn             = null;
 			}
@@ -228,6 +240,12 @@ namespace CombatAI.Patches
 
 			private static int GetCostOffsetAt(int index, int parentIndex, int openNum)
 			{
+				#if DEBUG
+				if (FlashSearch)
+				{
+					flashInstance.map.debugDrawer.FlashCell(flashInstance.map.cellIndices.IndexToCell(parentIndex), Mathf.Clamp(PathFinder.calcGrid[parentIndex].knownCost / 1200f,0.001f, 0.99f), $"{PathFinder.calcGrid[parentIndex].knownCost}", duration:50);
+				}
+				#endif
 				if (map != null)
 				{
 					int   value = 0;
@@ -260,6 +278,11 @@ namespace CombatAI.Patches
 							{
 								value += (int)(threat * 22f * mul);
 							}
+						}
+						if (dig && walls.GetFillCategory(index) == FillCategory.Full && sightReader.GetAbsVisibilityToEnemies(parentIndex) > 0)
+						{
+							// we do this to prevent sapping where there is enemies.
+							value += 1000;
 						}
 					}
 					if (checkAvoidance)
