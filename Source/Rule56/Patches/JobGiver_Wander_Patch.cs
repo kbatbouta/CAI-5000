@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using CombatAI.Comps;
 using HarmonyLib;
+using RimWorld;
 using Verse;
 using Verse.AI;
 namespace CombatAI.Patches
@@ -11,13 +13,17 @@ namespace CombatAI.Patches
         {
             public static bool Prefix(JobGiver_Wander __instance, Pawn pawn)
             {
+                if (pawn.Faction.IsPlayerSafe())
+                {
+                    return true;
+                }
                 // skip if the pawn is firing or warming up
                 if (pawn.stances?.curStance is Stance_Warmup)
                 {
                     return false;
                 }
                 // don't skip unless it's JobGiver_WanderNearDutyLocation
-                if (!(__instance is JobGiver_WanderNearDutyLocation))
+                if (!(__instance is JobGiver_WanderNearDutyLocation) && !(__instance is JobGiver_WanderAnywhere))
                 {
                     return true;
                 }
@@ -28,9 +34,45 @@ namespace CombatAI.Patches
                     {
                         return false;
                     }
-                    if (comp.sightReader != null && comp.sightReader.GetVisibilityToEnemies(pawn.Position) > 0)
+                    if (comp.sightReader != null && comp.sightReader.GetVisibilityToEnemies(pawn.Position) > 0 && pawn.mindState.enemyTarget == null)
                     {
-                        return false;
+                        if (comp.data.NumAllies != 0)
+                        {
+                            IEnumerator<AIEnvAgentInfo> allies = comp.data.AlliesNearBy();
+                            while (allies.MoveNext())
+                            {
+                                AIEnvAgentInfo ally = allies.Current;
+                                if (ally.thing is Pawn other && !other.Destroyed && other.Spawned && other.mindState.enemyTarget != null)
+                                {
+                                    pawn.mindState.enemyTarget = other.mindState.enemyTarget;
+                                    return false;
+                                }
+                            }
+                        }
+                        if (comp.data.NumEnemies != 0)
+                        {
+                            float                       minDist  = float.MaxValue;
+                            Thing                       minEnemy = null;
+                            IEnumerator<AIEnvAgentInfo> enemies  = comp.data.Enemies();                            
+                            while (enemies.MoveNext())
+                            {
+                                AIEnvAgentInfo enemy = enemies.Current;                                
+                                if (enemy.thing is { Destroyed: false, Spawned: true })
+                                {
+                                    float dist = enemy.thing.DistanceTo_Fast(pawn);
+                                    if (dist < minDist)
+                                    {
+                                        minEnemy = enemy.thing;
+                                        minDist  = dist;
+                                    }
+                                }
+                            }
+                            if (minEnemy != null)
+                            {
+                                pawn.mindState.enemyTarget = minEnemy;
+                                return false;
+                            }
+                        }
                     }
                 }
                 return true;

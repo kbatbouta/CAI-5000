@@ -836,7 +836,7 @@ namespace CombatAI.Comps
                 return sightReader.GetVisibilityToEnemies(newPos) <= 2f && sightReader.GetThreat(newPos) < 1f;
             }
             float   visDiff       = curVisibility - sightReader.GetVisibilityToEnemies(newPos);
-            float   magDiff       = Mathf.Sqrt(Mathf.Abs(sightReader.GetEnemyDirection(pos).sqrMagnitude)) - Mathf.Sqrt(Mathf.Abs(sightReader.GetEnemyDirection(newPos).sqrMagnitude));
+            float   magDiff       = Maths.Sqrt_Fast(sightReader.GetEnemyDirection(pos).sqrMagnitude, 4) - Maths.Sqrt_Fast(sightReader.GetEnemyDirection(newPos).sqrMagnitude, 4);
             float   threatDiff    = curThreat - sightReader.GetThreat(newPos);
             return Rand.Chance(visDiff) && Rand.Chance(threatDiff) && Rand.Chance(magDiff);
         }
