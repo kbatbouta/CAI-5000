@@ -797,17 +797,10 @@ namespace CombatAI.Comps
                             request.caster = selPawn;
                             request.verb   = verb;
                             request.target = nearestEnemy;
-                            if (!bestEnemyVisibleSoon && !Finder.Performance.TpsCriticallyLow)
+                            if (!bestEnemyVisibleSoon && !Finder.Performance.TpsCriticallyLow && rangedEnemiesTargetingSelf.Count > 0)
                             {
-                                request.majorThreats = rangedEnemiesTargetingSelf;
-                                if (rangedEnemiesTargetingSelf.Count == 0)
-                                {
-                                    request.maxRangeFromCaster = Maths.Max(verb.EffectiveRange / 2f, 10f);
-                                }
-                                else
-                                {
-                                    request.maxRangeFromCaster = Maths.Min(verb.EffectiveRange, 10f);
-                                }
+                                request.majorThreats       = rangedEnemiesTargetingSelf;
+                                request.maxRangeFromCaster = Maths.Min(verb.EffectiveRange, 10f);
                             }
                             else
                             {
