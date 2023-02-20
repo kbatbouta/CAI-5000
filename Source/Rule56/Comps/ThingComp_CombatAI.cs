@@ -853,6 +853,23 @@ namespace CombatAI.Comps
                 duties.Notify_TookDamage();
             }
             data.LastTookDamage = lastTookDamage = GenTicks.TicksGame;
+            if (dInfo.Instigator != null && data.NumAllies != 0 && dInfo.Instigator.HostileTo(selPawn))
+            {
+                IEnumerator<AIEnvAgentInfo> allies = data.AlliesNearBy();
+                while (allies.MoveNext())
+                {
+                    AIEnvAgentInfo ally = allies.Current;
+                    // make allies not targeting anyone target the attacking enemy
+                    if (ally.thing is Pawn { Destroyed: false, Spawned: true } other && other.mindState.enemyTarget == null && !(other.stances?.curStance is Stance_Warmup))
+                    {
+                        ThingComp_CombatAI comp = other.GetComp_Fast<ThingComp_CombatAI>();
+                        if (comp != null && !comp.data.InterruptedRecently(400) && !comp.data.RetreatedRecently(400))
+                        {
+                            other.mindState.enemyTarget = dInfo.Instigator;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
