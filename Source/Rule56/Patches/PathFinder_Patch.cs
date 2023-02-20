@@ -312,14 +312,7 @@ namespace CombatAI.Patches
 					if (checkAvoidance)
 					{
 						// we only care if the paths are parallel to each ohers.
-						if (value > 0)
-						{
-							value += Maths.Min(avoidanceReader.GetPath(index), avoidanceReader.GetPath(parentIndex)) * 11;
-						}
-						else if(Finder.Settings.Flank_Enabled)
-						{
-							value += Maths.Min(avoidanceReader.GetPath(index), avoidanceReader.GetPath(parentIndex)) * 5;
-						}
+						value += Maths.Min(avoidanceReader.GetPath(index), avoidanceReader.GetPath(parentIndex)) * 11;
 						value += (int)(avoidanceReader.GetDanger(index) * 11) + avoidanceReader.GetProximity(index) * 5;
 					}
 					if (value > 5)

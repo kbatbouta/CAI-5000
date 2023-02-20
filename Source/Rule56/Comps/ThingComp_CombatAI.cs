@@ -474,9 +474,16 @@ namespace CombatAI.Comps
                     CoverPositionRequest request = new CoverPositionRequest();
                     request.caster             = selPawn;
                     request.target             = nearestMeleeEnemy;
-                    request.majorThreats       = rangedEnemiesTargetingSelf;
+                    if (!data.RetreatedRecently(600))
+                    {
+                        request.majorThreats       = rangedEnemiesTargetingSelf;
+                        request.maxRangeFromCaster = Mathf.Clamp(possibleDmgWarmup * 5f - request.majorThreats.Count, 6f, 10f);
+                    }
+                    else
+                    {
+                        request.maxRangeFromCaster = 12;    
+                    }
                     request.checkBlockChance   = true;
-                    request.maxRangeFromCaster = 10;
                     if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell) && ShouldMoveTo(cell))
                     {
                         if (cell != selPos)
@@ -500,7 +507,7 @@ namespace CombatAI.Comps
                     request.caster             = selPawn;
                     request.majorThreats       = rangedEnemiesTargetingSelf;
                     request.checkBlockChance   = true;
-                    request.maxRangeFromCaster = Mathf.Clamp(possibleDmgWarmup * 5f, 6f, 20f);
+                    request.maxRangeFromCaster = Mathf.Clamp(possibleDmgWarmup * 5f - rangedEnemiesTargetingSelf.Count, 6f, 10f);
                     if (CoverPositionFinder.TryFindDuckPosition(request, out IntVec3 cell))
                     {
                         bool diff = cell != selPos;
@@ -790,12 +797,23 @@ namespace CombatAI.Comps
                             request.caster = selPawn;
                             request.verb   = verb;
                             request.target = nearestEnemy;
-                            if (!bestEnemyVisibleSoon)
+                            if (!bestEnemyVisibleSoon && !Finder.Performance.TpsCriticallyLow)
                             {
                                 request.majorThreats = rangedEnemiesTargetingSelf;
+                                if (rangedEnemiesTargetingSelf.Count == 0)
+                                {
+                                    request.maxRangeFromCaster = Maths.Max(verb.EffectiveRange / 2f, 10f);
+                                }
+                                else
+                                {
+                                    request.maxRangeFromCaster = Maths.Min(verb.EffectiveRange, 10f);
+                                }
+                            }
+                            else
+                            {
+                                request.maxRangeFromCaster = Maths.Max(verb.EffectiveRange / 2f, 10f);
                             }
                             request.checkBlockChance   = true;
-                            request.maxRangeFromCaster = Maths.Max(verb.EffectiveRange, 10f);
                             if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
                             {
                                 if (ShouldMoveTo(cell))
