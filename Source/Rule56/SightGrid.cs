@@ -317,7 +317,6 @@ namespace CombatAI
 
         private bool TryCastSight(IBucketableThing item)
         {
-
             if (grid.CycleNum == item.lastCycle || Skip(item))
             {
                 return false;

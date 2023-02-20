@@ -109,7 +109,25 @@ namespace CombatAI
 		{
 			if (thing is Pawn pawn)
 			{
-				return pawn.CurrentEffectiveVerb;
+				Pawn_EquipmentTracker equipment = pawn.equipment; 
+				if (equipment is { Primary: { } } && equipment.PrimaryEq.PrimaryVerb.Available() && (!equipment.PrimaryEq.PrimaryVerb.verbProps.onlyManualCast || (pawn.CurJob != null && pawn.CurJob.def != JobDefOf.Wait_Combat)))
+				{
+					return equipment.PrimaryEq.PrimaryVerb;
+				}
+				Pawn_MeleeVerbs meleeVerbs = pawn.meleeVerbs;
+				if (meleeVerbs != null)
+				{
+					if (meleeVerbs.curMeleeVerb != null)
+					{
+						return meleeVerbs.curMeleeVerb;
+					}
+					if (!TKVCache<int, Pawn_MeleeVerbs, Verb>.TryGet(thing.thingIDNumber, out Verb verb, 480) || !verb.IsStillUsableBy(pawn))
+					{
+						TKVCache<int, Pawn_MeleeVerbs, Verb>.Put(thing.thingIDNumber, verb = meleeVerbs.TryGetMeleeVerb(null));
+						return verb;
+					}
+				}
+				return null;
 			}
 			if (thing is Building_Turret turret)
 			{
