@@ -487,7 +487,7 @@ namespace CombatAI.Comps
                             job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
                             selPawn.jobs.ClearQueuedJobs();
                             selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-                            data.lastRetreated = GenTicks.TicksGame;
+                            data.LastRetreated = GenTicks.TicksGame;
                         }
                         return;
                     }
@@ -513,7 +513,7 @@ namespace CombatAI.Comps
                             job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
                             selPawn.jobs.ClearQueuedJobs();
                             selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-                            data.lastRetreated = lastRetreated = GenTicks.TicksGame;
+                            data.LastRetreated = lastRetreated = GenTicks.TicksGame;
                         }
                         if (data.TookDamageRecently(45) || !diff)
                         {
@@ -522,7 +522,7 @@ namespace CombatAI.Comps
                             job_waitCombat.playerForced          = forcedTarget.IsValid;
                             job_waitCombat.checkOverrideOnExpire = true;
                             selPawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
-                            data.lastRetreated = lastRetreated = GenTicks.TicksGame;
+                            data.LastRetreated = lastRetreated = GenTicks.TicksGame;
                         }
                         return;
                     }
@@ -736,7 +736,7 @@ namespace CombatAI.Comps
                                 job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
                                 selPawn.jobs.ClearQueuedJobs();
                                 selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-                                data.lastRetreated = GenTicks.TicksGame;
+                                data.LastRetreated = GenTicks.TicksGame;
                             }
                         }
                     }

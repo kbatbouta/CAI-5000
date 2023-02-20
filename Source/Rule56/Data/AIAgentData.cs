@@ -47,7 +47,7 @@ namespace CombatAI
             get;
             set;
         }
-        public int lastRetreated
+        public int LastRetreated
         {
             get;
             set;
@@ -62,10 +62,20 @@ namespace CombatAI
             get;
             set;
         }
+        public int LastFailedSapping
+        {
+            get;
+            set;
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool RetreatedRecently(int ticks)
         {
-            return GenTicks.TicksGame - lastRetreated <= ticks;
+            return GenTicks.TicksGame - LastRetreated <= ticks;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool FailedSappingRecently(int ticks)
+        {
+            return GenTicks.TicksGame - LastFailedSapping <= ticks;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TookDamageRecently(int ticks)

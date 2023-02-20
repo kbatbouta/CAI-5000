@@ -91,7 +91,7 @@ namespace CombatAI.Patches
 						comp               = pawn.GetComp_Fast<ThingComp_CombatAI>();
 						if (dig = Finder.Settings.Pather_KillboxKiller 
 						          && isRaider
-						          && comp != null && comp.CanSappOrEscort && !comp.IsSapping
+						          && comp != null && comp.CanSappOrEscort && !comp.IsSapping && !comp.data.FailedSappingRecently(300)
 						          && !pawn.mindState.duty.Is(DutyDefOf.Sapper) && !pawn.CurJob.Is(JobDefOf.Mine) && !pawn.mindState.duty.Is(DutyDefOf.ExitMapRandom) && !pawn.mindState.duty.Is(DutyDefOf.Escort))
 						{
 							float costMultiplier = 1;
@@ -153,25 +153,36 @@ namespace CombatAI.Patches
 						Thing blocker;
 						if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null)
 						{
-							if (tuning != null && (!enemiesAhead || enemiesBefore))
+							if (tuning != null && !enemiesAhead)
 							{
-								try
+								if (comp.data.FailedSappingRecently(300))
 								{
-									__result.Dispose();
-									fallbackCall                               = true;
-									dig                                        = false;
-									tuning.costBlockedWallBase                 = Maths.Max(tuning.costBlockedWallBase * 3, 128);
-									tuning.costBlockedWallExtraForNaturalWalls = Maths.Max(tuning.costBlockedWallExtraForNaturalWalls * 3, 128);
-									tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 10);
-									__result                                   = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
+									try
+									{
+										__result.Dispose();
+										fallbackCall                               = true;
+										dig                                        = false;
+										tuning.costBlockedWallBase                 = Maths.Max(tuning.costBlockedWallBase * 3, 128);
+										tuning.costBlockedWallExtraForNaturalWalls = Maths.Max(tuning.costBlockedWallExtraForNaturalWalls * 3, 128);
+										tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 10);
+										__result                                   = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
+									}
+									catch (Exception er)
+									{
+										Log.Error($"ISMA: Error occured in FindPath fallback call {er}");
+									}
+									finally
+									{
+										fallbackCall = false;
+									}
 								}
-								catch (Exception er)
+								else
 								{
-									Log.Error($"ISMA: Error occured in FindPath fallback call {er}");
-								}
-								finally
-								{
-									fallbackCall = false;
+									comp.data.LastFailedSapping = GenTicks.TicksGame;
+									Job wait_job = JobMaker.MakeJob(JobDefOf.Wait_MaintainPosture);
+									wait_job.expiryInterval = 60;
+									pawn.jobs.StartJob(wait_job, JobCondition.InterruptForced, null, true);
+									goto Finish;
 								}
 							}
 							else
@@ -186,6 +197,7 @@ namespace CombatAI.Patches
 						tracker.Notify_PathFound(pawn, __result);
 					}
 				}
+			Finish:
 				if (FlashSearch)
 				{
 					FlashSearch = false;
@@ -240,12 +252,12 @@ namespace CombatAI.Patches
 
 			private static int GetCostOffsetAt(int index, int parentIndex, int openNum)
 			{
-				#if DEBUG
+#if DEBUG
 				if (FlashSearch && flashInstance != null)
 				{
 					flashInstance.map.debugDrawer.FlashCell(flashInstance.map.cellIndices.IndexToCell(parentIndex), Mathf.Clamp(PathFinder.calcGrid[parentIndex].knownCost / 1200f,0.001f, 0.99f), $"{PathFinder.calcGrid[parentIndex].knownCost}", duration:50);
 				}
-				#endif
+#endif
 				if (map != null)
 				{
 					int   value = 0;
@@ -270,42 +282,59 @@ namespace CombatAI.Patches
 						if (visibility > 0)
 						{
 							// this allows us to reduce the cost as we approach the target.
-							int     dist = (destPos - map.cellIndices.IndexToCell(index)).LengthManhattan;
-							float   mul  = dist < 15 ? dist / 15 : 1f;
-							value  += (int)(visibility * 11f * mul);
+							int   dist = (destPos - map.cellIndices.IndexToCell(index)).LengthManhattan;
+							float mul  = dist < 15 ? dist / 15 : 1f;
+							value += (int)(visibility * 11f * mul);
 							float threat = Maths.Max(sightReader.GetThreat(index) - threatAtDest, 0);
 							if (threat > 0)
 							{
 								value += (int)(threat * 22f * mul);
 							}
 						}
-						if (dig && walls.GetFillCategory(index) == FillCategory.Full && sightReader.GetAbsVisibilityToEnemies(parentIndex) > 0)
+						if (dig && walls.GetFillCategory(index) == FillCategory.Full)
 						{
-							// we do this to prevent sapping where there is enemies.
-							value += 1000;
+							float visibilityParent = sightReader.GetAbsVisibilityToEnemies(parentIndex);
+							if (visibilityParent > 0)
+							{
+								// we do this to prevent sapping where there is enemies.
+#if DEBUG
+								if (flashCost)
+								{
+									float val = (int)(value * multiplier * Finder.P50);
+									map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), val / 1000f, $"{Math.Round(val, 1)}");
+									return (int)val;
+								}
+#endif
+								return (int)(1000 * visibilityParent);
+							}
 						}
 					}
 					if (checkAvoidance)
 					{
 						// we only care if the paths are parallel to each ohers.
-						int path    = Maths.Min(avoidanceReader.GetPath(index),  avoidanceReader.GetPath(parentIndex));
 						if (value > 0)
 						{
-							value += path * 11;
+							value += Maths.Min(avoidanceReader.GetPath(index), avoidanceReader.GetPath(parentIndex)) * 11;
 						}
-						value += (int)(avoidanceReader.GetDanger(index) * 11) + avoidanceReader.GetProximity(index) * 11;
+						else if(Finder.Settings.Flank_Enabled)
+						{
+							value += Maths.Min(avoidanceReader.GetPath(index), avoidanceReader.GetPath(parentIndex)) * 5;
+						}
+						value += (int)(avoidanceReader.GetDanger(index) * 11) + avoidanceReader.GetProximity(index) * 5;
 					}
 					if (value > 5)
 					{
 						counter++;
 						//
 						// TODO make this into a maxcost -= something system
+#if DEBUG
 						if (flashCost)
 						{
-							float val = (int) (value * multiplier * Finder.P50);
+							float val = (int)(value * multiplier * Finder.P50);
 							map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), val / 1000f, $"{Math.Round(val, 1)}");
-							return (int) val;
+							return (int)val;
 						}
+#endif
 						return (int) (value * multiplier * Finder.P50);
 					}
 				}

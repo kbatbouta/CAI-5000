@@ -82,7 +82,7 @@ namespace CombatAI
 				result.scan  = result.sight;
 				return result;
 			}
-			Verb verb = pawn.CurrentEffectiveVerb;
+			Verb verb = pawn.TryGetAttackVerb();
 			if (verb == null || !verb.Available())
 			{
 				result.sight = 4;

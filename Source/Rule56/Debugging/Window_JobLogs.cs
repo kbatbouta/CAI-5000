@@ -211,10 +211,19 @@ namespace CombatAI
                     }
                 });
             }
+            if (ButtonText(collapsible_dutyTest, "End all jobs"))
+            {
+                foreach (Pawn other in Find.Selector.SelectedPawns)
+                {
+                    other.jobs.ClearQueuedJobs();
+                    other.jobs.StopAll();
+                }
+                Messages.Message($"Success: All jobs stopped", MessageTypeDefOf.CautionInput);
+            }
             
             this.collapsible_dutyTest.End(ref inRect);
         }
-        
+
         private void DoJobLogContents(Rect inRect)
         {
             GUIUtility.ExecuteSafeGUIAction(() =>
