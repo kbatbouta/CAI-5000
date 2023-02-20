@@ -42,7 +42,7 @@ namespace CombatAI.Patches
                             while (allies.MoveNext())
                             {
                                 AIEnvAgentInfo ally = allies.Current;
-                                if (ally.thing is Pawn other && !other.Destroyed && other.Spawned && other.mindState.enemyTarget != null)
+                                if (ally.thing is Pawn { Destroyed: false, Spawned: true } other && other.mindState.enemyTarget != null)
                                 {
                                     pawn.mindState.enemyTarget = other.mindState.enemyTarget;
                                     return false;
