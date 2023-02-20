@@ -25,7 +25,7 @@ namespace CombatAI
 			metric_cover.Add("threat", ((reader,     cell) => reader.GetThreat(cell)), 0.25f);
 
 			metric_coverPath.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)));
-			metric_coverPath.Add("dir", (reader,   cell) =>  Mathf.Sqrt(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude())), -1);
+			metric_coverPath.Add("dir", (reader,   cell) =>  Maths.Sqrt_Fast(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude()), 3), -1);
 			metric_coverPath.Add("traverse", (map, cell) => (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0), 1, false);
 			metric_coverPath.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), -0.05f);
 			
@@ -36,7 +36,7 @@ namespace CombatAI
 			metric_retreat.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), -0.10f);
 
 			metric_retreatPath.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)), 1);
-			metric_retreatPath.Add("dir", (reader,   cell) => Mathf.Sqrt(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude())), -1);
+			metric_retreatPath.Add("dir", (reader,   cell) => Maths.Sqrt_Fast(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude()), 3), -1);
 			metric_retreatPath.Add("traverse", (map, cell) => (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0), 1, false);
 			metric_retreatPath.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), -0.05f);
 			metric_retreatPath.Add("danger", ((reader, cell) => reader.GetDanger(cell)), 0.05f);
@@ -47,7 +47,7 @@ namespace CombatAI
 			metric_duck.Add("threat", ((reader,     cell) => reader.GetThreat(cell)), 0.25f);
 		
 			metric_duckPath.Add("visibilityEnemies", ((reader, cell) => reader.GetVisibilityToEnemies(cell)), 1);
-			metric_duckPath.Add("dir", (reader,   cell) =>  Mathf.Sqrt(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude())), -1);
+			metric_duckPath.Add("dir", (reader,   cell) =>  Maths.Sqrt_Fast(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude()), 3), -1);
 			metric_duckPath.Add("traverse", (map, cell) => (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0), 1, false);
 			metric_duckPath.Add("visibilityFriendlies", ((reader, cell) => reader.GetVisibilityToFriendlies(cell)), -0.05f);
  		}
@@ -150,18 +150,21 @@ namespace CombatAI
 				              {
 					              callback(node.cell, c);
 				              }
-				              if (Mathf.Abs(c) > 5000)
+				              if (c > 5000)
 				              {
-					              Log.Warning( $"cover metric: {metric_cover.MaxAbsKey(node.cell)} is exploding in value {c}, with metric {metric_cover.MinAbsKey(node.cell)}");
+					              Log.Message($"cell {node.cell} has exploding val {c} {Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3)} {Maths.Sqrt_Fast(node.cell.DistanceToSquared(enemyLoc), 3)}, ");
+					              metric_cover.Print(node.cell);
 				              }
 			              },
 			              cell =>
 			              {
-//				              if (5000 < Mathf.Abs(metric_coverPath.Score(cell)))
-//				              {
-//					              Log.Warning( $"coverpath metric: {metric_coverPath.MaxAbsKey(cell)} is exploding in value {metric_coverPath.Score(cell)}, with metric {metric_coverPath.MinAbsKey(cell)}");
-//				              }
-				              return metric_coverPath.Score(cell) - interceptors.grid.Get(cell);
+				              float c = metric_coverPath.Score(cell);
+				              if (c > 5000)
+				              {
+					              Log.Message($"cell path {cell} has exploding val {c}");
+					              metric_coverPath.Print(cell);
+				              }
+				              return c - interceptors.grid.Get(cell);
 			              },
 			              cell =>
 			              {

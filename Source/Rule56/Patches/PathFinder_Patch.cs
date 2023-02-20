@@ -241,7 +241,7 @@ namespace CombatAI.Patches
 			private static int GetCostOffsetAt(int index, int parentIndex, int openNum)
 			{
 				#if DEBUG
-				if (FlashSearch)
+				if (FlashSearch && flashInstance != null)
 				{
 					flashInstance.map.debugDrawer.FlashCell(flashInstance.map.cellIndices.IndexToCell(parentIndex), Mathf.Clamp(PathFinder.calcGrid[parentIndex].knownCost / 1200f,0.001f, 0.99f), $"{PathFinder.calcGrid[parentIndex].knownCost}", duration:50);
 				}

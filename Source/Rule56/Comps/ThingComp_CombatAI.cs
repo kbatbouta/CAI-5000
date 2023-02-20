@@ -380,7 +380,7 @@ namespace CombatAI.Comps
             PawnDuty duty = selPawn.mindState.duty;
             if (duty.Is(DutyDefOf.Build) || duty.Is(DutyDefOf.SleepForever) || duty.Is(DutyDefOf.TravelOrLeave))
             {
-                lastInterupted = GenTicks.TicksGame + Rand.Int % 240;
+                data.LastInterrupted = GenTicks.TicksGame + Rand.Int % 240;
                 return;
             }
             IntVec3 selPos                = selPawn.Position;
@@ -606,6 +606,7 @@ namespace CombatAI.Comps
                         job_melee.locomotionUrgency = LocomotionUrgency.Jog;
                         selPawn.jobs.ClearQueuedJobs();
                         selPawn.jobs.StartJob(job_melee, JobCondition.InterruptForced);
+                        data.LastInterrupted = GenTicks.TicksGame;
                         // no enemy cannot be approached solo
                         // TODO
                         // no enemy can be approached solo
@@ -767,6 +768,7 @@ namespace CombatAI.Comps
                                     job_waitCombat.endIfCantShootTargetFromCurPos = true;
                                     selPawn.jobs.ClearQueuedJobs();
                                     selPawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
+                                    data.LastInterrupted = GenTicks.TicksGame;
                                 }
                             }
                             else
@@ -777,6 +779,7 @@ namespace CombatAI.Comps
                                 job_waitCombat.endIfCantShootTargetFromCurPos = true;
                                 selPawn.jobs.ClearQueuedJobs();
                                 selPawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
+                                data.LastInterrupted = GenTicks.TicksGame;
                             }
                         }
                         // best enemy is approaching but not yet in view

@@ -113,6 +113,16 @@ namespace CombatAI
             return key;
         }
         
+        public void Print(IntVec3 cell)
+        {
+            string message = "";
+            for (int i = 0; i < metrics.Count; i++)
+            {
+                message +=  $"{metricKeys[i]}=({Mathf.Abs(metrics[i](cell) - metricsVal[i])}, {metrics[i](cell)}, {metricsVal[i]})\n";
+            }
+            Log.Message(message);
+        }
+        
         public string MinAbsKey(IntVec3 cell)
         {
             float  min   = float.MaxValue;
