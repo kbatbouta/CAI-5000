@@ -35,14 +35,14 @@ namespace CombatAI.Patches
 			private static          WallGrid                         walls;
 			private static          AvoidanceTracker.AvoidanceReader avoidanceReader;
 			private static          int                              counter;
-			private static          bool                             flashCost;
-			private static          bool                             isRaider;
-			private static          bool                             isPlayer;
 			private static          float                            threatAtDest;
 			private static          float                            availabilityAtDest;
 			private static          float                            visibilityAtDest;
 			private static          float                            multiplier = 1.0f;
-			private static readonly List<IntVec3>                    blocked    = new List<IntVec3>(128);
+			private static          bool                             flashCost;
+			private static          bool                             isRaider;
+			private static          bool                             isPlayer;
+			private static readonly List<IntVec3>                    blocked = new List<IntVec3>(128);
 			private static          bool                             fallbackCall;
 
 			private static TraverseParms original_traverseParms;
@@ -91,7 +91,7 @@ namespace CombatAI.Patches
 						comp               = pawn.GetComp_Fast<ThingComp_CombatAI>();
 						if (dig = Finder.Settings.Pather_KillboxKiller 
 						          && isRaider
-						          && comp != null && comp.CanSappOrEscort && !comp.IsSapping && !comp.data.FailedSappingRecently(300)
+						          && comp != null && comp.CanSappOrEscort && !comp.IsSapping
 						          && !pawn.mindState.duty.Is(DutyDefOf.Sapper) && !pawn.CurJob.Is(JobDefOf.Mine) && !pawn.mindState.duty.Is(DutyDefOf.ExitMapRandom) && !pawn.mindState.duty.Is(DutyDefOf.Escort))
 						{
 							float costMultiplier = 1;
@@ -153,7 +153,7 @@ namespace CombatAI.Patches
 						Thing blocker;
 						if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null)
 						{
-							if (tuning != null && !enemiesAhead)
+							if (tuning != null && (!enemiesAhead || enemiesBefore))
 							{
 								if (comp.data.FailedSappingRecently(300))
 								{
@@ -164,7 +164,7 @@ namespace CombatAI.Patches
 										dig                                        = false;
 										tuning.costBlockedWallBase                 = Maths.Max(tuning.costBlockedWallBase * 3, 128);
 										tuning.costBlockedWallExtraForNaturalWalls = Maths.Max(tuning.costBlockedWallExtraForNaturalWalls * 3, 128);
-										tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 10);
+										tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 4);
 										__result                                   = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
 									}
 									catch (Exception er)
@@ -179,6 +179,8 @@ namespace CombatAI.Patches
 								else
 								{
 									comp.data.LastFailedSapping = GenTicks.TicksGame;
+									__result.Dispose();
+									__result = PawnPath.NotFound;
 									Job wait_job = JobMaker.MakeJob(JobDefOf.Wait_MaintainPosture);
 									wait_job.expiryInterval = 60;
 									pawn.jobs.StartJob(wait_job, JobCondition.InterruptForced, null, true);
