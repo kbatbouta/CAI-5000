@@ -320,7 +320,7 @@ namespace CombatAI.Patches
 						}
 						//
 						// TODO make this into a maxcost -= something system
-						value = (value * multiplier * Finder.P75) * Mathf.Clamp(1 - counter / 10000, 0.1f, 1f) * Mathf.Clamp(1 - PathFinder.calcGrid[parentIndex].knownCost / 5000, 0.25f, 1);
+						value = (value * multiplier * Finder.P75) * Mathf.Clamp(1 - counter / 12500, 0.1f, 1f) * Mathf.Clamp(1 - PathFinder.calcGrid[parentIndex].knownCost / 5000, 0.25f, 1);
 					}
 					return (int) value;
 				}
