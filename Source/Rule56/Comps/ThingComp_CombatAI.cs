@@ -427,107 +427,110 @@ namespace CombatAI.Comps
             AIEnvThings enemies             = data.AllEnemies;
 
             rangedEnemiesTargetingSelf.Clear();
-            for (int i = 0; i < targetedBy.Count; i++)
+            if (bodySize < 2 || selPawn.RaceProps.Humanlike)
             {
-                Thing enemy = targetedBy[i];
+                for (int i = 0; i < targetedBy.Count; i++)
+                {
+                    Thing enemy = targetedBy[i];
 #if DEBUG_REACTION
-                if (enemy == null)
-                {
-                    Log.Error("Found null thing (2)");
-                    continue;
-                }
-#endif
-                if (GetEnemyAttackTargetId(enemy) == selPawn.thingIDNumber)
-                {
-                    DamageReport damageReport = DamageUtility.GetDamageReport(enemy);
-                    if (damageReport.IsValid && (!(enemy is Pawn enemyPawn) || enemyPawn.mindState?.MeleeThreatStillThreat == false))
+                    if (enemy == null)
                     {
-                        UpdateNearestEnemy(enemy);
-                        if (!damageReport.primaryIsRanged)
+                        Log.Error("Found null thing (2)");
+                        continue;
+                    }
+#endif
+                    if (GetEnemyAttackTargetId(enemy) == selPawn.thingIDNumber)
+                    {
+                        DamageReport damageReport = DamageUtility.GetDamageReport(enemy);
+                        if (damageReport.IsValid && (!(enemy is Pawn enemyPawn) || enemyPawn.mindState?.MeleeThreatStillThreat == false))
                         {
-                            UpdateNearestEnemyMelee(enemy);
+                            UpdateNearestEnemy(enemy);
+                            if (!damageReport.primaryIsRanged)
+                            {
+                                UpdateNearestEnemyMelee(enemy);
+                            }
+                            float damage = damageReport.SimulatedDamage(armor);
+                            if (!damageReport.primaryIsRanged)
+                            {
+                                // reduce the possible damage for far away melee pawns.
+                                damage *= (5f - Mathf.Clamp(Maths.Sqrt_Fast(selPos.DistanceToSquared(enemy.Position), 4), 0f, 5f)) / 5f;
+                            }
+                            possibleDmg         += damage;
+                            possibleDmgDistance += enemy.DistanceTo_Fast(selPawn);
+                            if (damageReport.primaryIsRanged)
+                            {
+                                possibleDmgWarmup += damageReport.primaryVerbProps.warmupTime;
+                                rangedEnemiesTargetingSelf.Add(enemy);
+                            }
                         }
-                        float damage = damageReport.SimulatedDamage(armor);
-                        if (!damageReport.primaryIsRanged)
+                    }
+                }
+                if (rangedEnemiesTargetingSelf.Count > 0 && !selPawn.mindState.MeleeThreatStillThreat && !selPawn.IsApproachingMeleeTarget(distLimit: 8, false))
+                {
+                    int retreatRoll = Rand.Range(0, 50);
+                    // major retreat attempt if the pawn is doomed
+                    if (possibleDmg - retreatRoll > 0.001f && possibleDmg >= 50)
+                    {
+                        _last      = 10;
+                        _bestEnemy = nearestMeleeEnemy;
+                        CoverPositionRequest request = new CoverPositionRequest();
+                        request.caster             = selPawn;
+                        request.target             = nearestMeleeEnemy;
+                        request.majorThreats       = rangedEnemiesTargetingSelf;
+                        request.maxRangeFromCaster = 12;
+                        request.checkBlockChance   = true;
+                        if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell) && ShouldMoveTo(cell))
                         {
-                            // reduce the possible damage for far away melee pawns.
-                            damage *= (5f - Mathf.Clamp(Maths.Sqrt_Fast(selPos.DistanceToSquared(enemy.Position), 4), 0f, 5f)) / 5f;
+                            if (cell != selPos)
+                            {
+                                _last = 11;
+                                Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Retreat, cell);
+                                job_goto.playerForced      = forcedTarget.IsValid;
+                                job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+                                selPawn.jobs.ClearQueuedJobs();
+                                selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
+                                data.LastRetreated = GenTicks.TicksGame;
+                            }
+                            return;
                         }
-                        possibleDmg         += damage;
-                        possibleDmgDistance += enemy.DistanceTo_Fast(selPawn);
-                        if (damageReport.primaryIsRanged)
+                    }
+                    // try minor retreat (duck for cover fast)
+                    if (possibleDmg - retreatRoll * 0.5f > 0.001f && possibleDmg >= 20)
+                    {
+                        // selPawn.Map.debugDrawer.FlashCell(selPos, 1.0f, $"{possibleDmg}, {targetedBy.Count}, {rangedEnemiesTargetingSelf.Count}");
+                        CoverPositionRequest request = new CoverPositionRequest();
+                        request.caster             = selPawn;
+                        request.majorThreats       = rangedEnemiesTargetingSelf;
+                        request.checkBlockChance   = true;
+                        request.maxRangeFromCaster = Mathf.Clamp(possibleDmgWarmup * 5f - rangedEnemiesTargetingSelf.Count, 6f, 10f);
+                        if (CoverPositionFinder.TryFindDuckPosition(request, out IntVec3 cell))
                         {
-                            possibleDmgWarmup += damageReport.primaryVerbProps.warmupTime;
-                            rangedEnemiesTargetingSelf.Add(enemy);
+                            bool diff = cell != selPos;
+                            // run to cover
+                            if (diff)
+                            {
+                                _last = 12;
+                                Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Duck, cell);
+                                job_goto.playerForced      = forcedTarget.IsValid;
+                                job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+                                selPawn.jobs.ClearQueuedJobs();
+                                selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
+                                data.LastRetreated = lastRetreated = GenTicks.TicksGame;
+                            }
+                            if (data.TookDamageRecently(45) || !diff)
+                            {
+                                _last = 13;
+                                Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 50 + 50);
+                                job_waitCombat.playerForced          = forcedTarget.IsValid;
+                                job_waitCombat.checkOverrideOnExpire = true;
+                                selPawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
+                                data.LastRetreated = lastRetreated = GenTicks.TicksGame;
+                            }
+                            return;
                         }
                     }
                 }
             }
-            if (rangedEnemiesTargetingSelf.Count > 0 && !selPawn.mindState.MeleeThreatStillThreat && !selPawn.IsApproachingMeleeTarget(distLimit:8, false))
-            {
-                int retreatRoll = Rand.Range(0, 50);
-                // major retreat attempt if the pawn is doomed
-                if (possibleDmg - retreatRoll > 0.001f && possibleDmg >= 50)
-                {
-                    _last      = 10;
-                    _bestEnemy = nearestMeleeEnemy;
-                    CoverPositionRequest request = new CoverPositionRequest();
-                    request.caster             = selPawn;
-                    request.target             = nearestMeleeEnemy;
-                    request.majorThreats       = rangedEnemiesTargetingSelf;
-                    request.maxRangeFromCaster = 12;
-                    request.checkBlockChance   = true;
-                    if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell) && ShouldMoveTo(cell))
-                    {
-                        if (cell != selPos)
-                        {
-                            _last = 11;
-                            Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Retreat, cell);
-                            job_goto.playerForced      = forcedTarget.IsValid;
-                            job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
-                            selPawn.jobs.ClearQueuedJobs();
-                            selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-                            data.LastRetreated = GenTicks.TicksGame;
-                        }
-                        return;
-                    }
-                }
-                // try minor retreat (duck for cover fast)
-                if (possibleDmg - retreatRoll * 0.5f > 0.001f && possibleDmg >= 20)
-                {
-                    // selPawn.Map.debugDrawer.FlashCell(selPos, 1.0f, $"{possibleDmg}, {targetedBy.Count}, {rangedEnemiesTargetingSelf.Count}");
-                    CoverPositionRequest request = new CoverPositionRequest();
-                    request.caster             = selPawn;
-                    request.majorThreats       = rangedEnemiesTargetingSelf;
-                    request.checkBlockChance   = true;
-                    request.maxRangeFromCaster = Mathf.Clamp(possibleDmgWarmup * 5f - rangedEnemiesTargetingSelf.Count, 6f, 10f);
-                    if (CoverPositionFinder.TryFindDuckPosition(request, out IntVec3 cell))
-                    {
-                        bool diff = cell != selPos;
-                        // run to cover
-                        if (diff)
-                        {
-                            _last = 12;
-                            Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Duck, cell);
-                            job_goto.playerForced      = forcedTarget.IsValid;
-                            job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
-                            selPawn.jobs.ClearQueuedJobs();
-                            selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-                            data.LastRetreated = lastRetreated = GenTicks.TicksGame;
-                        }
-                        if (data.TookDamageRecently(45) || !diff)
-                        {
-                            _last = 13;
-                            Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 50 + 50);
-                            job_waitCombat.playerForced          = forcedTarget.IsValid;
-                            job_waitCombat.checkOverrideOnExpire = true;
-                            selPawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
-                            data.LastRetreated = lastRetreated = GenTicks.TicksGame;
-                        }
-                        return;
-                    }
-                }
-            } 
             if (duty.Is(DutyDefOf.ExitMapRandom))
             {
                 return;
@@ -721,7 +724,7 @@ namespace CombatAI.Comps
                     bool retreatThreat = !retreatMeleeThreat && nearestEnemy != null && nearestEnemyDist < Maths.Max(verb.EffectiveRange / 4f, 5);
                     _bestEnemy         = retreatMeleeThreat ? nearestMeleeEnemy : nearestEnemy;
                     // retreat because of a close melee threat
-                    if (retreatThreat || retreatMeleeThreat)
+                    if (bodySize < 2.0f && (retreatThreat || retreatMeleeThreat))
                     {
                         _bestEnemy = retreatThreat ? nearestEnemy : nearestMeleeEnemy;
                         _last      = 40;
@@ -751,7 +754,14 @@ namespace CombatAI.Comps
                     {
                         _bestEnemy = nearestEnemy;
                         
-                        if (bestEnemyVisibleNow)
+                        if (!selPawn.RaceProps.Humanlike || bodySize > 2.0f)
+                        {
+                            if (bestEnemyVisibleNow && selPawn.mindState.enemyTarget == null)
+                            {
+                                selPawn.mindState.enemyTarget = nearestEnemy;
+                            }
+                        }
+                        else if (bestEnemyVisibleNow)
                         {
                             if (nearestEnemyDist > 8)
                             {
