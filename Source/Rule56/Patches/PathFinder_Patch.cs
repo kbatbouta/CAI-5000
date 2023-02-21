@@ -44,6 +44,7 @@ namespace CombatAI.Patches
 			private static          bool                             isPlayer;
 			private static readonly List<IntVec3>                    blocked = new List<IntVec3>(128);
 			private static          bool                             fallbackCall;
+			private static          ISGrid<float>                    f_grid;
 
 			private static TraverseParms original_traverseParms;
 			private static PathEndMode   origina_peMode;
@@ -68,6 +69,8 @@ namespace CombatAI.Patches
 					instance = __instance;
 					map      = __instance.map;
 					walls    = __instance.map.GetComp_Fast<WallGrid>();
+					f_grid   = __instance.map.GetComp_Fast<MapComponent_CombatAI>().f_grid;
+					f_grid.Reset();
 					// get temperature data.
 					temperatureRange = new FloatRange(pawn.GetStatValue_Fast(StatDefOf.ComfyTemperatureMin, 1600), pawn.GetStatValue_Fast(StatDefOf.ComfyTemperatureMax, 1600));
 					temperatureRange = temperatureRange.ExpandedBy(12);
@@ -155,36 +158,23 @@ namespace CombatAI.Patches
 						{
 							if (tuning != null && (!enemiesAhead || enemiesBefore))
 							{
-								if (comp.data.FailedSappingRecently(300))
+								try
 								{
-									try
-									{
-										__result.Dispose();
-										fallbackCall                               = true;
-										dig                                        = false;
-										tuning.costBlockedWallBase                 = Maths.Max(tuning.costBlockedWallBase * 3, 128);
-										tuning.costBlockedWallExtraForNaturalWalls = Maths.Max(tuning.costBlockedWallExtraForNaturalWalls * 3, 128);
-										tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 4);
-										__result                                   = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
-									}
-									catch (Exception er)
-									{
-										Log.Error($"ISMA: Error occured in FindPath fallback call {er}");
-									}
-									finally
-									{
-										fallbackCall = false;
-									}
-								}
-								else
-								{
-									comp.data.LastFailedSapping = GenTicks.TicksGame;
 									__result.Dispose();
-									__result = PawnPath.NotFound;
-									Job wait_job = JobMaker.MakeJob(JobDefOf.Wait_MaintainPosture);
-									wait_job.expiryInterval = 60;
-									pawn.jobs.StartJob(wait_job, JobCondition.InterruptForced, null, true);
-									goto Finish;
+									fallbackCall                               = true;
+									dig                                        = false;
+									tuning.costBlockedWallBase                 = Maths.Max(tuning.costBlockedWallBase * 3, 128);
+									tuning.costBlockedWallExtraForNaturalWalls = Maths.Max(tuning.costBlockedWallExtraForNaturalWalls * 3, 128);
+									tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 4);
+									__result                                   = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
+								}
+								catch (Exception er)
+								{
+									Log.Error($"ISMA: Error occured in FindPath fallback call {er}");
+								}
+								finally
+								{
+									fallbackCall = false;
 								}
 							}
 							else
@@ -199,7 +189,6 @@ namespace CombatAI.Patches
 						tracker.Notify_PathFound(pawn, __result);
 					}
 				}
-			Finish:
 				if (FlashSearch)
 				{
 					FlashSearch = false;
@@ -223,6 +212,7 @@ namespace CombatAI.Patches
 				walls            = null;
 				flashCost        = false;
 				pawn             = null;
+				f_grid           = null;
 			}
 
 			/*
@@ -255,83 +245,84 @@ namespace CombatAI.Patches
 			private static int GetCostOffsetAt(int index, int parentIndex, int openNum)
 			{
 #if DEBUG
-				if (FlashSearch && flashInstance != null)
+				if (FlashSearch && map != null && !fallbackCall)
 				{
-					flashInstance.map.debugDrawer.FlashCell(flashInstance.map.cellIndices.IndexToCell(parentIndex), Mathf.Clamp(PathFinder.calcGrid[parentIndex].knownCost / 1200f,0.001f, 0.99f), $"{PathFinder.calcGrid[parentIndex].knownCost}", duration:50);
+					map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(parentIndex), Mathf.Clamp(PathFinder.calcGrid[parentIndex].knownCost / 1200f,0.001f, 0.99f), $"{PathFinder.calcGrid[parentIndex].knownCost}", duration:50);
 				}
 #endif
 				if (map != null)
 				{
-					int   value = 0;
-					if (Finder.Settings.Temperature_Enabled)
+					float value = 0;
+					if (f_grid.IsSet(index))
 					{
-						float temperature = GenTemperature.TryGetTemperature(index, map);
-						if (!temperatureRange.Includes(temperature))
-						{
-							if (temperatureRange.min > temperature)
-							{
-								value += (int)Maths.Min(temperatureRange.min - temperature, 32) * 3;
-							}
-							else
-							{
-								value += (int)Maths.Min(temperature - temperatureRange.max, 32) * 3;
-							}
-						}
+						// cache found so skip most of the math.
+						value = f_grid[index];
 					}
-					if (checkVisibility)
+					else
 					{
-						float visibility = Maths.Max((sightReader.GetVisibilityToEnemies(index) - visibilityAtDest) * 0.5f + (sightReader.GetEnemyAvailability(index) - availabilityAtDest) * 0.5f, 0);
-						if (visibility > 0)
+						// find the cell cost offset
+						if (Finder.Settings.Temperature_Enabled)
 						{
-							// this allows us to reduce the cost as we approach the target.
-							int   dist = (destPos - map.cellIndices.IndexToCell(index)).LengthManhattan;
-							float mul  = dist < 15 ? dist / 15 : 1f;
-							value += (int)(visibility * 11f * mul);
-							float threat = Maths.Max(sightReader.GetThreat(index) - threatAtDest, 0);
-							if (threat > 0)
+							float temperature = GenTemperature.TryGetTemperature(index, map);
+							if (!temperatureRange.Includes(temperature))
 							{
-								value += (int)(threat * 22f * mul);
-							}
-						}
-						if (dig && walls.GetFillCategory(index) == FillCategory.Full)
-						{
-							float visibilityParent = sightReader.GetAbsVisibilityToEnemies(parentIndex);
-							if (visibilityParent > 0)
-							{
-								// we do this to prevent sapping where there is enemies.
-#if DEBUG
-								if (flashCost)
+								if (temperatureRange.min > temperature)
 								{
-									float val = (int)(value * multiplier * Finder.P50);
-									map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), val / 1000f, $"{Math.Round(val, 1)}");
-									return (int)val;
+									value += Maths.Min(temperatureRange.min - temperature, 32) * 3;
 								}
-#endif
-								return (int)(1000 * visibilityParent);
+								else
+								{
+									value += Maths.Min(temperature - temperatureRange.max, 32) * 3;
+								}
 							}
 						}
+						if (checkVisibility)
+						{
+							float visibility = Maths.Max((sightReader.GetVisibilityToEnemies(index) - visibilityAtDest) * 0.5f + (sightReader.GetEnemyAvailability(index) - availabilityAtDest) * 0.5f, 0);
+							if (visibility > 0)
+							{
+								// this allows us to reduce the cost as we approach the target.
+								int   dist = (destPos - map.cellIndices.IndexToCell(index)).LengthManhattan;
+								float mul  = dist < 15 ? dist / 15 : 1f;
+								value += (int)(visibility * 11f * mul);
+								float threat = Maths.Max(sightReader.GetThreat(index) - threatAtDest, 0);
+								if (threat > 0)
+								{
+									value += (threat * 22f * mul);
+								}
+							}
+							if (dig && walls.GetFillCategory(index) == FillCategory.Full)
+							{
+								float visibilityParent = sightReader.GetAbsVisibilityToEnemies(parentIndex);
+								if (visibilityParent > 0)
+								{
+									// we do this to prevent sapping where there is enemies.
+									value = (1000 * visibilityParent);
+								}
+							}
+						}
+						if (checkAvoidance)
+						{
+							value += (avoidanceReader.GetDanger(index) * 8) + avoidanceReader.GetProximity(index) * 6;
+						}
+						f_grid[index] = value;
 					}
 					if (checkAvoidance)
 					{
-						// we only care if the paths are parallel to each ohers.
+						// we only care if the paths are parallel to each others.
 						value += Maths.Min(avoidanceReader.GetPath(index), avoidanceReader.GetPath(parentIndex)) * 11;
-						value += (int)(avoidanceReader.GetDanger(index) * 11) + avoidanceReader.GetProximity(index) * 5;
 					}
-					if (value > 5)
+					if (value > 0)
 					{
-						counter++;
+						if (value > 32)
+						{
+							counter++;
+						}
 						//
 						// TODO make this into a maxcost -= something system
-#if DEBUG
-						if (flashCost)
-						{
-							float val = (int)(value * multiplier * Finder.P50);
-							map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(index), val / 1000f, $"{Math.Round(val, 1)}");
-							return (int)val;
-						}
-#endif
-						return (int) (value * multiplier * Finder.P50);
+						value = (value * multiplier * Finder.P75) * Mathf.Clamp(1 - counter / 10000, 0.1f, 1f) * Mathf.Clamp(1 - PathFinder.calcGrid[parentIndex].knownCost / 5000, 0.25f, 1);
 					}
+					return (int) value;
 				}
 				return 0;
 			}

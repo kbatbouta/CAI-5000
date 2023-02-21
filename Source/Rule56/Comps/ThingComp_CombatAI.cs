@@ -684,7 +684,7 @@ namespace CombatAI.Comps
                             }
                         }
                     }
-                    
+
                     void StartOrQueueCoverJob(IntVec3 cell, int codeOffset)
                     {
                         if (selPawn.CurJob.Is(JobDefOf.Wait_Combat))
@@ -719,6 +719,11 @@ namespace CombatAI.Comps
                             data.LastInterrupted = GenTicks.TicksGame;
                         }
                     }
+
+                    if (nearestEnemy != null && rangedEnemiesTargetingSelf.Contains(nearestEnemy))
+                    {
+                        rangedEnemiesTargetingSelf.Remove(nearestEnemy);
+                    }
                     bool retreatMeleeThreat = nearestMeleeEnemy != null && nearestMeleeEnemyDist < Maths.Max(verb.EffectiveRange / 3f, 9);
                     bool retreatThreat = !retreatMeleeThreat && nearestEnemy != null && nearestEnemyDist < Maths.Max(verb.EffectiveRange / 4f, 5);
                     _bestEnemy         = retreatMeleeThreat ? nearestMeleeEnemy : nearestEnemy;
@@ -731,6 +736,11 @@ namespace CombatAI.Comps
                         request.caster             = selPawn;
                         request.target             = nearestMeleeEnemy;
                         request.verb               = verb;
+                        while (rangedEnemiesTargetingSelf.Count > 3)
+                        {
+                            rangedEnemiesTargetingSelf.RemoveAt(Rand.Int % rangedEnemiesTargetingSelf.Count);
+                        }
+                        request.majorThreats       = rangedEnemiesTargetingSelf;
                         request.checkBlockChance   = true;
                         request.maxRangeFromCaster = verb.EffectiveRange / 2 + 8;
                         if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell))
@@ -797,8 +807,12 @@ namespace CombatAI.Comps
                             request.caster = selPawn;
                             request.verb   = verb;
                             request.target = nearestEnemy;
-                            if (!bestEnemyVisibleSoon && !Finder.Performance.TpsCriticallyLow && rangedEnemiesTargetingSelf.Count > 0)
+                            if (!bestEnemyVisibleSoon && !Finder.Performance.TpsCriticallyLow)
                             {
+                                while (rangedEnemiesTargetingSelf.Count > 3)
+                                {
+                                    rangedEnemiesTargetingSelf.RemoveAt(Rand.Int % rangedEnemiesTargetingSelf.Count);
+                                }
                                 request.majorThreats       = rangedEnemiesTargetingSelf;
                                 request.maxRangeFromCaster = Maths.Min(verb.EffectiveRange, 10f);
                             }

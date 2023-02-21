@@ -38,7 +38,7 @@ namespace CombatAI.Patches
 
             public static void Postfix(ThinkNode __instance, ThinkResult __result, Pawn pawn)
             {
-                if (Enabled && __result.IsValid && !processedJobs.Contains(__result.Job))
+                if (Enabled && __result is { IsValid: true, Job: { } } && !processedJobs.Contains(__result.Job))
                 {
                     if (curPawn != pawn)
                     {
@@ -50,12 +50,15 @@ namespace CombatAI.Patches
                     if (log.IsValid)
                     {
                         ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
-                        comp.jobLogs ??= new List<JobLog>();
-                        comp.jobLogs.Insert(0, log);
-                        while (comp.jobLogs.Count > 64)
+                        if (comp != null)
                         {
-                            // limit size to 32
-                            comp.jobLogs.RemoveAt(comp.jobLogs.Count - 1);
+                            comp.jobLogs ??= new List<JobLog>();
+                            comp.jobLogs.Insert(0, log);
+                            while (comp.jobLogs.Count > 64)
+                            {
+                                // limit size to 32
+                                comp.jobLogs.RemoveAt(comp.jobLogs.Count - 1);
+                            }
                         }
                     }
                 }

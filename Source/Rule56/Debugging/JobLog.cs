@@ -42,7 +42,7 @@ namespace CombatAI
             log.thinknode = new List<string>();
             if (jobGiver != null)
             {
-                ThinkNodeDatabase.GetTrace(jobGiver, log.thinknode);
+                ThinkNodeDatabase.GetTrace(jobGiver, pawn, log.thinknode);
             }
             // reset builder
             StackTrace trace = new StackTrace();
