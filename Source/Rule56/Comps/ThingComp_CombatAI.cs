@@ -474,15 +474,8 @@ namespace CombatAI.Comps
                     CoverPositionRequest request = new CoverPositionRequest();
                     request.caster             = selPawn;
                     request.target             = nearestMeleeEnemy;
-                    if (!data.RetreatedRecently(600))
-                    {
-                        request.majorThreats       = rangedEnemiesTargetingSelf;
-                        request.maxRangeFromCaster = Mathf.Clamp(possibleDmgWarmup * 5f - request.majorThreats.Count, 6f, 10f);
-                    }
-                    else
-                    {
-                        request.maxRangeFromCaster = 12;    
-                    }
+                    request.majorThreats       = rangedEnemiesTargetingSelf;
+                    request.maxRangeFromCaster = 12;
                     request.checkBlockChance   = true;
                     if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell) && ShouldMoveTo(cell))
                     {
@@ -736,10 +729,6 @@ namespace CombatAI.Comps
                         request.caster             = selPawn;
                         request.target             = nearestMeleeEnemy;
                         request.verb               = verb;
-                        while (rangedEnemiesTargetingSelf.Count > 3)
-                        {
-                            rangedEnemiesTargetingSelf.RemoveAt(Rand.Int % rangedEnemiesTargetingSelf.Count);
-                        }
                         request.majorThreats       = rangedEnemiesTargetingSelf;
                         request.checkBlockChance   = true;
                         request.maxRangeFromCaster = verb.EffectiveRange / 2 + 8;

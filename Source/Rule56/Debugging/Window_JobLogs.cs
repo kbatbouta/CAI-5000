@@ -73,32 +73,35 @@ namespace CombatAI
 
         public override void DoWindowContents(Rect inRect)
         {
-            Rect right   = inRect.RightPart(1 - viewRatio2);
-            Rect left    = inRect.LeftPart(viewRatio2);
-            Rect barRect = right.LeftPartPixels(18);
-            right.xMin += 18;
-            Event current          = Event.current;
-            bool  mouseOverDragBar = Mouse.IsOver(barRect);
-            if (current.type == EventType.MouseDown && current.button == 0 && mouseOverDragBar)
+            GUIUtility.ExecuteSafeGUIAction(() =>
             {
-                dragging2 = true;
-                current.Use();
-            }
-            if (dragging2)
-            {
-                viewRatio2 = Mathf.Clamp((current.mousePosition.x - inRect.xMin) / (inRect.xMax - inRect.xMin), 0.6f, 0.9f);
-            }
-            if (current.type == EventType.MouseUp && current.button == 0 && dragging2)
-            {
-                dragging2 = false;
-                current.Use();
-            }
-            DrawDragBarVertical(barRect);
-            if (!(comp.parent?.Destroyed ?? true) && comp.parent.Spawned)
-            {
-                DoTestContents(right);
-            }
-            DoJobLogContents(left);
+                Rect right   = inRect.RightPart(1 - viewRatio2);
+                Rect left    = inRect.LeftPart(viewRatio2);
+                Rect barRect = right.LeftPartPixels(18);
+                right.xMin += 18;
+                Event current          = Event.current;
+                bool  mouseOverDragBar = Mouse.IsOver(barRect);
+                if (current.type == EventType.MouseDown && current.button == 0 && mouseOverDragBar)
+                {
+                    dragging2 = true;
+                    current.Use();
+                }
+                if (dragging2)
+                {
+                    viewRatio2 = Mathf.Clamp((current.mousePosition.x - inRect.xMin) / (inRect.xMax - inRect.xMin), 0.6f, 0.9f);
+                }
+                if (current.type == EventType.MouseUp && current.button == 0 && dragging2)
+                {
+                    dragging2 = false;
+                    current.Use();
+                }
+                DrawDragBarVertical(barRect);
+                if (!(comp.parent?.Destroyed ?? true) && comp.parent.Spawned)
+                {
+                    DoTestContents(right);
+                }
+                DoJobLogContents(left);
+            });
         }
 
         private void DoTestContents(Rect inRect)
@@ -458,11 +461,13 @@ namespace CombatAI
                 },
                 (rect) =>
                 {
-                    Widgets.Label(rect, (jobLog.thinknode.NullOrEmpty() ? "unknown" : jobLog.thinknode.First()).Fit(rect));
+                    string val = jobLog.thinknode.NullOrEmpty() ? "unknown" : jobLog.thinknode.First();
+                    Widgets.Label(rect, val.Fit(rect));
                 },
                 (rect) =>
                 {
-                    Widgets.Label(rect, (jobLog.thinknode.NullOrEmpty() ? "unknown" : jobLog.thinknode.Last()).Fit(rect));
+                    string val = jobLog.thinknode.NullOrEmpty() ? "unknown" : jobLog.thinknode.Last();
+                    Widgets.Label(rect, val.Fit(rect));
                 },
                 (rect) =>
                 {

@@ -237,7 +237,7 @@ namespace CombatAI
 					              return;
 				              }
 				              // do math
-				              float c = (node.dist - node.distAbs) / (node.distAbs + 1f) * 2 - interceptors.grid.Get(node.cell) + metric_retreat.Score(node.cell);
+				              float c = (node.dist - node.distAbs) / (node.distAbs + 1f) - interceptors.grid.Get(node.cell) + metric_retreat.Score(node.cell);
 				              // check for blocked line of sight with major threats.
 				              if (node.cell == request.locus)
 				              {
@@ -245,11 +245,11 @@ namespace CombatAI
 				              }
 				              if (rootDutyDestDist > 0)
 				              {
-					              c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 5) - rootDutyDestDist) * 0.25f, -1f, 1f);
+					              c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 5) - rootDutyDestDist) * 0.25f, -0.5f, 0.5f);
 				              }
+				              float d = node.cell.DistanceToSquared(enemyLoc);
 				              if (bestCellScore - c >= 0.05f)
 				              {
-					              float d = node.cell.DistanceToSquared(enemyLoc);
 					              if (d > bestCellDist)
 					              {
 						              bestCellScore = c;
@@ -276,7 +276,7 @@ namespace CombatAI
 						              }
 					              }
 				              }
-				              return Mathf.Abs(cost);
+				              return cost;
 			              },
 			              cell =>
 			              {

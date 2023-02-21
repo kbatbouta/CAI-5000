@@ -114,15 +114,15 @@ namespace CombatAI
             }
             if (node is ThinkNode_Subtree subtree)
             {
-                builder.AppendFormat("p[{0}]<{1}>(treeDef={2})", index, node.GetType(), subtree.treeDef);    
+                builder.AppendFormat("(p{0}, {1})(treeDef={2})", index, node.GetType(), subtree.treeDef);    
             }
             else if (node is ThinkNode_Duty dutyNode)
             {
-                builder.AppendFormat("p[{0}]<{1}>(dutyDef={2})", index, node.GetType(), pawn.mindState.duty?.def.defName);
+                builder.AppendFormat("(p{0}, {1})(dutyDef={2})", index, node.GetType(), pawn.mindState.duty?.def.defName);
             }
             else
             {
-                builder.AppendFormat("p[{0}]<{1}>", index, node.GetType());
+                builder.AppendFormat("(p{0}, {1})", index, node.GetType());
             }
             return builder.ToString();
         }
