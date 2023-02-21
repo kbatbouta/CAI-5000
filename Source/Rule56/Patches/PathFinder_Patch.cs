@@ -34,7 +34,7 @@ namespace CombatAI.Patches
 			private static          SightTracker.SightReader         sightReader;
 			private static          WallGrid                         walls;
 			private static          AvoidanceTracker.AvoidanceReader avoidanceReader;
-			private static          int                              counter;
+//			private static          int                              counter;
 			private static          float                            threatAtDest;
 			private static          float                            availabilityAtDest;
 			private static          float                            visibilityAtDest;
@@ -132,7 +132,7 @@ namespace CombatAI.Patches
 					}
 					checkAvoidance  = Finder.Settings.Flank_Enabled && avoidanceReader != null && !isPlayer;
 					checkVisibility = sightReader != null;
-					counter         = 0;
+//					counter         = 0;
 					flashCost       = Finder.Settings.Debug_DebugPathfinding && Find.Selector.SelectedPawns.Contains(pawn);
 					return __state = true;
 				}
@@ -203,7 +203,7 @@ namespace CombatAI.Patches
 				isPlayer         = false;
 				multiplier       = 1f;
 				sightReader      = null;
-				counter          = 0;
+//				counter          = 0;
 				dig              = false;
 				threatAtDest     = 0;
 				instance         = null;
@@ -314,13 +314,9 @@ namespace CombatAI.Patches
 					}
 					if (value > 0)
 					{
-						if (value > 32)
-						{
-							counter++;
-						}
 						//
 						// TODO make this into a maxcost -= something system
-						value = (value * multiplier * Finder.P75) * Mathf.Clamp(1 - counter / 12500, 0.1f, 1f) * Mathf.Clamp(1 - PathFinder.calcGrid[parentIndex].knownCost / 5000, 0.25f, 1);
+						value = (value * multiplier * Finder.P75) * Mathf.Clamp(1 - PathFinder.calcGrid[parentIndex].knownCost / 2500, 0.1f, 1);
 					}
 					return (int) value;
 				}
