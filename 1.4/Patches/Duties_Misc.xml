@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Patch>
-    <Operation Class="PatchOperationReplace">
+    <!-- <Operation Class="PatchOperationReplace">
         <xpath>Defs/DutyDef/thinkNode/subNodes/li[@Class="JobGiver_TakeCombatEnhancingDrug"]</xpath>
         <value>
             <li Class="CombatAI.ThinkNode_ConditionalSight">
@@ -32,7 +32,7 @@
                 </subNodes>
             </li>
         </value>
-    </Operation>
+    </Operation> -->
 
 
 </Patch>
