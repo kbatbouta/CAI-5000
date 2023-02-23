@@ -12,6 +12,7 @@ namespace CombatAI
 		private static readonly Dictionary<int, Pair<int, int>> rangeCache = new Dictionary<int, Pair<int, int>>(256);
 		public static SightGrid.ISightRadius GetSightRadius(Thing thing)
 		{
+			bool                   isSmartPawn = false;
 			SightGrid.ISightRadius result;
 			ThingComp_Sighter      sighter = thing.GetComp_Fast<ThingComp_Sighter>();
 			if (sighter != null)
@@ -28,7 +29,7 @@ namespace CombatAI
 			{
 				result = GetSightRadius_Pawn(pawn);
 				Faction f = thing.Faction;
-
+				isSmartPawn = !pawn.RaceProps.Animal && !(pawn.Dead || pawn.Downed);
 				if (f != null && (f.IsPlayerSafe() || !f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies))
 				{
 					if (pawn.RaceProps.Animal)
@@ -63,6 +64,11 @@ namespace CombatAI
 				throw new Exception($"ISMA: GetSightRadius got an object that is niether a pawn, turret nor does it have sighter. {thing}");
 			}
 		finalize:
+			if (isSmartPawn)
+			{
+				result.scan  = result.scan + 16;
+				result.sight = result.sight + 8;
+			}
 			result.createdAt = GenTicks.TicksGame;
 			return result;
 		}
@@ -76,7 +82,7 @@ namespace CombatAI
 				result.scan  = result.sight;
 				return result;
 			}
-			Verb verb = pawn.CurrentEffectiveVerb;
+			Verb verb = pawn.TryGetAttackVerb();
 			if (verb == null || !verb.Available())
 			{
 				result.sight = 4;

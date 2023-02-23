@@ -8,24 +8,25 @@ namespace CombatAI
 {
     public class AIEnvThings : ICollection, IExposable
     {
-        private const AIEnvAgentState      invalidState = (AIEnvAgentState)(-1);
-        
-        private       List<AIEnvAgentInfo> things;
+        private const AIEnvAgentState      invalidState = AIEnvAgentState.unknown;
 
-        public AIEnvThings() : this(1)
-        {
-        }
+        private readonly Dictionary<int, AIEnvAgentInfo> stateByThing = new Dictionary<int, AIEnvAgentInfo>();
+        private readonly List<AIEnvAgentInfo>            elements     = new List<AIEnvAgentInfo>();
 
-        public AIEnvThings(int alloc)
+        public AIEnvThings()
         {
-            things     = new List<AIEnvAgentInfo>(alloc);
             IsReadOnly = false;
             SyncRoot   = new object();
         }
 
-        private AIEnvThings(List<AIEnvAgentInfo> things)
+        private AIEnvThings(List<AIEnvAgentInfo> elements)
         {
-            this.things = things;
+            this.elements = elements;
+        }
+
+        public AIEnvAgentInfo Random
+        {
+            get => elements[Rand.Int % elements.Count];
         }
 
         public AIEnvThings AsReadonly
@@ -36,7 +37,7 @@ namespace CombatAI
                 {
                     return this;
                 }
-                AIEnvThings copy = new AIEnvThings(things);
+                AIEnvThings copy = new AIEnvThings(elements);
                 copy.IsReadOnly = true;
                 copy.SyncRoot   = SyncRoot;
                 return copy;
@@ -52,45 +53,45 @@ namespace CombatAI
         public AIEnvAgentInfo this[int index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => things[index];
+            get => elements[index];
         }
 
-        public AIEnvAgentState this[Thing thing]
+        public AIEnvAgentInfo this[Thing thing]
         {
-            get
-            {
-                for (int i = 0; i < things.Count; i++)
-                {
-                    AIEnvAgentInfo temp = things[i];
-                    if (temp.thing == thing)
-                    {
-                        return temp.state;
-                    }
-                }
-                return AIEnvAgentState.unknown;
-            }
-            set
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => stateByThing.TryGetValue(thing.thingIDNumber, out AIEnvAgentInfo store) ? store : new AIEnvAgentInfo(null, AIEnvAgentState.unknown);
+            private set
             {
                 if (IsReadOnly)
                 {
                     throw new Exception("Collection is readonly");
                 }
-                for (int i = 0; i < things.Count; i++)
+                if (thing == null)
                 {
-                    AIEnvAgentInfo temp = things[i];
-                    if (temp.thing == thing)
-                    {
-                        things[i] = new AIEnvAgentInfo(thing, value);
-                        return;
-                    }
+                    return;
                 }
-                things.Add(new AIEnvAgentInfo(thing, value));
+                if (stateByThing.ContainsKey(thing.thingIDNumber))
+                {
+                    for (int i = 0; i < elements.Count; i++)
+                    {
+                        AIEnvAgentInfo temp = elements[i];
+                        if (temp.thing == thing)
+                        {
+                            elements[i]                         = value;
+                            stateByThing[thing.thingIDNumber] = value;
+                            return;
+                        }
+                    }
+                    throw new Exception($"AIEnvThings stateByThing contains key but the key is missing from things.");
+                }
+                elements.Add(value);
+                stateByThing[thing.thingIDNumber] = value;
             }
         }
 
         public int Count
         {
-            get => things.Count;
+            get => elements.Count;
         }
 
         public object SyncRoot
@@ -111,64 +112,18 @@ namespace CombatAI
 
         public void CopyTo(Array array, int index)
         {
-            for (int i = 0; i < things.Count; i++)
+            for (int i = 0; i < elements.Count; i++)
             {
-                array.SetValue(things[i], index + i);
+                array.SetValue(elements[i], index + i);
             }
         }
 
         public void ExposeData()
         {
-            if (Scribe.mode == LoadSaveMode.Saving)
-            {
-                things.RemoveAll(t => t.thing == null || t.thing.Destroyed);
-            }
-//            Scribe_Collections.Look(ref things, "collectionThings", LookMode.Deep);
-            if (Scribe.mode != LoadSaveMode.Saving)
-            {
-                things ??= new List<AIEnvAgentInfo>();
-                things.RemoveAll(t => t.thing == null || t.thing.Destroyed);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(AIEnvAgentInfo item)
-        {
-            if (IsReadOnly)
-            {
-                throw new Exception("Collection is readonly");
-            }
-            this[item.thing] = item.state;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(Thing thing, AIEnvAgentState state)
-        {
-            if (IsReadOnly)
-            {
-                throw new Exception("Collection is readonly");
-            }
-            this[thing] = state;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Remove(AIEnvAgentInfo item)
-        {
-            if (IsReadOnly)
-            {
-                throw new Exception("Collection is readonly");
-            }
-            return things.Remove(item);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Remove(Thing thing)
-        {
-            if (IsReadOnly)
-            {
-                throw new Exception("Collection is readonly");
-            }
-            return things.RemoveAll(i => i.thing == thing) > 0;
+//            if (Scribe.mode != LoadSaveMode.Saving)
+//            {
+//                Scribe_Collections.Look(ref elements, $"collectionThings", LookMode.Deep);
+//            }
         }
 
         public void Clear()
@@ -177,26 +132,51 @@ namespace CombatAI
             {
                 throw new Exception("Collection is readonly");
             }
-            things.Clear();
+            elements.Clear();
+            stateByThing.Clear();
         }
 
-        public void ClearAndAddRange(HashSet<AIEnvAgentInfo> things)
+        public void ClearAndAddRange(HashSet<AIEnvAgentInfo> items)
         {
             if (IsReadOnly)
             {
                 throw new Exception("Collection is readonly");
             }
-            this.things.Clear();
-            this.things.AddRange(things);
+            this.elements.Clear();
+            this.elements.AddRange(items);
+            // update ids.
+            this.stateByThing.Clear();
+            for (int i = 0; i < items.Count; i++)
+            {
+                this.stateByThing[this.elements[i].thing.thingIDNumber] = this.elements[i];
+            }
         }
-        
-        public void ClearAndAddRange(List<AIEnvAgentInfo> things)
+        public void ClearAndAddRange(Dictionary<Thing, AIEnvAgentInfo> dict)
         {
             if (IsReadOnly)
             {
                 throw new Exception("Collection is readonly");
             }
-            this.ClearAndAddRange(things.ToHashSet());
+            this.elements.Clear();
+            this.stateByThing.Clear();
+            foreach (KeyValuePair<Thing, AIEnvAgentInfo> pair in dict)
+            {
+                if (pair.Key != pair.Value.thing)
+                {
+                    throw new InvalidOperationException("Key must match the value of AIEnvAgentInfo.Thing");
+                }
+                elements.Add(pair.Value);
+                stateByThing[pair.Key.thingIDNumber] = pair.Value;
+            }
+        }
+
+        public void ClearAndAddRange(List<AIEnvAgentInfo> items)
+        {
+            if (IsReadOnly)
+            {
+                throw new Exception("Collection is readonly");
+            }
+            this.ClearAndAddRange(items.ToHashSet());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -208,29 +188,22 @@ namespace CombatAI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(Thing item)
         {
-            for (int i = 0; i < things.Count; i++)
-            {
-                if ( things[i].thing == item)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return stateByThing.ContainsKey(item.thingIDNumber);
         }
 
         public void CopyTo(AIEnvAgentInfo[] array, int arrayIndex)
         {
-            things.CopyTo(array, arrayIndex);
+            elements.CopyTo(array, arrayIndex);
         }
 
         public IEnumerator<AIEnvAgentInfo> GetEnumerator()
         {
-            return new AIThingEnum(things, invalidState);
+            return new AIThingEnum(elements, invalidState);
         }
         
         public IEnumerator<AIEnvAgentInfo> GetEnumerator(AIEnvAgentState state)
         {
-            return new AIThingEnum(things, state);
+            return new AIThingEnum(elements, state);
         }
 
         public class AIThingEnum : IEnumerator<AIEnvAgentInfo>

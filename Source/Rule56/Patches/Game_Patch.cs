@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using CombatAI.Gui;
+using HarmonyLib;
 using Verse;
 namespace CombatAI.Patches
 {
@@ -14,7 +15,7 @@ namespace CombatAI.Patches
 				CompCache.Notify_MapRemoved(map);
 			}
 		}
-
+		
 		[HarmonyPatch(typeof(Game), nameof(Game.ClearCaches))]
 		private static class Game_ClearCaches_Patch
 		{
@@ -32,5 +33,23 @@ namespace CombatAI.Patches
 				LordToil_AssaultColony_Patch.ClearCache();
 			}
 		}
+		
+#if DEBUG
+		[HarmonyPatch(typeof(Game), nameof(Game.FinalizeInit))]
+#pragma warning restore CS0612
+		private static class Game_FinalizeInit_Patch
+		{
+			private static bool debugWindowShowen;
+			
+			public static void Prefix()
+			{
+				if (!debugWindowShowen)
+				{
+					Window_JobLogs.ShowTutorial();
+					debugWindowShowen = true;
+				}
+			}
+		}
+#endif
 	}
 }

@@ -105,7 +105,7 @@ namespace CombatAI.Patches
 							for (int j = 0; j < force.Count; j++)
 							{
 								ThingComp_CombatAI comp = force[j].GetComp_Fast<ThingComp_CombatAI>();
-								if (comp != null && !comp.duties.Any(DutyDefOf.Defend))
+								if (comp != null && !comp.duties.Any(CombatAI_DutyDefOf.CombatAI_AssaultPoint))
 								{
 									Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.AssaultPoint(zone.Position, Rand.Range(7, 15), 3600 * Rand.Range(3, 8));
 									if(force[j].TryStartCustomDuty(customDuty))
@@ -135,7 +135,7 @@ namespace CombatAI.Patches
 								for (int j = 0; j < force.Count; j++)
 								{
 									ThingComp_CombatAI comp = force[j].GetComp_Fast<ThingComp_CombatAI>();
-									if (comp != null && !comp.duties.Any(DutyDefOf.Defend))
+									if (comp != null && !comp.duties.Any(CombatAI_DutyDefOf.CombatAI_AssaultPoint))
 									{
 										Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.AssaultPoint(thing.Position, Rand.Range(7, 15), 3600 * Rand.Range(3, 8));
 										if (force[j].TryStartCustomDuty(customDuty))

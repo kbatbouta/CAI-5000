@@ -28,6 +28,11 @@ namespace CombatAI.R
     public static class Tex
     {     
 
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/logo.png</c>:        
+        /// <code>Isma/logo.png</code>
+        /// </summary>       
+        public static readonly Texture2D Isma_logo = ContentFinder<Texture2D>.Get( "Isma/logo", true);      
+
         /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Gizmos/move_attack.png</c>:        
         /// <code>Isma/Gizmos/move_attack.png</code>
         /// </summary>       
@@ -82,5 +87,30 @@ namespace CombatAI.R
         /// <code>Isma/Buildings/CCTV/cctv_wall_base_north.png</code>
         /// </summary>       
         public static readonly Texture2D Isma_Buildings_CCTV_cctv_wall_base_north = ContentFinder<Texture2D>.Get( "Isma/Buildings/CCTV/cctv_wall_base_north", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Tutorials/JobLog/selection_screenshot.png</c>:        
+        /// <code>Isma/Tutorials/JobLog/selection_screenshot.png</code>
+        /// </summary>       
+        public static readonly Texture2D Isma_Tutorials_JobLog_selection_screenshot = ContentFinder<Texture2D>.Get( "Isma/Tutorials/JobLog/selection_screenshot", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Tutorials/JobLog/gizmo_screenshot.png</c>:        
+        /// <code>Isma/Tutorials/JobLog/gizmo_screenshot.png</code>
+        /// </summary>       
+        public static readonly Texture2D Isma_Tutorials_JobLog_gizmo_screenshot = ContentFinder<Texture2D>.Get( "Isma/Tutorials/JobLog/gizmo_screenshot", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Tutorials/JobLog/position_screenshot.png</c>:        
+        /// <code>Isma/Tutorials/JobLog/position_screenshot.png</code>
+        /// </summary>       
+        public static readonly Texture2D Isma_Tutorials_JobLog_position_screenshot = ContentFinder<Texture2D>.Get( "Isma/Tutorials/JobLog/position_screenshot", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Tutorials/JobLog/clipboard_screenshot.png</c>:        
+        /// <code>Isma/Tutorials/JobLog/clipboard_screenshot.png</code>
+        /// </summary>       
+        public static readonly Texture2D Isma_Tutorials_JobLog_clipboard_screenshot = ContentFinder<Texture2D>.Get( "Isma/Tutorials/JobLog/clipboard_screenshot", true);      
+
+        /// <summary> Texture at <c>$(SolutionDir)/../../../1.4/Textures/Isma/Tutorials/JobLog/window_screenshot.png</c>:        
+        /// <code>Isma/Tutorials/JobLog/window_screenshot.png</code>
+        /// </summary>       
+        public static readonly Texture2D Isma_Tutorials_JobLog_window_screenshot = ContentFinder<Texture2D>.Get( "Isma/Tutorials/JobLog/window_screenshot", true);      
     }
 }

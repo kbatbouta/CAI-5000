@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using RimWorld.Planet;
 using Verse;
 namespace CombatAI
 {
-    public struct AIEnvAgentInfo : IExposable, IEquatable<Thing>, IEquatable<AIEnvAgentInfo>
+    public struct AIEnvAgentInfo : IEquatable<Thing>, IEquatable<AIEnvAgentInfo>
     {
-        public AIEnvAgentState state;
-        public Thing        thing;
+        public          AIEnvAgentState state;
+        public readonly Thing           thing;
 
         public AIEnvAgentInfo(Thing thing, AIEnvAgentState state)
         {
@@ -14,12 +15,23 @@ namespace CombatAI
             this.state = state;
         }
 
-        public void ExposeData()
+        public bool IsValid
         {
-            Scribe_References.Look(ref thing, "obsThing");
-            Scribe_Values.Look(ref state, "obsAIAgentState");
+            get => this.thing != null;
         }
-            
+        
+        public AIEnvAgentInfo Combine(AIEnvAgentInfo other)
+        {
+            if (other.thing != this.thing)
+            {
+                throw new InvalidOperationException("Both items must have the same parent thing");
+            }
+            return new AIEnvAgentInfo(this.thing, this.state | other.state)
+            {
+                // TODO remember to copy and process any new fields here.
+            };
+        }
+        
         public bool Equals(Thing other)
         {
             return other == thing;

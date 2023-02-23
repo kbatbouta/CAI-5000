@@ -28,15 +28,15 @@ namespace CombatAI
 			sigArray = new int[map.cellIndices.NumGridCells];
 		}
 
-		public void Flood(IntVec3 center, Action<IntVec3, IntVec3, float> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
+		public void Flood(IntVec3 center, Action<IntVec3, IntVec3, float> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25, int maxCellNum = 9999, bool passThroughDoors = false)
 		{
-			Flood(center, node => action(node.cell, node.parent, node.dist), costFunction, validator, maxDist);
+			Flood(center, node => action(node.cell, node.parent, node.dist), costFunction, validator, maxDist, maxCellNum, passThroughDoors);
 		}
 
-		public void Flood(IntVec3 center, Action<Node> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25)
+		public void Flood(IntVec3 center, Action<Node> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25, int maxCellNum = 9999, bool passThroughDoors = false)
 		{
 			sig++;
-			Func<IntVec3, bool> blocked = GetBlockedTestFunc(validator);
+			Func<IntVec3, bool> blocked = GetBlockedTestFunc(validator, passThroughDoors);
 			walls = map.GetComponent<WallGrid>();
 			Node node = GetIntialFloodedCell(center);
 			node.dist                                        = costFunction != null ? costFunction(node.cell) : 0;
@@ -50,13 +50,13 @@ namespace CombatAI
 			// floodedCells.Add(node);
 			floodQueue.Clear();
 			floodQueue.Enqueue(node);
-			while (floodQueue.Count > 0)
+			int num = 0;
+			while (floodQueue.Count > 0 && num++ < maxCellNum)
 			{
 				node = floodQueue.Dequeue();
 				//
 				// TODO optimize this some more
 				action(node);
-
 				// map.debugDrawer.FlashCell(node.cell, node.dist / 25f, $"{map.cellIndices.CellToIndex(node.cell)} {map.cellIndices.CellToIndex(node.parent)}", duration: 15);
 				//
 				// check for the distance
@@ -104,13 +104,27 @@ namespace CombatAI
 			}
 		}
 
-		private Func<IntVec3, bool> GetBlockedTestFunc(Func<IntVec3, bool> validator)
+		private Func<IntVec3, bool> GetBlockedTestFunc(Func<IntVec3, bool> validator, bool passThroughDoors)
 		{
 			if (validator == null)
 			{
-				return cell => walls.GetFillCategory(cell) == FillCategory.Full;
+				if (!passThroughDoors)
+				{
+					return cell => walls.GetFillCategory(cell) == FillCategory.Full;
+				}
+				else
+				{
+					return cell => walls.GetFillCategoryNoDoors(cell) == FillCategory.Full;
+				}
 			}
-			return cell => walls.GetFillCategory(cell) == FillCategory.Full || !validator(cell);
+			if (!passThroughDoors)
+			{
+				return cell => walls.GetFillCategory(cell) == FillCategory.Full || !validator(cell);
+			}
+			else
+			{
+				return cell => walls.GetFillCategoryNoDoors(cell) == FillCategory.Full || !validator(cell);
+			}
 		}
 
 		private Node GetIntialFloodedCell(IntVec3 center)

@@ -76,6 +76,8 @@ namespace CombatAI
 			{
 				float         armor_blunt = 0;
 				float         armor_sharp = 0;
+				float         max_blunt   = 0f;
+				float         max_sharp   = 0f;
 				float         coverage    = 0;
 				List<Apparel> apparels    = pawn.apparel.WornApparel;
 				for (int i = 0; i < apparels.Count; i++)
@@ -88,16 +90,32 @@ namespace CombatAI
 					report.hasShieldBelt |= isShield;
 					if (apparel != null && apparel.def.apparel != null)
 					{
+						if (isShield)
+						{
+							report.shield ??= apparel.GetComp<CompShield>();
+						}
 						float c = bodyApparels.Coverage(apparel.def.apparel);
 						coverage    += c;
-						armor_blunt += c * apparel.GetStatValue_Fast(StatDefOf.ArmorRating_Blunt, 2700);
-						armor_sharp += c * apparel.GetStatValue_Fast(StatDefOf.ArmorRating_Sharp, 2700);
+						float blunt = apparel.GetStatValue_Fast(StatDefOf.ArmorRating_Blunt, 2700);
+						float sharp = apparel.GetStatValue_Fast(StatDefOf.ArmorRating_Blunt, 2700);
+						if (max_sharp < sharp)
+						{
+							max_sharp = sharp;
+						}
+						if (max_blunt < blunt)
+						{
+							max_blunt = blunt;
+						}
+						armor_blunt += c * blunt;
+						armor_sharp += c * sharp;
 						if (debug)
 						{
 							collapsible.Label($"{i}. {apparel.def.label},\tc={c}");
 						}
 					}
 				}
+				armor_blunt = Maths.Min(armor_blunt, max_blunt);
+				armor_sharp = Maths.Min(armor_sharp, max_sharp);
 				if (coverage != 0)
 				{
 					report.apparelBlunt = armor_blunt;

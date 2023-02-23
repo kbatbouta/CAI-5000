@@ -1,8 +1,39 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
+using UnityEngine;
+using Verse;
 namespace CombatAI
 {
 	public static class Maths
 	{
+		private const int DistTh1 = 35 * 35;
+		private const int DistTh2 = 70 * 70;
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static float DistanceTo_Fast(this IntVec3 first, IntVec3 second)
+		{
+			float a       = first.x - second.x;
+			float b       = first.z - second.z;
+			float distSqr = a * a + b * b;
+			if (distSqr < DistTh1)
+			{
+				return Maths.Sqrt_Fast(distSqr, 3);
+			}
+			else if (distSqr < DistTh2)
+			{
+				return Maths.Sqrt_Fast(distSqr, 5);
+			}
+			else
+			{
+				return Maths.Sqrt_Fast(distSqr, 7);
+			}
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static float DistanceTo_Fast(this Thing first, Thing second)
+		{
+			return first.Position.DistanceTo_Fast(second.Position);
+		}
+		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static float Max(float a, float b)
 		{
@@ -118,9 +149,17 @@ namespace CombatAI
 
 		public static float Sqrt_Fast(float x, int iterations)
 		{
+			if (x < 0.001f)
+			{
+				return iterations >= 5 ? Mathf.Sqrt(x) : x;
+			}
+			if (x < 0)
+			{
+				throw new Exception("Input cannot be a negative value");
+			}
 			int n;
 			int k;
-			int a = (int)(x * 1024);
+			int a = (int)(x * 1024f);
 			if ((a & 0xFFFF0000) != 0)
 			{
 				if ((a & 0xFFF00000) != 0)
@@ -176,6 +215,14 @@ namespace CombatAI
 		}
 		public static int Sqrt_Fast(int a, int iterations)
 		{
+			if (a == 0)
+			{
+				return 0;
+			}
+			if (a < 0)
+			{
+				throw new Exception("Input cannot be a negative value");
+			}
 			int n;
 			int k;
 			if ((a & 0xFFFFFF00) != 0)

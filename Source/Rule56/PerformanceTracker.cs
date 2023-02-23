@@ -88,13 +88,13 @@ namespace CombatAI
 		public override void GameComponentOnGUI()
 		{
 			base.GameComponentOnGUI();
-			if (Finder.Settings.Debug)
-			{
-				string lowMsg = TpsCriticallyLow ? "<color=red>LOW</color>" : "NROMAL";
-				Widgets.DrawBoxSolid(new Rect(Vector2.zero, new Vector2(100, 5)), Color.gray);
-				Widgets.DrawBoxSolid(new Rect(Vector2.zero, new Vector2(100 * Performance, 5)), TpsCriticallyLow ? Color.yellow : Color.blue);
-				Widgets.Label(new Rect(Vector2.zero, new Vector2(100, 25)), $"{Tps}\t{lowMsg}\t{Math.Round(Performance, 2)}");
-			}
+//			if (Finder.Settings.Debug)
+//			{
+//				string lowMsg = TpsCriticallyLow ? "<color=red>LOW</color>" : "NROMAL";
+//				Widgets.DrawBoxSolid(new Rect(Vector2.zero, new Vector2(100, 5)), Color.gray);
+//				Widgets.DrawBoxSolid(new Rect(Vector2.zero, new Vector2(100 * Performance, 5)), TpsCriticallyLow ? Color.yellow : Color.blue);
+//				Widgets.Label(new Rect(Vector2.zero, new Vector2(100, 25)), $"{Tps}\t{lowMsg}\t{Math.Round(Performance, 2)}");
+//			}
 		}
 	}
 }

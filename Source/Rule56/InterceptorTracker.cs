@@ -49,7 +49,7 @@ namespace CombatAI
 					{
 						_removalList.Add(item);
 					}
-					if (!(item.parent is Pawn pawn && (pawn.IsCharging() || pawn.IsDormant())) && item.interceptor.Active)
+					if (!(item.parent is Pawn pawn && ((pawn.needs?.energy != null && pawn.IsCharging()) || pawn.IsDormant())) && item.interceptor.Active)
 					{
 						TryCastInterceptor(item);
 					}

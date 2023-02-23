@@ -12,44 +12,40 @@ namespace CombatAI.Patches
 		{
 			public static void Postfix(JobDriver_Wait __instance)
 			{
-				if (__instance.job.def.alwaysShowWeapon && __instance.pawn.mindState?.enemyTarget != null && __instance.job.def == JobDefOf.Wait_Combat && __instance.GetType() == typeof(JobDriver_Wait))
+				if (__instance.job.Is(JobDefOf.Wait_Combat) && !__instance.pawn.Faction.IsPlayerSafe())
 				{
 					if (__instance.job.targetC.IsValid)
 					{
 						__instance.rotateToFace = TargetIndex.C;
 					}
-					__instance.AddEndCondition(() =>
+					__instance.AddFailCondition(() =>
 					{
 						if (!__instance.pawn.IsHashIntervalTick(30) || GenTicks.TicksGame - __instance.startTick < 30)
 						{
-							return JobCondition.Ongoing;
+							return false;
 						}
-						if (__instance.pawn.mindState?.enemyTarget is Pawn enemy)
+						Verb verb =  __instance.job.verbToUse ?? __instance.pawn.CurrentEffectiveVerb;
+						if (verb == null || verb.WarmingUp || verb.Bursting || __instance.pawn.Faction.IsPlayerSafe())
 						{
-							ThingComp_CombatAI comp = __instance.pawn.GetComp_Fast<ThingComp_CombatAI>();
-							if (comp?.waitJob == __instance.job)
-							{
-								if (__instance.job.verbToUse != null)
-								{
-									if (__instance.pawn.stances?.curStance is Stance_Warmup || __instance.job.verbToUse.Bursting || Mod_CE.IsAimingCE(__instance.job.verbToUse))
-									{
-										return JobCondition.Ongoing;
-									}
-									if (__instance.job.verbToUse.CanHitTarget(PawnPathUtility.GetMovingShiftedPosition(enemy, 40)))
-									{
-										return JobCondition.Ongoing;
-									}
-									if (__instance.job.verbToUse.CanHitTarget(PawnPathUtility.GetMovingShiftedPosition(enemy, 80)))
-									{
-										return JobCondition.Ongoing;
-									}
-								}
-								comp.Notify_WaitJobEnded();
-								comp.waitJob = null;
-								return JobCondition.Succeeded;
-							}
+							// just skip the fail check if something is not right.
+							return false;
 						}
-						return JobCondition.Ongoing;
+						LocalTargetInfo target = verb.currentTarget.IsValid ? verb.currentTarget : (__instance.pawn.mindState?.enemyTarget ?? null);
+						if (target.IsValid)
+						{
+							if (target.Thing is Pawn { Dead: false, Downed: false } pawn)
+							{
+								if (verb.CanHitTarget(PawnPathUtility.GetMovingShiftedPosition(pawn, 60)))
+								{
+									return false;
+								}
+							}else if (verb.CanHitTarget(target))
+							{
+								return false;
+							}
+							return true;
+						}
+						return __instance.job.endIfCantShootTargetFromCurPos;
 					});
 				}
 			}

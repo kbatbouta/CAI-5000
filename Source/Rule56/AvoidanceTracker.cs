@@ -65,7 +65,7 @@ namespace CombatAI
 				TryCastProximity(item.pawn, IntVec3.Invalid);
 				if (item.pawn.pather?.MovingNow ?? false)
 				{
-					TryCastPath(item.pawn);
+					TryCastPath(item);
 				}
 			}
 			for (int i = 0; i < _removalList.Count; i++)
@@ -211,7 +211,7 @@ namespace CombatAI
 					float f = Maths.Max(1 - node.dist / 5.65685424949f, 0.25f);
 					affliction_dmg.Push(node.cell, dinfo.Amount * f);
 					affliction_pen.Push(node.cell, dinfo.ArmorPenetrationInt * f);
-				}, maxDist: 5);
+				}, maxDist: 30, maxCellNum: 25, passThroughDoors: true);
 			});
 		}
 
@@ -240,11 +240,11 @@ namespace CombatAI
 					flooder.Flood(orig, node =>
 					{
 						proximity.Set(node.cell, 1, flags);
-					}, maxDist: 2);
+					}, maxDist: 4, maxCellNum: 9, passThroughDoors: true);
 					flooder.Flood(dest, node =>
 					{
 						proximity.Set(node.cell, 1, flags);
-					}, maxDist: 2);
+					}, maxDist: 4, maxCellNum: 9, passThroughDoors: true);
 				});
 			}
 			else
@@ -255,29 +255,34 @@ namespace CombatAI
 					flooder.Flood(orig, node =>
 					{
 						proximity.Set(node.cell, 1, flags);
-					}, maxDist: 2);
+					}, maxDist: 4, maxCellNum: 9, passThroughDoors: true);
 				});
 			}
 		}
 
-		private void TryCastPath(Pawn pawn, PawnPath pawnPath = null)
+		private void TryCastPath(IBucketablePawn item, PawnPath pawnPath = null)
 		{
+			Pawn pawn = item.pawn;
 			pawnPath ??= pawn.pather?.curPath;
 			if (pawnPath?.nodes == null || pawnPath.curNodeIndex <= 5)
 			{
 				return;
 			}
 			ulong         flags = pawn.GetThingFlags();
-			List<IntVec3> cells = pawnPath.nodes.GetRange(Maths.Max(pawnPath.curNodeIndex - 80, 0), Maths.Min(pawnPath.curNodeIndex + 1, 80));
-			//int count = Maths.Min(pawnPath.NodesLeftCount, 80);
-			//for (int i = 0; i < count; i++)
-			//{
-			//    cells.Add(pawnPath.Peek(i));
-			//}
+			List<IntVec3> cells = item.tempPath;
+			cells.Clear();
+			int index = Maths.Max(pawnPath.curNodeIndex - 90, 0);
+			int limit = Maths.Min(index + 80, pawnPath.curNodeIndex + 1);
+			for (int i = index; i < limit; i++)
+			{
+				cells.Add(pawnPath.nodes[i]);
+			}
+//			cells.AddRange(pawnPath.nodes.GetRange(Maths.Max(pawnPath.curNodeIndex - 80, 0), Maths.Min(pawnPath.curNodeIndex + 1, 80)));
 			if (cells.Count == 0)
 			{
 				return;
 			}
+			WallGrid walls = map.GetComp_Fast<WallGrid>();
 			asyncActions.EnqueueOffThreadAction(() =>
 			{
 				path.Next();
@@ -285,25 +290,38 @@ namespace CombatAI
 				for (int i = 1; i < cells.Count; i++)
 				{
 					IntVec3 cur = cells[i];
-					path.Set(cur, 1, flags);
-					int dx = Math.Sign(prev.x - cur.x);
-					int dz = Math.Sign(prev.z - cur.z);
-					prev = cur;
+					int     dx  = Math.Sign(prev.x - cur.x);
+					int     dz  = Math.Sign(prev.z - cur.z);
+					int   val = 1;
+					IntVec3 left;
+					IntVec3 right;
 					if (dx == 0)
 					{
-						path.Set(cur + new IntVec3(-1, 0, 0), 1, flags);
-						path.Set(cur + new IntVec3(1, 0, 0), 1, flags);
+						left  = cur + new IntVec3(-1, 0, 0);
+						right = cur + new IntVec3(1, 0, 0);
 					}
 					else if (dz == 0)
 					{
-						path.Set(cur + new IntVec3(0, 0, -1), 1, flags);
-						path.Set(cur + new IntVec3(0, 0, 1), 1, flags);
+						left  = cur + new IntVec3(0, 0, -1);
+						right = cur + new IntVec3(0, 0, 1);
 					}
 					else
 					{
-						path.Set(cur + new IntVec3(dx, 0, 0), 1, flags);
-						path.Set(cur + new IntVec3(0, 0, dz), 1, flags);
+						left  = cur + new IntVec3(dx, 0, 0);
+						right = cur + new IntVec3(0, 0, dz);
 					}
+					if (!left.InBounds(map) || walls.GetFillCategory(left) == FillCategory.Full)
+					{
+						val++;
+					}
+					if (!right.InBounds(map) || walls.GetFillCategory(right) == FillCategory.Full)
+					{
+						val++;
+					}
+					path.Set(left, (byte)val, flags);
+					path.Set(right, (byte)val, flags);
+					path.Set(cur, (byte)val, flags);
+					prev = cur;
 				}
 				cells.Clear();
 			});
@@ -321,8 +339,9 @@ namespace CombatAI
 
 		private struct IBucketablePawn : IBucketable
 		{
-			public readonly Pawn pawn;
-			public readonly int  bucketIndex;
+			public readonly Pawn          pawn;
+			public readonly int           bucketIndex;
+			public readonly List<IntVec3> tempPath;
 
 			public int BucketIndex
 			{
@@ -337,6 +356,7 @@ namespace CombatAI
 			{
 				this.pawn        = pawn;
 				this.bucketIndex = bucketIndex;
+				this.tempPath    = new List<IntVec3>(64);
 			}
 		}
 

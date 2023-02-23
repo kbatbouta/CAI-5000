@@ -400,6 +400,7 @@ namespace CombatAI
 						arcLeft.visibilityCarry = 1;
 						arcLeft.maxDepth        = maxDepth - 1;
 						arcLeft.quartor         = quartor;
+						arcLeft.visible         = true;
 						requestLeft.firstRow    = arcLeft;
 						requestLeft.grid        = grid;
 						requestLeft.carryLimit  = carryLimit;
@@ -418,6 +419,7 @@ namespace CombatAI
 						arcRight.visibilityCarry = 1;
 						arcRight.maxDepth        = maxDepth - 1;
 						arcRight.quartor         = quartor;
+						arcRight.visible         = true;
 						requestRight.firstRow    = arcRight;
 						requestRight.grid        = grid;
 						requestRight.carryLimit  = carryLimit;
@@ -437,6 +439,7 @@ namespace CombatAI
 				arc.endSlope        = endSlope;
 				arc.visibilityCarry = 1;
 				arc.maxDepth        = maxDepth;
+				arc.visible         = true;
 				arc.quartor         = quartor;
 				request.firstRow    = arc;
 				request.grid        = grid;
@@ -465,6 +468,7 @@ namespace CombatAI
 			arc.visibilityCarry = 1;
 			arc.maxDepth        = maxDepth;
 			arc.quartor         = quartor;
+			arc.visible         = true;
 			request.firstRow    = arc;
 			request.grid        = grid;
 			request.carryLimit  = carryLimit;
@@ -496,6 +500,7 @@ namespace CombatAI
 			public int   quartor;
 			public int   maxDepth;
 			public float blockChance;
+			public bool  visible;
 
 			public void Tiles(List<Vector3> buffer)
 			{
@@ -546,6 +551,7 @@ namespace CombatAI
 				row.quartor         = quartor;
 				row.visibilityCarry = visibilityCarry;
 				row.blockChance     = blockChance;
+				row.visible         = visible;
 				return row;
 			}
 
@@ -558,6 +564,7 @@ namespace CombatAI
 					row.endSlope        = 1;
 					row.depth           = 1;
 					row.visibilityCarry = 1;
+					row.visible         = true;
 					return row;
 				}
 			}
