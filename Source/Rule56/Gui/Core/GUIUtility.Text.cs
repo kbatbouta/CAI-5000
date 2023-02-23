@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using Verse;
 using GUITextState = System.Tuple<string, CombatAI.Gui.GUIFontSize, System.Tuple<float, float>, System.Tuple<int, int, int, int>, System.Tuple<UnityEngine.FontStyle, UnityEngine.FontStyle, UnityEngine.FontStyle, UnityEngine.FontStyle>>;
@@ -10,7 +11,9 @@ namespace CombatAI.Gui
 		private const int MAX_CACHE_SIZE = 2000;
 
 		private static readonly Dictionary<GUITextState, float> textHeightCache = new Dictionary<GUITextState, float>(512);
+		private static readonly Dictionary<GUITextState, float> textWidthCache = new Dictionary<GUITextState, float>(512);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void Cleanup()
 		{
 			if (textHeightCache.Count > MAX_CACHE_SIZE)
@@ -21,13 +24,17 @@ namespace CombatAI.Gui
 
 		public static string Fit(this string text, Rect rect)
 		{
-			Cleanup();
-			float height = GetTextHeight(text, rect.width);
-			if (height <= rect.height)
+			if (string.IsNullOrEmpty(text))
 			{
 				return text;
 			}
-			return text.Substring(0, (int)(text.Length * height / rect.height)) + "...";
+			Cleanup();
+			float width = CalcTextWidth(text);
+			if (rect.width >= width)
+			{
+				return text;
+			}
+			return text.Substring(0, Mathf.FloorToInt(Mathf.Clamp(text.Length * rect.width / width - 3, 1, text.Length))) + "...";
 		}
 
 		public static float GetTextHeight(this string text, Rect rect)
@@ -54,6 +61,17 @@ namespace CombatAI.Gui
 				return height;
 			}
 			return textHeightCache[key] = Text.CalcHeight(text, width);
+		}
+		
+		public static float CalcTextWidth(string text)
+		{
+			Cleanup();
+			GUITextState key = GetGUIState(text, -1);
+			if (textWidthCache.TryGetValue(key, out float width))
+			{
+				return width;
+			}
+			return textWidthCache[key] = Text.CalcSize(text).x;
 		}
 
 		private static GUITextState GetGUIState(string text, float width)

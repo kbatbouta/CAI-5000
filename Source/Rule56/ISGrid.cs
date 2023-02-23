@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Verse;
 namespace CombatAI
 {
@@ -17,17 +18,21 @@ namespace CombatAI
 
 		public T this[IntVec3 cell]
 		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get => this[indices.CellToIndex(cell)];
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			set => this[indices.CellToIndex(cell)] = value;
 		}
 
 		public T this[int index]
 		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get
 			{
 				Cell cell = cells[index];
 				return cell.sig == sig ? cell.value : default(T);
 			}
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			set => cells[index] = new Cell
 			{
 				sig   = sig,
@@ -40,10 +45,12 @@ namespace CombatAI
 			sig++;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool IsSet(IntVec3 cell)
 		{
 			return IsSet(indices.CellToIndex(cell));
 		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool IsSet(int index)
 		{
 			return cells[index].sig == sig;

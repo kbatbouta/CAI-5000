@@ -42,6 +42,10 @@ namespace CombatAI
 		/// </summary>
 		public int createdAt;
 		/// <summary>
+		///		Comp shield for the shield belt.
+		/// </summary>
+		public CompShield shield;
+		/// <summary>
 		///     Weak attributes.
 		/// </summary>
 		public MetaCombatAttribute weaknessAttributes;
@@ -82,6 +86,26 @@ namespace CombatAI
 		public float GetArmor(DamageDef damage)
 		{
 			return damage != null ? damage.armorCategory == DamageArmorCategoryDefOf.Sharp ? Sharp : Blunt : 0f;
+		}
+		
+		/// <summary>
+		///     Get the appropriate armor for a damage def.
+		/// </summary>
+		/// <param name="damage">Damage def</param>
+		/// <returns>Armor value</returns>
+		public float GetBodyArmor(DamageDef damage)
+		{
+			return damage != null ? damage.armorCategory == DamageArmorCategoryDefOf.Sharp ? bodySharp : bodyBlunt : 0f;
+		}
+		
+		/// <summary>
+		///     Get the appropriate armor for a damage def.
+		/// </summary>
+		/// <param name="damage">Damage def</param>
+		/// <returns>Armor value</returns>
+		public float GetArmor(DamageArmorCategoryDef category)
+		{
+			return category != null ? category == DamageArmorCategoryDefOf.Sharp ? Sharp : Blunt : 0f;
 		}
 	}
 }

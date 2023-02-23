@@ -8,8 +8,9 @@ namespace CombatAI
             switch (difficulty)
             {
                 case Difficulty.Easy:
-	                Finder.Settings.Pathfinding_DestWeight = 0.9f;
+	                Finder.Settings.Pathfinding_DestWeight = 0.875f;
 	                Finder.Settings.Caster_Enabled         = false;
+	                Finder.Settings.Temperature_Enabled    = true;
 	                Finder.Settings.Targeter_Enabled       = false;
 	                Finder.Settings.Pather_Enabled         = true;
 	                Finder.Settings.Pather_KillboxKiller   = false;
@@ -39,8 +40,9 @@ namespace CombatAI
 	                }
                     break;
                 case Difficulty.Normal:
-	                Finder.Settings.Pathfinding_DestWeight                      = 0.8f;
+	                Finder.Settings.Pathfinding_DestWeight                      = 0.725f;
 	                Finder.Settings.Caster_Enabled                              = true;
+	                Finder.Settings.Temperature_Enabled                         = true;
 	                Finder.Settings.Targeter_Enabled                            = true;
 	                Finder.Settings.Pather_Enabled                              = true;
 	                Finder.Settings.Pather_KillboxKiller                        = true;
@@ -68,8 +70,9 @@ namespace CombatAI
 	                }
                     break;
                 case Difficulty.Hard:
-	                Finder.Settings.Pathfinding_DestWeight = 0.75f;
+	                Finder.Settings.Pathfinding_DestWeight = 0.625f;
 	                Finder.Settings.Caster_Enabled         = true;
+	                Finder.Settings.Temperature_Enabled    = true;
 	                Finder.Settings.Targeter_Enabled       = true;
 	                Finder.Settings.Pather_Enabled         = true;
 	                Finder.Settings.Pather_KillboxKiller   = true;
@@ -99,8 +102,9 @@ namespace CombatAI
 	                }
                     break;
                 case Difficulty.DeathWish:
-	                Finder.Settings.Pathfinding_DestWeight = 0.6f;
+	                Finder.Settings.Pathfinding_DestWeight = 0.45f;
 	                Finder.Settings.Caster_Enabled         = true;
+	                Finder.Settings.Temperature_Enabled    = true;
 	                Finder.Settings.Targeter_Enabled       = true;
 	                Finder.Settings.Pather_Enabled         = true;
 	                Finder.Settings.Pather_KillboxKiller   = true;

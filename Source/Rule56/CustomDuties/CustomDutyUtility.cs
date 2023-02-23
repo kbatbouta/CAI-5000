@@ -54,7 +54,7 @@ namespace CombatAI
 		{
 			Pawn_CustomDutyTracker.CustomPawnDuty custom = new Pawn_CustomDutyTracker.CustomPawnDuty
 			{
-				duty = new PawnDuty(DutyDefOf.Escort, escortee, radius)
+				duty = new PawnDuty(CombatAI_DutyDefOf.CombatAI_Escort, escortee, radius)
 				{
 					locomotion = LocomotionUrgency.Sprint
 				},
@@ -73,7 +73,7 @@ namespace CombatAI
 		{
 			Pawn_CustomDutyTracker.CustomPawnDuty custom = new Pawn_CustomDutyTracker.CustomPawnDuty
 			{
-				duty = new PawnDuty(DutyDefOf.Defend, dest, switchAssaultRadius)
+				duty = new PawnDuty(CombatAI_DutyDefOf.CombatAI_AssaultPoint, dest, switchAssaultRadius)
 				{
 					locomotion = LocomotionUrgency.Sprint
 				},
@@ -95,6 +95,41 @@ namespace CombatAI
 				expireAfter = expireAfter,
 				startAfter  = startAfter,
 				endOnTookDamage = endOnTookDamage
+			};
+			return custom;
+		}
+		
+		public static Pawn_CustomDutyTracker.CustomPawnDuty HuntDownEnemies(LocalTargetInfo enemy, IntVec3 fallbackPosition, int maxDist, int expireAfter = 0, int startAfter = 0)
+		{
+			PawnDuty duty = new PawnDuty(DutyDefOf.HuntEnemiesIndividual)
+			{
+				locomotion  = LocomotionUrgency.Sprint,
+				focus       =  enemy,
+				focusSecond =  fallbackPosition,
+			};
+			Pawn_CustomDutyTracker.CustomPawnDuty custom = new Pawn_CustomDutyTracker.CustomPawnDuty
+			{
+				duty                   = duty,
+				expireAfter            = expireAfter,
+				startAfter             = startAfter,
+				endOnFocusDowned       =  true,
+				endOnDistToFocusLarger = maxDist,
+			};
+			return custom;
+		}
+		
+		public static Pawn_CustomDutyTracker.CustomPawnDuty HuntDownEnemies(IntVec3 fallbackPosition, int expireAfter = 0, int startAfter = 0)
+		{
+			PawnDuty duty = new PawnDuty(DutyDefOf.HuntEnemiesIndividual)
+			{
+				locomotion  = LocomotionUrgency.Sprint,
+				focusSecond =  fallbackPosition,
+			};
+			Pawn_CustomDutyTracker.CustomPawnDuty custom = new Pawn_CustomDutyTracker.CustomPawnDuty
+			{
+				duty                   = duty,
+				expireAfter            = expireAfter,
+				startAfter             = startAfter,
 			};
 			return custom;
 		}

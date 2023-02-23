@@ -4,7 +4,7 @@ namespace CombatAI
 	public class Settings : ModSettings
 	{
 
-		private const int version                             = 2;
+		private const int version                             = 3;
 		public        int Advanced_SightThreadIdleSleepTimeMS = 1;
 
 		/*
@@ -21,8 +21,14 @@ namespace CombatAI
 		 * --  Debug  --
 		 * 
 		 */
-
-		public bool Debug;
+		
+		#if DEBUG
+		public bool Debug              = true;
+		public bool Debug_LogJobs = true;
+		#else
+		public bool Debug                             = false;
+		public bool Debug_LogJobs                = false;
+		#endif
 		public bool Debug_DebugDumpData               = false;
 		public bool Debug_DebugThingsTracker          = false;
 		public bool Debug_DrawAvoidanceGrid_Danger    = false;
@@ -31,6 +37,8 @@ namespace CombatAI
 		public bool Debug_DrawShadowCastsVectors = false;
 		public bool Debug_DrawThreatCasts        = false;
 		public bool Debug_DisablePawnGuiOverlay  = false;
+		public bool Debug_DebugPathfinding       = false;
+		public bool Debug_DebugAvailability      = false;
 		public bool Debug_ValidateSight;
 		public bool Enable_Groups = true;
 
@@ -62,6 +70,7 @@ namespace CombatAI
 		public bool  Pather_KillboxKiller   = true;
 		public float Pathfinding_DestWeight = 0.85f;
 		public float Pathfinding_SappingMul = 1.0f;
+		public bool  Temperature_Enabled    = true;
 		public bool  PerformanceOpt_Enabled = true;
 		public bool  React_Enabled          = true;
 		public bool  Retreat_Enabled        = true;
@@ -102,18 +111,20 @@ namespace CombatAI
 				SightSettings_SettlementTurrets = new SightPerformanceSettings(8, 15, 12);
 			}
 			Scribe_Values.Look(ref LeanCE_Enabled, $"LeanCE_Enabled.{version}");
-			//if (!LeanCE_Enabled && Mod_CE.active)
-			//{
-			//    LeanCE_Enabled = true;
-			//}
-			//else if (LeanCE_Enabled && !Mod_CE.active)
-			//{
-			//	LeanCE_Enabled = false;
-			//}
+			
+			#if DEBUG
+			Scribe_Values.Look(ref Debug, $"Debug.Debug.{version}", true);
+			Scribe_Values.Look(ref Debug_LogJobs, $"Debug.Debug_LogJobs.1.{version}", true);
+			#else
+			Scribe_Values.Look(ref Debug, $"Release.Debug.{version}", false);
+			Scribe_Values.Look(ref Debug_LogJobs, $"Release.Debug_LogJobs.{version}", false);
+			#endif
+			
 			Scribe_Values.Look(ref FinishedQuickSetup, $"FinishedQuickSetup2.{version}", false);
 			Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
 			Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);
 			Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
+			Scribe_Values.Look(ref Temperature_Enabled, $"Temperature_Enabled.{version}", true);
 			Scribe_Values.Look(ref React_Enabled, $"React_Enabled.{version}", true);
 			Scribe_Values.Look(ref Retreat_Enabled, $"Retreat_Enabled.{version}", true);
 			Scribe_Values.Look(ref Flank_Enabled, $"Flank_Enabled.{version}", true);
@@ -125,7 +136,6 @@ namespace CombatAI
 			Scribe_Values.Look(ref Pather_KillboxKiller, $"Pather_KillboxKiller.{version}", true);
 			Scribe_Values.Look(ref PerformanceOpt_Enabled, $"PerformanceOpt_Enabled.{version}", true);
 			Scribe_Values.Look(ref FogOfWar_Enabled, $"FogOfWar_Enabled.{version}");
-			Scribe_Values.Look(ref Debug, $"Debug.{version}");
 			Scribe_Values.Look(ref Debug_ValidateSight, $"Debug_ValidateSight.{version}");
 			Scribe_Values.Look(ref Debug_DrawShadowCasts, $"Debug_DrawShadowCasts.{version}");
 			Scribe_Values.Look(ref Enable_Sprinting, $"Enable_Sprinting.{version}", true);

@@ -75,7 +75,8 @@ namespace CombatAI
 					{
 						report.primaryIsRanged = true;
 					}
-					report.primaryVerbProps = effectiveVerb.verbProps;
+					report.primaryVerbProps     = effectiveVerb.verbProps;
+					report.primaryVerbDamageDef = effectiveVerb.GetDamageDef();
 				}
 				float rangedMul = 1;
 				float meleeMul  = 1;
@@ -114,7 +115,8 @@ namespace CombatAI
 						collapsible.Label($"r.melee mS:{Math.Round(report.meleeSharp, 2)}\tmB:{Math.Round(report.meleeBlunt, 2)}");
 						collapsible.Label($"r.melee mSAp:{Math.Round(report.meleeSharpAp, 2)}\tmBAp:{Math.Round(report.meleeBluntAp, 2)}");
 					}
-					report.primaryVerbProps = verb.verbProps;
+					report.primaryVerbProps     = verb.verbProps;
+					report.primaryVerbDamageDef = verb.GetDamageDef();
 				}
 				report.primaryIsRanged = true;
 				report.Finalize(1, 1);
@@ -151,6 +153,15 @@ namespace CombatAI
 				return Mathf.Clamp01(2f * Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f), damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
 			}
 			return Mathf.Clamp01(Maths.Max(damage.adjustedBlunt / (armor.Blunt + 1e-3f), damage.adjustedSharp / (armor.Sharp + 1e-3f), 0f));
+		}
+		
+		public static DamageDef GetDamageDef(this VerbProperties props)
+		{
+			if (props.LaunchesProjectile)
+			{
+				return props.defaultProjectile.projectile?.damageDef ?? null;
+			}
+			return props.meleeDamageDef;
 		}
 
 		public static void ClearCache()

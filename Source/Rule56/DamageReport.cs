@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using RimWorld;
+using UnityEngine;
 using Verse;
 namespace CombatAI
 {
@@ -71,8 +72,10 @@ namespace CombatAI
 		/// </summary>
 		public VerbProperties primaryVerbProps;
 		/// <summary>
-		///     Whether this is valid report or not.
+		/// Damage def for the primary attack verb.
 		/// </summary>
+		public DamageDef primaryVerbDamageDef;
+
 		public bool IsValid
 		{
 			get => _finalized && GenTicks.TicksGame - _createdAt < 1800;
@@ -138,18 +141,16 @@ namespace CombatAI
 								attributes |= MetaCombatAttribute.AOELarge;
 							}
 						}
-						float warmupTime     = Maths.Max(verb.verbProps.warmupTime, 0.5f);
-						float burstShotCount = verb.verbProps.burstShotCount;
-						float output         = 1f / warmupTime * burstShotCount;
+						float burstShotCount = Mathf.Clamp(verb.verbProps.burstShotCount * 0.66f, 0.75f, 3f);
 						if (projectile.damageDef.armorCategory == DamageArmorCategoryDefOf.Sharp)
 						{
-							rangedSharp   = (rangedSharp + output * projectile.damageAmountBase) / 2f;
-							rangedSharpAp = rangedSharpAp != 0 ? (rangedSharpAp + Maths.Max(GetArmorPenetration(projectile), 0f)) / 2f : Maths.Max(GetArmorPenetration(projectile), 0f);
+							rangedSharp   = Maths.Max(projectile.damageAmountBase * burstShotCount, rangedSharp);;
+							rangedSharpAp = Maths.Max(GetArmorPenetration(projectile), rangedSharpAp);
 						}
 						else
 						{
-							rangedBlunt   = (rangedBlunt + output * projectile.damageAmountBase) / 2f;
-							rangedBluntAp = rangedBluntAp != 0 ? (rangedBluntAp + Maths.Max(GetArmorPenetration(projectile), 0f)) / 2f : Maths.Max(GetArmorPenetration(projectile), 0f);
+							rangedBlunt   = Maths.Max(projectile.damageAmountBase * burstShotCount, rangedBlunt);
+							rangedBluntAp = Maths.Max(GetArmorPenetration(projectile), rangedBluntAp);
 						}
 					}
 				}
@@ -191,6 +192,64 @@ namespace CombatAI
 				}
 			}
 		}
+		
+		public float SimulatedDamage(ArmorReport armorReport, int iterations = 5)
+		{
+			float damage           = 0f;
+//			bool  hasWorkingShield = includeShields && armorReport.shield?.PawnOwner != null;
+			for (int i = 0; i < iterations; i++)
+			{
+				damage += SimulatedDamage_Internal(armorReport, (i + 1f) / (iterations + 2f));
+//				if (!hasWorkingShield || armorReport.shield.Energy - damage * armorReport.shield.Props.energyLossPerDamage <= 0)
+//				{
+//					damage += temp;
+//				}
+			}
+			return damage / iterations;
+		}
+		
+		private float SimulatedDamage_Internal(ArmorReport armorReport, float roll)
+		{
+			DamageDef              damageDef = primaryVerbDamageDef ?? (primaryIsRanged ? DamageDefOf.Bullet : DamageDefOf.Bullet);
+			DamageArmorCategoryDef category  = damageDef?.armorCategory ?? DamageArmorCategoryDefOf.Sharp;
+			float                  damage    = 0f;
+			float                  armorPen  = 0f;
+			if (category == DamageArmorCategoryDefOf.Sharp)
+			{
+				Sharp(out damage, out armorPen);
+			}
+			else
+			{
+				Blunt(out damage, out armorPen);
+			}
+			ApplyDamage(ref damage, armorPen, armorReport.GetArmor(damageDef), ref damageDef, roll);
+			if (damage > 0.01f)
+			{
+				ApplyDamage(ref damage, armorPen, armorReport.GetBodyArmor(damageDef), ref damageDef, roll);
+			}
+			return damage;
+		}
+		
+		private void ApplyDamage(ref float damageAmount, float armorPenetration, float armorRating, ref DamageDef damageDef, float roll)
+		{
+			float pen     = Mathf.Max(armorRating - armorPenetration, 0f);
+			float blocked = pen * 0.5f;
+			float reduced = pen;
+			if (roll < blocked)
+			{
+				// stopped.
+				damageAmount = 0f;
+			}
+			else if (roll < reduced)
+			{
+				// reduced enough to become blunt damage.
+				damageAmount = damageAmount / 2f;
+				if (damageDef.armorCategory == DamageArmorCategoryDefOf.Sharp)
+				{
+					damageDef = DamageDefOf.Blunt;
+				}
+			}
+		}
 
 		private static float Adjust(float dmg, float ap)
 		{
@@ -205,6 +264,34 @@ namespace CombatAI
 			return dmg / 18f;
 		}
 
+		private void Sharp(out float damage, out float ap)
+		{
+			if (primaryIsRanged)
+			{
+				damage = rangedSharp;
+				ap     = rangedSharpAp;
+			}
+			else
+			{
+				damage = meleeSharp;
+				ap     = meleeSharpAp;
+			}
+		}
+		
+		private void Blunt(out float damage, out float ap)
+		{
+			if (primaryIsRanged)
+			{
+				damage = rangedBlunt;
+				ap     = rangedBluntAp;
+			}
+			else
+			{
+				damage = meleeBlunt;
+				ap     = meleeBluntAp;
+			}
+		}
+		
 		private float AdjustedSharp()
 		{
 			float damage;

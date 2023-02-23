@@ -14,6 +14,8 @@
     <CombatAI.Quick.Welcome.Description>This quick-setup page will help you quickly setup CAI-5000's different features!</CombatAI.Quick.Welcome.Description>
     <CombatAI.Quick.QuickSetup>Quick Setup Options</CombatAI.Quick.QuickSetup>
     <CombatAI.Quick.Difficulty>Please select a difficulty level</CombatAI.Quick.Difficulty>
+    <CombatAI.Quick.Difficulty.Selected>{0} difficulty level applied!</CombatAI.Quick.Difficulty.Selected>
+    <CombatAI.Quick.Difficulty.Selected.Warning>WARNING: {0} difficulty level might cause performance issues!</CombatAI.Quick.Difficulty.Selected.Warning>
     <CombatAI.PlaceWorker.WallMounted>Needs to be mounted to a wall or a solid structure.</CombatAI.PlaceWorker.WallMounted>
     <CombatAI.Preparing>Preparing Combat AI</CombatAI.Preparing>
     <CombatAI.Animator.Controller>Hold</CombatAI.Animator.Controller>
@@ -23,11 +25,12 @@
     <CombatAI.Settings.Basic.Presets.Easy>Easy/Perf</CombatAI.Settings.Basic.Presets.Easy>
     <CombatAI.Settings.Basic.Presets.Normal>Normal</CombatAI.Settings.Basic.Presets.Normal>
     <CombatAI.Settings.Basic.Presets.Hard>Hard</CombatAI.Settings.Basic.Presets.Hard>
+    <CombatAI.Settings.Basic.Temperature>Make the AI aware of cell temperature</CombatAI.Settings.Basic.Temperature>
     <CombatAI.Settings.Basic.Presets.Deathwish>Deathwish</CombatAI.Settings.Basic.Presets.Deathwish>
     <CombatAI.Settings.Basic.Presets.Applied>Applied preset:</CombatAI.Settings.Basic.Presets.Applied>
     <CombatAI.Settings.Basic.Presets.Description>Performance presets will determine the complexity of AI calculations and their interval. More complex calculations means harder AI but lower performance. Default is normal.</CombatAI.Settings.Basic.Presets.Description>
     <CombatAI.Settings.Basic.Sprinting>Enable sprinting</CombatAI.Settings.Basic.Sprinting>
-    <CombatAI.Settings.Basic.Sprinting.Description>If this is disabled: Pathetic F F...\n if not: Chad :thumbsup</CombatAI.Settings.Basic.Sprinting.Description>
+    <CombatAI.Settings.Basic.Sprinting.Description>Allows the AI to use sprinting when dashing for cover. Turn this off if you don't like kitting simulators.</CombatAI.Settings.Basic.Sprinting.Description>
     <CombatAI.Settings.Basic.Groups>Enable tactical groups</CombatAI.Settings.Basic.Groups>
     <CombatAI.Settings.Basic.Groups.Description>Raiders will be divided into tactical groups (2-10) each with their own objective. Not all pawns will be assigned to groups, some will remain on the default assault duty.</CombatAI.Settings.Basic.Groups.Description>
     <CombatAI.Settings.Basic.SappingMul>Cost multiplier for pathing through walls (default is 1.0)</CombatAI.Settings.Basic.SappingMul>

@@ -12,9 +12,9 @@ namespace CombatAI
 		private readonly int                           NumGridCells;
 		private readonly IFieldInfo[]                  regions;
 		private readonly IField<float>[]               regions_blunt;
+		private readonly IField<float>[]               regions_sharp;
 		private readonly IField<ulong>[]               regions_flags;
 		private readonly IField<MetaCombatAttribute>[] regions_meta;
-		private readonly IField<float>[]               regions_sharp;
 
 		private float               curBlunt;
 		private ulong               curFlag;
