@@ -31,6 +31,12 @@ namespace CombatAI
             targetedBy = new List<Pair<Thing, int>>();
         }
         
+        public int AgroSig
+        {
+            get;
+            set;
+        }
+        
         /* Timestamps
          * ---------------------------------------------------------   
          */
@@ -230,6 +236,9 @@ namespace CombatAI
                 List<Thing> things = BeingTargetedBy;
                 Scribe_Collections.Look(ref things, "targetedBy.1", LookMode.Reference);
             }
+            int sig = AgroSig;
+            Scribe_Values.Look(ref sig, "aggro.sig");
+            AgroSig = sig;
             Scribe_Deep.Look(ref enemies, "enemies.1");            
             enemies ??= new AIEnvThings();
             Scribe_Deep.Look(ref allies, "allies.1");

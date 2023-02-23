@@ -24,6 +24,11 @@ namespace CombatAI
             this.elements = elements;
         }
 
+        public AIEnvAgentInfo Random
+        {
+            get => elements[Rand.Int % elements.Count];
+        }
+
         public AIEnvThings AsReadonly
         {
             get

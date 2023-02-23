@@ -12,38 +12,40 @@ namespace CombatAI.Patches
 		{
 			public static void Postfix(JobDriver_Wait __instance)
 			{
-				if (__instance.job.Is(JobDefOf.Wait_Combat) && __instance.job.endIfCantShootTargetFromCurPos && !__instance.pawn.Faction.IsPlayerSafe())
+				if (__instance.job.Is(JobDefOf.Wait_Combat) && !__instance.pawn.Faction.IsPlayerSafe())
 				{
 					if (__instance.job.targetC.IsValid)
 					{
 						__instance.rotateToFace = TargetIndex.C;
 					}
-					__instance.AddEndCondition(() =>
+					__instance.AddFailCondition(() =>
 					{
 						if (!__instance.pawn.IsHashIntervalTick(30) || GenTicks.TicksGame - __instance.startTick < 30)
 						{
-							return JobCondition.Ongoing;
+							return false;
 						}
-						Verb verb = __instance.pawn.CurrentEffectiveVerb;
-						if (verb == null || __instance.pawn.Faction.IsPlayerSafe())
+						Verb verb =  __instance.job.verbToUse ?? __instance.pawn.CurrentEffectiveVerb;
+						if (verb == null || verb.WarmingUp || verb.Bursting || __instance.pawn.Faction.IsPlayerSafe())
 						{
-							// just skip if something is not right.
-							return JobCondition.Ongoing;
+							// just skip the fail check if something is not right.
+							return false;
 						}
 						LocalTargetInfo target = verb.currentTarget.IsValid ? verb.currentTarget : (__instance.pawn.mindState?.enemyTarget ?? null);
 						if (target.IsValid)
 						{
-							if (verb.CanHitTarget(target))
+							if (target.Thing is Pawn { Dead: false, Downed: false } pawn)
 							{
-								return JobCondition.Ongoing;
-							}
-							if (target.Thing is Pawn { Dead: false, Downed: false } pawn && verb.CanHitTarget(PawnPathUtility.GetMovingShiftedPosition(pawn, 60)))
+								if (verb.CanHitTarget(PawnPathUtility.GetMovingShiftedPosition(pawn, 60)))
+								{
+									return false;
+								}
+							}else if (verb.CanHitTarget(target))
 							{
-								return JobCondition.Ongoing;
+								return false;
 							}
-							return JobCondition.Succeeded;
+							return true;
 						}
-						return JobCondition.Succeeded;
+						return __instance.job.endIfCantShootTargetFromCurPos;
 					});
 				}
 			}

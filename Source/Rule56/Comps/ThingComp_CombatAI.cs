@@ -27,9 +27,19 @@ namespace CombatAI.Comps
         /// <summary>
         ///     Sapper path nodes.
         /// </summary>
+        ///
         private readonly List<IntVec3> sapperNodes = new List<IntVec3>();
-        private Thing _bestEnemy;
-        private int   _last;
+        /// <summary>
+        /// Aggro countdown ticks.
+        /// </summary>
+        private int             aggroTicks;
+        /// <summary>
+        /// Aggro target.
+        /// </summary>
+        private LocalTargetInfo aggroTarget;
+        
+        private Thing           _bestEnemy;
+        private int             _last;
 
         private int _sap;
         /// <summary>
@@ -149,6 +159,19 @@ namespace CombatAI.Comps
                     sapperStartTick = -1;
                 }
                 return;
+            }
+            if (aggroTicks > 0)
+            {
+                aggroTicks -= GenTicks.TickRareInterval;
+                if (aggroTicks <= 0)
+                {
+                    if (aggroTarget.IsValid)
+                    {
+                        TryAggro(aggroTarget, 0.8f, Rand.Int);
+                    }
+                    aggroTarget = LocalTargetInfo.Invalid;
+                }
+                
             }
             if (duties != null)
             {
@@ -690,6 +713,7 @@ namespace CombatAI.Comps
                             job_goto.playerForced      = forcedTarget.IsValid;
                             job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
                             Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 150 + 200);
+                            job_waitCombat.targetA                        = nearestEnemy;
                             job_waitCombat.playerForced                   = forcedTarget.IsValid;
                             job_waitCombat.endIfCantShootTargetFromCurPos = true;
                             job_waitCombat.checkOverrideOnExpire          = true;
@@ -879,17 +903,67 @@ namespace CombatAI.Comps
             data.LastTookDamage = lastTookDamage = GenTicks.TicksGame;
             if (dInfo.Instigator != null && data.NumAllies != 0 && dInfo.Instigator.HostileTo(selPawn))
             {
-                IEnumerator<AIEnvAgentInfo> allies = data.AlliesNearBy();
-                while (allies.MoveNext())
+                StartAggroCountdown(dInfo.Instigator);
+            }
+        }
+
+        /// <summary>
+        ///     Called when a bullet impacts nearby.
+        /// </summary>
+        /// <param name="instigator">Attacker</param>
+        /// <param name="cell">Impact position</param>
+        public void Notify_BulletImpact(Thing instigator, IntVec3 cell)
+        {
+            if (instigator == null)
+            {
+                StartAggroCountdown(new LocalTargetInfo(cell));
+            }
+            else
+            {
+                StartAggroCountdown(new LocalTargetInfo(instigator));
+            }
+        }
+        /// <summary>
+        ///     Start aggro countdown.
+        /// </summary>
+        /// <param name="enemy">Enemy.</param>
+        public void StartAggroCountdown(LocalTargetInfo enemy)
+        {
+            this.aggroTarget = enemy;
+            this.aggroTicks  = Rand.Range(30, 90);
+        }
+        
+        /// <summary>
+        /// Switch the pawn to an aggro mode and their allies around them. 
+        /// </summary>
+        /// <param name="enemy">Attacker</param>
+        /// <param name="aggroAllyChance">Chance to aggro nearbyAllies</param>
+        /// <param name="sig">Aggro sig</param>
+        private void TryAggro(LocalTargetInfo enemy, float aggroAllyChance, int sig)
+        {
+            if ((selPawn.mindState.duty.Is(DutyDefOf.Defend) || selPawn.mindState.duty.Is(DutyDefOf.Escort)) && data.AgroSig != sig)
+            {
+                Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.HuntDownEnemies(enemy.Cell, (Rand.Int % 1200) + 2400);
+                if (selPawn.TryStartCustomDuty(custom))
                 {
-                    AIEnvAgentInfo ally = allies.Current;
-                    // make allies not targeting anyone target the attacking enemy
-                    if (ally.thing is Pawn { Destroyed: false, Spawned: true } other && other.mindState.enemyTarget == null && !(other.stances?.curStance is Stance_Warmup))
+                    data.AgroSig = sig;
+                    // aggro nearby Allies
+                    IEnumerator<AIEnvAgentInfo> allies = data.AlliesNearBy();
+                    while (allies.MoveNext())
                     {
-                        ThingComp_CombatAI comp = other.GetComp_Fast<ThingComp_CombatAI>();
-                        if (comp != null && !comp.data.InterruptedRecently(400) && !comp.data.RetreatedRecently(400))
+                        AIEnvAgentInfo ally = allies.Current;
+                        // make allies not targeting anyone target the attacking enemy
+                        if (Rand.Chance(aggroAllyChance) && ally.thing is Pawn { Destroyed: false, Spawned: true, Downed: false } other && (other.mindState.duty.Is(DutyDefOf.Defend) || other.mindState.duty.Is(DutyDefOf.Escort)))
                         {
-                            other.mindState.enemyTarget = dInfo.Instigator;
+                            ThingComp_CombatAI comp = other.GetComp_Fast<ThingComp_CombatAI>();
+                            if (comp != null && comp.data.AgroSig != sig)
+                            {
+                                if (enemy.HasThing)
+                                {
+                                    other.mindState.enemyTarget ??= enemy.Thing;
+                                }
+                                comp.TryAggro(enemy, aggroAllyChance / 2f, sig);
+                            }
                         }
                     }
                 }
@@ -1182,6 +1256,10 @@ namespace CombatAI.Comps
             if (enemy != null)
             {
                 data.BeingTargeted(enemy);
+                if (Rand.Chance(0.15f) && (selPawn.mindState.duty.Is(DutyDefOf.Defend) || selPawn.mindState.duty.Is(DutyDefOf.Escort)))
+                {
+                    StartAggroCountdown(enemy);
+                }
             }
             else
             {
