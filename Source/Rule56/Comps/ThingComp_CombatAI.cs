@@ -941,9 +941,9 @@ namespace CombatAI.Comps
         /// <param name="sig">Aggro sig</param>
         private void TryAggro(LocalTargetInfo enemy, float aggroAllyChance, int sig)
         {
-            if ((selPawn.mindState.duty.Is(DutyDefOf.Defend) || selPawn.mindState.duty.Is(DutyDefOf.Escort)) && data.AgroSig != sig)
+            if (selPawn.mindState.duty.Is(DutyDefOf.Defend) && data.AgroSig != sig)
             {
-                Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.HuntDownEnemies(enemy.Cell, (Rand.Int % 1200) + 2400);
+                Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.HuntDownEnemies(enemy.Cell, ((Rand.Int % 1200) + 2400));
                 if (selPawn.TryStartCustomDuty(custom))
                 {
                     data.AgroSig = sig;
@@ -953,7 +953,7 @@ namespace CombatAI.Comps
                     {
                         AIEnvAgentInfo ally = allies.Current;
                         // make allies not targeting anyone target the attacking enemy
-                        if (Rand.Chance(aggroAllyChance) && ally.thing is Pawn { Destroyed: false, Spawned: true, Downed: false } other && (other.mindState.duty.Is(DutyDefOf.Defend) || other.mindState.duty.Is(DutyDefOf.Escort)))
+                        if (Rand.Chance(aggroAllyChance) && ally.thing is Pawn { Destroyed: false, Spawned: true, Downed: false } other && other.mindState.duty.Is(DutyDefOf.Defend))
                         {
                             ThingComp_CombatAI comp = other.GetComp_Fast<ThingComp_CombatAI>();
                             if (comp != null && comp.data.AgroSig != sig)
