@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using CombatAI.Comps;
@@ -211,6 +212,34 @@ namespace CombatAI
                         {
                             PathFinder_Patch.FlashSearch = false;
                         }
+                    }
+                });
+            }
+            if (ButtonText(collapsible_dutyTest, "Region-wise distance"))
+            {
+                Find.Targeter.BeginTargeting(new TargetingParameters()
+                {
+                    canTargetAnimals   = false,
+                    canTargetBuildings = false,
+                    canTargetCorpses   = false,
+                    canTargetHumans    = false,
+                    canTargetSelf      = false,
+                    canTargetMechs     = false,
+                    canTargetLocations = true,
+                }, info =>
+                {
+                    if (info.Cell.IsValid)
+                    {
+                        Stopwatch stopwatch = new Stopwatch();
+                        int       dist      = 0;
+                        stopwatch.Start();
+                        for (int i = 0; i < 128; i++)
+                        {
+                             dist = comp.parent.Position.DistanceTo_RegionWise(info.Cell, map);
+                        }
+                        stopwatch.Stop();
+                        float time = ((float)stopwatch.ElapsedTicks / Stopwatch.Frequency) * 1000f / 128f;
+                        Messages.Message($"Distance is {dist}, took {time} ms", MessageTypeDefOf.CautionInput);
                     }
                 });
             }

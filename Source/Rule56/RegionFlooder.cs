@@ -9,7 +9,7 @@ namespace CombatAI
 		private static readonly FastHeap<Node> queue   = new FastHeap<Node>(128);
 		private static readonly HashSet<int>   flooded = new HashSet<int>(256);
 
-		public static void Flood(IntVec3 root, IntVec3 target, Map map, Func<Region, int, bool> action, Func<Region, bool> validator = null, Func<Region, float> cost = null, TraverseParms? traverseParms = null, int minRegions = 0, int maxRegions = 9999, float maxDist = 9999f, bool depthCost = true)
+		public static void Flood(IntVec3 root, IntVec3 target, Map map, Func<Region, int, int, bool> action, Func<Region, bool> validator = null, Func<Region, float> cost = null, TraverseParms? traverseParms = null, int minRegions = 0, int maxRegions = 9999, float maxDist = 9999f, bool depthCost = true, float depthCostMul = 12)
 		{
 			Region rootRegion = root.GetRegion(map);
 			if (rootRegion == null || validator != null && !validator(rootRegion))
@@ -30,7 +30,7 @@ namespace CombatAI
 			{
 				Node   node    = queue.Dequeue();
 				Region current = node.region;
-				if (action(current, Mathf.CeilToInt(node.score / 12f)))
+				if (action(current, Mathf.CeilToInt(node.score / 12f), node.depth))
 				{
 					break;
 				}
@@ -53,7 +53,7 @@ namespace CombatAI
 									queue.Enqueue(new Node
 									{
 										region = next,
-										score  = distToTarget + (!depthCost ? 0 : (node.depth + 1) * 12) + (cost?.Invoke(next) ?? 0),
+										score  = distToTarget + (!depthCost ? 0 : (node.depth + 1) * depthCostMul) + (cost?.Invoke(next) ?? 0),
 										depth  = node.depth + 1
 									});
 								}

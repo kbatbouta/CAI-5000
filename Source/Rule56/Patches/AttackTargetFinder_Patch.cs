@@ -38,24 +38,16 @@ namespace CombatAI.Patches
 					if (sightReader != null)
 					{
 						int num = 0;
-//						if (Find.Selector.SelectedPawns.Contains(pawn))
-//						{
-//							map.debugDrawer.FlashCell(pawn.Position, 0.1f, "s");
-//						}
-						Func<Region, int, bool> action = (region, depth) =>
+						Func<Region, int, int, bool> action = (region, score, depth) =>
 						{
 							List<Thing> things = region.ListerThings.ThingsInGroup(ThingRequestGroup.Pawn);
-							depth = Maths.Min(depth, 45);
+							score = Maths.Min(score, 45);
 							for (int i = 0; i < things.Count; i++)
 							{
 								if (things[i] != null)
 								{
 									num++;
-									distDict[things[i].thingIDNumber] = depth;
-//									if (Find.Selector.SelectedPawns.Contains(pawn))
-//									{
-//										map.debugDrawer.FlashCell(things[i].Position, 0.9f, $"{depth}");
-//									}
+									distDict[things[i].thingIDNumber] = score;
 								}
 							}
 							return num >= 32;
@@ -63,7 +55,7 @@ namespace CombatAI.Patches
 						float costConst = !Mod_CE.active ? 7.5f : 2.5f;
 						Func<Region, float> cost = region =>
 						{
-							return Maths.Min(sightReader.GetRegionAbsVisibilityToEnemies(region), 10) * Mathf.Clamp(sightReader.GetRegionThreat(region) + 0.5f, 1.0f, 2.0f) * costConst;
+							return Maths.Min(sightReader.GetRegionAbsVisibilityToEnemies(region), 10) * Mathf.Clamp(sightReader.GetRegionAbsVisibilityToEnemies(region) + 0.5f, 1.0f, 2.0f) * costConst;
 						};
 						RegionFlooder.Flood(pawn.Position, pawn.Position, pawn.Map, action, null, cost, maxRegions: !Finder.Performance.TpsCriticallyLow ? 200 : 75);
 					}

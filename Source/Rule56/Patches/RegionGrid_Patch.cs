@@ -9,7 +9,8 @@ namespace CombatAI.Patches
 		{
 			public static void Prefix(RegionGrid __instance, IntVec3 c, Region reg)
 			{
-				__instance.map.GetComp_Fast<SightTracker>().Notify_RegionChanged(c, reg);
+				__instance.map.AI().Notify_MapChanged();
+				__instance.map.Sight().Notify_RegionChanged(c, reg);
 			}
 		}
 	}

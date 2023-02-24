@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using RimWorld.Planet;
 using Verse;
@@ -19,6 +20,12 @@ namespace CombatAI
 				return GetComp_Fast<T>(thingWithComps, allowFallback);
 			}
 			return null;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static T GetComp_Fast<T>(this ThingWithComps thing) where T : ThingComp
+		{
+			return GetComp_Fast<T>(thing, true);
 		}
 
 		public static T GetComp_Fast<T>(this ThingWithComps thing, bool allowFallback = true) where T : ThingComp

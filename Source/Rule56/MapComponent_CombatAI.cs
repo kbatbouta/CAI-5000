@@ -9,11 +9,15 @@ namespace CombatAI
 {
 	public class MapComponent_CombatAI : MapComponent
 	{
+		/*      Cache
+         * ----- ----- ----- -----
+         */
+
+		public Dictionary<Pair<int, int>, int> regionWiseDist = new Dictionary<Pair<int, int>, int>(64); 
 
 		/*      Threading
          * ----- ----- ----- -----
          */
-
 		private readonly AsyncActions        asyncActions;
 		private readonly Listing_Collapsible collapsible = new Listing_Collapsible();
 		private          HashSet<IntVec3>    _drawnCells = new HashSet<IntVec3>(256);
@@ -79,6 +83,11 @@ namespace CombatAI
 		{
 			asyncActions.Kill();
 			base.MapRemoved();
+		}
+
+		public void Notify_MapChanged()
+		{
+			regionWiseDist.Clear();
 		}
 
 		public void EnqueueMainThreadAction(Action action)

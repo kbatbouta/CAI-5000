@@ -17,7 +17,7 @@ namespace CombatAI.Patches
 				{
 					Thing nearestEnemy = null;
 					RegionFlooder.Flood(pawn.Position, pawn.mindState.enemyTarget == null ? pawn.Position : pawn.mindState.enemyTarget.Position, pawn.Map,
-					                    (region, depth) =>
+					                    (region, score, depth) =>
 					                    {
 						                    if (reader.GetRegionAbsVisibilityToEnemies(region) > 0)
 						                    {
@@ -41,7 +41,7 @@ namespace CombatAI.Patches
 					                    },
 					                    cost: region =>
 					                    {
-						                    return Maths.Min(reader.GetRegionAbsVisibilityToEnemies(region), 8 * Finder.P50) * 10 * Mathf.Clamp(reader.GetRegionThreat(region) + 0.5f, 1.0f, 2.0f);
+						                    return Maths.Min(reader.GetRegionAbsVisibilityToEnemies(region), 8 * Finder.P50) * 10 * Mathf.Clamp(reader.GetRegionAbsVisibilityToEnemies(region) + 0.5f, 1.0f, 2.0f);
 					                    }, maxRegions: 512);
 					if (nearestEnemy != null)
 					{
