@@ -14,12 +14,13 @@
                 <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
                 <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
             </li>
-            <li>
+            <!-- for now the prepatcher will not be mandetory. -->
+            <!-- <li>
                 <packageId>zetrith.prepatcher</packageId>
                 <displayName>Prepatcher</displayName>
                 <steamWorkshopUrl>steam://url/CommunityFilePage/2934420800</steamWorkshopUrl>
                 <downloadUrl>https://github.com/Zetrith/Prepatcher/releases/latest</downloadUrl>
-            </li>
+            </li> -->
         </v1.4>
     </modDependenciesByVersion>
     <loadAfter>

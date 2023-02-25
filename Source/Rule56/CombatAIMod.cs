@@ -317,14 +317,6 @@ namespace CombatAI
                     Widgets.HorizontalSlider(rect, ref Finder.Settings.Pathfinding_SappingMul, new FloatRange(0.5f, 1.5f), Keyed.CombatAI_Settings_Basic_SappingMul);
                 }, useMargins: true);
             }
-            //collapsible.Line(1);
-            //if (Finder.Settings.AdvancedUser)
-            //{
-            //    collapsible.Lambda(25, (rect) =>
-            //    {
-            //        Finder.Settings.Advanced_SightThreadIdleSleepTimeMS = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.Advanced_SightThreadIdleSleepTimeMS, 1, 10, false, $"<color=red>Sight worker thread</color> idle sleep time MS {(int)(Finder.Settings.Advanced_SightThreadIdleSleepTimeMS)}");
-            //    }, useMargins: true);
-            //}
         }
 
         private void FillCollapsible_Debugging(Listing_Collapsible collapsible)

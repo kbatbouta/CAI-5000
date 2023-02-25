@@ -22,6 +22,11 @@ namespace CombatAI
 
         private JobLog()
         {
+            if (!Finder.Settings.Debug || !Finder.Settings.Debug_LogJobs)
+            {
+                Log.ErrorOnce("ISMA: Job logging active when it shouldn't! Disabling job logging.", 10949);
+                Finder.Settings.Debug_LogJobs = false;
+            }
         }
 
         public bool IsValid

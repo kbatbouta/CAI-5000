@@ -65,7 +65,14 @@ namespace CombatAI
         {
             lock (locker_offMain)
             {
-                queuedOffThreadActions.Add(action);
+                if (queuedOffThreadActions.Count > 1024)
+                {
+                    Log.Error($"ISMA: AsyncActions is leaking memory with more than {queuedOffThreadActions.Count} actions queued!");
+                }
+                else
+                {
+                    queuedOffThreadActions.Add(action);
+                }
             }
         }
 

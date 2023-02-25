@@ -11,17 +11,14 @@ namespace CombatAI
         private readonly CellIndices indices;
         private readonly int         maxHeat;
         private readonly int         maxTicks;
-        //private readonly Pair<int, int>[] grid_cache;
-        //private readonly int[] grid_ticks;
         private readonly int         numGridCells;
         private readonly TickManager tickManager;
         private readonly int         ticksPerUnit;
 
         public IHeatGrid(Map map, int ticksPerUnit, int maxHeat, float f1)
         {
-            indices = map.cellIndices;
-            grid    = new int[indices.NumGridCells];
-            //this.grid_cache = new Pair<int, int>[indices.NumGridCells];
+            indices           = map.cellIndices;
+            grid              = new int[indices.NumGridCells];
             this.ticksPerUnit = ticksPerUnit;
             this.maxHeat      = maxHeat;
             maxTicks          = maxHeat * ticksPerUnit;

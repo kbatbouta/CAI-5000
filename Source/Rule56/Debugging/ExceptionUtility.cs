@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using Verse;
 namespace CombatAI
 {
@@ -10,12 +9,14 @@ namespace CombatAI
         public static void ShowExceptionGui(this Exception er, bool rethrow = true)
         {
             Log.Error($"ISMA: base error {er}");
+#if DEBUG
             if (enabled && Find.WindowStack.windows.Count(w => w is Window_Exception) <= 3)
             {
-                StackTrace       trace  = new StackTrace();
+                StackTrace       trace = new StackTrace();
                 Window_Exception window = new Window_Exception(er, trace, string.Empty);
                 Find.WindowStack.Add(window);
             }
+#endif
             if (rethrow)
             {
                 throw er;

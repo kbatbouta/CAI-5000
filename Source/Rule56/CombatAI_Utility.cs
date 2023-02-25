@@ -120,7 +120,7 @@ namespace CombatAI
                     {
                         return meleeVerbs.curMeleeVerb;
                     }
-                    if (!TKVCache<int, Pawn_MeleeVerbs, Verb>.TryGet(thing.thingIDNumber, out Verb verb, 480) || !verb.IsStillUsableBy(pawn))
+                    if (!TKVCache<int, Pawn_MeleeVerbs, Verb>.TryGet(thing.thingIDNumber, out Verb verb, 480) || verb == null || verb.DirectOwner != thing)
                     {
                         TKVCache<int, Pawn_MeleeVerbs, Verb>.Put(thing.thingIDNumber, verb = meleeVerbs.TryGetMeleeVerb(null));
                         return verb;

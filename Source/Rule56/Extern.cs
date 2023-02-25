@@ -50,8 +50,7 @@ namespace CombatAI
             }
             return map.GetComp_Fast<AvoidanceTracker>();
         }
-
-
+        
         [PrepatcherField]
         [InjectComponent]
         private static extern ThingComp_CombatAI CombatAI_ThingComp(ThingWithComps thingWithComps);
