@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using CombatAI.Comps;
-using RimWorld;
 using Verse;
 using Verse.AI;
 namespace CombatAI
@@ -7,14 +7,14 @@ namespace CombatAI
     public class JobGiver_DuckOrRetreat : ThinkNode_JobGiver
     {
         private int radius = 8;
-        
+
         public override Job TryGiveJob(Pawn pawn)
         {
-            Verb               verb = pawn.TryGetAttackVerb();
+            Verb verb = pawn.TryGetAttackVerb();
             if (verb == null || !verb.IsMeleeAttack)
             {
                 ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
-                var                list = comp.data.BeingTargetedBy;
+                List<Thing>        list = comp.data.BeingTargetedBy;
                 if (comp != null && !list.NullOrEmpty())
                 {
                     CoverPositionRequest request = new CoverPositionRequest();
@@ -35,7 +35,7 @@ namespace CombatAI
 
         public override ThinkNode DeepCopy(bool resolve = true)
         {
-            JobGiver_DuckOrRetreat node = (JobGiver_DuckOrRetreat) base.DeepCopy(resolve);
+            JobGiver_DuckOrRetreat node = (JobGiver_DuckOrRetreat)base.DeepCopy(resolve);
             node.radius = radius;
             return node;
         }

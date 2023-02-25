@@ -6,8 +6,8 @@ namespace CombatAI.Patches
 {
     public static class MainMenuDrawer_Patch
     {
-        private static bool quickSetupInited = false; 
-        
+        private static bool quickSetupInited;
+
         [HarmonyPatch(typeof(MainMenuDrawer), nameof(MainMenuDrawer.Init))]
         private static class MainMenuDrawer_Init_Patch
         {
@@ -19,8 +19,8 @@ namespace CombatAI.Patches
                     Find.WindowStack.Add(new Window_QuickSetup());
                 }
             }
-        }   
-        
+        }
+
         [HarmonyPatch(typeof(MainMenuDrawer), nameof(MainMenuDrawer.DoMainMenuControls))]
         private static class MainMenuDrawer_DoMainMenuControls_Patch
         {
@@ -32,6 +32,6 @@ namespace CombatAI.Patches
                 }
                 return true;
             }
-        }   
+        }
     }
 }

@@ -14,13 +14,14 @@
                 <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
                 <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
             </li>
-            <li>
+            <!-- for now the prepatcher will not be mandetory. -->
+            <!-- <li>
                 <packageId>zetrith.prepatcher</packageId>
                 <displayName>Prepatcher</displayName>
                 <steamWorkshopUrl>steam://url/CommunityFilePage/2934420800</steamWorkshopUrl>
                 <downloadUrl>https://github.com/Zetrith/Prepatcher/releases/latest</downloadUrl>
-            </li>
-        </v1.4>        
+            </li> -->
+        </v1.4>
     </modDependenciesByVersion>
     <loadAfter>
         <li>Ludeon.RimWorld</li>
@@ -36,7 +37,6 @@
         <li>rwmt.Multiplayer</li>
     </incompatibleWith>
     <description>
-        *T-800s are not included*
-        Advance combat AI brought you by the RocketMan Team - Discord: https://discord.gg/Jx8UYNtS24
+        *T-800s are not included* Advance combat AI brought you by the RocketMan Team - Discord: https://discord.gg/Jx8UYNtS24
     </description>
 </ModMetaData>

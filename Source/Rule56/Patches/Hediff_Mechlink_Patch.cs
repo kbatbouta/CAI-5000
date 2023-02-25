@@ -1,5 +1,3 @@
-using HarmonyLib;
-using Verse;
 namespace CombatAI.Patches
 {
     public static class Hediff_Mechlink_Patch

@@ -4,10 +4,10 @@ namespace CombatAI
 {
     public class ThinkNode_ConditionalSight : ThinkNode_Conditional
     {
-#pragma warning disable CS0649
-        private int  visibilityToEnemies;
-#pragma warning restore CS0649
         private bool fallback = true;
+#pragma warning disable CS0649
+        private int visibilityToEnemies;
+#pragma warning restore CS0649
 
         public override bool Satisfied(Pawn pawn)
         {
@@ -17,7 +17,7 @@ namespace CombatAI
             }
             return fallback;
         }
-        
+
         public override ThinkNode DeepCopy(bool resolve = true)
         {
             ThinkNode_ConditionalSight obj = (ThinkNode_ConditionalSight)base.DeepCopy(resolve);

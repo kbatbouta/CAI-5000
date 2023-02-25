@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using CombatAI.Utilities;
-using Verse;
-namespace CombatAI
+﻿namespace CombatAI
 {
 #if DEBUG_REACTION
 	public static class GenClosest

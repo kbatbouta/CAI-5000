@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using RimWorld;
-using UnityEngine;
-using Verse;
-namespace CombatAI.Utilities
+﻿namespace CombatAI.Utilities
 {
 #if DEBUG_REACTION
 	public class ThingsTracker : MapComponent
@@ -20,10 +13,10 @@ namespace CombatAI.Utilities
 
 		public ThingsTracker(Map map) : base(map)
 		{
-			pawnsTracker        = new ThingsTrackingModel(null, map, this);
-			weaponsTracker      = new ThingsTrackingModel(null, map, this);
-			apparelTracker      = new ThingsTrackingModel(null, map, this);
-			medicineTracker     = new ThingsTrackingModel(null, map, this);
+			pawnsTracker = new ThingsTrackingModel(null, map, this);
+			weaponsTracker = new ThingsTrackingModel(null, map, this);
+			apparelTracker = new ThingsTrackingModel(null, map, this);
+			medicineTracker = new ThingsTrackingModel(null, map, this);
 			interceptorsTracker = new ThingsTrackingModel(null, map, this);
 
 			foreach (ThingDef def in DefDatabase<ThingDef>.AllDefs)
@@ -80,7 +73,7 @@ namespace CombatAI.Utilities
 						b = other.DrawPos.MapToUIPosition();
 						Widgets.DrawLine(a, b, Color.red, 1);
 
-						mid  = (a + b) / 2;
+						mid = (a + b) / 2;
 						rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
 						Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
 						Widgets.DrawBox(rect);

@@ -8,10 +8,10 @@ namespace CombatAI
 {
     public class AIEnvThings : ICollection, IExposable
     {
-        private const AIEnvAgentState      invalidState = AIEnvAgentState.unknown;
+        private const    AIEnvAgentState      invalidState = AIEnvAgentState.unknown;
+        private readonly List<AIEnvAgentInfo> elements     = new List<AIEnvAgentInfo>();
 
         private readonly Dictionary<int, AIEnvAgentInfo> stateByThing = new Dictionary<int, AIEnvAgentInfo>();
-        private readonly List<AIEnvAgentInfo>            elements     = new List<AIEnvAgentInfo>();
 
         public AIEnvThings()
         {
@@ -77,12 +77,12 @@ namespace CombatAI
                         AIEnvAgentInfo temp = elements[i];
                         if (temp.thing == thing)
                         {
-                            elements[i]                         = value;
+                            elements[i]                       = value;
                             stateByThing[thing.thingIDNumber] = value;
                             return;
                         }
                     }
-                    throw new Exception($"AIEnvThings stateByThing contains key but the key is missing from things.");
+                    throw new Exception("AIEnvThings stateByThing contains key but the key is missing from things.");
                 }
                 elements.Add(value);
                 stateByThing[thing.thingIDNumber] = value;
@@ -142,13 +142,13 @@ namespace CombatAI
             {
                 throw new Exception("Collection is readonly");
             }
-            this.elements.Clear();
-            this.elements.AddRange(items);
+            elements.Clear();
+            elements.AddRange(items);
             // update ids.
-            this.stateByThing.Clear();
+            stateByThing.Clear();
             for (int i = 0; i < items.Count; i++)
             {
-                this.stateByThing[this.elements[i].thing.thingIDNumber] = this.elements[i];
+                stateByThing[elements[i].thing.thingIDNumber] = elements[i];
             }
         }
         public void ClearAndAddRange(Dictionary<Thing, AIEnvAgentInfo> dict)
@@ -157,8 +157,8 @@ namespace CombatAI
             {
                 throw new Exception("Collection is readonly");
             }
-            this.elements.Clear();
-            this.stateByThing.Clear();
+            elements.Clear();
+            stateByThing.Clear();
             foreach (KeyValuePair<Thing, AIEnvAgentInfo> pair in dict)
             {
                 if (pair.Key != pair.Value.thing)
@@ -176,7 +176,7 @@ namespace CombatAI
             {
                 throw new Exception("Collection is readonly");
             }
-            this.ClearAndAddRange(items.ToHashSet());
+            ClearAndAddRange(items.ToHashSet());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -200,7 +200,7 @@ namespace CombatAI
         {
             return new AIThingEnum(elements, invalidState);
         }
-        
+
         public IEnumerator<AIEnvAgentInfo> GetEnumerator(AIEnvAgentState state)
         {
             return new AIThingEnum(elements, state);
@@ -210,7 +210,7 @@ namespace CombatAI
         {
             public readonly List<AIEnvAgentInfo> _items;
             public readonly AIEnvAgentState      _state;
-            
+
             private int index = -1;
 
             public AIThingEnum(List<AIEnvAgentInfo> items, AIEnvAgentState state)
@@ -222,26 +222,23 @@ namespace CombatAI
             public void Dispose()
             {
             }
-            
+
             public bool MoveNext()
             {
                 if (_state == invalidState)
                 {
                     return MoveNextInternal();
                 }
-                else
+                while (MoveNextInternal())
                 {
-                    while (MoveNextInternal())
+                    if ((_items[index].state & _state) == _state)
                     {
-                        if ((_items[index].state & _state) == _state)
-                        {
-                            return true;
-                        }
+                        return true;
                     }
-                    return false;
                 }
+                return false;
             }
-            
+
 
             public void Reset()
             {

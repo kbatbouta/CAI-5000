@@ -1,8 +1,3 @@
-using System;
-using HarmonyLib;
-using RimWorld;
-using Verse;
-using Verse.AI;
 namespace CombatAI.Patches
 {
     public static class JobGiver_AIDefendPoint_Patch

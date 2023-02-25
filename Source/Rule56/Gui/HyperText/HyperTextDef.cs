@@ -18,7 +18,7 @@ namespace CombatAI.Gui
                 part(collapsible);
             }
         }
-        
+
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {
             try
@@ -31,7 +31,7 @@ namespace CombatAI.Gui
                     }
                     if (node.Name == "defName")
                     {
-                        this.defName = node.InnerText;
+                        defName = node.InnerText;
                     }
                 }
             }
@@ -51,11 +51,11 @@ namespace CombatAI.Gui
                     {
                         ParseTextXmlNode(element);
                     }
-                    else if(element.Name == "img")
+                    else if (element.Name == "img")
                     {
                         ParseMediaNode(element);
                     }
-                    else if(element.Name == "gap")
+                    else if (element.Name == "gap")
                     {
                         ParseGapNode(element);
                     }
@@ -66,23 +66,24 @@ namespace CombatAI.Gui
         private void ParseTextXmlNode(XmlElement element)
         {
             XmlAttribute fontSize = element.Attributes["fontSize"];
-            if (fontSize == null || !GUIFontSize.TryParse(fontSize.Value, true, out GUIFontSize size))
+            if (fontSize == null || !Enum.TryParse(fontSize.Value, true, out GUIFontSize size))
             {
                 size = GUIFontSize.Small;
             }
             XmlAttribute textAnchor = element.Attributes["textAnchor"];
-            if (textAnchor == null || !TextAnchor.TryParse(textAnchor.Value, true, out TextAnchor anchor))
+            if (textAnchor == null || !Enum.TryParse(textAnchor.Value, true, out TextAnchor anchor))
             {
                 anchor = TextAnchor.UpperLeft;
             }
             string text = element.InnerText.Replace('[', '<').Replace(']', '>');
+
             void Action(Listing_Collapsible collapsible)
             {
                 GUIUtility.ExecuteSafeGUIAction(() =>
                 {
                     GUIFont.Anchor = anchor;
                     GUIFont.Font   = size;
-                    collapsible.Lambda(text.GetTextHeight(collapsible.Rect.width + 20) + 5, (rect) =>
+                    collapsible.Lambda(text.GetTextHeight(collapsible.Rect.width + 20) + 5, rect =>
                     {
                         GUIFont.Anchor = anchor;
                         GUIFont.Font   = size;
@@ -90,6 +91,7 @@ namespace CombatAI.Gui
                     });
                 });
             }
+
             actions.Add(Action);
         }
 
@@ -100,13 +102,15 @@ namespace CombatAI.Gui
             {
                 height = 1;
             }
+
             void Action(Listing_Collapsible collapsible)
             {
                 collapsible.Gap(height);
             }
+
             actions.Add(Action);
         }
-        
+
         private void ParseMediaNode(XmlElement element)
         {
             string       path      = element.Attributes["path"].Value;
@@ -116,22 +120,24 @@ namespace CombatAI.Gui
             {
                 heightStr = imgHeight.Value;
             }
-            int       index   = actions.Count;        
+            int index = actions.Count;
             LongEventHandler.ExecuteWhenFinished(delegate
             {
-                Texture2D texture = ContentFinder<Texture2D>.Get(path, reportFailure: true);
+                Texture2D texture = ContentFinder<Texture2D>.Get(path);
                 int       width   = texture.width;
                 if (heightStr == null || !int.TryParse(heightStr, out int height))
                 {
                     height = texture.height;
                 }
+
                 void Action(Listing_Collapsible collapsible)
                 {
-                    collapsible.Lambda(height, (rect) =>
+                    collapsible.Lambda(height, rect =>
                     {
                         Widgets.DrawTextureFitted(rect, texture, 1.0f);
                     });
                 }
+
                 actions[index] = Action;
             });
             actions.Add(null);

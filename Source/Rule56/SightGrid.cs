@@ -435,7 +435,7 @@ namespace CombatAI
                 }
                 MetaCombatAttribute attr = item.cachedDamage.attributes | availability;
                 grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, attr);
-                grid_regions.Next(GetFlags(item), item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, attr);
+                grid_regions.Next();
                 float r_fade     = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
                 float d_fade     = sightRadius.fog - r_fade;
                 float rSqr_sight = Maths.Sqr(sightRadius.sight);

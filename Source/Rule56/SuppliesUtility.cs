@@ -7,8 +7,8 @@ namespace CombatAI
 {
     public class SuppliesUtility
     {
-        private readonly static HashSet<ThingDef> temp = new HashSet<ThingDef>();
-        
+        private static readonly HashSet<ThingDef> temp = new HashSet<ThingDef>();
+
         public static void DropSupplies(Map map, IntVec3 position, ThingDef thingDef, int count)
         {
             List<Thing> list  = new List<Thing>();
@@ -23,7 +23,7 @@ namespace CombatAI
         {
             return PotentialFoodFor(pawn.RaceProps);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<ThingDef> PotentialFoodFor(RaceProperties race)
         {
@@ -48,7 +48,7 @@ namespace CombatAI
             }
             temp.Clear();
             temp.AddRange(pawns.SelectMany(PotentialFoodFor));
-            float   mul    = tech == TechLevel.Industrial ? Rand.Range(1.0f, 1.5f) :  Rand.Range(1.5f, 2.5f);
+            float   mul    = tech == TechLevel.Industrial ? Rand.Range(1.0f, 1.5f) : Rand.Range(1.5f, 2.5f);
             IntVec3 center = IntVec3.Zero;
             for (int i = 0; i < pawns.Count; i++)
             {
@@ -56,8 +56,8 @@ namespace CombatAI
             }
             center.x /= pawns.Count;
             center.z /= pawns.Count;
-            IntVec3 dropPoint = center;
-            float   minDistSqr   = 1e6f;
+            IntVec3 dropPoint  = center;
+            float   minDistSqr = 1e6f;
             for (int i = 0; i < pawns.Count; i++)
             {
                 float distSqr = pawns[i].Position.DistanceToSquared(center);
@@ -66,7 +66,7 @@ namespace CombatAI
                     Region region = pawns[i].GetRegion();
                     if (region != null)
                     {
-                        int     k = 0;
+                        int     k    = 0;
                         IntVec3 cell = IntVec3.Invalid;
                         while (k++ < 16 && !(cell = region.RandomCell).Walkable(map))
                         {
@@ -83,7 +83,7 @@ namespace CombatAI
             {
                 foreach (ThingDef def in temp)
                 {
-                    DropSupplies(map, dropPoint, def, (int) (pawns.Count() * mul));
+                    DropSupplies(map, dropPoint, def, (int)(pawns.Count() * mul));
                 }
             }
         }

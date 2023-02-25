@@ -16,7 +16,7 @@ namespace CombatAI
             }
             return fallback;
         }
-        
+
         public override ThinkNode DeepCopy(bool resolve = true)
         {
             ThinkNode_ConditionalSafe obj = (ThinkNode_ConditionalSafe)base.DeepCopy(resolve);

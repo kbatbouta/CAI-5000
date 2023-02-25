@@ -5,11 +5,11 @@ namespace CombatAI
 {
     public class ThinkNode_ConditionalReacted : ThinkNode_Conditional
     {
-#pragma warning disable CS0649
-        private int  ticks;
-#pragma warning restore CS0649
         private bool fallback = true;
-        
+#pragma warning disable CS0649
+        private int ticks;
+#pragma warning restore CS0649
+
         public override bool Satisfied(Pawn pawn)
         {
             ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
@@ -19,12 +19,12 @@ namespace CombatAI
             }
             return fallback;
         }
-        
+
         public override ThinkNode DeepCopy(bool resolve = true)
         {
             ThinkNode_ConditionalReacted obj = (ThinkNode_ConditionalReacted)base.DeepCopy(resolve);
-            obj.ticks       = ticks;
-            obj.fallback    = fallback;
+            obj.ticks    = ticks;
+            obj.fallback = fallback;
             return obj;
         }
     }

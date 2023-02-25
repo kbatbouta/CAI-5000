@@ -6,12 +6,12 @@
         <reportString>retreating.</reportString>
         <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
         <carryThingAfterJob>true</carryThingAfterJob>
-        <dropThingBeforeJob>false</dropThingBeforeJob>        
+        <dropThingBeforeJob>false</dropThingBeforeJob>
         <casualInterruptible>false</casualInterruptible>
         <neverFleeFromEnemies>true</neverFleeFromEnemies>
-      </JobDef>
+    </JobDef>
 
-      <JobDef>
+    <JobDef>
         <defName>CombatAI_Goto_Duck</defName>
         <driverClass>JobDriver_Goto</driverClass>
         <reportString>moving.</reportString>
@@ -21,9 +21,9 @@
         <checkOverrideOnDamage>Never</checkOverrideOnDamage>
         <casualInterruptible>false</casualInterruptible>
         <neverFleeFromEnemies>true</neverFleeFromEnemies>
-      </JobDef>
+    </JobDef>
 
-      <JobDef>
+    <JobDef>
         <defName>CombatAI_Goto_Cover</defName>
         <driverClass>JobDriver_Goto</driverClass>
         <reportString>moving.</reportString>
@@ -33,5 +33,5 @@
         <checkOverrideOnDamage>Never</checkOverrideOnDamage>
         <casualInterruptible>false</casualInterruptible>
         <neverFleeFromEnemies>true</neverFleeFromEnemies>
-      </JobDef>     
+    </JobDef>
 </Defs>
