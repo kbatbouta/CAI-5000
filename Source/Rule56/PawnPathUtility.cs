@@ -28,9 +28,10 @@ namespace CombatAI
 			return true;
 		}
 
-		public static bool TryGetSapperSubPath(this PawnPath path, Pawn pawn, List<IntVec3> store, int sightAhead, int sightStep, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore)
+		public static bool TryGetSapperSubPath(this PawnPath path, Pawn pawn, List<IntVec3> store, int sightAhead, int sightStep, out IntVec3 cellBefore, out IntVec3 cellAhead, out bool enemiesAhead, out bool enemiesBefore)
 		{
 			cellBefore    = IntVec3.Invalid;
+			cellAhead     = IntVec3.Invalid;
 			enemiesAhead  = false;
 			enemiesBefore = false;
 			if (path == null || !path.Found || pawn == null || !pawn.TryGetSightReader(out SightTracker.SightReader reader))
@@ -68,6 +69,7 @@ namespace CombatAI
 					}
 					if (!blocked && num > 0)
 					{
+						cellAhead = s1.WalkableBy(pawn) ? s1 : s2;
 						break;
 					}
 					if (!next.WalkableBy(pawn))
@@ -106,6 +108,7 @@ namespace CombatAI
 				}
 				if (!blocked && num > 0)
 				{
+					cellAhead = next;
 					break;
 				}
 				loc = next;
@@ -133,7 +136,6 @@ namespace CombatAI
 						IntVec3 next = path.nodes[i];
 						if (home.innerGrid[next])
 						{
-							//map.debugDrawer.FlashCell(next, 0.9f, "X", 200);
 							enemiesAhead = true;
 							break;
 						}
@@ -141,9 +143,9 @@ namespace CombatAI
 					}
 
 				}
-				return true;
+				return cellAhead.IsValid;
 			}
-			return store.Count > 0;
+			return store.Count > 0 && cellAhead.IsValid;
 		}
 
 		private static bool WalkableBy(this IntVec3 cell, Pawn pawn)

@@ -103,6 +103,81 @@ namespace CombatAI
 				}
 			}
 		}
+		
+		public void Flood(IntVec3 center, IntVec3 target, Action<IntVec3, IntVec3, float> action, Func<IntVec3, float> costFunction = null, Func<IntVec3, bool> validator = null, int maxDist = 25, int maxCellNum = 9999, bool passThroughDoors = false)
+		{
+			sig++;
+			Func<IntVec3, bool> blocked = GetBlockedTestFunc(validator, passThroughDoors);
+			walls = map.GetComponent<WallGrid>();
+			Node node = GetIntialFloodedCell(center);
+			node.dist                                        = costFunction != null ? costFunction(node.cell) : 0;
+			sigArray[map.cellIndices.CellToIndex(node.cell)] = sig;
+			Node    nextNode;
+			int     cellIndex;
+			IntVec3 nextCell;
+			IntVec3 offset;
+			//
+			// floodedCells.Clear();
+			// floodedCells.Add(node);
+			floodQueue.Clear();
+			floodQueue.Enqueue(node);
+			int num = 0;
+			while (floodQueue.Count > 0 && num++ < maxCellNum)
+			{
+				node = floodQueue.Dequeue();
+				//
+				// TODO optimize this some more
+				action(node.cell, node.parent, node.distAbs);
+				if (node.cell == target)
+				{
+					break;
+				}
+				// map.debugDrawer.FlashCell(node.cell, node.dist / 25f, $"{map.cellIndices.CellToIndex(node.cell)} {map.cellIndices.CellToIndex(node.parent)}", duration: 15);
+				//
+				// check for the distance
+				if (node.distAbs >= maxDist)
+				{
+					continue;
+				}
+				for (int i = 0; i < 4; i++)
+				{
+					offset   = offsets[i];
+					nextCell = node.cell + offset;
+					if (nextCell.InBounds(map))
+					{
+						bool visited;
+						if (!(visited = sigArray[cellIndex = map.cellIndices.CellToIndex(nextCell)] == sig))
+						{
+							sigArray[cellIndex] = sig;
+							if (!blocked(nextCell))
+							{
+								nextNode      = new Node();
+								nextNode.cell = nextCell;
+								// TODO improve this.
+								// this is not perfectly accurate but it does result in consistant result.
+								if (Mathf.Abs(nextCell.x - node.parent.x) == 1 && Mathf.Abs(nextCell.z - node.parent.z) == 1)
+								{
+									nextNode.parent  = node.parent;
+									nextNode.dist    = node.cell.DistanceToSquared(target);
+									nextNode.distAbs = node.distAbs + 0.4123f;
+								}
+								else
+								{
+									nextNode.parent  = node.cell;
+									nextNode.dist    = node.cell.DistanceToSquared(target);
+									nextNode.distAbs = node.distAbs + 1;
+								}
+								if (costFunction != null)
+								{
+									nextNode.dist += costFunction(nextCell);
+								}
+								floodQueue.Enqueue(nextNode);
+							}
+						}
+					}
+				}
+			}
+		}
 
 		private Func<IntVec3, bool> GetBlockedTestFunc(Func<IntVec3, bool> validator, bool passThroughDoors)
 		{

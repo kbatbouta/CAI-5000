@@ -154,9 +154,9 @@ namespace CombatAI.Patches
 					{
 						blocked.Clear();
 						Thing blocker;
-						if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null)
+						if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out IntVec3 cellAhead, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null)
 						{
-							if (tuning != null && (!enemiesAhead || enemiesBefore))
+							if (tuning != null && (!enemiesAhead || enemiesBefore || map.fogGrid.IsFogged(cellAhead) || cellAhead.HeuristicDistanceTo(cellBefore, map, 2) <= 8))
 							{
 								try
 								{
@@ -291,13 +291,16 @@ namespace CombatAI.Patches
 									value += (threat * 22f * mul);
 								}
 							}
-							if (dig && walls.GetFillCategory(index) == FillCategory.Full)
+							if (dig)
 							{
-								float visibilityParent = sightReader.GetAbsVisibilityToEnemies(parentIndex);
-								if (visibilityParent > 0)
+								if (walls.GetFillCategory(index) == FillCategory.Full)
 								{
-									// we do this to prevent sapping where there is enemies.
-									value = (1000 * visibilityParent);
+									float visibilityParent = sightReader.GetAbsVisibilityToEnemies(parentIndex);
+									if (visibilityParent > 0)
+									{
+										// we do this to prevent sapping where there is enemies.
+										value = (1000 * visibilityParent);
+									}
 								}
 							}
 						}

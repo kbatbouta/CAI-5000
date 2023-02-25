@@ -235,11 +235,39 @@ namespace CombatAI
                         stopwatch.Start();
                         for (int i = 0; i < 128; i++)
                         {
-                             dist = comp.parent.Position.DistanceTo_RegionWise(info.Cell, map);
+                             dist = comp.parent.Position.HeuristicDistanceTo_RegionWise(info.Cell, map);
                         }
                         stopwatch.Stop();
                         float time = ((float)stopwatch.ElapsedTicks / Stopwatch.Frequency) * 1000f / 128f;
-                        Messages.Message($"Distance is {dist}, took {time} ms", MessageTypeDefOf.CautionInput);
+                        Messages.Message($"Distance is {dist} regions, took {time} ms", MessageTypeDefOf.CautionInput);
+                    }
+                });
+            }
+            if (ButtonText(collapsible_dutyTest, "Cell-wise distance"))
+            {
+                Find.Targeter.BeginTargeting(new TargetingParameters()
+                {
+                    canTargetAnimals   = false,
+                    canTargetBuildings = false,
+                    canTargetCorpses   = false,
+                    canTargetHumans    = false,
+                    canTargetSelf      = false,
+                    canTargetMechs     = false,
+                    canTargetLocations = true,
+                }, info =>
+                {
+                    if (info.Cell.IsValid)
+                    {
+                        Stopwatch stopwatch = new Stopwatch();
+                        float       dist      = 0;
+                        stopwatch.Start();
+                        for (int i = 0; i < 128; i++)
+                        {
+                            dist = comp.parent.Position.HeuristicDistanceTo(info.Cell, map);
+                        }
+                        stopwatch.Stop();
+                        float time = ((float)stopwatch.ElapsedTicks / Stopwatch.Frequency) * 1000f / 128f;
+                        Messages.Message($"Distance is {dist} cells, took {time} ms", MessageTypeDefOf.CautionInput);
                     }
                 });
             }
