@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-    <name>CAI 5000 - Advance AI + Fog Of War</name>
+    <name>CAI 5000 - Advanced AI + Fog Of War</name>
     <author>Krkr</author>
     <supportedVersions>
         <li>1.4</li>
@@ -37,6 +37,6 @@
         <li>rwmt.Multiplayer</li>
     </incompatibleWith>
     <description>
-        *T-800s are not included* Advance combat AI + Fog Of War brought you by the RocketMan Team - Discord: https://discord.gg/Jx8UYNtS24
+        *T-800s are not included* Advanced combat AI + Fog Of War brought you by the RocketMan Team - Discord: https://discord.gg/Jx8UYNtS24
     </description>
 </ModMetaData>
