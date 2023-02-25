@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using UnityEngine;
-using Verse;
-namespace CombatAI.Utilities
+﻿namespace CombatAI.Utilities
 {
 #if DEBUG_REACTION
 	public class ThingsTrackingModel
@@ -20,8 +14,8 @@ namespace CombatAI.Utilities
 
 		public ThingsTrackingModel(ThingDef def, Map map, ThingsTracker parent)
 		{
-			this.def    = def;
-			this.map    = map;
+			this.def = def;
+			this.map = map;
 			this.parent = parent;
 		}
 
@@ -48,7 +42,7 @@ namespace CombatAI.Utilities
 			while (index - 1 >= 0 && sortedThings[index] < sortedThings[index - 1])
 			{
 				Swap(index - 1, index, sortedThings);
-				indexByThing[sortedThings[index].thing]     = index;
+				indexByThing[sortedThings[index].thing] = index;
 				indexByThing[sortedThings[index - 1].thing] = index - 1;
 				index--;
 			}
@@ -75,7 +69,7 @@ namespace CombatAI.Utilities
 			while (i + 1 < count && sortedThings[i] > sortedThings[i + 1])
 			{
 				Swap(i + 1, i, sortedThings);
-				indexByThing[sortedThings[i].thing]     = i;
+				indexByThing[sortedThings[i].thing] = i;
 				indexByThing[sortedThings[i + 1].thing] = i + 1;
 				i++;
 			}
@@ -83,7 +77,7 @@ namespace CombatAI.Utilities
 			while (i - 1 >= 0 && sortedThings[i] < sortedThings[i - 1])
 			{
 				Swap(i - 1, i, sortedThings);
-				indexByThing[sortedThings[i].thing]     = i;
+				indexByThing[sortedThings[i].thing] = i;
 				indexByThing[sortedThings[i - 1].thing] = i - 1;
 				i--;
 			}
@@ -115,12 +109,12 @@ namespace CombatAI.Utilities
 
 			int     bottom = 0;
 			int     index;
-			int     top     = count;
-			int     mid     = (top + bottom) / 2;
+			int     top = count;
+			int     mid = (top + bottom) / 2;
 			int     limiter = 0;
 			IntVec3 midPosition;
 			IntVec3 direction = destination - origin;
-			float   lengthSq  = direction.x * direction.x + direction.y * direction.y + direction.z * direction.z;
+			float   lengthSq = direction.x * direction.x + direction.y * direction.y + direction.z * direction.z;
 			if (lengthSq == 0) // origin and destination cell are the same, so just return all things within range radius of origin.
 			{
 				foreach (Thing t in ThingsInRangeOf(origin, range))
@@ -132,7 +126,7 @@ namespace CombatAI.Utilities
 
 			while (top != bottom && limiter++ < 20) // try to find a good starting point for iterating nearby pawns
 			{
-				mid         = (top + bottom) / 2;
+				mid = (top + bottom) / 2;
 				midPosition = sortedThings[mid].thing.Position;
 
 				// Range of interest: ...minX-----------------------------maxX...
@@ -163,7 +157,7 @@ namespace CombatAI.Utilities
 			index = mid;
 			while (index < count) // take all the pawns from index to the right edge of the map
 			{
-				Thing   t           = sortedThings[index++].thing;
+				Thing   t = sortedThings[index++].thing;
 				IntVec3 curPosition = t.Position;
 				// if we're outside the range of interest, we're done checking to the right.
 				if (curPosition.x + range < minX || curPosition.x - range > maxX)
@@ -212,7 +206,7 @@ namespace CombatAI.Utilities
 			index = mid - 1;
 			while (index >= 0) // Same as above, but moving right.
 			{
-				Thing   t           = sortedThings[index--].thing;
+				Thing   t = sortedThings[index--].thing;
 				IntVec3 curPosition = t.Position;
 				// if we're outside the range of interest, we're done checking to the right.
 				if (curPosition.x + range < minX || curPosition.x - range > maxX)
@@ -263,15 +257,15 @@ namespace CombatAI.Utilities
 		public IEnumerable<Thing> ThingsInRangeOf(IntVec3 cell, float range)
 		{
 			float   rangeSq = range * range;
-			int     bottom  = 0;
+			int     bottom = 0;
 			int     index;
-			int     top     = count;
-			int     mid     = (top + bottom) / 2;
+			int     top = count;
+			int     mid = (top + bottom) / 2;
 			int     limiter = 0;
 			IntVec3 midPosition;
 			while (top != bottom && limiter++ < 20)
 			{
-				mid         = (top + bottom) / 2;
+				mid = (top + bottom) / 2;
 				midPosition = sortedThings[mid].thing.Position;
 				if (midPosition.DistanceToSquared(cell) <= rangeSq)
 				{
@@ -293,7 +287,7 @@ namespace CombatAI.Utilities
 			index = mid;
 			while (index < count)
 			{
-				Thing   t           = sortedThings[index++].thing;
+				Thing   t = sortedThings[index++].thing;
 				IntVec3 curPosition = t.Position;
 				if (Mathf.Abs(curPosition.x - cell.x) > range)
 				{
@@ -307,7 +301,7 @@ namespace CombatAI.Utilities
 			index = mid - 1;
 			while (index >= 0)
 			{
-				Thing   t           = sortedThings[index--].thing;
+				Thing   t = sortedThings[index--].thing;
 				IntVec3 curPosition = t.Position;
 				if (Mathf.Abs(curPosition.x - cell.x) > range)
 				{
@@ -339,7 +333,7 @@ namespace CombatAI.Utilities
 				else if (offset > 0)
 				{
 					indexByThing[current.thing] = i - offset;
-					sortedThings[i - offset]    = current;
+					sortedThings[i - offset] = current;
 				}
 			}
 			for (i = count - offset; i < count; i++)
@@ -376,7 +370,7 @@ namespace CombatAI.Utilities
 			public ThingPositionInfo(Thing thing)
 			{
 				this.thing = thing;
-				createdOn  = GenTicks.TicksGame;
+				createdOn = GenTicks.TicksGame;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 using Verse;
 namespace CombatAI
 {
@@ -125,7 +124,7 @@ namespace CombatAI
                 {
                     _distCell   = int.MaxValue;
                     _targetCell = second;
-                    comp.flooder.Flood(first, second, DistanceTo_CellWise_Delegate, null, Validator_CellWise_Delegate, 9999, maxCellNum:9999);
+                    comp.flooder.Flood(first, second, DistanceTo_CellWise_Delegate, null, Validator_CellWise_Delegate, 9999, 9999);
                 }
             }
             catch (Exception exp)

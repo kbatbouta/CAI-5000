@@ -1,46 +1,64 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Verse;
 namespace CombatAI
 {
     public class AIAgentData : IExposable
     {
-        private List<Thing> _targetedBy = new List<Thing>(4);
-        /* Fields
-         * ---------------------------------------------------------   
-         */
-        
-        #region Fields
+        private readonly List<Thing> _targetedBy = new List<Thing>(4);
 
-        private List<Pair<Thing, int>> targetedBy;
-        private AIEnvThings    enemies;
-        private AIEnvThings    allies;
-
-        #endregion
-        
         /* 
          * ---------------------------------------------------------   
          */
-        
+
         public AIAgentData()
         {
             enemies    = new AIEnvThings();
             allies     = new AIEnvThings();
             targetedBy = new List<Pair<Thing, int>>();
         }
-        
+
         public int AgroSig
         {
             get;
             set;
         }
-        
+
+        /*
+         * ---------------------------------------------------------   
+         */
+
+        public void ExposeData()
+        {
+            if (Scribe.mode != LoadSaveMode.Saving)
+            {
+                List<Thing> things = BeingTargetedBy;
+                Scribe_Collections.Look(ref things, "targetedBy.1", LookMode.Reference);
+            }
+            int sig = AgroSig;
+            Scribe_Values.Look(ref sig, "aggro.sig");
+            AgroSig = sig;
+            Scribe_Deep.Look(ref enemies, "enemies.1");
+            enemies ??= new AIEnvThings();
+            Scribe_Deep.Look(ref allies, "allies.1");
+            allies ??= new AIEnvThings();
+        }
+        /* Fields
+         * ---------------------------------------------------------   
+         */
+
+        #region Fields
+
+        private readonly List<Pair<Thing, int>> targetedBy;
+        private          AIEnvThings            enemies;
+        private          AIEnvThings            allies;
+
+        #endregion
+
         /* Timestamps
          * ---------------------------------------------------------   
          */
-        
+
         #region Timestamps
 
         public int LastSawEnemies
@@ -105,11 +123,11 @@ namespace CombatAI
         }
 
         #endregion
-        
+
         /* Environment
          * ---------------------------------------------------------   
          */
-        
+
         #region Spotting
 
         public List<Thing> BeingTargetedBy
@@ -169,7 +187,7 @@ namespace CombatAI
             enemies.ClearAndAddRange(items);
             NumEnemies = enemies.Count;
         }
-        public void ReSetEnemies(Dictionary<Thing,AIEnvAgentInfo> dict)
+        public void ReSetEnemies(Dictionary<Thing, AIEnvAgentInfo> dict)
         {
             enemies.ClearAndAddRange(dict);
             NumEnemies = enemies.Count;
@@ -179,7 +197,7 @@ namespace CombatAI
             enemies.Clear();
             NumEnemies = 0;
         }
-        
+
         public AIEnvThings AllAllies
         {
             get => allies.AsReadonly;
@@ -206,7 +224,7 @@ namespace CombatAI
             allies.ClearAndAddRange(items);
             NumAllies = allies.Count;
         }
-        public void ReSetAllies(Dictionary<Thing,AIEnvAgentInfo> dict)
+        public void ReSetAllies(Dictionary<Thing, AIEnvAgentInfo> dict)
         {
             allies.ClearAndAddRange(dict);
             NumAllies = allies.Count;
@@ -224,25 +242,6 @@ namespace CombatAI
         }
 
         #endregion
-        
-        /*
-         * ---------------------------------------------------------   
-         */
 
-        public void ExposeData()
-        {
-            if (Scribe.mode != LoadSaveMode.Saving)
-            {
-                List<Thing> things = BeingTargetedBy;
-                Scribe_Collections.Look(ref things, "targetedBy.1", LookMode.Reference);
-            }
-            int sig = AgroSig;
-            Scribe_Values.Look(ref sig, "aggro.sig");
-            AgroSig = sig;
-            Scribe_Deep.Look(ref enemies, "enemies.1");            
-            enemies ??= new AIEnvThings();
-            Scribe_Deep.Look(ref allies, "allies.1");
-            allies  ??= new AIEnvThings();
-        }
     }
 }

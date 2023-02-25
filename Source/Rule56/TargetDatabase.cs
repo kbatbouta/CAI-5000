@@ -3,8 +3,8 @@ namespace CombatAI
 {
     public class TargetDatabase
     {
-        public Map  map;
         public bool isPlayerAllience;
+        public Map  map;
 
         public TargetDatabase(Map map, bool isPlayerAllience)
         {

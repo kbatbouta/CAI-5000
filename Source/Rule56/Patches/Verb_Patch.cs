@@ -1,17 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HarmonyLib;
-using System;
 using CombatAI.Comps;
+using HarmonyLib;
 using RimWorld;
-using UnityEngine;
 using Verse;
 namespace CombatAI.Patches
 {
     public class Verb_Patch
     {
         private static Verb callerVerb;
-        
+
         [HarmonyPatch]
         private static class Verb_TryStartCast_Patch
         {
@@ -20,16 +19,16 @@ namespace CombatAI.Patches
                 HashSet<MethodBase> methods = new HashSet<MethodBase>();
                 foreach (Type t in typeof(Verb).AllSubclasses())
                 {
-                    foreach (var method in t.GetMethods(AccessTools.all))
+                    foreach (MethodInfo method in t.GetMethods(AccessTools.all))
                     {
-                        if (method != null && !methods.Contains(method) &&  !method.IsStatic && method.ReturnType == typeof(bool) && (method.Name.Contains("TryStartCastOn") || method.Name.Contains("TryCastShot"))  && !method.IsAbstract && method.HasMethodBody() && method.DeclaringType == t)
+                        if (method != null && !methods.Contains(method) && !method.IsStatic && method.ReturnType == typeof(bool) && (method.Name.Contains("TryStartCastOn") || method.Name.Contains("TryCastShot")) && !method.IsAbstract && method.HasMethodBody() && method.DeclaringType == t)
                         {
                             Log.Message($"ISMA: Patched verb type {t.FullName}:{method.Name}");
                             methods.Add(method);
                         }
                     }
                 }
-                foreach (var method in typeof(Verb).GetMethods(AccessTools.all))
+                foreach (MethodInfo method in typeof(Verb).GetMethods(AccessTools.all))
                 {
                     if (method != null && !methods.Contains(method) && !method.IsStatic && method.ReturnType == typeof(bool) && (method.Name.Contains("TryStartCastOn") || method.Name.Contains("TryCastShot")) && !method.IsAbstract && method.HasMethodBody() && method.DeclaringType == typeof(Verb))
                     {
@@ -42,9 +41,9 @@ namespace CombatAI.Patches
 
             public static void Prefix(Verb __instance, out bool __state)
             {
-                if (__state = (__instance != callerVerb))
+                if (__state = __instance != callerVerb)
                 {
-                    callerVerb    = __instance;
+                    callerVerb = __instance;
                 }
             }
 

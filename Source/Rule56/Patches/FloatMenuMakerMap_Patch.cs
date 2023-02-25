@@ -2,7 +2,6 @@ using CombatAI.Comps;
 using HarmonyLib;
 using RimWorld;
 using Verse;
-using Verse.AI;
 namespace CombatAI.Patches
 {
     public static class FloatMenuMakerMap_Patch
@@ -17,6 +16,6 @@ namespace CombatAI.Patches
                     pawn.GetComp<ThingComp_CombatAI>().forcedTarget = LocalTargetInfo.Invalid;
                 }
             }
-        }   
+        }
     }
 }

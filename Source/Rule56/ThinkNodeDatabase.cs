@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
 using RimWorld;
 using Verse;
@@ -9,14 +7,14 @@ namespace CombatAI
 {
     public class ThinkNodeDatabase
     {
-        private static          StringBuilder      builder = new StringBuilder();
+        private static readonly StringBuilder      builder = new StringBuilder();
         private static readonly HashSet<ThinkNode> roots   = new HashSet<ThinkNode>();
         private static readonly List<ThinkNode>    queue   = new List<ThinkNode>();
-        
+
         public static readonly Dictionary<ThinkNode, DutyDef>      dutyNodes  = new Dictionary<ThinkNode, DutyDef>();
         public static readonly Dictionary<ThinkNode, ThinkTreeDef> treeNodes  = new Dictionary<ThinkNode, ThinkTreeDef>();
         public static readonly Dictionary<ThinkNode, ThinkNode>    nodesNodes = new Dictionary<ThinkNode, ThinkNode>();
-        
+
         public static void Initialize()
         {
             Log.Message("Initialize thinknodes");
@@ -26,7 +24,7 @@ namespace CombatAI
                 {
                     dutyNodes[duty.thinkNode] = duty;
                     roots.Add(duty.thinkNode);
-                }   
+                }
             }
             foreach (ThinkTreeDef tree in DefDatabase<ThinkTreeDef>.AllDefs)
             {
@@ -41,7 +39,7 @@ namespace CombatAI
                 if (duty.thinkNode != null)
                 {
                     BuildNodeTree(duty.thinkNode);
-                }   
+                }
             }
             foreach (ThinkTreeDef tree in DefDatabase<ThinkTreeDef>.AllDefs)
             {
@@ -100,7 +98,7 @@ namespace CombatAI
         {
             builder.Clear();
             int index = -1;
-            if(nodesNodes.TryGetValue(node, out ThinkNode parent))
+            if (nodesNodes.TryGetValue(node, out ThinkNode parent))
             {
                 index = parent.subNodes.IndexOf(node);
             }
@@ -114,7 +112,7 @@ namespace CombatAI
             }
             if (node is ThinkNode_Subtree subtree)
             {
-                builder.AppendFormat("(p{0}, {1})(treeDef={2})", index, node.GetType(), subtree.treeDef);    
+                builder.AppendFormat("(p{0}, {1})(treeDef={2})", index, node.GetType(), subtree.treeDef);
             }
             else if (node is ThinkNode_Duty dutyNode)
             {
@@ -126,12 +124,12 @@ namespace CombatAI
             }
             return builder.ToString();
         }
-        
+
         private static string GetTraceMessage(DutyDef def, Pawn pawn)
         {
             return $"{def.defName}";
         }
-        
+
         private static string GetTraceMessage(ThinkTreeDef def, Pawn pawn)
         {
             return $"{def.defName}";

@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using CombatAI.Abilities;
 using CombatAI.R;
-using CombatAI.Utilities;
 using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using GUIUtility = CombatAI.Gui.GUIUtility;
 namespace CombatAI.Comps
 {
     public class ThingComp_CombatAI : ThingComp
@@ -27,19 +24,18 @@ namespace CombatAI.Comps
         /// <summary>
         ///     Sapper path nodes.
         /// </summary>
-        ///
         private readonly List<IntVec3> sapperNodes = new List<IntVec3>();
         /// <summary>
-        /// Aggro countdown ticks.
+        ///     Aggro countdown ticks.
         /// </summary>
-        private int             aggroTicks;
+        private int aggroTicks;
         /// <summary>
-        /// Aggro target.
+        ///     Aggro target.
         /// </summary>
         private LocalTargetInfo aggroTarget;
-        
-        private Thing           _bestEnemy;
-        private int             _last;
+
+        private Thing _bestEnemy;
+        private int   _last;
 
         private int _sap;
         /// <summary>
@@ -47,7 +43,7 @@ namespace CombatAI.Comps
         /// </summary>
         public Pawn_AbilityCaster abilities;
         /// <summary>
-        /// Saves job logs. for debugging only.
+        ///     Saves job logs. for debugging only.
         /// </summary>
         public List<JobLog> jobLogs;
         /// <summary>
@@ -171,7 +167,7 @@ namespace CombatAI.Comps
                     }
                     aggroTarget = LocalTargetInfo.Invalid;
                 }
-                
+
             }
             if (duties != null)
             {
@@ -244,7 +240,7 @@ namespace CombatAI.Comps
             // update the current armor report.
             armor = selPawn.GetArmorReport();
         }
-        
+
         /// <summary>
         ///     Returns whether the parent has took damage in the last number of ticks.
         /// </summary>
@@ -488,7 +484,7 @@ namespace CombatAI.Comps
                         }
                     }
                 }
-                if (rangedEnemiesTargetingSelf.Count > 0 && !selPawn.mindState.MeleeThreatStillThreat && !selPawn.IsApproachingMeleeTarget(distLimit: 8, false))
+                if (rangedEnemiesTargetingSelf.Count > 0 && !selPawn.mindState.MeleeThreatStillThreat && !selPawn.IsApproachingMeleeTarget(8, false))
                 {
                     int retreatRoll = Rand.Range(0, 50);
                     // major retreat attempt if the pawn is doomed
@@ -745,8 +741,8 @@ namespace CombatAI.Comps
                         rangedEnemiesTargetingSelf.Remove(nearestEnemy);
                     }
                     bool retreatMeleeThreat = nearestMeleeEnemy != null && nearestMeleeEnemyDist < Maths.Max(verb.EffectiveRange / 3f, 9);
-                    bool retreatThreat = !retreatMeleeThreat && nearestEnemy != null && nearestEnemyDist < Maths.Max(verb.EffectiveRange / 4f, 5);
-                    _bestEnemy         = retreatMeleeThreat ? nearestMeleeEnemy : nearestEnemy;
+                    bool retreatThreat      = !retreatMeleeThreat && nearestEnemy != null && nearestEnemyDist < Maths.Max(verb.EffectiveRange / 4f, 5);
+                    _bestEnemy = retreatMeleeThreat ? nearestMeleeEnemy : nearestEnemy;
                     // retreat because of a close melee threat
                     if (bodySize < 2.0f && (retreatThreat || retreatMeleeThreat))
                     {
@@ -777,7 +773,7 @@ namespace CombatAI.Comps
                     else if (nearestEnemy != null)
                     {
                         _bestEnemy = nearestEnemy;
-                        
+
                         if (!selPawn.RaceProps.Humanlike || bodySize > 2.0f)
                         {
                             if (bestEnemyVisibleNow && selPawn.mindState.enemyTarget == null)
@@ -843,14 +839,14 @@ namespace CombatAI.Comps
                             {
                                 request.maxRangeFromCaster = Maths.Max(verb.EffectiveRange / 2f, 10f);
                             }
-                            request.checkBlockChance   = true;
+                            request.checkBlockChance = true;
                             if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
                             {
                                 if (ShouldMoveTo(cell))
                                 {
                                     StartOrQueueCoverJob(cell, 10);
                                 }
-                                else if(nearestEnemy is Pawn enemyPawn)
+                                else if (nearestEnemy is Pawn enemyPawn)
                                 {
                                     _last = 71;
                                     // fallback
@@ -869,7 +865,7 @@ namespace CombatAI.Comps
         }
 
         /// <summary>
-        /// Returns whether parent pawn should move to a new position.
+        ///     Returns whether parent pawn should move to a new position.
         /// </summary>
         /// <param name="newPos">New position</param>
         /// <returns>Whether to move or not</returns>
@@ -883,9 +879,9 @@ namespace CombatAI.Comps
             {
                 return sightReader.GetVisibilityToEnemies(newPos) <= 2f && sightReader.GetThreat(newPos) < 1f;
             }
-            float   visDiff       = curVisibility - sightReader.GetVisibilityToEnemies(newPos);
-            float   magDiff       = Maths.Sqrt_Fast(sightReader.GetEnemyDirection(pos).sqrMagnitude, 4) - Maths.Sqrt_Fast(sightReader.GetEnemyDirection(newPos).sqrMagnitude, 4);
-            float   threatDiff    = curThreat - sightReader.GetThreat(newPos);
+            float visDiff    = curVisibility - sightReader.GetVisibilityToEnemies(newPos);
+            float magDiff    = Maths.Sqrt_Fast(sightReader.GetEnemyDirection(pos).sqrMagnitude, 4) - Maths.Sqrt_Fast(sightReader.GetEnemyDirection(newPos).sqrMagnitude, 4);
+            float threatDiff = curThreat - sightReader.GetThreat(newPos);
             return Rand.Chance(visDiff) && Rand.Chance(threatDiff) && Rand.Chance(magDiff);
         }
 
@@ -929,12 +925,12 @@ namespace CombatAI.Comps
         /// <param name="enemy">Enemy.</param>
         public void StartAggroCountdown(LocalTargetInfo enemy)
         {
-            this.aggroTarget = enemy;
-            this.aggroTicks  = Rand.Range(30, 90);
+            aggroTarget = enemy;
+            aggroTicks  = Rand.Range(30, 90);
         }
-        
+
         /// <summary>
-        /// Switch the pawn to an aggro mode and their allies around them. 
+        ///     Switch the pawn to an aggro mode and their allies around them.
         /// </summary>
         /// <param name="enemy">Attacker</param>
         /// <param name="aggroAllyChance">Chance to aggro nearbyAllies</param>
@@ -943,7 +939,7 @@ namespace CombatAI.Comps
         {
             if (selPawn.mindState.duty.Is(DutyDefOf.Defend) && data.AgroSig != sig)
             {
-                Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.HuntDownEnemies(enemy.Cell, ((Rand.Int % 1200) + 2400));
+                Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.HuntDownEnemies(enemy.Cell, Rand.Int % 1200 + 2400);
                 if (selPawn.TryStartCustomDuty(custom))
                 {
                     data.AgroSig = sig;
@@ -1233,14 +1229,14 @@ namespace CombatAI.Comps
                         if (comp != null && comp.IsSapping && comp.sapperNodes.Count > 3)
                         {
                             ReleaseEscorts(false);
-                            comp.cellBefore     = IntVec3.Invalid;
+                            comp.cellBefore      = IntVec3.Invalid;
                             comp.sapperStartTick = GenTicks.TicksGame + 800;
                             comp.sapperNodes.Clear();
                         }
                     }
                     return false;
                 };
-                Verse.GenClosest.RegionwiseBFSWorker(selPawn.Position, selPawn.Map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 4, 15, out int _);
+                GenClosest.RegionwiseBFSWorker(selPawn.Position, selPawn.Map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 4, 15, out int _);
             }
             escorts.Clear();
         }
@@ -1430,7 +1426,7 @@ namespace CombatAI.Comps
                             }
                             return false;
                         };
-                        Verse.GenClosest.RegionwiseBFSWorker(selPawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 10, 40, out int _);
+                        GenClosest.RegionwiseBFSWorker(selPawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 10, 40, out int _);
                     }
                 }
             }
@@ -1445,7 +1441,7 @@ namespace CombatAI.Comps
                 {
                     attackTarget = -1;
                 }
-                else if (!enemyVerb.IsMeleeAttack && enemyVerb.currentTarget is { IsValid: true, HasThing: true } && ((enemyVerb.WarmingUp && enemyVerb.WarmupTicksLeft < 45) || enemyVerb.Bursting))
+                else if (!enemyVerb.IsMeleeAttack && enemyVerb.currentTarget is { IsValid: true, HasThing: true } && (enemyVerb.WarmingUp && enemyVerb.WarmupTicksLeft < 45 || enemyVerb.Bursting))
                 {
                     attackTarget = enemyVerb.currentTarget.Thing.thingIDNumber;
                 }
@@ -1463,7 +1459,7 @@ namespace CombatAI.Comps
         }
 
         #region TimeStamps
-        
+
         /// <summary>
         ///     When the last injury occured/damage.
         /// </summary>
@@ -1496,7 +1492,6 @@ namespace CombatAI.Comps
         #endregion
 
 #if DEBUG_REACTION
-
         /*
          * Debug only vars.
          */
@@ -1506,12 +1501,12 @@ namespace CombatAI.Comps
             if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight && parent is Pawn pawn)
             {
                 base.DrawGUIOverlay();
-                Verb  verb          = pawn.CurrentEffectiveVerb;
-                float sightRange    = Maths.Min(SightUtility.GetSightRadius(pawn).scan, !verb.IsMeleeAttack ? verb.EffectiveRange : 15);
+                Verb  verb = pawn.CurrentEffectiveVerb;
+                float sightRange = Maths.Min(SightUtility.GetSightRadius(pawn).scan, !verb.IsMeleeAttack ? verb.EffectiveRange : 15);
                 float sightRangeSqr = sightRange * sightRange;
                 if (sightRange != 0 && verb != null)
                 {
-                    Vector3 drawPos    = pawn.DrawPos;
+                    Vector3 drawPos = pawn.DrawPos;
                     IntVec3 shiftedPos = PawnPathUtility.GetMovingShiftedPosition(pawn, 30);
                     List<Pawn> nearbyVisiblePawns = pawn.Position.ThingsInRange(pawn.Map, TrackedThingsRequestCategory.Pawns, sightRange)
                         .Select(t => t as Pawn)
@@ -1525,7 +1520,7 @@ namespace CombatAI.Comps
                         Widgets.Label(new Rect(drawPosUI.x - 25, drawPosUI.y - 15, 50, 30), $"{state}/{_visibleEnemies.Count}:{_last}:{data.AllEnemies.Count}:{data.NumAllies}:{data.BeingTargetedBy.Count}");
                     });
                     bool    bugged = nearbyVisiblePawns.Count != _visibleEnemies.Count;
-                    Vector2 a      = drawPos.MapToUIPosition();
+                    Vector2 a = drawPos.MapToUIPosition();
                     if (bugged)
                     {
                         Rect    rect;
@@ -1536,7 +1531,7 @@ namespace CombatAI.Comps
                             b = other.DrawPos.MapToUIPosition();
                             Widgets.DrawLine(a, b, Color.red, 1);
 
-                            mid  = (a + b) / 2;
+                            mid = (a + b) / 2;
                             rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
                             Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
                             Widgets.DrawBox(rect);
@@ -1569,7 +1564,7 @@ namespace CombatAI.Comps
                                 Vector2 b = ally.thing.DrawPos.MapToUIPosition();
                                 Widgets.DrawLine(a, b, Color.green, 1);
 
-                                Vector2 mid  = (a + b) / 2;
+                                Vector2 mid = (a + b) / 2;
                                 Rect    rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
                                 Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
                                 Widgets.DrawBox(rect);
@@ -1588,7 +1583,7 @@ namespace CombatAI.Comps
                                 Vector2 b = enemy.thing.DrawPos.MapToUIPosition();
                                 Widgets.DrawLine(a, b, Color.yellow, 1);
 
-                                Vector2 mid  = (a + b) / 2;
+                                Vector2 mid = (a + b) / 2;
                                 Rect    rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
                                 Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
                                 Widgets.DrawBox(rect);
@@ -1603,8 +1598,8 @@ namespace CombatAI.Comps
                         {
                             if (enemy != null && enemy.TryGetAttackVerb() is Verb enemyVerb && GetEnemyAttackTargetId(enemy) == selPawn.thingIDNumber)
                             {
-                                Vector2 b    = enemy.DrawPos.MapToUIPosition();
-                                Ray2D   ray  = new Ray2D(a, b - a);
+                                Vector2 b = enemy.DrawPos.MapToUIPosition();
+                                Ray2D   ray = new Ray2D(a, b - a);
                                 float   dist = Vector2.Distance(a, b);
                                 if (dist > 0)
                                 {
@@ -1612,7 +1607,7 @@ namespace CombatAI.Comps
                                     {
                                         Widgets.DrawLine(ray.GetPoint(i - 1), ray.GetPoint(i), i % 2 == 1 ? Color.black : Color.magenta, 2);
                                     }
-                                    Vector2 mid  = (a + b) / 2;
+                                    Vector2 mid = (a + b) / 2;
                                     Rect    rect = new Rect(mid.x - 25, mid.y - 15, 50, 30);
                                     Widgets.DrawBoxSolid(rect, new Color(0.2f, 0.2f, 0.2f, 0.8f));
                                     Widgets.DrawBox(rect);
@@ -1630,8 +1625,8 @@ namespace CombatAI.Comps
         }
 
         private readonly HashSet<Pawn> _visibleEnemies = new HashSet<Pawn>();
-        private readonly List<IntVec3> _path           = new List<IntVec3>();
-        private readonly List<Color>   _colors         = new List<Color>();
+        private readonly List<IntVec3> _path = new List<IntVec3>();
+        private readonly List<Color>   _colors = new List<Color>();
 #endif
     }
 }

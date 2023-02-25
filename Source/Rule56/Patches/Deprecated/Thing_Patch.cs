@@ -1,10 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using HarmonyLib;
-using Verse;
-#if DEBUG_REACTION
+﻿#if DEBUG_REACTION
 using CombatAI.Utilities;
 #endif
 
@@ -20,7 +14,7 @@ namespace CombatAI.Patches
 
 			public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
 			{
-				List<CodeInstruction> codes    = instructions.ToList();
+				List<CodeInstruction> codes = instructions.ToList();
 				bool                  finished = false;
 
 				for (int i = 0; i < codes.Count; i++)

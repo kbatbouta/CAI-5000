@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using CombatAI.Comps;
 using HarmonyLib;
 using RimWorld;
@@ -20,7 +19,7 @@ namespace CombatAI.Patches
                 }
             }
         }
-        
+
         [HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.StartJob))]
         public static class Pawn_StartJob_Patch
         {
@@ -31,7 +30,7 @@ namespace CombatAI.Patches
                     comp.jobLogs ??= new List<JobLog>();
                     if (!comp.jobLogs.Any(j => j.id == newJob.loadID))
                     {
-                        comp.jobLogs.Insert(0,JobLog.For(__instance.pawn, newJob, "unknown"));
+                        comp.jobLogs.Insert(0, JobLog.For(__instance.pawn, newJob, "unknown"));
                     }
                 }
             }

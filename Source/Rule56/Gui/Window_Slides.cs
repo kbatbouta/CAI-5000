@@ -1,25 +1,26 @@
 using System.Collections.Generic;
+using CombatAI.R;
 using UnityEngine;
 using Verse;
 namespace CombatAI.Gui
 {
     public class Window_Slides : Window
     {
-        private int             curIndex;
-        private bool[]          read;
-        private List<HyperText> pages = new List<HyperText>();
-        
+        private          int             curIndex;
+        private readonly List<HyperText> pages = new List<HyperText>();
+        private          bool[]          read;
+
         public Window_Slides(HyperTextDef[] defs, bool forcePause = true, bool skippable = true)
         {
-            this.read  = new bool[defs.Length];
-            this.pages = new List<HyperText>(defs.Length);
+            read  = new bool[defs.Length];
+            pages = new List<HyperText>(defs.Length);
             foreach (HyperTextDef def in defs)
             {
-                this.pages.Add(HyperTextMaker.Make(def));
+                pages.Add(HyperTextMaker.Make(def));
             }
-            this.doCloseX   = skippable;
+            doCloseX        = skippable;
             this.forcePause = forcePause;
-            this.draggable  = false;
+            draggable       = false;
         }
 
         public override Vector2 InitialSize
@@ -31,10 +32,11 @@ namespace CombatAI.Gui
         {
             HyperText page = pages[curIndex];
             page.Draw(inRect.TopPartPixels(inRect.height - 50));
+
             bool ButtonText(Rect rect, string text, Color? color)
             {
                 bool result = false;
-                Gui.GUIUtility.ExecuteSafeGUIAction(() =>
+                GUIUtility.ExecuteSafeGUIAction(() =>
                 {
                     if (color != null)
                     {
@@ -44,8 +46,9 @@ namespace CombatAI.Gui
                 });
                 return result;
             }
+
             Rect counterRect = inRect.BottomPartPixels(50).TopPartPixels(20);
-            Gui.GUIUtility.ExecuteSafeGUIAction(() =>
+            GUIUtility.ExecuteSafeGUIAction(() =>
             {
                 GUIFont.Font   = GUIFontSize.Smaller;
                 GUIFont.Anchor = TextAnchor.MiddleCenter;
@@ -55,43 +58,43 @@ namespace CombatAI.Gui
             {
                 Rect buttonRect = inRect.BottomPartPixels(30);
                 buttonRect       = buttonRect.ContractedBy(3);
-                buttonRect.width = 310;                    
+                buttonRect.width = 310;
                 buttonRect       = buttonRect.CenteredOnXIn(inRect);
                 if (curIndex < pages.Count - 1)
                 {
-                    if (ButtonText(buttonRect.RightPartPixels(150), $"Next page >", null))
+                    if (ButtonText(buttonRect.RightPartPixels(150), "Next page >", null))
                     {
                         curIndex++;
                     }
                 }
                 else
                 {
-                    if (ButtonText(buttonRect.RightPartPixels(150), R.Keyed.CombatAI_Close, Color.green))
+                    if (ButtonText(buttonRect.RightPartPixels(150), Keyed.CombatAI_Close, Color.green))
                     {
                         Close();
                     }
                 }
-                if (curIndex > 0 && ButtonText(buttonRect.LeftPartPixels(150), $"< Previous page", null))
+                if (curIndex > 0 && ButtonText(buttonRect.LeftPartPixels(150), "< Previous page", null))
                 {
                     curIndex--;
                 }
             }
             else
-            {                
+            {
                 Rect buttonRect = inRect.BottomPartPixels(30);
                 buttonRect       = buttonRect.ContractedBy(3);
-                buttonRect.width = 150;                    
+                buttonRect.width = 150;
                 buttonRect       = buttonRect.CenteredOnXIn(inRect);
                 if (pages.Count != 0)
                 {
-                    if (ButtonText(buttonRect, $"Next page >", null))
+                    if (ButtonText(buttonRect, "Next page >", null))
                     {
                         curIndex++;
                     }
                 }
                 else
                 {
-                    if (ButtonText(buttonRect, R.Keyed.CombatAI_Close, Color.green))
+                    if (ButtonText(buttonRect, Keyed.CombatAI_Close, Color.green))
                     {
                         Close();
                     }

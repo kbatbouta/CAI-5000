@@ -16,11 +16,11 @@ namespace CombatAI
             }
             return fallback;
         }
-        
+
         public override ThinkNode DeepCopy(bool resolve = true)
         {
             ThinkNode_ConditionalBeingTargeted obj = (ThinkNode_ConditionalBeingTargeted)base.DeepCopy(resolve);
-            obj.fallback            = fallback;
+            obj.fallback = fallback;
             return obj;
         }
     }

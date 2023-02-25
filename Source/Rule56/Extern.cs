@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using CombatAI.Comps;
 using Prepatcher;
@@ -20,12 +18,9 @@ namespace CombatAI
             {
                 return CombatAI_ThingComp(pawn);
             }
-            else
-            {
-                return pawn.GetComp_Fast<ThingComp_CombatAI>();
-            }
+            return pawn.GetComp_Fast<ThingComp_CombatAI>();
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MapComponent_CombatAI AI(this Map map)
         {
@@ -33,12 +28,9 @@ namespace CombatAI
             {
                 return CombatAI_MapComp(map);
             }
-            else
-            {
-                return map.GetComp_Fast<MapComponent_CombatAI>();
-            }
+            return map.GetComp_Fast<MapComponent_CombatAI>();
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static SightTracker Sight(this Map map)
         {
@@ -46,12 +38,9 @@ namespace CombatAI
             {
                 return CombatAI_Sight(map);
             }
-            else
-            {
-                return map.GetComp_Fast<SightTracker>();
-            }
+            return map.GetComp_Fast<SightTracker>();
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AvoidanceTracker Avoidance(this Map map)
         {
@@ -59,10 +48,7 @@ namespace CombatAI
             {
                 return CombatAI_Avoidance(map);
             }
-            else
-            {
-                return map.GetComp_Fast<AvoidanceTracker>();
-            }
+            return map.GetComp_Fast<AvoidanceTracker>();
         }
 
 
@@ -74,10 +60,10 @@ namespace CombatAI
         private static extern MapComponent_CombatAI CombatAI_MapComp(Map map);
         [PrepatcherField]
         [InjectComponent]
-        private static extern  SightTracker CombatAI_Sight(Map map);
+        private static extern SightTracker CombatAI_Sight(Map map);
         [PrepatcherField]
         [InjectComponent]
         private static extern AvoidanceTracker CombatAI_Avoidance(Map map);
-        
+
     }
 }

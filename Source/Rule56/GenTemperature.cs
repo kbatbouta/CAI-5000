@@ -9,7 +9,7 @@ namespace CombatAI
         {
             return TryGetTemperature(map.cellIndices.CellToIndex(cell), map);
         }
-        
+
         public static float TryGetTemperature(int index, Map map)
         {
             if (index >= 0 && index < map.cellIndices.NumGridCells)

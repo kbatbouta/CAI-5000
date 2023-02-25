@@ -3,23 +3,22 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
-using UnityEngine;
 using Verse;
 using Verse.AI;
 namespace CombatAI
 {
     public class JobLog
     {
-        private readonly static StringBuilder builder = new StringBuilder();
-        
-        public int          timestamp;
-        public string       job;
-        public int          id;
-        public IntVec3      origin;
-        public IntVec3      destination;
-        public string       duty;
-        public List<string> thinknode;
-        public List<string> stacktrace;
+        private static readonly StringBuilder builder = new StringBuilder();
+        public                  IntVec3       destination;
+        public                  string        duty;
+        public                  int           id;
+        public                  string        job;
+        public                  IntVec3       origin;
+        public                  List<string>  stacktrace;
+        public                  List<string>  thinknode;
+
+        public int timestamp;
 
         private JobLog()
         {
@@ -32,7 +31,7 @@ namespace CombatAI
 
         public static JobLog For(Pawn pawn, Job job, ThinkNode jobGiver)
         {
-            JobLog     log   = new JobLog();
+            JobLog log = new JobLog();
             log.job         = job.def.defName;
             log.origin      = pawn.Position;
             log.id          = job.loadID;
@@ -61,7 +60,7 @@ namespace CombatAI
             log.timestamp = GenTicks.TicksGame;
             return log;
         }
-        
+
         public static JobLog For(Pawn pawn, Job job, string jobGiverTag)
         {
             JobLog log = new JobLog();
@@ -71,7 +70,10 @@ namespace CombatAI
             log.destination = job.targetA.IsValid ? job.targetA.Cell : IntVec3.Invalid;
             log.duty        = pawn.mindState.duty?.def.defName ?? "none";
             // fill thinknode trace
-            log.thinknode = new List<string>() { jobGiverTag };
+            log.thinknode = new List<string>
+            {
+                jobGiverTag
+            };
             // reset builder
             StackTrace trace = new StackTrace();
             // fill stacktrace

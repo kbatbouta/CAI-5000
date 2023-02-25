@@ -1,9 +1,5 @@
 using System;
-using System.CodeDom;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 using CombatAI.Gui;
 using UnityEngine;
 using Verse;
@@ -19,22 +15,22 @@ namespace CombatAI
 
         public Window_Exception(Exception exception, StackTrace trace, string report)
         {
-            this.drawShadow  = true;
-            this.forcePause  = true;
-            this.layer       = WindowLayer.Super;
-            this.draggable   = false;
-            this.collapsible = new Listing_Collapsible();
-            this.exception   = exception;
-            this.trace       = trace;
-            this.report      = report.NullOrEmpty() ? exception.Message : report;
+            drawShadow     = true;
+            forcePause     = true;
+            layer          = WindowLayer.Super;
+            draggable      = false;
+            collapsible    = new Listing_Collapsible();
+            this.exception = exception;
+            this.trace     = trace;
+            this.report    = report.NullOrEmpty() ? exception.Message : report;
         }
-        
+
         public override Vector2 InitialSize
         {
             get
             {
                 Vector2 vec = new Vector2();
-                vec.x = Mathf.RoundToInt(Maths.Max(UI.screenWidth  * 0.45f, 500));
+                vec.x = Mathf.RoundToInt(Maths.Max(UI.screenWidth * 0.45f, 500));
                 vec.y = Mathf.RoundToInt(Maths.Max(UI.screenHeight * 0.45f, 400));
                 return vec;
             }
@@ -60,9 +56,9 @@ namespace CombatAI
                         break;
                     }
                     collapsible.Gap(2);
-                    collapsible.Label($"<color=red>{String.Format("{0,2}", i)}.strace</color>: {frame.GetMethod().DeclaringType}/{frame.GetMethod().ReflectedType}:{frame.GetMethod().Name}", fontSize: GUIFontSize.Smaller, fontStyle: FontStyle.Normal);
-                    Type     t        = frame.GetMethod().GetType();
-                    collapsible.Label($"<color=red>{String.Format("{0,2}", i)}.source.2</color>: assembly ({t.Assembly})", fontSize:  GUIFontSize.Tiny);
+                    collapsible.Label($"<color=red>{string.Format("{0,2}", i)}.strace</color>: {frame.GetMethod().DeclaringType}/{frame.GetMethod().ReflectedType}:{frame.GetMethod().Name}", fontSize: GUIFontSize.Smaller, fontStyle: FontStyle.Normal);
+                    Type t = frame.GetMethod().GetType();
+                    collapsible.Label($"<color=red>{string.Format("{0,2}", i)}.source.2</color>: assembly ({t.Assembly})", fontSize: GUIFontSize.Tiny);
                 }
                 collapsible.Line(1);
                 collapsible.Gap();

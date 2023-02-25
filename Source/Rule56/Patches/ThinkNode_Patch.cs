@@ -13,6 +13,12 @@ namespace CombatAI.Patches
         private static          Pawn         curPawn;
         private static readonly HashSet<Job> processedJobs = new HashSet<Job>();
 
+        private static bool Enabled
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Finder.Settings.Debug && Finder.Settings.Debug_LogJobs;
+        }
+
         [HarmonyPatch]
         private static class ThinkNode_TryIssueJobPackage_Patch
         {
@@ -21,7 +27,7 @@ namespace CombatAI.Patches
                 HashSet<MethodBase> methods = new HashSet<MethodBase>();
                 foreach (Type t in typeof(ThinkNode).AllSubclasses())
                 {
-                    foreach (var method in t.GetMethods(AccessTools.all))
+                    foreach (MethodInfo method in t.GetMethods(AccessTools.all))
                     {
                         if (method != null && !methods.Contains(method) && method.HasMethodBody() && !method.IsAbstract && method.ReturnType == typeof(ThinkResult) && method.Name == "TryIssueJobPackage" && method.DeclaringType == t)
                         {
@@ -63,12 +69,6 @@ namespace CombatAI.Patches
                     }
                 }
             }
-        }
-
-        private static bool Enabled
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Finder.Settings.Debug && Finder.Settings.Debug_LogJobs;
         }
     }
 }
