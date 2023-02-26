@@ -53,7 +53,7 @@ namespace CombatAI
         
         [PrepatcherField]
         [InjectComponent]
-        private static extern ThingComp_CombatAI CombatAI_ThingComp(ThingWithComps thingWithComps);
+        private static extern ThingComp_CombatAI CombatAI_ThingComp(Pawn pawn);
         [PrepatcherField]
         [InjectComponent]
         private static extern MapComponent_CombatAI CombatAI_MapComp(Map map);
