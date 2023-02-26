@@ -579,7 +579,7 @@ namespace CombatAI.Comps
                             continue;
                         }
 #endif
-                        if (info.thing.Spawned && selPawn.CanReach(info.thing, PathEndMode.Touch, Danger.Unspecified))
+                        if (info.thing.Spawned && selPawn.CanReach(info.thing, PathEndMode.Touch, Danger.Deadly))
                         {
                             Verb enemyVerb = info.thing.TryGetAttackVerb();
                             if (enemyVerb?.IsMeleeAttack == true && info.thing is Pawn enemyPawn && enemyPawn.CurJob.Is(JobDefOf.AttackMelee) && enemyPawn.CurJob.targetA.Thing?.TryGetAttackVerb()?.IsMeleeAttack == false)
@@ -1126,7 +1126,7 @@ namespace CombatAI.Comps
                         {
                             continue;
                         }
-                        if (pawn.CanReach(target.Cell, PathEndMode.OnCell, Danger.Unspecified))
+                        if (pawn.CanReach(target.Cell, PathEndMode.OnCell, Danger.Deadly))
                         {
                             return true;
                         }
@@ -1142,7 +1142,7 @@ namespace CombatAI.Comps
                     {
                         if (pawn.IsColonist && pawn.drafter != null)
                         {
-                            if (!pawn.CanReach(target.Cell, PathEndMode.OnCell, Danger.Unspecified))
+                            if (!pawn.CanReach(target.Cell, PathEndMode.OnCell, Danger.Deadly))
                             {
                                 continue;
                             }
