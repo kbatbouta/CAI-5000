@@ -28,13 +28,19 @@
         <li>Ludeon.RimWorld.Royalty</li>
         <li>brrainz.harmony</li>
         <li>zetrith.prepatcher</li>
+        <li>CETeam.CombatExtended</li>
     </loadAfter>
+    <loadBefore>
+		<li>Krkr.RocketMan</li>		
+	</loadBefore>
     <incompatibleWith>
         <li>Victor.WallsAreSolid</li>
         <li>fed1sPlay.PawnTargetFix</li>
         <li>brrainz.lineofsightfix</li>
         <li>majorhoff.rimthreaded</li>
         <li>rwmt.Multiplayer</li>
+        <li>SR.ModRimworld.RaidExtension</li>
+        <li>Taranchuk.ModErrorChecker</li>
     </incompatibleWith>
     <description>
         *T-800s are not included* Advanced combat AI + Fog Of War brought you by the RocketMan Team - Discord: https://discord.gg/Jx8UYNtS24
