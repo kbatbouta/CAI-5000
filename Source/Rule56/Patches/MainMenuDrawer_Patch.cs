@@ -8,7 +8,14 @@ namespace CombatAI.Patches
     {
         private static bool quickSetupInited;
 
-        [HarmonyPatch(typeof(MainMenuDrawer), nameof(MainMenuDrawer.Init))]
+        public static void Patch()
+        {
+            Finder.Harmony.Patch(AccessTools.Method(typeof(MainMenuDrawer), nameof(MainMenuDrawer.Init)),
+                                 postfix: new HarmonyMethod(AccessTools.Method(typeof(MainMenuDrawer_Init_Patch), nameof(MainMenuDrawer_Init_Patch.Postfix))));
+            Finder.Harmony.Patch(AccessTools.Method(typeof(MainMenuDrawer), nameof(MainMenuDrawer.DoMainMenuControls)),
+                                 prefix: new HarmonyMethod(AccessTools.Method(typeof(MainMenuDrawer_DoMainMenuControls_Patch), nameof(MainMenuDrawer_DoMainMenuControls_Patch.Prefix))));
+        }
+        
         private static class MainMenuDrawer_Init_Patch
         {
             public static void Postfix()
@@ -20,8 +27,7 @@ namespace CombatAI.Patches
                 }
             }
         }
-
-        [HarmonyPatch(typeof(MainMenuDrawer), nameof(MainMenuDrawer.DoMainMenuControls))]
+        
         private static class MainMenuDrawer_DoMainMenuControls_Patch
         {
             public static bool Prefix()

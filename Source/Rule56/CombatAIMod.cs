@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using CombatAI.Gui;
+using CombatAI.Patches;
 using CombatAI.R;
 using HarmonyLib;
 using RimWorld;
@@ -31,7 +32,7 @@ namespace CombatAI
             Finder.Mod      = this;
             Finder.Settings = GetSettings<Settings>();
             Finder.Harmony  = new Harmony("Krkr.Rule56");
-            Finder.Harmony.PatchAll();
+            HarmonyPatches.Initialize();
             if (Finder.Settings == null)
             {
                 Finder.Settings = new Settings();
