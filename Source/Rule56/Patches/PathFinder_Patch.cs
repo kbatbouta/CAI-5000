@@ -101,13 +101,13 @@ namespace CombatAI.Patches
                             float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
                             isRaider = true;
                             TraverseParms parms = traverseParms;
+                            parms.maxDanger     = Danger.Deadly;
                             parms.canBashDoors  = true;
                             parms.canBashFences = true;
                             bool humanlike = pawn.RaceProps.Humanlike;
                             if (humanlike)
                             {
-                                parms.mode      = TraverseMode.PassAllDestroyableThingsNotWater;
-                                parms.maxDanger = Danger.Unspecified;
+                                parms.mode = TraverseMode.PassAllDestroyableThingsNotWater;
                             }
                             else
                             {

@@ -68,7 +68,7 @@ namespace CombatAI
                         pawn.mindState.duty = null;
 
                     }
-                    else if (!pawn.CanReach(focus, PathEndMode.InteractionCell, Danger.Unspecified, true, true))
+                    else if (!pawn.CanReach(focus, PathEndMode.InteractionCell, Danger.Deadly, true, true))
                     {
                         curCustomDuty       = null;
                         pawn.mindState.duty = null;
