@@ -10,6 +10,7 @@ namespace CombatAI.Patches
     {
         private static readonly List<Pawn>[] forces = new List<Pawn>[10];
         private static readonly List<Thing>  things = new List<Thing>();
+        private static readonly List<Thing>  thingsImportant = new List<Thing>();
         private static readonly List<Zone>   zones  = new List<Zone>();
 
         static LordToil_AssaultColony_Patch()
@@ -30,6 +31,7 @@ namespace CombatAI.Patches
         {
             zones.Clear();
             things.Clear();
+            thingsImportant.Clear();
             forces[0].Clear();
             forces[1].Clear();
             forces[2].Clear();
@@ -65,6 +67,18 @@ namespace CombatAI.Patches
                     things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.ResearchBench).Where(t => t.Faction == map.ParentFaction));
                     things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.FoodDispenser).Where(t => t.Faction == map.ParentFaction));
                     things.AddRange(map.mapPawns.PrisonersOfColonySpawned);
+                    // add custom and modded raid targets.
+                    foreach (ThingDef def in RaidTargetDatabase.allDefs)
+                    {
+                        if (map.listerThings.listsByDef.TryGetValue(def, out List<Thing> things) && things != null)
+                        {
+                            if (Finder.Settings.Debug)
+                            {
+                                Log.Message($"ISMA: Added things of def {def} to the current raid pool.");
+                            }
+                            thingsImportant.AddRange(things);
+                        }
+                    }
                     if (ModsConfig.BiotechActive)
                     {
                         things.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.MechCharger).Where(t => t.Faction == map.ParentFaction));
@@ -104,7 +118,11 @@ namespace CombatAI.Patches
                             Zone zone = zones.RandomElementByWeight(s => GetZoneTotalMarketValue(s) / 100f + (s.Position.Roofed(__instance.Map) ? 2 : 0f));
                             for (int j = 0; j < force.Count; j++)
                             {
-                                ThingComp_CombatAI comp = force[j].GetComp_Fast<ThingComp_CombatAI>();
+                                ThingComp_CombatAI comp = force[j].AI();
+                                if (comp == null &&  force[j] is Pawn p)
+                                {
+                                    Log.Error($"IMSA: {p} has no ThingComp_CombatAI");
+                                }
                                 if (comp != null && !comp.duties.Any(CombatAI_DutyDefOf.CombatAI_AssaultPoint))
                                 {
                                     Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.AssaultPoint(zone.Position, Rand.Range(7, 15), 3600 * Rand.Range(3, 8));
@@ -114,9 +132,9 @@ namespace CombatAI.Patches
                                         {
                                             Log.Message($"{comp.parent} task force {i} attacking {zone}");
                                         }
-                                        Pawn_CustomDutyTracker.CustomPawnDuty customDuty2 = CustomDutyUtility.DefendPoint(zone.Position, Rand.Range(30, 60), true, 3600 + Rand.Range(0, 3600));
                                         if (Rand.Chance(0.33f))
                                         {
+                                            Pawn_CustomDutyTracker.CustomPawnDuty customDuty2 = CustomDutyUtility.DefendPoint(zone.Position, Rand.Range(30, 60), true, 3600 + Rand.Range(0, 60000));
                                             force[j].EnqueueFirstCustomDuty(customDuty);
                                             if (Finder.Settings.Debug)
                                             {
@@ -129,12 +147,21 @@ namespace CombatAI.Patches
                         }
                         else if (things.Count != 0)
                         {
-                            Thing thing = things.RandomElementByWeight(t => t.GetStatValue_Fast(StatDefOf.MarketValue, 1200) * (t is Pawn ? 10 : 1));
+                            List<Thing> collection;
+                            if (thingsImportant.NullOrEmpty())
+                            {
+                                collection = things;
+                            }
+                            else
+                            {
+                                collection = Rand.Chance(0.5f) ? thingsImportant : things;
+                            }
+                            Thing       thing = collection.RandomElementByWeight(t => t.GetStatValue_Fast(StatDefOf.MarketValue, 1200) * (t is Pawn ? 10 : 1));
                             if (thing != null)
                             {
                                 for (int j = 0; j < force.Count; j++)
                                 {
-                                    ThingComp_CombatAI comp = force[j].GetComp_Fast<ThingComp_CombatAI>();
+                                    ThingComp_CombatAI comp = force[j].AI();
                                     if (comp != null && !comp.duties.Any(CombatAI_DutyDefOf.CombatAI_AssaultPoint))
                                     {
                                         Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.AssaultPoint(thing.Position, Rand.Range(7, 15), 3600 * Rand.Range(3, 8));
@@ -144,9 +171,9 @@ namespace CombatAI.Patches
                                             {
                                                 Log.Message($"{comp.parent} task force {i} attacking {thing}");
                                             }
-                                            Pawn_CustomDutyTracker.CustomPawnDuty customDuty2 = CustomDutyUtility.DefendPoint(thing.Position, Rand.Range(30, 60), true, 3600 + Rand.Range(0, 3600));
                                             if (Rand.Chance(0.33f))
                                             {
+                                                Pawn_CustomDutyTracker.CustomPawnDuty customDuty2 = CustomDutyUtility.DefendPoint(thing.Position, Rand.Range(30, 60), true, 3600 + Rand.Range(0, 60000));
                                                 force[j].EnqueueFirstCustomDuty(customDuty);
                                                 if (Finder.Settings.Debug)
                                                 {

@@ -7,7 +7,7 @@ namespace CombatAI.Patches
         public static void Initialize()
         {
             // queue patches
-            LongEventHandler.QueueLongEvent(PatchAll, "CombatAI.Preparing", false, OnError);
+            LongEventHandler.QueueLongEvent(PatchAll, "CombatAI.Preparing", false, null);
             // manual patches
             MainMenuDrawer_Patch.Patch();
         }
@@ -16,12 +16,6 @@ namespace CombatAI.Patches
         {
             Log.Message("ISMA: Applying patches");
             Finder.Harmony.PatchAll();
-        }
-
-        private static void OnError(Exception exception)
-        {
-            Log.Error(exception.ToString());
-            Log.Error(exception.Message);
         }
     }
 }

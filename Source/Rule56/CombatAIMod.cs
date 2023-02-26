@@ -40,6 +40,7 @@ namespace CombatAI
             LongEventHandler.QueueLongEvent(ArmorUtility.Initialize, "CombatAI.Preparing", false, null);
             LongEventHandler.QueueLongEvent(CompatibilityManager.Initialize, "CombatAI.Preparing", false, null);
             LongEventHandler.QueueLongEvent(ThinkNodeDatabase.Initialize, "CombatAI.Preparing", false, null);
+            LongEventHandler.QueueLongEvent(RaidTargetDatabase.Initialize, "CombatAI.Preparing", false, null);
         }
 
         public override string SettingsCategory()
