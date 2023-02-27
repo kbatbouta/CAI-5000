@@ -16,13 +16,14 @@ namespace CombatAI
             {
                 return;
             }
+            bool               targetIsValid     = target.IsValid;
             Func<Region, bool> traverseValidator = GetTraverseValidator(traverseParms);
             int                num               = 1;
             queue.Clear();
             queue.Enqueue(new Node
             {
                 region = rootRegion,
-                score  = Maths.Sqrt_Fast(target.DistanceToSquared(rootRegion.extentsClose.TopRight), 3)
+                score  = targetIsValid ? Maths.Sqrt_Fast(target.DistanceToSquared(rootRegion.extentsClose.TopRight), 3) : 0,
             });
             flooded.Clear();
             flooded.Add(rootRegion.id);
@@ -47,13 +48,25 @@ namespace CombatAI
                             flooded.Add(next.id);
                             if ((validator == null || validator(next)) && (traverseValidator == null || traverseValidator(next)))
                             {
-                                float distToTarget = Maths.Sqrt_Fast(target.DistanceToSquared(next.extentsClose.TopRight), 3);
-                                if (distToTarget < maxDist)
+                                if (targetIsValid)
+                                {
+                                    float distToTarget = Maths.Sqrt_Fast(target.DistanceToSquared(next.extentsClose.TopRight), 3);
+                                    if (distToTarget < maxDist)
+                                    {
+                                        queue.Enqueue(new Node
+                                        {
+                                            region = next,
+                                            score  = distToTarget + (!depthCost ? 0 : (node.depth + 1) * depthCostMul) + (cost?.Invoke(next) ?? 0),
+                                            depth  = node.depth + 1
+                                        });
+                                    }
+                                }
+                                else
                                 {
                                     queue.Enqueue(new Node
                                     {
                                         region = next,
-                                        score  = distToTarget + (!depthCost ? 0 : (node.depth + 1) * depthCostMul) + (cost?.Invoke(next) ?? 0),
+                                        score  = (!depthCost ? 0 : (node.depth + 1) * depthCostMul) + (cost?.Invoke(next) ?? 0),
                                         depth  = node.depth + 1
                                     });
                                 }
@@ -71,6 +84,10 @@ namespace CombatAI
             if (traverseParms != null)
             {
                 TraverseParms            traverse = traverseParms.Value;
+                if (traverse.mode == TraverseMode.PassAllDestroyableThings || traverse.mode == TraverseMode.PassAllDestroyableThingsNotWater)
+                {
+                    traverse.mode = TraverseMode.PassDoors;
+                }
                 Pawn                     pawn     = traverse.pawn;
                 SightTracker.SightReader sight    = null;
                 if (pawn != null && traverse.maxDanger != Danger.Unspecified && traverse.maxDanger != Danger.Deadly)
@@ -95,7 +112,7 @@ namespace CombatAI
                             return false;
                         }
                     }
-                    return true;
+                    return region.type.Passable();
                 };
             }
             return null;

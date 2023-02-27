@@ -48,6 +48,7 @@ namespace CombatAI
         /// </summary>
         public ITFloatGrid gridFog;
 
+        private int regionUpdateIndex;
         private int ops;
         /// <summary>
         ///     Whether this is the player grid
@@ -123,9 +124,34 @@ namespace CombatAI
 
         public void FinalizeInit()
         {
+            // initialize the region grid.
+            for (int i = 0; i < map.cellIndices.NumGridCells; i++)
+            {
+                grid_regions.SetRegionAt(i, map.regionGrid.regionGrid[i]);
+            }
+            // start async actions.
             asyncActions.Start();
         }
 
+        public virtual void SightGridUpdate(bool gamePaused, bool performanceOkay)
+        {
+            if (gamePaused || performanceOkay)
+            {
+                int limit        = gamePaused ? 32 : 8; 
+                int numGridCells = map.cellIndices.NumGridCells;
+                for (int i = 0; i < limit; i++)
+                {
+                    Region region = map.regionGrid.regionGrid[regionUpdateIndex];
+                    grid_regions.SetRegionAt(regionUpdateIndex, (region?.valid ?? false) ? region : null);
+                    regionUpdateIndex++;
+                    if (regionUpdateIndex >= numGridCells)
+                    {
+                        regionUpdateIndex = 0;
+                    }
+                }
+            }
+        }
+        
         public virtual void SightGridTick()
         {
             asyncActions.ExecuteMainThreadActions();

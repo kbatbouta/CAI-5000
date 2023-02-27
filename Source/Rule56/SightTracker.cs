@@ -55,6 +55,26 @@ namespace CombatAI
             wildlife.FinalizeInit();
         }
 
+        public override void MapComponentUpdate()
+        {
+            base.MapComponentUpdate();
+            bool gamePaused = false;
+            bool performanceOkay = false;
+            if (Find.TickManager != null)
+            {
+                gamePaused      = Find.TickManager.Paused;
+                performanceOkay = Finder.Performance.TpsDeficit <= 5 * Find.TickManager.TickRateMultiplier;
+            }
+            // --------------
+            colonistsAndFriendlies.SightGridUpdate(gamePaused, performanceOkay);
+            // --------------
+            raidersAndHostiles.SightGridUpdate(gamePaused, performanceOkay);
+            // --------------
+            insectsAndMechs.SightGridUpdate(gamePaused, performanceOkay);
+            // --------------
+            wildlife.SightGridUpdate(gamePaused, performanceOkay);
+        }
+
         public override void MapComponentTick()
         {
             base.MapComponentTick();

@@ -37,27 +37,35 @@ namespace CombatAI.Patches
                     pawn.TryGetSightReader(out sightReader);
                     if (sightReader != null)
                     {
-                        int num = 0;
+                        int           num      = 0;
+                        TraverseParms traverse = new TraverseParms();
+                        traverse.pawn          = pawn;
+                        traverse.canBashDoors  = pawn.HostileTo(pawn.Map.ParentFaction) && pawn.RaceProps.Humanlike;
+                        traverse.canBashFences = traverse.canBashDoors;
+                        traverse.mode          = traverse.canBashDoors ? TraverseMode.PassDoors : TraverseMode.ByPawn;
+                        traverse.maxDanger     = Danger.Deadly;
                         Func<Region, int, int, bool> action = (region, score, depth) =>
                         {
-                            List<Thing> things = region.ListerThings.ThingsInGroup(ThingRequestGroup.Pawn);
-                            score = Maths.Min(score, 45);
-                            for (int i = 0; i < things.Count; i++)
+                            if (sightReader.GetRegionAbsVisibilityToEnemies(region) > 0)
                             {
-                                if (things[i] != null)
+                                List<Thing> things = region.ListerThings.ThingsInGroup(ThingRequestGroup.Pawn);
+                                score = Maths.Min(score, 45);
+                                for (int i = 0; i < things.Count; i++)
                                 {
-                                    num++;
-                                    distDict[things[i].thingIDNumber] = score;
+                                    if (things[i] != null)
+                                    {
+                                        num++;
+                                        distDict[things[i].thingIDNumber] = score;
+                                    }
                                 }
                             }
                             return num >= 32;
                         };
-                        float costConst = !Mod_CE.active ? 7.5f : 2.5f;
                         Func<Region, float> cost = region =>
                         {
-                            return Maths.Min(sightReader.GetRegionAbsVisibilityToEnemies(region), 10) * Mathf.Clamp(sightReader.GetRegionAbsVisibilityToEnemies(region) + 0.5f, 1.0f, 2.0f) * costConst;
+                            return Maths.Min(sightReader.GetRegionAbsVisibilityToEnemies(region), 8) * 10;
                         };
-                        RegionFlooder.Flood(pawn.Position, pawn.Position, pawn.Map, action, null, cost, maxRegions: !Finder.Performance.TpsCriticallyLow ? 200 : 75);
+                        RegionFlooder.Flood(pawn.Position, IntVec3.Invalid, pawn.Map, action, null, cost,  maxRegions: 150, traverseParms:traverse);
                     }
                     if (searcherVerb != null && !searcherVerb.IsMeleeAttack && (projectile = searcherVerb.GetProjectile()?.projectile ?? null) != null)
                     {
@@ -125,7 +133,7 @@ namespace CombatAI.Patches
                         {
                             result -= 15f * Finder.P50;
                         }
-                        result += sightReader.GetEnemyDirection(target.Thing.Position).sqrMagnitude - Mathf.Pow(sightReader.GetVisibilityToEnemies(target.Thing.Position), 2);
+                        result += Maths.Sqrt_Fast(sightReader.GetEnemyDirection(target.Thing.Position).sqrMagnitude, 4);
                     }
                     if (target.Thing is Pawn enemy)
                     {
