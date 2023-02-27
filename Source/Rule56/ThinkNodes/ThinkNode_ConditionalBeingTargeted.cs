@@ -9,7 +9,7 @@ namespace CombatAI
 
         public override bool Satisfied(Pawn pawn)
         {
-            ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+            ThingComp_CombatAI comp = pawn.AI();
             if (comp != null)
             {
                 return comp.data.BeingTargetedBy.Count > 0;

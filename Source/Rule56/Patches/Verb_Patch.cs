@@ -53,7 +53,7 @@ namespace CombatAI.Patches
                 {
                     if (__instance.CurrentTarget is { IsValid: true, Thing: Pawn targetPawn } && (__instance.caster?.HostileTo(targetPawn) ?? false))
                     {
-                        ThingComp_CombatAI comp = targetPawn.GetComp_Fast<ThingComp_CombatAI>();
+                        ThingComp_CombatAI comp = targetPawn.AI();
                         if (comp != null)
                         {
                             //

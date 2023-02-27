@@ -9,7 +9,7 @@ namespace CombatAI
 
         public override bool Satisfied(Pawn pawn)
         {
-            ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+            ThingComp_CombatAI comp = pawn.AI();
             if (comp != null && pawn.TryGetSightReader(out SightTracker.SightReader reader))
             {
                 return comp.data.NumEnemies == 0 && reader.GetAbsVisibilityToEnemies(pawn.Position) == 0;

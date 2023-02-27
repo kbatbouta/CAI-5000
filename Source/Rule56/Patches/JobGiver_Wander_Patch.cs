@@ -21,7 +21,7 @@ namespace CombatAI.Patches
 //                {
 //                    return true;
 //                }
-//                ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+//                ThingComp_CombatAI comp = pawn.AI();
 //                if (comp != null)
 //                {
 //                    if(comp.data.InterruptedRecently(600) || comp.data.RetreatedRecently(600))

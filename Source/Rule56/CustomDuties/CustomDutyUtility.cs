@@ -10,7 +10,7 @@ namespace CombatAI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Pawn_CustomDutyTracker GetPawnCustomDutyTracker(this Pawn pawn)
         {
-            return pawn.GetComp_Fast<ThingComp_CombatAI>()?.duties ?? null;
+            return pawn.AI()?.duties ?? null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -21,7 +21,7 @@ namespace CombatAI
 
         public static bool TryStartCustomDuty(this Pawn pawn, Pawn_CustomDutyTracker.CustomPawnDuty duty, bool returnCurDutyToQueue = true)
         {
-            ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+            ThingComp_CombatAI comp = pawn.AI();
             if (comp == null)
             {
                 return false;
@@ -33,7 +33,7 @@ namespace CombatAI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EnqueueFirstCustomDuty(this Pawn pawn, Pawn_CustomDutyTracker.CustomPawnDuty duty)
         {
-            ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+            ThingComp_CombatAI comp = pawn.AI();
             if (comp?.duties == null)
             {
                 comp.duties.EnqueueFirst(duty);
@@ -43,7 +43,7 @@ namespace CombatAI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EnqueueCustomDuty(this Pawn pawn, Pawn_CustomDutyTracker.CustomPawnDuty duty)
         {
-            ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+            ThingComp_CombatAI comp = pawn.AI();
             if (comp?.duties == null)
             {
                 comp.duties.Enqueue(duty);

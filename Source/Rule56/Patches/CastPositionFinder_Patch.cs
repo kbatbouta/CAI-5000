@@ -57,7 +57,7 @@ namespace CombatAI.Patches
                 {
                     if ((pawn = newReq.caster) != null && !(pawn.RaceProps?.Animal ?? true) && (pawn.mindState?.duty == null || pawn.mindState.duty.def != DutyDefOf.Sapper && pawn.mindState.duty.def != DutyDefOf.Breaching))
                     {
-                        if (pawn.Faction.IsPlayerSafe() && pawn.GetComp_Fast<ThingComp_CombatAI>()?.forcedTarget.IsValid == false)
+                        if (pawn.Faction.IsPlayerSafe() && pawn.AI()?.forcedTarget.IsValid == false)
                         {
                             goto skip;
                         }

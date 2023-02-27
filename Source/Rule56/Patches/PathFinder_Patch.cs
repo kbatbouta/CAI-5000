@@ -90,7 +90,7 @@ namespace CombatAI.Patches
                         threatAtDest       = sightReader.GetThreat(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
                         availabilityAtDest = sightReader.GetEnemyAvailability(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
                         visibilityAtDest   = sightReader.GetVisibilityToEnemies(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
-                        comp               = pawn.GetComp_Fast<ThingComp_CombatAI>();
+                        comp               = pawn.AI();
                         if (dig = Finder.Settings.Pather_KillboxKiller
                                   && isRaider
                                   && comp != null && comp.CanSappOrEscort && !comp.IsSapping
