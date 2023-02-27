@@ -17,7 +17,11 @@ namespace CombatAI.Patches
         {
             public static bool Prefix(Pawn __instance, Vector3 drawLoc)
             {
-                return Finder.Settings.Debug || !fogThings.IsFogged(drawLoc.ToIntVec3());
+                if (fogOverlay == null && __instance.Spawned)
+                {
+                    fogOverlay = __instance.Map.GetComp_Fast<MapComponent_FogGrid>() ?? null;
+                }
+                return fogOverlay == null || (Finder.Settings.Debug || !fogThings.IsFogged(drawLoc.ToIntVec3()));
             }
         }
 
@@ -45,7 +49,11 @@ namespace CombatAI.Patches
         {
             public static bool Prefix(Pawn __instance)
             {
-                return !fogOverlay.IsFogged(__instance.Position) && !Finder.Settings.Debug_DisablePawnGuiOverlay;
+                if (fogOverlay == null && __instance.Spawned)
+                {
+                    fogOverlay = __instance.Map.GetComp_Fast<MapComponent_FogGrid>() ?? null;
+                }
+                return fogOverlay == null || (!fogOverlay.IsFogged(__instance.Position) && !Finder.Settings.Debug_DisablePawnGuiOverlay);
             }
         }
 
