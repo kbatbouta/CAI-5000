@@ -37,6 +37,7 @@ namespace CombatAI
         ///     Set region by id.
         /// </summary>
         /// <param name="cell">Cell</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(IntVec3 cell)
         {
             Set(cellIndices.CellToIndex(cell));

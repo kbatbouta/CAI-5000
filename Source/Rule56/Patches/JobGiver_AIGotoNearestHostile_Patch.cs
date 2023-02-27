@@ -15,8 +15,14 @@ namespace CombatAI.Patches
             {
                 if (pawn.TryGetSightReader(out SightTracker.SightReader reader))
                 {
-                    Thing nearestEnemy = null;
-                    RegionFlooder.Flood(pawn.Position, pawn.mindState.enemyTarget == null ? pawn.Position : pawn.mindState.enemyTarget.Position, pawn.Map,
+                    Thing         nearestEnemy = null;
+                    TraverseParms parms        = new TraverseParms();
+                    parms.pawn          = pawn;
+                    parms.canBashDoors  = pawn.Faction == null || pawn.HostileTo(pawn.Map.ParentFaction);
+                    parms.canBashFences = !pawn.RaceProps.Animal && parms.canBashDoors;
+                    parms.mode          = TraverseMode.PassDoors;
+                    parms.maxDanger     = Danger.Deadly;
+                    RegionFlooder.Flood(pawn.Position, pawn.mindState.enemyTarget?.Position ?? IntVec3.Invalid, pawn.Map,
                                         (region, score, depth) =>
                                         {
                                             if (reader.GetRegionAbsVisibilityToEnemies(region) > 0)
@@ -28,24 +34,23 @@ namespace CombatAI.Patches
                                                     {
                                                         Thing thing = things[i];
                                                         Pawn  other;
-                                                        if (thing is IAttackTarget target && !target.ThreatDisabled(pawn) && AttackTargetFinder.IsAutoTargetable(target) && thing.HostileTo(pawn) && ((other = thing as Pawn) == null || other.IsCombatant()))
+                                                        if (thing is IAttackTarget target && !target.ThreatDisabled(pawn) && AttackTargetFinder.IsAutoTargetable(target) && thing.HostileTo(pawn) && ((other = thing as Pawn) == null || other.IsCombatant()) && pawn.CanReach(thing, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassDoors))
                                                         {
                                                             nearestEnemy = thing;
                                                             return true;
                                                         }
                                                     }
                                                 }
-                                                things = region.ListerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial);
                                             }
                                             return false;
                                         },
-                                        cost: region =>
-                                        {
-                                            return Maths.Min(reader.GetRegionAbsVisibilityToEnemies(region), 8 * Finder.P50) * 10 * Mathf.Clamp(reader.GetRegionAbsVisibilityToEnemies(region) + 0.5f, 1.0f, 2.0f);
-                                        }, maxRegions: 512);
-                    if (nearestEnemy != null)
+                                        validator: region => region.Allows(parms, false),
+                                        cost: region => Maths.Min(reader.GetRegionAbsVisibilityToEnemies(region), 8 * Finder.P50) * 10, maxRegions: 512);
+                    if (nearestEnemy != null && pawn.CanReach(nearestEnemy, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassDoors))
                     {
                         Job job = JobMaker.MakeJob(JobDefOf.Goto, nearestEnemy);
+                        job.canBashDoors          = pawn.Faction == null || pawn.HostileTo(pawn.Map.ParentFaction);
+                        job.canBashFences         = !pawn.RaceProps.Animal && job.canBashDoors;
                         job.checkOverrideOnExpire = true;
                         job.expiryInterval        = 500;
                         job.collideWithPawns      = true;

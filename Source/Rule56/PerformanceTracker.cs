@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using Verse;
@@ -61,7 +62,7 @@ namespace CombatAI
         public float TargetTps
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Maths.Min(Find.TickManager.TickRateMultiplier * 60f, 90f);
+            get => Maths.Min(Find.TickManager.TickRateMultiplier * 60f, 900f);
         }
 
         public override void GameComponentTick()
@@ -81,19 +82,19 @@ namespace CombatAI
             }
             AvgTickTimeMs    = (AvgTickTimeMs * 44f + deltaT) / 45f;
             performance      = Mathf.Clamp01((Tps < 55f ? 0.5f : 1.0f) * (1f - TpsDeficit / (TargetTps + 1)));
-            tpsCriticallyLow = Performance < 0.667f && Tps <= 50f;
+            tpsCriticallyLow = TpsDeficit > Find.TickManager.TickRateMultiplier * 5;
         }
 
         public override void GameComponentOnGUI()
         {
             base.GameComponentOnGUI();
-//			if (Finder.Settings.Debug)
-//			{
-//				string lowMsg = TpsCriticallyLow ? "<color=red>LOW</color>" : "NROMAL";
-//				Widgets.DrawBoxSolid(new Rect(Vector2.zero, new Vector2(100, 5)), Color.gray);
-//				Widgets.DrawBoxSolid(new Rect(Vector2.zero, new Vector2(100 * Performance, 5)), TpsCriticallyLow ? Color.yellow : Color.blue);
-//				Widgets.Label(new Rect(Vector2.zero, new Vector2(100, 25)), $"{Tps}\t{lowMsg}\t{Math.Round(Performance, 2)}");
-//			}
+			if (Finder.Settings.Debug)
+			{
+				string lowMsg = TpsCriticallyLow ? "<color=red>LOW</color>" : "NROMAL";
+				Widgets.DrawBoxSolid(new Rect(Vector2.zero, new Vector2(100, 5)), Color.gray);
+				Widgets.DrawBoxSolid(new Rect(Vector2.zero, new Vector2(100 * Performance, 5)), TpsCriticallyLow ? Color.yellow : Color.blue);
+				Widgets.Label(new Rect(Vector2.zero, new Vector2(200, 25)), $"{Tps}\t{TpsDeficit}\t{Math.Round(Performance, 2)}");
+			}
         }
     }
 }
