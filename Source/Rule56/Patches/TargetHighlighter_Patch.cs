@@ -10,9 +10,9 @@ namespace CombatAI.Patches
         {
             public static bool Prefix(GlobalTargetInfo target)
             {
-                if (Finder.Settings.FogOfWar_Enabled && target is { IsValid: true, IsMapTarget: true })
+                if (Finder.Settings.FogOfWar_Enabled && target is { IsValid: true, IsMapTarget: true } && target.Map != null)
                 {
-                    return !target.Map.GetComp_Fast<MapComponent_FogGrid>().IsFogged(target.Cell);
+                    return !target.Map?.GetComp_Fast<MapComponent_FogGrid>()?.IsFogged(target.Cell) ?? true;
                 }
                 return true;
             }
