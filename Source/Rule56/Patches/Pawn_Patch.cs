@@ -17,7 +17,7 @@ namespace CombatAI.Patches
         {
             public static bool Prefix(Pawn __instance, Vector3 drawLoc)
             {
-                if (fogOverlay == null && __instance.Spawned)
+                if (fogOverlay == null && Event.current?.type == EventType.Repaint && __instance.Spawned)
                 {
                     fogOverlay = __instance.Map.GetComp_Fast<MapComponent_FogGrid>() ?? null;
                 }
@@ -49,7 +49,7 @@ namespace CombatAI.Patches
         {
             public static bool Prefix(Pawn __instance)
             {
-                if (fogOverlay == null && __instance.Spawned)
+                if (fogOverlay == null && Event.current?.type == EventType.Repaint && __instance.Spawned)
                 {
                     fogOverlay = __instance.Map.GetComp_Fast<MapComponent_FogGrid>() ?? null;
                 }
@@ -76,7 +76,7 @@ namespace CombatAI.Patches
         {
             public static void Prefix(ThingOverlays __instance)
             {
-                if (Event.current.type != EventType.Repaint)
+                if (Event.current?.type != EventType.Repaint)
                 {
                     return;
                 }
