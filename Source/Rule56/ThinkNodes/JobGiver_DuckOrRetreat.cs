@@ -13,7 +13,7 @@ namespace CombatAI
             Verb verb = pawn.TryGetAttackVerb();
             if (verb == null || !verb.IsMeleeAttack)
             {
-                ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+                ThingComp_CombatAI comp = pawn.AI();
                 List<Thing>        list = comp.data.BeingTargetedBy;
                 if (comp != null && !list.NullOrEmpty())
                 {

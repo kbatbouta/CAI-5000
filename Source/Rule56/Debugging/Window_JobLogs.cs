@@ -326,7 +326,7 @@ namespace CombatAI
             });
             if (Find.Selector.SelectedPawns.Count == 1)
             {
-                ThingComp_CombatAI temp = Find.Selector.SelectedPawns[0].GetComp_Fast<ThingComp_CombatAI>();
+                ThingComp_CombatAI temp = Find.Selector.SelectedPawns[0].AI();
                 if (temp != comp)
                 {
                     comp        = temp;

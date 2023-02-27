@@ -179,7 +179,7 @@ namespace CombatAI.Comps
             }
             if (selPawn.IsApproachingMeleeTarget(out Thing target))
             {
-                ThingComp_CombatAI comp = target.GetComp_Fast<ThingComp_CombatAI>();
+                ThingComp_CombatAI comp = target.GetComp_Fast<ThingComp_CombatAI>();;
                 if (comp != null)
                 {
                     comp.Notify_BeingTargeted(selPawn, selPawn.CurrentEffectiveVerb);
@@ -951,7 +951,7 @@ namespace CombatAI.Comps
                         // make allies not targeting anyone target the attacking enemy
                         if (Rand.Chance(aggroAllyChance) && ally.thing is Pawn { Destroyed: false, Spawned: true, Downed: false } other && other.mindState.duty.Is(DutyDefOf.Defend))
                         {
-                            ThingComp_CombatAI comp = other.GetComp_Fast<ThingComp_CombatAI>();
+                            ThingComp_CombatAI comp = other.AI();
                             if (comp != null && comp.data.AgroSig != sig)
                             {
                                 if (enemy.HasThing)
@@ -1164,7 +1164,7 @@ namespace CombatAI.Comps
                                 Messages.Message(Keyed.CombatAI_Gizmos_AttackMove_Warning, MessageTypeDefOf.RejectInput, false);
                                 continue;
                             }
-                            pawn.GetComp_Fast<ThingComp_CombatAI>().forcedTarget = target;
+                            pawn.AI().forcedTarget = target;
                             Job gotoJob = JobMaker.MakeJob(JobDefOf.Goto, target);
                             gotoJob.canUseRangedWeapon = true;
                             gotoJob.locomotionUrgency  = LocomotionUrgency.Jog;
@@ -1188,7 +1188,7 @@ namespace CombatAI.Comps
                         {
                             if (pawn.IsColonist)
                             {
-                                pawn.GetComp_Fast<ThingComp_CombatAI>().forcedTarget = LocalTargetInfo.Invalid;
+                                pawn.AI().forcedTarget = LocalTargetInfo.Invalid;
                                 pawn.jobs.ClearQueuedJobs();
                                 pawn.jobs.StopAll();
                             }
@@ -1214,9 +1214,9 @@ namespace CombatAI.Comps
                 {
                     if (success)
                     {
-                        escort.GetComp_Fast<ThingComp_CombatAI>().releasedTick = GenTicks.TicksGame;
+                        escort.AI().releasedTick = GenTicks.TicksGame;
                     }
-                    escort.GetComp_Fast<ThingComp_CombatAI>().duties.FinishAllDuties(CombatAI_DutyDefOf.CombatAI_Escort, parent);
+                    escort.AI().duties.FinishAllDuties(CombatAI_DutyDefOf.CombatAI_Escort, parent);
                 }
             }
             if (success)
@@ -1405,7 +1405,7 @@ namespace CombatAI.Comps
                                 && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
                                 && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
                             {
-                                ThingComp_CombatAI comp = ally.GetComp_Fast<ThingComp_CombatAI>();
+                                ThingComp_CombatAI comp = ally.AI();
                                 if (comp?.duties != null && comp.duties?.Any(CombatAI_DutyDefOf.CombatAI_Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick > 600)
                                 {
                                     Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(selPawn, 20, 100, 600 + Mathf.CeilToInt(12 * selPawn.Position.DistanceTo(cellBefore)) + 540 * sapperNodes.Count + Rand.Int % 600);

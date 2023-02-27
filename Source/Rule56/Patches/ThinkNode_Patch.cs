@@ -55,7 +55,7 @@ namespace CombatAI.Patches
                     JobLog log = JobLog.For(pawn, __result.Job, __instance);
                     if (log.IsValid)
                     {
-                        ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+                        ThingComp_CombatAI comp = pawn.AI();
                         if (comp != null)
                         {
                             comp.jobLogs ??= new List<JobLog>();
