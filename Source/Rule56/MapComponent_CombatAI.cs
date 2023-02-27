@@ -5,6 +5,7 @@ using System.Threading;
 using CombatAI.Gui;
 using UnityEngine;
 using Verse;
+using GUIUtility = CombatAI.Gui.GUIUtility;
 namespace CombatAI
 {
     public class MapComponent_CombatAI : MapComponent
@@ -61,21 +62,36 @@ namespace CombatAI
 
         public override void MapComponentOnGUI()
         {
-            base.MapComponentOnGUI();
+            base.MapComponentOnGUI();            
+            if (Finder.Settings.Debug_LogJobs)
+            {
+                GUIUtility.ExecuteSafeGUIAction(() =>
+                {
+                    Text.Font                    = GameFont.Tiny;
+                    Finder.Settings.AdvancedUser = true;
+                    Finder.Settings.Debug        = true;
+                    string message = "WARNING: CAI-5000 Job logging is on! This will hurst performance! Please disable job logging in the debug settings in CAI";
+                    Rect   rect    = new Rect(20, 3, message.GetWidthCached(), 20);
+                    Widgets.Label(rect, message);
+                });
+            }
             if (Finder.Settings.Debug_DrawThreatCasts && !Find.Selector.SelectedPawns.NullOrEmpty())
             {
-                Pawn pawn = Find.Selector.SelectedPawns.First();
-                if (pawn != null)
+                GUIUtility.ExecuteSafeGUIAction(() =>
                 {
-                    Rect rect = new Rect(0, 35, UI.screenWidth * 0.2f, UI.screenHeight * 0.5f);
-                    collapsible.Begin(rect, "Damage Potential Report");
-                    DamageUtility.GetDamageReport(pawn, collapsible);
-                    pawn.GetArmorReport(collapsible);
-                    ArmorReport report = pawn.GetArmorReport();
-                    collapsible.Line(4);
-                    collapsible.Label($"armor. s:{report.Sharp}\tb:{report.Blunt}");
-                    collapsible.End(ref rect);
-                }
+                    Pawn pawn = Find.Selector.SelectedPawns.First();
+                    if (pawn != null)
+                    {
+                        Rect rect = new Rect(0, 35, UI.screenWidth * 0.2f, UI.screenHeight * 0.5f);
+                        collapsible.Begin(rect, "Damage Potential Report");
+                        DamageUtility.GetDamageReport(pawn, collapsible);
+                        pawn.GetArmorReport(collapsible);
+                        ArmorReport report = pawn.GetArmorReport();
+                        collapsible.Line(4);
+                        collapsible.Label($"armor. s:{report.Sharp}\tb:{report.Blunt}");
+                        collapsible.End(ref rect);
+                    }
+                });
             }
         }
 
