@@ -143,7 +143,7 @@ namespace CombatAI
                                     _drawnCells.Add(cell);
                                     if (Finder.Settings.Debug_DrawShadowCasts)
                                     {
-                                        float value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2) + insectsAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4);
+                                        float value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2) + insectsAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4) + wildlife.grid.GetSignalStrengthAt(cell, out int enemies5);
                                         if (value > 0)
                                         {
                                             map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
