@@ -81,7 +81,10 @@ namespace CombatAI
             map                   = sightTracker.map;
             this.settings         = settings;
             grid                  = new ITSignalGrid(map);
-            grid_regions          = new ITRegionGrid(map);
+            if (!Extern.active)
+                grid_regions = new ITRegionGridLegacy(map);
+            else
+                grid_regions = new ITRegionGridPrepatched(map);
             asyncActions          = new AsyncActions(1);
             ticksUntilUpdate      = Rand.Int % this.settings.interval;
             buckets               = new IBuckets<IBucketableThing>(settings.buckets);

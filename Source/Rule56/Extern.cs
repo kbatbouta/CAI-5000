@@ -8,7 +8,7 @@ namespace CombatAI
     public static class Extern
     {
 #pragma warning disable CS0649
-        private static bool active;
+        public static bool active;
 #pragma warning restore CS0649x
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
