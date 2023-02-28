@@ -25,21 +25,21 @@ namespace CombatAI
         {
             fogGrid = new ITFloatGrid(map);
             colonistsAndFriendlies =
-                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
+                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders, 0);
             colonistsAndFriendlies.gridFog        = fogGrid;
             colonistsAndFriendlies.playerAlliance = true;
             colonistsAndFriendlies.trackFactions  = true;
 
             raidersAndHostiles =
-                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
+                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders, 1);
             raidersAndHostiles.trackFactions = true;
 
             insectsAndMechs =
-                new SightGrid(this, Finder.Settings.SightSettings_MechsAndInsects);
+                new SightGrid(this, Finder.Settings.SightSettings_MechsAndInsects, 2);
             insectsAndMechs.trackFactions = false;
 
             wildlife =
-                new SightGrid(this, Finder.Settings.SightSettings_Wildlife);
+                new SightGrid(this, Finder.Settings.SightSettings_Wildlife, 3);
             wildlife.trackFactions = false;
 
             factionedUInt64Map = new IThingsUInt64Map();
@@ -163,17 +163,29 @@ namespace CombatAI
                                     _drawnCells.Add(cell);
                                     if (Finder.Settings.Debug_DrawShadowCasts)
                                     {
-                                        float value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2) + insectsAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4) + wildlife.grid.GetSignalStrengthAt(cell, out int enemies5);
-                                        if (value > 0)
+                                        if (!Input.GetKey(KeyCode.LeftShift))
                                         {
-                                            map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
+                                            float value = raidersAndHostiles.grid.GetSignalStrengthAt(cell, out int enemies1) + colonistsAndFriendlies.grid.GetSignalStrengthAt(cell, out int enemies2) + insectsAndMechs.grid.GetSignalStrengthAt(cell, out int enemies4) + wildlife.grid.GetSignalStrengthAt(cell, out int enemies5);
+                                            if (value > 0)
+                                            {
+                                                map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
+                                            }
+                                            else
+                                            {
+                                                MetaCombatAttribute attr = raidersAndHostiles.grid.GetCombatAttributesAt(cell) | colonistsAndFriendlies.grid.GetCombatAttributesAt(cell) | insectsAndMechs.grid.GetCombatAttributesAt(cell);
+                                                if ((attr & MetaCombatAttribute.Free) == MetaCombatAttribute.Free)
+                                                {
+                                                    map.debugDrawer.FlashCell(cell, 0.001f, "F", 15);
+                                                }
+                                            }
                                         }
                                         else
                                         {
-                                            MetaCombatAttribute attr = raidersAndHostiles.grid.GetCombatAttributesAt(cell) | colonistsAndFriendlies.grid.GetCombatAttributesAt(cell) | insectsAndMechs.grid.GetCombatAttributesAt(cell);
-                                            if ((attr & MetaCombatAttribute.Free) == MetaCombatAttribute.Free)
+                                            Region region = cell.GetRegion(map);
+                                            float  value  = raidersAndHostiles.grid_regions.GetSignalNumByRegion(region) + colonistsAndFriendlies.grid_regions.GetSignalNumByRegion(region) + insectsAndMechs.grid_regions.GetSignalNumByRegion(region) + wildlife.grid_regions.GetSignalNumByRegion(region);
+                                            if (value > 0)
                                             {
-                                                map.debugDrawer.FlashCell(cell, 0.001f, "F", 15);
+                                                map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
                                             }
                                         }
                                     }
@@ -691,18 +703,14 @@ namespace CombatAI
             {
                 if (region != null)
                 {
-                    return GetRegionAbsVisibilityToEnemies(region.id);
+                    int value = 0;
+                    for (int i = 0; i < hostiles_regions.Length; i++)
+                    {
+                        value += hostiles_regions[i].GetSignalNumByRegion(region);
+                    }
+                    return value;
                 }
                 return 0;
-            }
-            public int GetRegionAbsVisibilityToEnemies(int id)
-            {
-                int value = 0;
-                for (int i = 0; i < hostiles_regions.Length; i++)
-                {
-                    value += hostiles_regions[i].GetSignalNumById(id);
-                }
-                return value;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -710,18 +718,14 @@ namespace CombatAI
             {
                 if (region != null)
                 {
-                    return GetRegionAbsVisibilityToFriendlies(region.id);
+                    int value = 0;
+                    for (int i = 0; i < friendlies_regions.Length; i++)
+                    {
+                        value += friendlies_regions[i].GetSignalNumByRegion(region);
+                    }
+                    return value;
                 }
                 return 0;
-            }
-            public int GetRegionAbsVisibilityToFriendlies(int id)
-            {
-                int value = 0;
-                for (int i = 0; i < friendlies_regions.Length; i++)
-                {
-                    value += friendlies_regions[i].GetSignalNumById(id);
-                }
-                return value;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
