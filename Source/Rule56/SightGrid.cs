@@ -73,18 +73,23 @@ namespace CombatAI
         ///     Whether this is the player grid
         /// </summary>
         public bool trackFactions = false;
-        private bool wait;
+        /// <summary>
+        ///     SightGrid Id.
+        /// </summary>
+        public readonly int  gridId;
+        private         bool wait;
 
-        public SightGrid(SightTracker sightTracker, Settings.SightPerformanceSettings settings)
+        public SightGrid(SightTracker sightTracker, Settings.SightPerformanceSettings settings, int gridId)
         {
-            this.sightTracker     = sightTracker;
-            map                   = sightTracker.map;
-            this.settings         = settings;
-            grid                  = new ITSignalGrid(map);
+            this.gridId       = gridId;
+            this.sightTracker = sightTracker;
+            map               = sightTracker.map;
+            this.settings     = settings;
+            grid              = new ITSignalGrid(map);
             if (!Extern.active)
                 grid_regions = new ITRegionGridLegacy(map);
             else
-                grid_regions = new ITRegionGridPrepatched(map);
+                grid_regions = new ITRegionGridPrepatched(map, gridId);
             asyncActions          = new AsyncActions(1);
             ticksUntilUpdate      = Rand.Int % this.settings.interval;
             buckets               = new IBuckets<IBucketableThing>(settings.buckets);
@@ -140,18 +145,21 @@ namespace CombatAI
         {
             if (gamePaused || performanceOkay)
             {
-                int limit        = gamePaused ? 32 : 8; 
-                int numGridCells = map.cellIndices.NumGridCells;
-                for (int i = 0; i < limit; i++)
-                {
-                    Region region = map.regionGrid.regionGrid[regionUpdateIndex];
-                    grid_regions.SetRegionAt(regionUpdateIndex, (region?.valid ?? false) ? region : null);
-                    regionUpdateIndex++;
-                    if (regionUpdateIndex >= numGridCells)
-                    {
-                        regionUpdateIndex = 0;
-                    }
-                }
+//                int limit        = gamePaused ? 32 : 8; 
+//                int numGridCells = map.cellIndices.NumGridCells;
+//                for (int i = 0; i < limit; i++)
+//                {
+//                    Region region = map.regionGrid.regionGrid[regionUpdateIndex];
+//                    if (region?.valid ?? false)
+//                    {
+//                        grid_regions.SetRegionAt(regionUpdateIndex, region);
+//                        regionUpdateIndex++;
+//                        if (regionUpdateIndex >= numGridCells)
+//                        {
+//                            regionUpdateIndex = 0;
+//                        }
+//                    }
+//                }
             }
         }
         

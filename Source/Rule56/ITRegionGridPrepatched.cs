@@ -6,13 +6,13 @@ namespace CombatAI
     public class ITRegionGridPrepatched : ITRegionGrid
     {
         private readonly int        gridId;
-        private          ISRegion[] cells;
+        private readonly ISRegion[] cells;
         
-        public ITRegionGridPrepatched(Map map) : base(map)
+        public ITRegionGridPrepatched(Map map, int id) : base(map)
         {
             cells                                                      = new ISRegion[NumGridCells];
-            gridId                                                     = ITRegionGridPrepatchedHelper.CombatAI_ReginGridCounter(map);
-            ITRegionGridPrepatchedHelper.CombatAI_ReginGridCounter(map) = gridId + 1;
+            gridId                                                     = id;
+            Log.Message($"gridId:{id}");
         }
         public override void Set(int index)
         {
@@ -115,9 +115,6 @@ namespace CombatAI
 
     public static class ITRegionGridPrepatchedHelper
     {
-        [PrepatcherField]
-        public static extern ref int CombatAI_ReginGridCounter(Map map);
-        
         [PrepatcherField]
         [ValueInitializer(nameof(InitRegionFields))]
         public static extern ref ITRegionGridPrepatched.IRegionFields CombatAI_RegionFields(Region region);

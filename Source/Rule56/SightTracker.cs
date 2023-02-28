@@ -25,21 +25,21 @@ namespace CombatAI
         {
             fogGrid = new ITFloatGrid(map);
             colonistsAndFriendlies =
-                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
+                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders, 0);
             colonistsAndFriendlies.gridFog        = fogGrid;
             colonistsAndFriendlies.playerAlliance = true;
             colonistsAndFriendlies.trackFactions  = true;
 
             raidersAndHostiles =
-                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders);
+                new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders, 1);
             raidersAndHostiles.trackFactions = true;
 
             insectsAndMechs =
-                new SightGrid(this, Finder.Settings.SightSettings_MechsAndInsects);
+                new SightGrid(this, Finder.Settings.SightSettings_MechsAndInsects, 2);
             insectsAndMechs.trackFactions = false;
 
             wildlife =
-                new SightGrid(this, Finder.Settings.SightSettings_Wildlife);
+                new SightGrid(this, Finder.Settings.SightSettings_Wildlife, 3);
             wildlife.trackFactions = false;
 
             factionedUInt64Map = new IThingsUInt64Map();

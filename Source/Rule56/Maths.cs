@@ -144,6 +144,7 @@ namespace CombatAI
             return (byte)(a * a);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Sqrt_Fast(float x, int iterations)
         {
             if (x < 0.001f)
@@ -210,6 +211,7 @@ namespace CombatAI
             }
             return (bot + top) / 64f;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Sqrt_Fast(int a, int iterations)
         {
             if (a == 0)
