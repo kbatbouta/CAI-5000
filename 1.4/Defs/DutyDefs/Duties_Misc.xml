@@ -23,7 +23,7 @@
                     </subNodes>
                 </li>
                 <li Class="JobGiver_WanderNearDutyLocation">
-                    <wanderRadius>8</wanderRadius>
+                    <wanderRadius>32</wanderRadius>
                     <locomotionUrgencyOutsideRadius>Sprint</locomotionUrgencyOutsideRadius>
                 </li>
                 <li Class="JobGiver_AITrashBuildingsDistant">
