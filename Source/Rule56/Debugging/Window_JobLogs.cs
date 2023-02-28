@@ -270,6 +270,7 @@ namespace CombatAI
             }
             if (ButtonText(collapsible_dutyTest, "Reachability check"))
             {
+                Pawn parentPawn = comp.selPawn;
                 Find.Targeter.BeginTargeting(new TargetingParameters
                 {
                     canTargetAnimals   = false,
@@ -281,14 +282,15 @@ namespace CombatAI
                     canTargetLocations = true,
                     validator = info =>
                     {
-                        if (info.Cell.IsValid)
+                        if (info.Cell.IsValid && info.Cell.InBounds(map))
                         {
-                            string result = $"ByPawn={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.ByPawn)}\n"
-                                            + $"NoPassClosedDoors={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.NoPassClosedDoors)}\n"
-                                            + $"NoPassClosedDoorsOrWater={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.NoPassClosedDoorsOrWater)}\n"
-                                            + $"PassDoors={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassDoors)}\n"
-                                            + $"PassAllDestroyableThings={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassAllDestroyableThings)}\n"
-                                            + $"PassAllDestroyableThingsNotWater={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassAllDestroyableThingsNotWater)}\n";
+                            string result = $"ByPawn={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.ByPawn)}\n"
+                                            + $"NoPassClosedDoors={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.NoPassClosedDoors)}\n"
+                                            + $"NoPassClosedDoorsOrWater={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.NoPassClosedDoorsOrWater)}\n"
+                                            + $"PassDoors={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassDoors)}\n"
+                                            + $"PassAllDestroyableThings={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassAllDestroyableThings)}\n"
+                                            + $"PassAllDestroyableThingsNotWater={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassAllDestroyableThingsNotWater)}\n";
+                            Log.Message(result);
                         }
                         return true;
                     },
