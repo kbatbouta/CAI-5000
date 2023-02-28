@@ -48,7 +48,7 @@ namespace CombatAI
         /// </summary>
         public ITFloatGrid gridFog;
 
-        private int regionUpdateIndex;
+//        private int regionUpdateIndex;
         private int ops;
         /// <summary>
         ///     Whether this is the player grid

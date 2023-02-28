@@ -102,6 +102,12 @@ namespace CombatAI
             StringBuilder builder = new StringBuilder();
             builder.AppendFormat("job:\t{0} ({1})\n", job, id);
             builder.AppendFormat("duty:\t{0}\n", duty);
+            builder.AppendFormat("timestamp:\t{0}\n", timestamp);
+            builder.AppendFormat("(origin:{0}, dest:{1})\n", origin, destination);
+            if (destination.IsValid)
+            {
+                builder.AppendFormat("distanceToDest:\n{0}",destination.DistanceTo(origin));
+            }
             builder.AppendLine();
             builder.Append("thinknode trace:\n");
             for (int i = 0; i < thinknode.Count; i++)

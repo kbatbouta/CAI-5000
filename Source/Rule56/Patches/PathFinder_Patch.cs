@@ -49,11 +49,12 @@ namespace CombatAI.Patches
             private static PathEndMode   origina_peMode;
 
             [HarmonyPriority(int.MaxValue)]
-            internal static bool Prefix(PathFinder __instance, ref PawnPath __result, IntVec3 start, LocalTargetInfo dest, ref TraverseParms traverseParms, PathEndMode peMode, ref PathFinderCostTuning tuning, out bool __state)
+            internal static void Prefix(PathFinder __instance, ref PawnPath __result, IntVec3 start, LocalTargetInfo dest, ref TraverseParms traverseParms, PathEndMode peMode, ref PathFinderCostTuning tuning, out bool __state)
             {
                 if (fallbackCall)
                 {
-                    return __state = true;
+                     __state = true;
+                     return;
                 }
 #if DEBUG
 				flashInstance = flashCost ? __instance : null;
@@ -107,7 +108,7 @@ namespace CombatAI.Patches
                             bool humanlike = pawn.RaceProps.Humanlike;
                             if (humanlike)
                             {
-                                parms.mode = TraverseMode.PassAllDestroyableThingsNotWater;
+                                parms.mode = TraverseMode.PassAllDestroyableThings;
                             }
                             else
                             {
@@ -133,11 +134,12 @@ namespace CombatAI.Patches
                     checkVisibility = sightReader != null;
 //					counter         = 0;
                     flashCost = Finder.Settings.Debug_DebugPathfinding && Find.Selector.SelectedPawns.Contains(pawn);
-                    return __state = true;
+                    __state = true;
+                    return;
                 }
                 __state = false;
                 Reset();
-                return true;
+                return;
             }
 
             [HarmonyPriority(int.MinValue)]
@@ -149,6 +151,24 @@ namespace CombatAI.Patches
                 }
                 if (__state)
                 {
+//                    if (__result == null || __result == PawnPath.NotFound || !__result.Found)
+//                    {
+//                        try
+//                        {
+//                            __result?.Dispose();
+//                            fallbackCall = true;
+//                            dig          = false;
+//                            __result     = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
+//                        }
+//                        catch (Exception er)
+//                        {
+//                            Log.Error($"ISMA: Error occured in FindPath fallback call {er}");
+//                        }
+//                        finally
+//                        {
+//                            fallbackCall = false;
+//                        }
+//                    }
                     if (dig && !(__result?.nodes.NullOrEmpty() ?? true))
                     {
                         blocked.Clear();
@@ -188,21 +208,16 @@ namespace CombatAI.Patches
                         tracker.Notify_PathFound(pawn, __result);
                     }
                 }
-                if (FlashSearch)
-                {
-                    FlashSearch = false;
-                }
                 Reset();
             }
 
             public static void Reset()
             {
-                avoidanceReader = null;
-                isRaider        = false;
-                isPlayer        = false;
-                multiplier      = 1f;
-                sightReader     = null;
-//				counter          = 0;
+                avoidanceReader  = null;
+                isRaider         = false;
+                isPlayer         = false;
+                multiplier       = 1f;
+                sightReader      = null;
                 dig              = false;
                 threatAtDest     = 0;
                 instance         = null;
@@ -243,12 +258,10 @@ namespace CombatAI.Patches
 
             private static int GetCostOffsetAt(int index, int parentIndex, int openNum)
             {
-#if DEBUG
-				if (FlashSearch && map != null && !fallbackCall)
+                if (FlashSearch && map != null && !fallbackCall)
 				{
 					map.debugDrawer.FlashCell(map.cellIndices.IndexToCell(parentIndex), Mathf.Clamp(PathFinder.calcGrid[parentIndex].knownCost / 1200f,0.001f, 0.99f), $"{PathFinder.calcGrid[parentIndex].knownCost}", duration:50);
 				}
-#endif
                 if (map != null)
                 {
                     float value = 0;

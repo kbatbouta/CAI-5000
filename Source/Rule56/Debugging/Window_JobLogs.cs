@@ -195,7 +195,7 @@ namespace CombatAI
                         PathFinder_Patch.FlashSearch = true;
                         try
                         {
-                            PawnPath path = pawn.Map.pathFinder.FindPath(pawn.Position, info, pawn);
+                            PawnPath path = pawn.Map.pathFinder.FindPath(pawn.Position, info.Cell, pawn);
                             if (path is { Found: true })
                             {
                                 path.ReleaseToPool();
@@ -266,6 +266,35 @@ namespace CombatAI
                         float time = (float)stopwatch.ElapsedTicks / Stopwatch.Frequency * 1000f / 128f;
                         Messages.Message($"Distance is {dist} cells, took {time} ms", MessageTypeDefOf.CautionInput);
                     }
+                });
+            }
+            if (ButtonText(collapsible_dutyTest, "Reachability check"))
+            {
+                Find.Targeter.BeginTargeting(new TargetingParameters
+                {
+                    canTargetAnimals   = false,
+                    canTargetBuildings = false,
+                    canTargetCorpses   = false,
+                    canTargetHumans    = false,
+                    canTargetSelf      = false,
+                    canTargetMechs     = false,
+                    canTargetLocations = true,
+                    validator = info =>
+                    {
+                        if (info.Cell.IsValid)
+                        {
+                            string result = $"ByPawn={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.ByPawn)}\n"
+                                            + $"NoPassClosedDoors={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.NoPassClosedDoors)}\n"
+                                            + $"NoPassClosedDoorsOrWater={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.NoPassClosedDoorsOrWater)}\n"
+                                            + $"PassDoors={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassDoors)}\n"
+                                            + $"PassAllDestroyableThings={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassAllDestroyableThings)}\n"
+                                            + $"PassAllDestroyableThingsNotWater={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassAllDestroyableThingsNotWater)}\n";
+                        }
+                        return true;
+                    },
+                }, info =>
+                {
+                    return;
                 });
             }
             if (ButtonText(collapsible_dutyTest, "End all jobs"))
@@ -371,7 +400,10 @@ namespace CombatAI
                 }
             }, false);
             inRect.yMin += 25;
-            GUIUtility.ScrollView(selectedLog != null ? inRect.TopPart(viewRatio1) : inRect, ref scorllPos, Logs, GetHeight, DrawJobLog);
+            if (!Logs.NullOrEmpty())
+            {
+                GUIUtility.ScrollView(selectedLog != null ? inRect.TopPart(viewRatio1) : inRect, ref scorllPos, Logs, GetHeight, DrawJobLog);
+            }
             if (selectedLog != null)
             {
                 Rect botRect = inRect.BottomPart(1 - viewRatio1);
