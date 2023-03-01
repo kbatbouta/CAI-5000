@@ -185,6 +185,7 @@ namespace CombatAI
 	        if (reports.ContainsKey(thing.thingIDNumber))
 	        {
 		        reports.Remove(thing.thingIDNumber);
+//		        Log.Message($"Invalidate {thing} armor cache");
 	        }
         }
     }
