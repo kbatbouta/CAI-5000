@@ -78,7 +78,7 @@ namespace CombatAI
 
         public bool IsValid
         {
-            get => _finalized && GenTicks.TicksGame - _createdAt < 1800;
+            get => _finalized && GenTicks.TicksGame - _createdAt < 60000;
         }
 
         public float GetAdjustedDamage(DamageArmorCategoryDef def)

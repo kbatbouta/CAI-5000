@@ -40,48 +40,53 @@ namespace CombatAI
             asyncActions.Start();
         }
 
+        public override void MapComponentUpdate()
+        {
+	        base.MapComponentUpdate();
+	        asyncActions.ExecuteMainThreadActions();
+	        if (wait)
+	        {
+		        return;
+	        }
+	        _removalList.Clear();
+	        List<IBucketablePawn> items = buckets.Next();
+	        for (int i = 0; i < items.Count; i++)
+	        {
+		        IBucketablePawn item = items[i];
+		        if (!Valid(item.pawn))
+		        {
+			        _removalList.Add(item.pawn);
+			        continue;
+		        }
+		        if (item.pawn.Downed || GenTicks.TicksGame - (item.pawn.needs?.rest?.lastRestTick ?? 0) < 30)
+		        {
+			        continue;
+		        }
+		        TryCastProximity(item.pawn, IntVec3.Invalid);
+		        if (item.pawn.pather?.MovingNow ?? false)
+		        {
+			        TryCastPath(item);
+		        }
+	        }
+	        for (int i = 0; i < _removalList.Count; i++)
+	        {
+		        DeRegister(_removalList[i]);
+	        }
+	        if (buckets.Index == 0)
+	        {
+		        wait = true;
+		        asyncActions.EnqueueOffThreadAction(() =>
+		        {
+			        proximity.NextCycle();
+			        path.NextCycle();
+			        wait = false;
+		        });
+	        }
+        }
+
         public override void MapComponentTick()
         {
             base.MapComponentTick();
-            asyncActions.ExecuteMainThreadActions();
-            if (wait)
-            {
-                return;
-            }
-            _removalList.Clear();
-            List<IBucketablePawn> items = buckets.Next();
-            for (int i = 0; i < items.Count; i++)
-            {
-                IBucketablePawn item = items[i];
-                if (!Valid(item.pawn))
-                {
-                    _removalList.Add(item.pawn);
-                    continue;
-                }
-                if (item.pawn.Downed || GenTicks.TicksGame - (item.pawn.needs?.rest?.lastRestTick ?? 0) < 30)
-                {
-                    continue;
-                }
-                TryCastProximity(item.pawn, IntVec3.Invalid);
-                if (item.pawn.pather?.MovingNow ?? false)
-                {
-                    TryCastPath(item);
-                }
-            }
-            for (int i = 0; i < _removalList.Count; i++)
-            {
-                DeRegister(_removalList[i]);
-            }
-            if (buckets.Index == 0)
-            {
-                wait = true;
-                asyncActions.EnqueueOffThreadAction(() =>
-                {
-                    proximity.NextCycle();
-                    path.NextCycle();
-                    wait = false;
-                });
-            }
             if (Finder.Settings.Debug_DrawAvoidanceGrid_Proximity)
             {
                 if (Find.Selector.SelectedPawns.NullOrEmpty())

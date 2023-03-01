@@ -11,6 +11,7 @@ namespace CombatAI
     public class SightTracker : MapComponent
     {
         private readonly HashSet<IntVec3> _drawnCells = new HashSet<IntVec3>();
+        private          int              updateCounter;
 
         public readonly SightGrid        colonistsAndFriendlies;
         public readonly IThingsUInt64Map factionedUInt64Map;
@@ -58,7 +59,8 @@ namespace CombatAI
         public override void MapComponentUpdate()
         {
             base.MapComponentUpdate();
-            bool gamePaused = false;
+            updateCounter++;
+            bool gamePaused      = false;
             bool performanceOkay = false;
             if (Find.TickManager != null)
             {
@@ -66,37 +68,31 @@ namespace CombatAI
                 performanceOkay = Finder.Performance.TpsDeficit <= 5 * Find.TickManager.TickRateMultiplier;
             }
             // --------------
-            colonistsAndFriendlies.SightGridUpdate(gamePaused, performanceOkay);
+            colonistsAndFriendlies.SightGridUpdate();
+            colonistsAndFriendlies.SightGridOptionalUpdate(gamePaused, performanceOkay);
             // --------------
-            raidersAndHostiles.SightGridUpdate(gamePaused, performanceOkay);
+            if (colonistsAndFriendlies.FactionNum > 1 || updateCounter % 3 == 0)
+            {
+                raidersAndHostiles.SightGridUpdate();
+            }
+            raidersAndHostiles.SightGridOptionalUpdate(gamePaused, performanceOkay);
             // --------------
-            insectsAndMechs.SightGridUpdate(gamePaused, performanceOkay);
+            if ((!Finder.Performance.TpsCriticallyLow && colonistsAndFriendlies.FactionNum > 1) || updateCounter % 3 == 1)
+            {
+	            insectsAndMechs.SightGridUpdate();
+            }
+            insectsAndMechs.SightGridOptionalUpdate(gamePaused, performanceOkay);
             // --------------
-            wildlife.SightGridUpdate(gamePaused, performanceOkay);
+            wildlife.SightGridUpdate();
+            if (!Finder.Performance.TpsCriticallyLow || updateCounter % 3 == 2)
+            {
+	            wildlife.SightGridOptionalUpdate(gamePaused, performanceOkay);
+            }
         }
 
         public override void MapComponentTick()
         {
             base.MapComponentTick();
-            int ticks = GenTicks.TicksGame;
-            // --------------            
-            colonistsAndFriendlies.SightGridTick();
-            // --------------
-            if (colonistsAndFriendlies.FactionNum > 1 && !Finder.Performance.TpsCriticallyLow || ticks % 2 == 0)
-            {
-                raidersAndHostiles.SightGridTick();
-            }
-            // --------------
-            if (!Finder.Performance.TpsCriticallyLow || ticks % 2 == 1)
-            {
-                insectsAndMechs.SightGridTick();
-            }
-            // --------------
-            if (!Finder.Performance.TpsCriticallyLow || ticks % 3 == 2)
-            {
-                wildlife.SightGridTick();
-            }
-            //
             // debugging stuff.
             if ((Finder.Settings.Debug_DrawShadowCasts || Finder.Settings.Debug_DrawThreatCasts || Finder.Settings.Debug_DebugAvailability) && GenTicks.TicksGame % 15 == 0)
             {

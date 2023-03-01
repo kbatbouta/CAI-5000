@@ -24,30 +24,30 @@ namespace CombatAI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MapComponent_CombatAI AI(this Map map)
         {
-            if (active)
-            {
-                return CombatAI_MapComp(map);
-            }
+//            if (active)
+//            {
+//                return CombatAI_MapComp(map);
+//            }
             return map.GetComp_Fast<MapComponent_CombatAI>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static SightTracker Sight(this Map map)
         {
-            if (active)
-            {
-                return CombatAI_Sight(map);
-            }
+//            if (active)
+//            {
+//                return CombatAI_Sight(map);
+//            }
             return map.GetComp_Fast<SightTracker>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AvoidanceTracker Avoidance(this Map map)
         {
-            if (active)
-            {
-                return CombatAI_Avoidance(map);
-            }
+//            if (active)
+//            {
+//                return CombatAI_Avoidance(map);
+//            }
             return map.GetComp_Fast<AvoidanceTracker>();
         }
         

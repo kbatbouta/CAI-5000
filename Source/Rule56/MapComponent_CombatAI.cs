@@ -10,7 +10,7 @@ namespace CombatAI
 {
     public class MapComponent_CombatAI : MapComponent
     {
-
+	    private int clearCacheCountDown = 14400;
         /*      Threading
          * ----- ----- ----- -----
          */
@@ -58,6 +58,22 @@ namespace CombatAI
             base.MapComponentTick();
             asyncActions.ExecuteMainThreadActions();
             interceptors.Tick();
+        }
+
+        public override void MapComponentUpdate()
+        {
+	        base.MapComponentUpdate();
+	        if (clearCacheCountDown-- <= 0)
+	        {
+		        CacheUtility.ClearAllCache();
+		        regionWiseDist.Clear();
+		        clearCacheCountDown = 14400;
+	        }
+	        else if (clearCacheCountDown % 7200 == 0)
+	        {
+		        CacheUtility.ClearShortCache();
+		        regionWiseDist.Clear();
+	        }
         }
 
         public override void MapComponentOnGUI()

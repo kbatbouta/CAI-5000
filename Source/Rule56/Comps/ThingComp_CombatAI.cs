@@ -128,6 +128,18 @@ namespace CombatAI.Comps
             }
         }
 
+        public override void PostDeSpawn(Map map)
+        {
+	        base.PostDeSpawn(map);
+	        allAllies.Clear();
+	        allEnemies.Clear();
+	        escorts.Clear();
+	        rangedEnemiesTargetingSelf.Clear();
+	        sapperNodes.Clear();
+	        aggroTarget = LocalTargetInfo.Invalid;
+	        data?.PostDeSpawn();
+        }
+
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);

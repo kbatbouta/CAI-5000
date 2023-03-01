@@ -21,6 +21,11 @@ namespace CombatAI.Patches
         private static          DamageReport             damageReport;
         private static readonly Dictionary<int, float>   distDict = new Dictionary<int, float>(256);
 
+        public static void ClearCache()
+        {
+	        distDict.Clear();
+        }
+
         [HarmonyPatch(typeof(AttackTargetFinder), nameof(AttackTargetFinder.BestAttackTarget))]
         internal static class AttackTargetFinder_BestAttackTarget_Patch
         {

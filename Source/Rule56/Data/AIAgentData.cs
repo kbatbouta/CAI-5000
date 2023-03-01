@@ -243,5 +243,12 @@ namespace CombatAI
 
         #endregion
 
+
+        public void PostDeSpawn()
+        {
+	        enemies?.Clear();
+	        allies?.Clear();
+	        targetedBy?.Clear();
+        }
     }
 }

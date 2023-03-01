@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using CombatAI.Patches;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -10,7 +11,7 @@ namespace CombatAI
 {
     public static class CombatAI_Utility
     {
-        public static bool Is<T>(this T def, T other) where T : Def
+	    public static bool Is<T>(this T def, T other) where T : Def
         {
             return def != null && other != null && def == other;
         }

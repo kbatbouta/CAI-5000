@@ -120,10 +120,6 @@ namespace CombatAI
 
         public void ExposeData()
         {
-//            if (Scribe.mode != LoadSaveMode.Saving)
-//            {
-//                Scribe_Collections.Look(ref elements, $"collectionThings", LookMode.Deep);
-//            }
         }
 
         public void Clear()

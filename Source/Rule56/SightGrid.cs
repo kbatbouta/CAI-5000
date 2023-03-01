@@ -9,8 +9,7 @@ namespace CombatAI
 {
     public class SightGrid
     {
-
-        private const    int                        COVERCARRYLIMIT = 6;
+	    private const    int                        COVERCARRYLIMIT = 6;
         private readonly AsyncActions               asyncActions;
         private readonly IBuckets<IBucketableThing> buckets;
         private readonly List<Vector3>              buffer = new List<Vector3>(1024);
@@ -48,7 +47,7 @@ namespace CombatAI
         /// </summary>
         public ITFloatGrid gridFog;
 
-//        private int regionUpdateIndex;
+        private int regionUpdateIndex;
         private int ops;
         /// <summary>
         ///     Whether this is the player grid
@@ -141,29 +140,29 @@ namespace CombatAI
             asyncActions.Start();
         }
 
-        public virtual void SightGridUpdate(bool gamePaused, bool performanceOkay)
+        public virtual void SightGridOptionalUpdate(bool gamePaused, bool performanceOkay)
         {
             if (gamePaused || performanceOkay)
             {
-//                int limit        = gamePaused ? 32 : 8; 
-//                int numGridCells = map.cellIndices.NumGridCells;
-//                for (int i = 0; i < limit; i++)
-//                {
-//                    Region region = map.regionGrid.regionGrid[regionUpdateIndex];
-//                    if (region?.valid ?? false)
-//                    {
-//                        grid_regions.SetRegionAt(regionUpdateIndex, region);
-//                        regionUpdateIndex++;
-//                        if (regionUpdateIndex >= numGridCells)
-//                        {
-//                            regionUpdateIndex = 0;
-//                        }
-//                    }
-//                }
+                int limit        = gamePaused ? 32 : 8; 
+                int numGridCells = map.cellIndices.NumGridCells;
+                for (int i = 0; i < limit; i++)
+                {
+                    Region region = map.regionGrid.regionGrid[regionUpdateIndex];
+                    if (region?.valid ?? false)
+                    {
+                        grid_regions.SetRegionAt(regionUpdateIndex, region);
+                        regionUpdateIndex++;
+                        if (regionUpdateIndex >= numGridCells)
+                        {
+                            regionUpdateIndex = 0;
+                        }
+                    }
+                }
             }
         }
         
-        public virtual void SightGridTick()
+        public void SightGridUpdate()
         {
             asyncActions.ExecuteMainThreadActions();
             if (ticksUntilUpdate-- > 0 || wait)
@@ -426,37 +425,19 @@ namespace CombatAI
                 ops                   += 1;
                 suCentroid            += pos;
             }
-            MetaCombatAttribute availability = 0;
-            if (item.thing != null)
+            MetaCombatAttribute availability   = 0;
+            bool                engagedInMelee = false;
+            if (item.Pawn != null)
             {
-                Verb verb = item.thing.TryGetAttackVerb();
-                if (verb != null)
-                {
-                    if (!verb.IsMeleeAttack)
-                    {
-                        if (verb.WarmingUp || verb.Bursting)
-                        {
-                            availability = MetaCombatAttribute.Occupied;
-                        }
-                        else
-                        {
-                            availability = MetaCombatAttribute.Free;
-                        }
-                    }
-                    else if (item.Pawn != null)
-                    {
-                        if (item.Pawn.mindState.MeleeThreatStillThreat)
-                        {
-                            availability = MetaCombatAttribute.Occupied;
-                        }
-                        else
-                        {
-                            availability = MetaCombatAttribute.Free;
-                        }
-                    }
-                }
+	            if ((engagedInMelee = item.Pawn.mindState.MeleeThreatStillThreat) || item.Pawn.stances?.curStance is Stance_Warmup)
+	            {
+		            availability = MetaCombatAttribute.Occupied;
+	            }
+	            else
+	            {
+		            availability = MetaCombatAttribute.Free;
+	            }
             }
-            bool engagedInMelee = item.Pawn?.mindState.MeleeThreatStillThreat == true;
             scanForEnemies &= !engagedInMelee;
             ISightRadius sightRadius = item.cachedSightRadius;
             Action action = () =>
