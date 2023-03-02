@@ -371,7 +371,7 @@ namespace CombatAI
             }
             int     ticks  = GenTicks.TicksGame;
             IntVec3 origin = item.thing.Position;
-            IntVec3 pos    = GetShiftedPosition(item.thing, (int)Maths.Min(30 * Find.TickManager.TickRateMultiplier, 45), item.path);
+            IntVec3 pos    = GetShiftedPosition(item.thing, (int)Maths.Min(45 * Find.TickManager.TickRateMultiplier, 90), item.path);
             if (!pos.InBounds(map))
             {
                 Log.Error($"ISMA: SighGridUpdater {item.thing} position is outside the map's bounds!");
@@ -442,24 +442,35 @@ namespace CombatAI
             ISightRadius sightRadius = item.cachedSightRadius;
             Action action = () =>
             {
+	            float r_fade     = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
+	            float d_fade     = sightRadius.fog - r_fade;
+	            float rSqr_sight = Maths.Sqr(sightRadius.sight);
+	            float rSqr_scan  = Maths.Sqr(sightRadius.scan);
+	            float rSqr_fog   = Maths.Sqr(sightRadius.fog);
+	            float rSqr_fade  = Maths.Sqr(r_fade);
                 if (playerAlliance && sightRadius.fog > 0)
                 {
                     gridFog.Next();
                     gridFog.Set(origin, 1.0f);
                     for (int i = 0; i < item.path.Count; i++)
                     {
-                        gridFog.Set(item.path[i], 1.0f);
+	                    IntVec3 cell = item.path[i];
+	                    float   d2   = pos.DistanceToSquared(cell);
+	                    float   val;
+	                    if (d2 < rSqr_fade)
+	                    {
+		                    val = 1f;
+	                    }
+	                    else
+	                    {
+		                    val = 1f - Mathf.Clamp01((Maths.Sqrt_Fast(d2, 5) - r_fade) / d_fade);
+	                    }
+                        gridFog.Set(cell, val);
                     }
                 }
                 MetaCombatAttribute attr = item.cachedDamage.attributes | availability;
                 grid.Next(item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, attr);
                 grid_regions.Next();
-                float r_fade     = sightRadius.fog * Finder.Settings.FogOfWar_RangeFadeMultiplier;
-                float d_fade     = sightRadius.fog - r_fade;
-                float rSqr_sight = Maths.Sqr(sightRadius.sight);
-                float rSqr_scan  = Maths.Sqr(sightRadius.scan);
-                float rSqr_fog   = Maths.Sqr(sightRadius.fog);
-                float rSqr_fade  = Maths.Sqr(r_fade);
                 Action<IntVec3, int, int, float> setAction = (cell, carry, dist, coverRating) =>
                 {
                     float d2         = pos.DistanceToSquared(cell);
