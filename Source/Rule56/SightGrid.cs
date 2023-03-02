@@ -371,7 +371,7 @@ namespace CombatAI
             }
             int     ticks  = GenTicks.TicksGame;
             IntVec3 origin = item.thing.Position;
-            IntVec3 pos    = GetShiftedPosition(item.thing, 30, item.path);
+            IntVec3 pos    = GetShiftedPosition(item.thing, (int)Maths.Min(30 * Find.TickManager.TickRateMultiplier, 45), item.path);
             if (!pos.InBounds(map))
             {
                 Log.Error($"ISMA: SighGridUpdater {item.thing} position is outside the map's bounds!");
@@ -380,7 +380,7 @@ namespace CombatAI
             IntVec3 flagPos = pos;
             if (item.Pawn != null)
             {
-                flagPos = GetShiftedPosition(item.Pawn, 60, null);
+                flagPos = GetShiftedPosition(item.Pawn, (int)Maths.Min(60 * Find.TickManager.TickRateMultiplier, 80), null);
             }
             SightTracker.SightReader reader = item.ai?.sightReader ?? null;
             bool                     scanForEnemies;
