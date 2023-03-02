@@ -175,16 +175,19 @@ namespace CombatAI.Patches
                         Thing blocker;
                         if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out IntVec3 cellAhead, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null)
                         {
-                            if (tuning != null && (!enemiesAhead || enemiesBefore || map.fogGrid.IsFogged(cellAhead) || cellAhead.HeuristicDistanceTo(cellBefore, map, 2) <= 8))
+                            if (!enemiesAhead || enemiesBefore || map.fogGrid.IsFogged(cellAhead) || cellAhead.HeuristicDistanceTo(cellBefore, map, 2) <= 8)
                             {
                                 try
                                 {
                                     __result.Dispose();
                                     fallbackCall                               = true;
                                     dig                                        = false;
-                                    tuning.costBlockedWallBase                 = Maths.Max(tuning.costBlockedWallBase * 3, 128);
-                                    tuning.costBlockedWallExtraForNaturalWalls = Maths.Max(tuning.costBlockedWallExtraForNaturalWalls * 3, 128);
-                                    tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 4);
+                                    if (tuning != null)
+                                    {
+	                                    tuning.costBlockedWallBase                 = Maths.Max(tuning.costBlockedWallBase * 3, 128);
+	                                    tuning.costBlockedWallExtraForNaturalWalls = Maths.Max(tuning.costBlockedWallExtraForNaturalWalls * 3, 128);
+	                                    tuning.costBlockedWallExtraPerHitPoint     = Maths.Max(tuning.costBlockedWallExtraPerHitPoint * 4, 4);
+                                    }
                                     __result                                   = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
                                 }
                                 catch (Exception er)

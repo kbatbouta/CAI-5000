@@ -237,7 +237,6 @@ namespace CombatAI.Comps
 				if (!selPawn.Drafted || selPawn.Position.DistanceToSquared(forcedTarget.Cell) < 25)
 				{
 					forcedTarget = LocalTargetInfo.Invalid;
-					;
 				}
 				else if (enemiesInRangeNum == 0 && (selPawn.jobs.curJob?.def.Is(JobDefOf.Goto) == false || selPawn.pather?.Destination != forcedTarget.Cell))
 				{
@@ -558,7 +557,7 @@ namespace CombatAI.Comps
 						request.caster             = selPawn;
 						request.majorThreats       = rangedEnemiesTargetingSelf;
 						request.checkBlockChance   = true;
-						request.maxRangeFromCaster = Mathf.Clamp(possibleDmgWarmup * 5f - rangedEnemiesTargetingSelf.Count, 6f, 10f);
+						request.maxRangeFromCaster = Mathf.Clamp(possibleDmgWarmup * 5f - rangedEnemiesTargetingSelf.Count, 4f, 8f);
 						if (CoverPositionFinder.TryFindDuckPosition(request, out IntVec3 cell))
 						{
 							bool diff = cell != selPos;
@@ -1313,7 +1312,7 @@ namespace CombatAI.Comps
 		/// <param name="ticksToBurst"></param>
 		public void Notify_BeingTargeted(Thing enemy, Verb verb)
 		{
-			if (enemy != null)
+			if (enemy != null && !enemy.Destroyed)
 			{
 				data.BeingTargeted(enemy);
 				if (Rand.Chance(0.15f) && (selPawn.mindState.duty.Is(DutyDefOf.Defend) || selPawn.mindState.duty.Is(DutyDefOf.Escort)))

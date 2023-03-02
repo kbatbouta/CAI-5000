@@ -45,6 +45,13 @@
                 <li Class="JobGiver_TakeCombatEnhancingDrug">
                     <onlyIfInDanger>true</onlyIfInDanger>
                 </li>
+                <li Class="ThinkNode_Subtree" MayRequire="Ludeon.RimWorld.Biotech">
+                    <treeDef>Abilities_Aggressive</treeDef>
+                </li>
+                <li Class="JobGiver_AIFightEnemies">
+                    <targetAcquireRadius>35</targetAcquireRadius>
+                    <targetKeepRadius>42</targetKeepRadius>
+                </li>
                 <li Class="JobGiver_AIDefendPoint">
                     <targetAcquireRadius>65</targetAcquireRadius>
                     <targetKeepRadius>72</targetKeepRadius>

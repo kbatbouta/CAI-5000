@@ -28,19 +28,17 @@ namespace CombatAI
             metric_cover.Add("visibilityEnemies", (reader, cell) => reader.GetVisibilityToEnemies(cell), 0.25f);
             metric_cover.Add("threat", (reader,            cell) => reader.GetThreat(cell), 0.25f);
 
-            metric_coverPath.Add("visibilityEnemies", (reader,    cell) => reader.GetVisibilityToEnemies(cell));
-            metric_coverPath.Add("dir", (reader,                  cell) => Maths.Sqrt_Fast(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude()), 3), -1);
+            metric_coverPath.Add("visibilityEnemies", (reader,    cell) => reader.GetVisibilityToEnemies(cell), 4);
             metric_coverPath.Add("traverse", (map,                cell) => (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0), 1, false);
             metric_coverPath.Add("visibilityFriendlies", (reader, cell) => reader.GetVisibilityToFriendlies(cell), -0.05f);
 
             // retreating
 
-            metric_retreat.Add("visibilityEnemies", (reader,    cell) => reader.GetVisibilityToEnemies(cell), 0.25f);
+            metric_retreat.Add("visibilityEnemies", (reader,    cell) => reader.GetVisibilityToEnemies(cell));
             metric_retreat.Add("threat", (reader,               cell) => reader.GetThreat(cell), 0.25f);
             metric_retreat.Add("visibilityFriendlies", (reader, cell) => reader.GetVisibilityToFriendlies(cell), -0.10f);
 
-            metric_retreatPath.Add("visibilityEnemies", (reader,    cell) => reader.GetVisibilityToEnemies(cell));
-            metric_retreatPath.Add("dir", (reader,                  cell) => Maths.Sqrt_Fast(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude()), 3), -1);
+            metric_retreatPath.Add("visibilityEnemies", (reader,    cell) => reader.GetVisibilityToEnemies(cell), 4);
             metric_retreatPath.Add("traverse", (map,                cell) => (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0), 1, false);
             metric_retreatPath.Add("visibilityFriendlies", (reader, cell) => reader.GetVisibilityToFriendlies(cell), -0.05f);
             metric_retreatPath.Add("danger", (reader,               cell) => reader.GetDanger(cell), 0.05f);
@@ -50,8 +48,7 @@ namespace CombatAI
             metric_duck.Add("visibilityEnemies", (reader, cell) => reader.GetVisibilityToEnemies(cell), 0.25f);
             metric_duck.Add("threat", (reader,            cell) => reader.GetThreat(cell), 0.25f);
 
-            metric_duckPath.Add("visibilityEnemies", (reader,    cell) => reader.GetVisibilityToEnemies(cell));
-            metric_duckPath.Add("dir", (reader,                  cell) => Maths.Sqrt_Fast(Mathf.CeilToInt(reader.GetEnemyDirection(cell).SqrMagnitude()), 3), -1);
+            metric_duckPath.Add("visibilityEnemies", (reader,    cell) => reader.GetVisibilityToEnemies(cell), 4);
             metric_duckPath.Add("traverse", (map,                cell) => (cell.GetEdifice(map)?.def.pathCost / 22f ?? 0) + (cell.GetTerrain(map)?.pathCost / 22f ?? 0), 1, false);
             metric_duckPath.Add("visibilityFriendlies", (reader, cell) => reader.GetVisibilityToFriendlies(cell), -0.05f);
         }
@@ -243,10 +240,6 @@ namespace CombatAI
                               {
                                   c += enemiesWarmingUp / 10f;
                               }
-                              if (rootDutyDestDist > 0)
-                              {
-                                  c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 5) - rootDutyDestDist) * 0.25f, -0.5f, 0.5f);
-                              }
                               float d = node.cell.DistanceToSquared(enemyLoc);
                               if (bestCellScore - c >= 0.05f)
                               {
@@ -380,10 +373,6 @@ namespace CombatAI
                               if (node.cell == request.locus)
                               {
                                   c += enemiesWarmingUp / 5f;
-                              }
-                              if (rootDutyDestDist > 0)
-                              {
-                                  c += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 5) - rootDutyDestDist) * 0.25f, -1f, 1f);
                               }
                               if (bestCellScore - c >= 0.05f)
                               {
