@@ -8,9 +8,10 @@ namespace CombatAI.Patches
 {
     public static class LordToil_AssaultColony_Patch
     {
-	    private static readonly List<Pawn> rangedLong = new List<Pawn>();
-	    private static readonly List<Pawn> rangedShort = new List<Pawn>();
-	    private static readonly List<Pawn> melee  = new List<Pawn>();
+	    private static readonly List<Pawn>              rangedLong  = new List<Pawn>();
+	    private static readonly List<Pawn>              rangedShort = new List<Pawn>();
+	    private static readonly List<Pair<Pawn, float>> ranged      = new List<Pair<Pawn, float>>();
+	    private static readonly List<Pawn>              melee       = new List<Pawn>();
 	    
         private static readonly List<Pawn>[] forces = new List<Pawn>[10];
         private static readonly List<Thing>  things = new List<Thing>();
@@ -37,6 +38,7 @@ namespace CombatAI.Patches
             things.Clear();
             rangedLong.Clear();
             rangedShort.Clear();
+            ranged.Clear();
             melee.Clear();
             thingsImportant.Clear();
             forces[0].Clear();
@@ -201,10 +203,12 @@ namespace CombatAI.Patches
 		                    if (!report.primaryIsRanged)
 		                    {
 			                    melee.Add(pawn);
+			                    ranged.Add(new Pair<Pawn, float>(pawn, 0));
 		                    }
 		                    else
 		                    {
 			                    float range = report.primaryVerbProps?.range ?? 10;
+			                    ranged.Add(new Pair<Pawn, float>(pawn, range));
 			                    if (range > 16)
 			                    {
 				                    rangedLong.Add(pawn);
@@ -216,52 +220,84 @@ namespace CombatAI.Patches
 		                    }
 	                    }
                     }
-                    foreach (Pawn pawn in melee)
+                    ranged.SortBy(p => p.second);
+                    for (int i = 0; i < ranged.Count; i++)
                     {
-	                    ThingComp_CombatAI comp = pawn.AI();
-	                    if (comp != null)
+	                    Pair<Pawn, float> pair = ranged[i];
+	                    if (pair.second > 35)
 	                    {
-		                    Pawn ally = null;
-		                    if (rangedLong.Count > 0 && Rand.Chance(Maths.Min(0.5f, rangedLong.Count / 5f)))
+		                    break;
+	                    }
+	                    if (Rand.Chance(1f - (i + 1f) / ranged.Count))
+	                    {
+		                    for (int j = i + 1; j < ranged.Count; j++)
 		                    {
-			                    ally = rangedLong.RandomElement();
-		                    }
-		                    else if (rangedShort.Count > 0 && Rand.Chance(Maths.Min(0.5f, rangedShort.Count / 5f)))
-		                    {
-			                    ally = rangedShort.RandomElement();
-		                    }
-		                    if (ally != null)
-		                    {
-			                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(ally, 15, 64, 1200 + Rand.Range(0, 9600));
-			                    customDuty.endOnTookDamage = true;
-			                    if (comp.duties != null)
+			                    Pair<Pawn, float> other = ranged[j];
+			                    if (other.second > pair.second)
 			                    {
-				                    pawn.TryStartCustomDuty(customDuty);
+				                    int               index    = Rand.Range(j, ranged.Count - 1);
+				                    if (index >= 0)
+				                    {
+					                    Pair<Pawn, float>                     escortee   = ranged[index];
+					                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(escortee.First, 15, 64, 3600 + Rand.Range(0, 9600));
+					                    customDuty.endOnTookDamage = true;
+					                    pair.First.TryStartCustomDuty(customDuty);
+					                    if (Finder.Settings.Debug)
+					                    {
+						                    Log.Message($"{pair.first}({pair.second}) escorting {escortee.first}({escortee.second})");
+					                    }
+				                    }
+				                    break;
 			                    }
 		                    }
 	                    }
                     }
-                    foreach (Pawn pawn in rangedShort)
-                    {
-	                    ThingComp_CombatAI comp = pawn.AI();
-	                    if (comp != null)
-	                    {
-		                    Pawn ally = null;
-		                    if (rangedShort.Count > 0 && Rand.Chance(Maths.Min(0.5f, rangedLong.Count / 5f)))
-		                    {
-			                    ally = rangedLong.RandomElement();
-		                    }
-		                    if (ally != null)
-		                    {
-			                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(ally, 15, 64, 1200 + Rand.Range(0, 9600));
-			                    customDuty.endOnTookDamage = true;
-			                    if (comp.duties != null)
-			                    {
-				                    pawn.TryStartCustomDuty(customDuty);
-			                    }
-		                    }
-	                    }
-                    }
+//                    foreach (Pawn pawn in melee)
+//                    {
+//	                    ThingComp_CombatAI comp = pawn.AI();
+//	                    if (comp != null)
+//	                    {
+//		                    Pawn ally = null;
+//		                    if (rangedLong.Count > 0 && Rand.Chance(Maths.Min(0.5f, rangedLong.Count / 5f)))
+//		                    {
+//			                    ally = rangedLong.RandomElement();
+//		                    }
+//		                    else if (rangedShort.Count > 0 && Rand.Chance(Maths.Min(0.5f, rangedShort.Count / 5f)))
+//		                    {
+//			                    ally = rangedShort.RandomElement();
+//		                    }
+//		                    if (ally != null)
+//		                    {
+//			                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(ally, 15, 64, 3600 + Rand.Range(0, 9600));
+//			                    customDuty.endOnTookDamage = true;
+//			                    if (comp.duties != null)
+//			                    {
+//				                    pawn.TryStartCustomDuty(customDuty);
+//			                    }
+//		                    }
+//	                    }
+//                    }
+//                    foreach (Pawn pawn in rangedShort)
+//                    {
+//	                    ThingComp_CombatAI comp = pawn.AI();
+//	                    if (comp != null)
+//	                    {
+//		                    Pawn ally = null;
+//		                    if (rangedShort.Count > 0 && Rand.Chance(Maths.Min(0.5f, rangedLong.Count / 5f)))
+//		                    {
+//			                    ally = rangedLong.RandomElement();
+//		                    }
+//		                    if (ally != null)
+//		                    {
+//			                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(ally, 15, 64, 3600 + Rand.Range(0, 9600));
+//			                    customDuty.endOnTookDamage = true;
+//			                    if (comp.duties != null)
+//			                    {
+//				                    pawn.TryStartCustomDuty(customDuty);
+//			                    }
+//		                    }
+//	                    }
+//                    }
                     ClearCache();
                 }
             }
