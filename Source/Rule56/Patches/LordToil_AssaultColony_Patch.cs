@@ -8,6 +8,10 @@ namespace CombatAI.Patches
 {
     public static class LordToil_AssaultColony_Patch
     {
+	    private static readonly List<Pawn> rangedLong = new List<Pawn>();
+	    private static readonly List<Pawn> rangedShort = new List<Pawn>();
+	    private static readonly List<Pawn> melee  = new List<Pawn>();
+	    
         private static readonly List<Pawn>[] forces = new List<Pawn>[10];
         private static readonly List<Thing>  things = new List<Thing>();
         private static readonly List<Thing>  thingsImportant = new List<Thing>();
@@ -31,6 +35,9 @@ namespace CombatAI.Patches
         {
             zones.Clear();
             things.Clear();
+            rangedLong.Clear();
+            rangedShort.Clear();
+            melee.Clear();
             thingsImportant.Clear();
             forces[0].Clear();
             forces[1].Clear();
@@ -185,6 +192,75 @@ namespace CombatAI.Patches
                                 }
                             }
                         }
+                    }
+                    foreach (Pawn pawn in __instance.lord.ownedPawns)
+                    {
+	                    DamageReport report = DamageUtility.GetDamageReport(pawn);
+	                    if (report.IsValid)
+	                    {
+		                    if (!report.primaryIsRanged)
+		                    {
+			                    melee.Add(pawn);
+		                    }
+		                    else
+		                    {
+			                    float range = report.primaryVerbProps?.range ?? 10;
+			                    if (range > 16)
+			                    {
+				                    rangedLong.Add(pawn);
+			                    }
+			                    else
+			                    {
+				                    rangedShort.Add(pawn);
+			                    }
+		                    }
+	                    }
+                    }
+                    foreach (Pawn pawn in melee)
+                    {
+	                    ThingComp_CombatAI comp = pawn.AI();
+	                    if (comp != null)
+	                    {
+		                    Pawn ally = null;
+		                    if (rangedLong.Count > 0 && Rand.Chance(Maths.Min(0.5f, rangedLong.Count / 5f)))
+		                    {
+			                    ally = rangedLong.RandomElement();
+		                    }
+		                    else if (rangedShort.Count > 0 && Rand.Chance(Maths.Min(0.5f, rangedShort.Count / 5f)))
+		                    {
+			                    ally = rangedShort.RandomElement();
+		                    }
+		                    if (ally != null)
+		                    {
+			                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(ally, 15, 64, 1200 + Rand.Range(0, 9600));
+			                    customDuty.endOnTookDamage = true;
+			                    if (comp.duties != null)
+			                    {
+				                    pawn.TryStartCustomDuty(customDuty);
+			                    }
+		                    }
+	                    }
+                    }
+                    foreach (Pawn pawn in rangedShort)
+                    {
+	                    ThingComp_CombatAI comp = pawn.AI();
+	                    if (comp != null)
+	                    {
+		                    Pawn ally = null;
+		                    if (rangedShort.Count > 0 && Rand.Chance(Maths.Min(0.5f, rangedLong.Count / 5f)))
+		                    {
+			                    ally = rangedLong.RandomElement();
+		                    }
+		                    if (ally != null)
+		                    {
+			                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(ally, 15, 64, 1200 + Rand.Range(0, 9600));
+			                    customDuty.endOnTookDamage = true;
+			                    if (comp.duties != null)
+			                    {
+				                    pawn.TryStartCustomDuty(customDuty);
+			                    }
+		                    }
+	                    }
                     }
                     ClearCache();
                 }
