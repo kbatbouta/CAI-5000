@@ -168,6 +168,10 @@ namespace CombatAI.Comps
                 }
                 return;
             }
+            if (selPawn.IsBurning_Fast())
+            {
+	            return;
+            }
             if (aggroTicks > 0)
             {
                 aggroTicks -= GenTicks.TickRareInterval;
@@ -324,6 +328,11 @@ namespace CombatAI.Comps
             if (selPawn.Faction.IsPlayerSafe() && !forcedTarget.IsValid)
             {
                 return;
+            }
+            // if the pawn is burning don't react.
+            if (selPawn.IsBurning_Fast())
+            {
+	            return;
             }
 #if DEBUG_REACTION
             if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)

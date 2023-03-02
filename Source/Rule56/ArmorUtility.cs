@@ -21,7 +21,7 @@ namespace CombatAI
             {
                 return default(ArmorReport);
             }
-            if (collapsible != null || !reports.TryGetValue(pawn.thingIDNumber, out ArmorReport report) || GenTicks.TicksGame - report.createdAt > 3600)
+            if (collapsible != null || !reports.TryGetValue(pawn.thingIDNumber, out ArmorReport report) || GenTicks.TicksGame - report.createdAt > 7200)
             {
                 reports[pawn.thingIDNumber] = report = CreateReport(pawn, collapsible);
             }
@@ -185,7 +185,6 @@ namespace CombatAI
 	        if (reports.ContainsKey(thing.thingIDNumber))
 	        {
 		        reports.Remove(thing.thingIDNumber);
-//		        Log.Message($"Invalidate {thing} armor cache");
 	        }
         }
     }

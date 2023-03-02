@@ -20,6 +20,16 @@ namespace CombatAI
             }
             return pawn.GetComp_Fast<ThingComp_CombatAI>();
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static CompAttachBase CompAttachBase(this Pawn pawn)
+        {
+	        if (active)
+	        {
+		        return CombatAI_CompAttachBase(pawn);
+	        }
+	        return pawn.GetComp_Fast<CompAttachBase>();
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MapComponent_CombatAI AI(this Map map)
@@ -54,6 +64,9 @@ namespace CombatAI
         [PrepatcherField]
         [InjectComponent]
         private static extern ThingComp_CombatAI CombatAI_ThingComp(Pawn pawn);
+        [PrepatcherField]
+        [InjectComponent]
+        private static extern CompAttachBase CombatAI_CompAttachBase(Pawn pawn);
         [PrepatcherField]
         [InjectComponent]
         private static extern MapComponent_CombatAI CombatAI_MapComp(Map map);

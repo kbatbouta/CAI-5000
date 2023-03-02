@@ -11,31 +11,44 @@ namespace CombatAI
 {
     public static class CombatAI_Utility
     {
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+	    public static bool IsBurning_Fast(this Pawn pawn)
+	    {
+		    CompAttachBase comp = pawn.CompAttachBase();
+		    if (comp != null)
+		    {
+			    return comp.HasAttachment(ThingDefOf.Fire);
+		    }
+		    return false;
+	    }
+	    
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
 	    public static bool Is<T>(this T def, T other) where T : Def
         {
             return def != null && other != null && def == other;
         }
 
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Is<T>(this Job job, T other) where T : Def
         {
             return job != null && other != null && job.def == other;
         }
-
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Is<T>(this PawnDuty duty, T other) where T : Def
         {
             return duty != null && other != null && duty.def == other;
         }
-
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Is<T>(this Thing thing, T other) where T : Def
         {
             return thing != null && other != null && thing.def == other;
         }
-
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Is<T>(this Thing thing, Thing other) where T : Def
         {
             return thing != null && other != null && thing == other;
         }
-
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDormant(this Thing thing)
         {
             if (!TKVCache<Thing, CompCanBeDormant, bool>.TryGet(thing, out bool value, 240))
@@ -135,18 +148,18 @@ namespace CombatAI
             }
             return null;
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasWeaponVisible(this Pawn pawn)
         {
             return (pawn.CurJob?.def.alwaysShowWeapon ?? false) || (pawn.mindState?.duty?.def.alwaysShowWeapon ?? false);
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetAvoidanceReader(this Pawn pawn, out AvoidanceReader reader)
         {
             return pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out reader);
         }
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetSightReader(this Pawn pawn, out SightReader reader)
         {
             if (pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out reader) && reader != null)
@@ -156,25 +169,25 @@ namespace CombatAI
             }
             return false;
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISGrid<float> GetFloatGrid(this Map map)
         {
             ISGrid<float> grid = map.GetComp_Fast<MapComponent_CombatAI>().f_grid;
             grid.Reset();
             return grid;
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static CellFlooder GetCellFlooder(this Map map)
         {
             return map.GetComp_Fast<MapComponent_CombatAI>().flooder;
         }
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong GetThingFlags(this Thing thing)
         {
             return (ulong)1 << GetThingFlagsIndex(thing);
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetThingFlagsIndex(this Thing thing)
         {
             return thing.thingIDNumber % 64;
