@@ -402,7 +402,7 @@ namespace CombatAI.Comps
             // get body size and use it in cooldown math.
             float bodySize = selPawn.RaceProps.baseBodySize;
             // pawn reaction cooldown changes with their body size.
-            if (data.InterruptedRecently((int)(30 * bodySize)) || data.RetreatedRecently((int)(60 * bodySize)))
+            if (data.InterruptedRecently((int)(45 * bodySize)) || data.RetreatedRecently((int)(120 * bodySize)))
             {
                 return;
             }
@@ -467,7 +467,7 @@ namespace CombatAI.Comps
             AIEnvThings enemies             = data.AllEnemies;
 
             rangedEnemiesTargetingSelf.Clear();
-            if (bodySize < 2 || selPawn.RaceProps.Humanlike)
+            if (Finder.Settings.Retreat_Enabled && (bodySize < 2 || selPawn.RaceProps.Humanlike))
             {
                 for (int i = 0; i < targetedBy.Count; i++)
                 {
@@ -507,11 +507,15 @@ namespace CombatAI.Comps
                 }
                 if (rangedEnemiesTargetingSelf.Count > 0 && !selPawn.mindState.MeleeThreatStillThreat && !selPawn.IsApproachingMeleeTarget(8, false))
                 {
-                    int retreatRoll = Rand.Range(0, 50);
+	                float retreatRoll = 15 + Rand.Range(0, 15 * rangedEnemiesTargetingSelf.Count) + data.NumAllies * 15;
+                    if (Finder.Settings.Debug_LogJobs)
+                    {
+	                    MoteMaker.ThrowText(selPawn.DrawPos, selPawn.Map, $"r:{Math.Round(retreatRoll)},d:{possibleDmg}", Color.white);
+                    }
                     // major retreat attempt if the pawn is doomed
                     if (possibleDmg - retreatRoll > 0.001f && possibleDmg >= 50)
                     {
-                        _last      = 10;
+	                    _last      = 10;
                         _bestEnemy = nearestMeleeEnemy;
                         CoverPositionRequest request = new CoverPositionRequest();
                         request.caster             = selPawn;
@@ -519,23 +523,34 @@ namespace CombatAI.Comps
                         request.majorThreats       = rangedEnemiesTargetingSelf;
                         request.maxRangeFromCaster = 12;
                         request.checkBlockChance   = true;
-                        if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell) && ShouldMoveTo(cell))
+                        if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell))
                         {
-                            if (cell != selPos)
-                            {
-                                _last = 11;
-                                Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Retreat, cell);
-                                job_goto.playerForced      = forcedTarget.IsValid;
-                                job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
-                                selPawn.jobs.ClearQueuedJobs();
-                                selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
-                                data.LastRetreated = GenTicks.TicksGame;
-                            }
-                            return;
+	                        if (ShouldMoveTo(cell))
+	                        {
+		                        if (cell != selPos)
+		                        {
+			                        _last = 11;
+			                        Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Retreat, cell);
+			                        job_goto.playerForced      = forcedTarget.IsValid;
+			                        job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+			                        selPawn.jobs.ClearQueuedJobs();
+			                        selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
+			                        data.LastRetreated = GenTicks.TicksGame;
+			                        if (Rand.Chance(0.5f) && !Finder.Settings.Debug_LogJobs)
+			                        {
+				                        MoteMaker.ThrowText(selPawn.DrawPos, selPawn.Map, "Cover me!", Color.white);
+			                        }
+		                        }
+		                        return;
+	                        }
+	                        else if (Finder.Settings.Debug_LogJobs)
+	                        {
+		                        MoteMaker.ThrowText(selPawn.DrawPos, selPawn.Map, $"retreat skipped", Color.white);
+	                        }
                         }
                     }
                     // try minor retreat (duck for cover fast)
-                    if (possibleDmg - retreatRoll * 0.5f > 0.001f && possibleDmg >= 20)
+                    if (possibleDmg - retreatRoll * 0.5f > 0.001f && possibleDmg >= 30)
                     {
                         // selPawn.Map.debugDrawer.FlashCell(selPos, 1.0f, $"{possibleDmg}, {targetedBy.Count}, {rangedEnemiesTargetingSelf.Count}");
                         CoverPositionRequest request = new CoverPositionRequest();
@@ -565,6 +580,10 @@ namespace CombatAI.Comps
                                 job_waitCombat.checkOverrideOnExpire = true;
                                 selPawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
                                 data.LastRetreated = lastRetreated = GenTicks.TicksGame;
+                            }
+                            if (Rand.Chance(0.5f) && !Finder.Settings.Debug_LogJobs)
+                            {
+	                            MoteMaker.ThrowText(selPawn.DrawPos, selPawn.Map, "Finding cover!", Color.white);
                             }
                             return;
                         }
