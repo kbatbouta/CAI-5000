@@ -66,6 +66,7 @@
                 </li>
                 <li Class="JobGiver_WanderNearDutyLocation">
                     <wanderRadius>8</wanderRadius>
+                    <expiryInterval>30</expiryInterval>
                     <locomotionUrgencyOutsideRadius>Sprint</locomotionUrgencyOutsideRadius>
                 </li>
                 <li Class="JobGiver_AITrashBuildingsDistant">
@@ -89,13 +90,15 @@
                     <targetAcquireRadius>65</targetAcquireRadius>
                     <targetKeepRadius>72</targetKeepRadius>
                 </li>
-                <li Class="JobGiver_AIFollowEscortee"/>
+                <li Class="CombatAI.JobGiver_CAIFollowEscortee"/>
                 <li Class="ThinkNode_Subtree">
                     <treeDef>SatisfyVeryUrgentNeeds</treeDef>
                 </li>
                 <li Class="JobGiver_WanderNearDutyLocation">
                     <wanderRadius>8</wanderRadius>
-                </li>
+                    <expiryInterval>60</expiryInterval>
+                    <locomotionUrgencyOutsideRadius>Jog</locomotionUrgencyOutsideRadius>
+                </li>             
                 <li Class="JobGiver_AITrashBuildingsDistant">
                     <attackAllInert>true</attackAllInert>
                 </li>

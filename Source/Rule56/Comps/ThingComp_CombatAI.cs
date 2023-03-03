@@ -1074,6 +1074,30 @@ namespace CombatAI.Comps
 			}
 			if (Prefs.DevMode && DebugSettings.godMode)
 			{
+				if ((selPawn.mindState.duty.Is(DutyDefOf.Escort) || selPawn.mindState.duty.Is(CombatAI_DutyDefOf.CombatAI_Escort)) && selPawn.mindState.duty.focus.IsValid)
+				{
+					Command_Action escort = new Command_Action();
+					escort.defaultLabel = "DEV: Flash escort area";
+					escort.action = delegate
+					{
+						Pawn  focus  = selPawn.mindState.duty.focus.Thing as Pawn;
+						Map   map    = focus.Map;
+						float radius = selPawn.mindState.duty.radius;
+						map.debugDrawer.FlashCell(focus.Position, 1, "XXXXXXX");
+						foreach (IntVec3 cell in GenRadial.RadialCellsAround(focus.Position, 0, 20))
+						{
+							if (JobGiver_CAIFollowEscortee.NearFollowee(selPawn, focus, cell, radius, out _))
+							{
+								map.debugDrawer.FlashCell(cell, 0.9f, $"{cell.HeuristicDistanceTo(focus.Position, map)}");
+							}
+							else
+							{
+								map.debugDrawer.FlashCell(cell, 0.01f, $"{cell.HeuristicDistanceTo(focus.Position, map)}");
+							}
+						}
+					};
+					yield return escort;
+				}
 				Verb           verb           = selPawn.TryGetAttackVerb();
 				float          retreatDistSqr = Maths.Max(verb.EffectiveRange * verb.EffectiveRange / 9, 36);
 				Map            map            = selPawn.Map;

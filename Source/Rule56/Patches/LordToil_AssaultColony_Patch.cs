@@ -221,7 +221,7 @@ namespace CombatAI.Patches
 	                    }
                     }
                     ranged.SortBy(p => p.second);
-                    for (int i = 0; i < ranged.Count; i++)
+                    for (int i = 0; i < ranged.Count; i += (Rand.Int % 2 + 1))
                     {
 	                    Pair<Pawn, float> pair = ranged[i];
 	                    if (pair.second > 35)
@@ -239,7 +239,7 @@ namespace CombatAI.Patches
 				                    if (index >= 0)
 				                    {
 					                    Pair<Pawn, float>                     escortee   = ranged[index];
-					                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(escortee.First, 15, 64, 3600 + Rand.Range(0, 9600));
+					                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(escortee.First, 15, 64, 2400 + Rand.Range(0, 12000));
 					                    customDuty.endOnTookDamage = true;
 					                    pair.First.TryStartCustomDuty(customDuty);
 					                    if (Finder.Settings.Debug)

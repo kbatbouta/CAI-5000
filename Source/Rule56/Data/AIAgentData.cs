@@ -155,7 +155,8 @@ namespace CombatAI
         }
         public AIEnvThings AllEnemies
         {
-            get => enemies.AsReadonly;
+	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => enemies;
         }
         public int NumEnemies
         {
@@ -200,7 +201,8 @@ namespace CombatAI
 
         public AIEnvThings AllAllies
         {
-            get => allies.AsReadonly;
+	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => allies;
         }
         public int NumAllies
         {

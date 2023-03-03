@@ -170,7 +170,8 @@ namespace CombatAI
                     {
                         foreach (Pawn other in Find.Selector.SelectedPawns)
                         {
-                            other.mindState.duty = new PawnDuty(DutyDefOf.Defend, escortee);
+                            other.mindState.duty        = new PawnDuty(CombatAI_DutyDefOf.CombatAI_Escort, escortee);
+                            other.mindState.duty.radius = 15;
                         }
                         Messages.Message($"Success: Escorting {escortee}", MessageTypeDefOf.CautionInput);
                     }
