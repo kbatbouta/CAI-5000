@@ -221,19 +221,22 @@ namespace CombatAI.Patches
 	                    }
                     }
                     ranged.SortBy(p => p.second);
-                    for (int i = 0; i < ranged.Count; i += (Rand.Int % 2 + 1))
+                    int maxRange = Rand.Range(15, 30);
+                    int num      = 0;
+                    int limit    = (int) (ranged.Count * Rand.Range(0.25f, 0.4f));
+                    for (int i = 0; i < ranged.Count && num < limit; i += (Rand.Int % 2 + 1))
                     {
 	                    Pair<Pawn, float> pair = ranged[i];
-	                    if (pair.second > 35)
+	                    if (pair.second > maxRange)
 	                    {
 		                    break;
 	                    }
-	                    if (Rand.Chance(1f - (i + 1f) / ranged.Count))
+	                    if (!Rand.Chance(i / (ranged.Count * 2f) + 0.01f))
 	                    {
 		                    for (int j = i + 1; j < ranged.Count; j++)
 		                    {
 			                    Pair<Pawn, float> other = ranged[j];
-			                    if (other.second > pair.second)
+			                    if (other.second  > pair.second)
 			                    {
 				                    int               index    = Rand.Range(j, ranged.Count - 1);
 				                    if (index >= 0)
@@ -242,9 +245,10 @@ namespace CombatAI.Patches
 					                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(escortee.First, 15, 64, 2400 + Rand.Range(0, 12000));
 					                    customDuty.endOnTookDamage = true;
 					                    pair.First.TryStartCustomDuty(customDuty);
+					                    num++;
 					                    if (Finder.Settings.Debug)
 					                    {
-						                    Log.Message($"{pair.first}({pair.second}) escorting {escortee.first}({escortee.second})");
+						                    Log.Message($"{num}. {pair.first}({pair.second}) escorting {escortee.first}({escortee.second})");
 					                    }
 				                    }
 				                    break;
