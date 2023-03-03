@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using CombatAI.Abilities;
 using CombatAI.R;
+using CombatAI.Squads;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -46,6 +47,10 @@ namespace CombatAI.Comps
 		///     Saves job logs. for debugging only.
 		/// </summary>
 		public List<JobLog> jobLogs;
+		/// <summary>
+		/// Pawn squad
+		/// </summary>
+		public Squad squad;
 		/// <summary>
 		///     Parent armor report.
 		/// </summary>
@@ -241,9 +246,10 @@ namespace CombatAI.Comps
 				else if (enemiesInRangeNum == 0 && (selPawn.jobs.curJob?.def.Is(JobDefOf.Goto) == false || selPawn.pather?.Destination != forcedTarget.Cell))
 				{
 					Job gotoJob = JobMaker.MakeJob(JobDefOf.Goto, forcedTarget);
-					gotoJob.canUseRangedWeapon = true;
-					gotoJob.locomotionUrgency  = LocomotionUrgency.Jog;
-					gotoJob.playerForced       = true;
+					gotoJob.canUseRangedWeapon    = true;
+					gotoJob.checkOverrideOnExpire = false;
+					gotoJob.locomotionUrgency     = LocomotionUrgency.Jog;
+					gotoJob.playerForced          = true;
 					selPawn.jobs.ClearQueuedJobs();
 					selPawn.jobs.StartJob(gotoJob);
 				}
@@ -531,8 +537,10 @@ namespace CombatAI.Comps
 								{
 									_last = 11;
 									Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Retreat, cell);
-									job_goto.playerForced      = forcedTarget.IsValid;
-									job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+									job_goto.playerForced          = forcedTarget.IsValid;
+									job_goto.checkOverrideOnExpire = false;
+									job_goto.expiryInterval        = -1;
+									job_goto.locomotionUrgency     = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 									selPawn.jobs.ClearQueuedJobs();
 									selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
 									data.LastRetreated = GenTicks.TicksGame;
@@ -566,8 +574,10 @@ namespace CombatAI.Comps
 							{
 								_last = 12;
 								Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Duck, cell);
-								job_goto.playerForced      = forcedTarget.IsValid;
-								job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+								job_goto.playerForced          = forcedTarget.IsValid;
+								job_goto.checkOverrideOnExpire = false;
+								job_goto.expiryInterval        = -1;
+								job_goto.locomotionUrgency     = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 								selPawn.jobs.ClearQueuedJobs();
 								selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
 								data.LastRetreated = lastRetreated = GenTicks.TicksGame;
@@ -746,8 +756,10 @@ namespace CombatAI.Comps
 						{
 							_last = 50 + codeOffset;
 							Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Cover, cell);
-							job_goto.playerForced      = forcedTarget.IsValid;
-							job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+							job_goto.playerForced          = forcedTarget.IsValid;
+							job_goto.expiryInterval        = -1;
+							job_goto.checkOverrideOnExpire = false;
+							job_goto.locomotionUrgency     = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 							Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 150 + 200);
 							job_waitCombat.targetA                        = nearestEnemy;
 							job_waitCombat.playerForced                   = forcedTarget.IsValid;
@@ -763,8 +775,10 @@ namespace CombatAI.Comps
 							_last                         = 51 + codeOffset;
 							selPawn.mindState.enemyTarget = nearestEnemy;
 							Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Cover, cell);
-							job_goto.playerForced      = forcedTarget.IsValid;
-							job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+							job_goto.expiryInterval        = -1;
+							job_goto.checkOverrideOnExpire = false;
+							job_goto.playerForced          = forcedTarget.IsValid;
+							job_goto.locomotionUrgency     = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 							Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 150 + 200);
 							job_waitCombat.playerForced                   = forcedTarget.IsValid;
 							job_waitCombat.endIfCantShootTargetFromCurPos = true;
@@ -801,8 +815,10 @@ namespace CombatAI.Comps
 							{
 								_last = 41;
 								Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Retreat, cell);
-								job_goto.playerForced      = forcedTarget.IsValid;
-								job_goto.locomotionUrgency = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
+								job_goto.expiryInterval        = -1;
+								job_goto.checkOverrideOnExpire = false;
+								job_goto.playerForced          = forcedTarget.IsValid;
+								job_goto.locomotionUrgency     = Finder.Settings.Enable_Sprinting ? LocomotionUrgency.Sprint : LocomotionUrgency.Jog;
 								selPawn.jobs.ClearQueuedJobs();
 								selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
 								data.LastRetreated = GenTicks.TicksGame;

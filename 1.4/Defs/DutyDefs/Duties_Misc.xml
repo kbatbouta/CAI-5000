@@ -10,10 +10,14 @@
                 <li Class="JobGiver_TakeCombatEnhancingDrug">
                     <onlyIfInDanger>true</onlyIfInDanger>
                 </li>
+                <li Class="JobGiver_AIFightEnemies">
+                    <targetAcquireRadius>35</targetAcquireRadius>
+                    <targetKeepRadius>42</targetKeepRadius>
+                </li>
                 <li Class="JobGiver_AIDefendPoint">
                     <targetAcquireRadius>65</targetAcquireRadius>
                     <targetKeepRadius>72</targetKeepRadius>
-                </li>
+                </li>                
                 <li Class="ThinkNode_ForbidOutsideFlagRadius">
                     <maxDistToSquadFlag>16</maxDistToSquadFlag>
                     <subNodes>
@@ -85,6 +89,10 @@
             <subNodes>
                 <li Class="JobGiver_TakeCombatEnhancingDrug">
                     <onlyIfInDanger>true</onlyIfInDanger>
+                </li>
+                <li Class="JobGiver_AIFightEnemies">
+                    <targetAcquireRadius>22</targetAcquireRadius>
+                    <targetKeepRadius>42</targetKeepRadius>
                 </li>
                 <li Class="JobGiver_AIDefendEscortee">
                     <targetAcquireRadius>65</targetAcquireRadius>

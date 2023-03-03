@@ -662,6 +662,26 @@ namespace CombatAI.R
                    _CombatAI_Settings_Advance : _CombatAI_Settings_Advance = "CombatAI.Settings.Advance".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Advance_SquadPathWidth = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.SquadPathWidth</c>. inner text:
+        ///
+        /// <code>Avoidance path width. Avoidance path width determine flanking aggressiveness.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_SquadPathWidth {
+            get => _CombatAI_Settings_Advance_SquadPathWidth != null ? 
+                   _CombatAI_Settings_Advance_SquadPathWidth : _CombatAI_Settings_Advance_SquadPathWidth = "CombatAI.Settings.Advance.SquadPathWidth".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_SquadPathWidth_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.SquadPathWidth.Description</c>. inner text:
+        ///
+        /// <code>Path width {0} cells (default: 1)</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_SquadPathWidth_Description {
+            get => _CombatAI_Settings_Advance_SquadPathWidth_Description != null ? 
+                   _CombatAI_Settings_Advance_SquadPathWidth_Description : _CombatAI_Settings_Advance_SquadPathWidth_Description = "CombatAI.Settings.Advance.SquadPathWidth.Description".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Advance_Warning = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Warning</c>. inner text:
         ///

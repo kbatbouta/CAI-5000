@@ -4,7 +4,7 @@ namespace CombatAI
     public class Settings : ModSettings
     {
 
-        private const int version                             = 4;
+        private const int version                             = 5;
         public        int Advanced_SightThreadIdleSleepTimeMS = 1;
 
         /*
@@ -65,15 +65,16 @@ namespace CombatAI
          */
 
         public bool  LeanCE_Enabled;
-        public bool  Pather_DisableL1L2     = false;
-        public bool  Pather_Enabled         = true;
-        public bool  Pather_KillboxKiller   = true;
-        public float Pathfinding_DestWeight = 0.85f;
-        public float Pathfinding_SappingMul = 1.0f;
-        public bool  Temperature_Enabled    = true;
-        public bool  PerformanceOpt_Enabled = true;
-        public bool  React_Enabled          = true;
-        public bool  Retreat_Enabled        = true;
+        public bool  Pather_DisableL1L2         = false;
+        public bool  Pather_Enabled             = true;
+        public bool  Pather_KillboxKiller       = true;
+        public float Pathfinding_DestWeight     = 0.85f;
+        public float Pathfinding_SappingMul     = 1.0f;
+        public int   Pathfinding_SquadPathWidth = 4;
+        public bool  Temperature_Enabled        = true;
+        public bool  PerformanceOpt_Enabled     = true;
+        public bool  React_Enabled              = true;
+        public bool  Retreat_Enabled            = true;
         public bool  FinishedQuickSetup;
 
 
@@ -129,6 +130,7 @@ namespace CombatAI
             Scribe_Values.Look(ref Retreat_Enabled, $"Retreat_Enabled.{version}", true);
             Scribe_Values.Look(ref Flank_Enabled, $"Flank_Enabled.{version}", true);
             Scribe_Values.Look(ref Pathfinding_DestWeight, $"Pathfinding_DestWeight.{version}", 0.85f);
+            Scribe_Values.Look(ref Pathfinding_SquadPathWidth, $"Pathfinding_SquadPathWidth.{version}", 4);
             Scribe_Values.Look(ref AdvancedUser, $"AdvancedUser.{version}");
             Scribe_Values.Look(ref FogOfWar_FogColor, $"FogOfWar_FogColor.{version}", 0.35f);
             Scribe_Values.Look(ref FogOfWar_RangeFadeMultiplier, $"FogOfWar_RangeFadeMultiplier.{version}", 0.5f);

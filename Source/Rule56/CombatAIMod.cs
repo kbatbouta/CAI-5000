@@ -318,6 +318,13 @@ namespace CombatAI
                 {
                     Widgets.HorizontalSlider(rect, ref Finder.Settings.Pathfinding_SappingMul, new FloatRange(0.5f, 1.5f), Keyed.CombatAI_Settings_Basic_SappingMul);
                 }, useMargins: true);
+                collapsible.Line(1);
+                collapsible.Lambda(25, rect =>
+                {
+	                float val = Finder.Settings.Pathfinding_SquadPathWidth;
+	                Widgets.HorizontalSlider(rect, ref val, new FloatRange(1, 10), Keyed.CombatAI_Settings_Advance_SquadPathWidth_Description.Formatted(Finder.Settings.Pathfinding_SquadPathWidth));
+	                Finder.Settings.Pathfinding_SquadPathWidth = Mathf.RoundToInt(Mathf.Clamp(val, 1, 10));
+                }, useMargins: true);
             }
         }
 
