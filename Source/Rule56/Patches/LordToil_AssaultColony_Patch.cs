@@ -195,72 +195,72 @@ namespace CombatAI.Patches
                             }
                         }
                     }
-                    foreach (Pawn pawn in __instance.lord.ownedPawns)
-                    {
-	                    DamageReport report = DamageUtility.GetDamageReport(pawn);
-	                    if (report.IsValid)
-	                    {
-		                    if (!report.primaryIsRanged)
-		                    {
-			                    melee.Add(pawn);
-			                    ranged.Add(new Pair<Pawn, float>(pawn, 0));
-		                    }
-		                    else
-		                    {
-			                    float range = report.primaryVerbProps?.range ?? 10;
-			                    ranged.Add(new Pair<Pawn, float>(pawn, range));
-			                    if (range > 16)
-			                    {
-				                    rangedLong.Add(pawn);
-			                    }
-			                    else
-			                    {
-				                    rangedShort.Add(pawn);
-			                    }
-		                    }
-	                    }
-                    }
-                    ranged.SortBy(p => p.second);
-                    int maxRange = Rand.Range(15, 30);
-                    int num      = 0;
-                    int limit    = (int) (ranged.Count * Rand.Range(0.25f, 0.4f));
-                    for (int i = 0; i < ranged.Count && num < limit; i += (Rand.Int % 2 + 1))
-                    {
-	                    Pair<Pawn, float> pair = ranged[i];
-	                    if (pair.second > maxRange)
-	                    {
-		                    break;
-	                    }
-	                    SkillRecord record = pair.First.skills?.GetSkill(SkillDefOf.Mining) ?? null;
-	                    if (record != null && Rand.Chance(record.Level / 15f))
-	                    {
-		                    continue;
-	                    }
-	                    if (!Rand.Chance(i / (ranged.Count * 2f) + 0.01f))
-	                    {
-		                    for (int j = i + 1; j < ranged.Count; j++)
-		                    {
-			                    Pair<Pawn, float> other = ranged[j];
-			                    if (other.second  > pair.second)
-			                    {
-				                    int               index    = Rand.Range(j, ranged.Count - 1);
-				                    if (index >= 0)
-				                    {
-					                    Pair<Pawn, float>                     escortee   = ranged[index];
-					                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(escortee.First, 15, 64, 2400 + Rand.Range(0, 12000));
-					                    customDuty.endOnTookDamage = true;
-					                    pair.First.TryStartCustomDuty(customDuty);
-					                    num++;
-					                    if (Finder.Settings.Debug)
-					                    {
-						                    Log.Message($"{num}. {pair.first}({pair.second}) escorting {escortee.first}({escortee.second})");
-					                    }
-				                    }
-				                    break;
-			                    }
-		                    }
-	                    }
-                    }
+//                    foreach (Pawn pawn in __instance.lord.ownedPawns)
+//                    {
+//	                    DamageReport report = DamageUtility.GetDamageReport(pawn);
+//	                    if (report.IsValid)
+//	                    {
+//		                    if (!report.primaryIsRanged)
+//		                    {
+//			                    melee.Add(pawn);
+//			                    ranged.Add(new Pair<Pawn, float>(pawn, 0));
+//		                    }
+//		                    else
+//		                    {
+//			                    float range = report.primaryVerbProps?.range ?? 10;
+//			                    ranged.Add(new Pair<Pawn, float>(pawn, range));
+//			                    if (range > 16)
+//			                    {
+//				                    rangedLong.Add(pawn);
+//			                    }
+//			                    else
+//			                    {
+//				                    rangedShort.Add(pawn);
+//			                    }
+//		                    }
+//	                    }
+//                    }
+//                    ranged.SortBy(p => p.second);
+//                    int maxRange = Rand.Range(15, 30);
+//                    int num      = 0;
+//                    int limit    = (int) (ranged.Count * Rand.Range(0.25f, 0.4f));
+//                    for (int i = 0; i < ranged.Count && num < limit; i += (Rand.Int % 2 + 1))
+//                    {
+//	                    Pair<Pawn, float> pair = ranged[i];
+//	                    if (pair.second > maxRange)
+//	                    {
+//		                    break;
+//	                    }
+//	                    SkillRecord record = pair.First.skills?.GetSkill(SkillDefOf.Mining) ?? null;
+//	                    if (record != null && Rand.Chance(record.Level / 15f))
+//	                    {
+//		                    continue;
+//	                    }
+//	                    if (!Rand.Chance(i / (ranged.Count * 2f) + 0.01f))
+//	                    {
+//		                    for (int j = i + 1; j < ranged.Count; j++)
+//		                    {
+//			                    Pair<Pawn, float> other = ranged[j];
+//			                    if (other.second  > pair.second)
+//			                    {
+//				                    int               index    = Rand.Range(j, ranged.Count - 1);
+//				                    if (index >= 0)
+//				                    {
+//					                    Pair<Pawn, float>                     escortee   = ranged[index];
+//					                    Pawn_CustomDutyTracker.CustomPawnDuty customDuty = CustomDutyUtility.Escort(escortee.First, 15, 64, 2400 + Rand.Range(0, 12000));
+//					                    customDuty.endOnTookDamage = true;
+//					                    pair.First.TryStartCustomDuty(customDuty);
+//					                    num++;
+//					                    if (Finder.Settings.Debug)
+//					                    {
+//						                    Log.Message($"{num}. {pair.first}({pair.second}) escorting {escortee.first}({escortee.second})");
+//					                    }
+//				                    }
+//				                    break;
+//			                    }
+//		                    }
+//	                    }
+//                    }
 //                    foreach (Pawn pawn in melee)
 //                    {
 //	                    ThingComp_CombatAI comp = pawn.AI();

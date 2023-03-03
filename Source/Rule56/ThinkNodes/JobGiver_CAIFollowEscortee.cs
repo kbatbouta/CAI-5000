@@ -61,7 +61,7 @@ namespace CombatAI
 		public static bool NearFollowee(Pawn follower, Pawn followee, IntVec3 locus, float radius, out IntVec3 followeeRoot)
 		{
 			float   speedMul       = Mathf.Clamp(followee.GetStatValue_Fast(StatDefOf.MoveSpeed, 3600) / (follower.GetStatValue_Fast(StatDefOf.MoveSpeed, 3600) + 0.1f), 0.5f, 2);
-			float   adjustedRadius = radius * 1.2f;
+			float   adjustedRadius = radius * 1.2f; 
 			IntVec3 shiftedPos     = followeeRoot = PawnPathUtility.GetMovingShiftedPosition(followee, 60 * speedMul * 6);
 			if (shiftedPos.HeuristicDistanceTo(locus, followee.Map, Mathf.CeilToInt(radius / 12f + 2)) >= adjustedRadius)
 			{
