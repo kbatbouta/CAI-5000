@@ -231,6 +231,11 @@ namespace CombatAI.Patches
 	                    {
 		                    break;
 	                    }
+	                    SkillRecord record = pair.First.skills?.GetSkill(SkillDefOf.Mining) ?? null;
+	                    if (record != null && Rand.Chance(record.Level / 15f))
+	                    {
+		                    continue;
+	                    }
 	                    if (!Rand.Chance(i / (ranged.Count * 2f) + 0.01f))
 	                    {
 		                    for (int j = i + 1; j < ranged.Count; j++)
