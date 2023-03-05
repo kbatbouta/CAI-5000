@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using CombatAI.Abilities;
 using CombatAI.R;
-using CombatAI.Squads;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -50,7 +49,7 @@ namespace CombatAI.Comps
 		/// <summary>
 		/// Pawn squad
 		/// </summary>
-		public Squad squad;
+		public IPawnGroup group;
 		/// <summary>
 		///     Parent armor report.
 		/// </summary>
@@ -113,7 +112,7 @@ namespace CombatAI.Comps
 		/// </summary>
 		public bool IsSapping
 		{
-			get => cellBefore.IsValid && sapperNodes.Count > 0;
+			get => cellBefore.IsValid && sapperNodes.Count > 0 && sapperStartTick > 0;
 		}
 		/// <summary>
 		///     Whether the pawn is available to escort other pawns or available for sapping.
@@ -194,10 +193,6 @@ namespace CombatAI.Comps
 			{
 				duties.TickRare();
 			}
-			if (abilities != null)
-			{
-				// abilities.TickRare(visibleEnemies);
-			}
 			if (selPawn.IsApproachingMeleeTarget(out Thing target))
 			{
 				ThingComp_CombatAI comp = target.GetComp_Fast<ThingComp_CombatAI>();
@@ -209,12 +204,20 @@ namespace CombatAI.Comps
 			}
 			if (IsSapping && !IsDeadOrDowned)
 			{
+				if (sightReader != null && sightReader.GetVisibilityToEnemies(cellBefore) > 0)
+				{
+					ReleaseEscorts(success: sapperNodes.Count == 0);
+					sapperNodes.Clear();
+					cellBefore      = IntVec3.Invalid;
+					sapperStartTick = -1;
+				}
+				else 
 				// end if this pawn is in
 				if (sapperNodes[0].GetEdifice(parent.Map) == null)
 				{
 					cellBefore = sapperNodes[0];
 					sapperNodes.RemoveAt(0);
-					if (sapperNodes.Count > 0)
+					if (sapperNodes.Count > 0 && sightReader.GetEnemyAvailability(cellBefore) == 0)
 					{
 						_sap++;
 						TryStartSapperJob();
@@ -471,9 +474,7 @@ namespace CombatAI.Comps
 			float       possibleDmgWarmup   = 0f;
 			float       possibleDmg         = 0f;
 			AIEnvThings enemies             = data.AllEnemies;
-
-			rangedEnemiesTargetingSelf.Clear();
-			if (Finder.Settings.Retreat_Enabled && (bodySize < 2 || selPawn.RaceProps.Humanlike))
+			if (Finder.Settings.Retreat_Enabled && (bodySize < 2 || selPawn.RaceProps.Humanlike) && selPawn.Map.AI().interceptors.grid.Get(selPos) == 0)
 			{
 				for (int i = 0; i < targetedBy.Count; i++)
 				{
@@ -794,7 +795,7 @@ namespace CombatAI.Comps
 					{
 						rangedEnemiesTargetingSelf.Remove(nearestEnemy);
 					}
-					bool retreatMeleeThreat = nearestMeleeEnemy != null && nearestMeleeEnemyDist < Maths.Max(verb.EffectiveRange / 3f, 9);
+					bool retreatMeleeThreat = nearestMeleeEnemy != null && nearestMeleeEnemyDist < Maths.Max(verb.EffectiveRange / 3f, 5);
 					bool retreatThreat      = !retreatMeleeThreat && nearestEnemy != null && nearestEnemyDist < Maths.Max(verb.EffectiveRange / 4f, 5);
 					_bestEnemy = retreatMeleeThreat ? nearestMeleeEnemy : nearestEnemy;
 					// retreat because of a close melee threat
@@ -908,7 +909,7 @@ namespace CombatAI.Comps
 								{
 									while (rangedEnemiesTargetingSelf.Count > 3)
 									{
-										rangedEnemiesTargetingSelf.RemoveAt(Rand.Int % rangedEnemiesTargetingSelf.Count);
+										rangedEnemiesTargetingSelf.RemoveAt(Maths.Min(Rand.Range(0, rangedEnemiesTargetingSelf.Count), rangedEnemiesTargetingSelf.Count - 1));
 									}
 									request.majorThreats       = rangedEnemiesTargetingSelf;
 									request.maxRangeFromCaster = Maths.Min(verb.EffectiveRange, 10f);
@@ -1455,6 +1456,7 @@ namespace CombatAI.Comps
 			data ??= new AIAgentData();
 			Scribe_Deep.Look(ref duties, "duties2");
 			Scribe_Deep.Look(ref abilities, "abilities2");
+			Scribe_References.Look(ref group, "group");
 			Scribe_TargetInfo.Look(ref forcedTarget, "forcedTarget");
 			if (duties == null)
 			{
@@ -1470,14 +1472,14 @@ namespace CombatAI.Comps
 
 		private void TryStartSapperJob()
 		{
-			if (sightReader.GetVisibilityToEnemies(cellBefore) > 0 || sapperNodes.Count == 0)
+			if (!cellBefore.IsValid || sapperStartTick == -1 || sightReader.GetAbsVisibilityToEnemies(cellBefore) > 0 || sapperNodes.Count == 0)
 			{
 				ReleaseEscorts(false);
 				cellBefore      = IntVec3.Invalid;
 				sapperStartTick = -1;
 				sapperNodes.Clear();
 				return;
-			}
+			}			
 			if (selPawn.Destroyed || IsDeadOrDowned || selPawn.mindState.duty == null || !(selPawn.mindState.duty.Is(DutyDefOf.AssaultColony) || selPawn.mindState.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) || selPawn.mindState.duty.Is(DutyDefOf.AssaultThing)))
 			{
 				ReleaseEscorts(false);
@@ -1487,7 +1489,35 @@ namespace CombatAI.Comps
 			Thing blocker = sapperNodes[0].GetEdifice(map);
 			if (blocker != null)
 			{
-				Job job = DigUtility.PassBlockerJob(selPawn, blocker, cellBefore, true, true);
+				Verb verb = selPawn.TryGetAttackVerb();
+				Job  job  = null;
+				if (verb is { IsMeleeAttack: false } && (!verb.IsIncendiary_Ranged() || blocker.FlammableNow) && !Mod_CE.active)
+				{
+					IntVec3 firingPosition = IntVec3.Invalid;
+					float   maxDist        = int.MinValue;
+					void Action(CellFlooder.Node node)
+					{
+						float dist = node.cell.DistanceToSquared(blocker.Position);
+						if (dist > 4 && dist > maxDist && verb.CanHitTargetFrom(node.cell, blocker))
+						{
+							maxDist        = dist;
+							firingPosition = node.cell;
+						}
+					}
+					bool Validator(IntVec3 cell) => cell.DistanceToSquared(blocker.Position) < verb.EffectiveRange;
+					map.AI().flooder.Flood(cellBefore, (Action<CellFlooder.Node>)Action, validator: Validator, maxDist: 10);
+					if (firingPosition.IsValid)
+					{
+						job                     = JobMaker.MakeJob(JobDefOf.UseVerbOnThing, blocker, firingPosition);
+						job.verbToUse           = verb;
+						job.preventFriendlyFire = true;
+						BreachingUtility.FinalizeTrashJob(job);
+					}
+				}
+				if (job == null) 
+				{
+					job = DigUtility.PassBlockerJob(selPawn, blocker, cellBefore, true, true);	
+				}
 				if (job != null)
 				{
 					job.playerForced       = true;

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using CombatAI.Comps;
-using CombatAI.Squads;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -306,14 +305,14 @@ namespace CombatAI
             int                width  = Finder.Settings.Pathfinding_SquadPathWidth;
             ulong              sflags = flags; 
             ThingComp_CombatAI comp   = pawn.AI();
-            Squad              squad  = null;
+            IPawnGroup              pawnGroup  = null;
             if (comp != null)
             {
-	            squad = comp.squad;
-	            if (squad != null)
+	            pawnGroup = comp.group;
+	            if (pawnGroup != null)
 	            {
-		            width  = Maths.Max(width, squad.members.Count);
-		            sflags = squad.GetSquadFlags();
+		            width  = Maths.Max(width, pawnGroup.PawnNum);
+		            sflags = pawnGroup.GetSquadFlags();
 	            }
             }
             WallGrid           walls  = map.GetComp_Fast<WallGrid>();

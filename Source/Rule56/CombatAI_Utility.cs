@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using CombatAI.Comps;
 using CombatAI.Patches;
-using CombatAI.Squads;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -195,9 +194,9 @@ namespace CombatAI
             return thing.thingIDNumber % 64;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ulong GetSquadFlags(this Squad squad)
+        public static ulong GetSquadFlags(this IPawnGroup pawnGroup)
         {
-	        return squad != null ? ((ulong)1 << (squad.squadIDNumber % 64)) : 0;
+	        return pawnGroup != null ? ((ulong)1 << (pawnGroup.groupIDNumber % 64)) : 0;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong GetSquadFlags(this Pawn pawn)
@@ -207,7 +206,7 @@ namespace CombatAI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetSquadFlagsIndex(this Pawn pawn)
         {
-	        return pawn.AI()?.squad?.squadIDNumber ?? 0;
+	        return pawn.AI()?.group?.groupIDNumber ?? 0;
         }
 
         private class IsApproachingMeleeTargetCache

@@ -128,18 +128,31 @@ namespace CombatAI.Patches
                                     tuning.costOffLordWalkGrid                 = 0;
                                 }
                             }
+                            Verb verb = pawn.equipment?.PrimaryEq?.PrimaryVerb ?? null;
+                            if (verb != null && verb.Available())
+                            {
+	                            if (verb.verbProps.ai_IsDoorDestroyer)
+	                            {
+		                            tuning.costBlockedDoor            /= 2;
+		                            tuning.costBlockedDoorPerHitPoint /= 2;
+	                            }
+	                            if (verb.verbProps.ai_IsBuildingDestroyer )
+	                            {
+		                            tuning.costBlockedWallBase             /= 2;
+		                            tuning.costBlockedWallExtraPerHitPoint /= 2;
+		                            parms.mode                             =  TraverseMode.PassAllDestroyableThings;
+	                            }
+                            }
                         }
                     }
                     checkAvoidance  = Finder.Settings.Flank_Enabled && avoidanceReader != null && !isPlayer;
                     checkVisibility = sightReader != null;
-//					counter         = 0;
-                    flashCost = Finder.Settings.Debug_DebugPathfinding && Find.Selector.SelectedPawns.Contains(pawn);
-                    __state = true;
+                    flashCost       = Finder.Settings.Debug_DebugPathfinding && Find.Selector.SelectedPawns.Contains(pawn);
+                    __state         = true;
                     return;
                 }
                 __state = false;
                 Reset();
-                return;
             }
 
             [HarmonyPriority(int.MinValue)]
@@ -151,25 +164,7 @@ namespace CombatAI.Patches
                 }
                 if (__state)
                 {
-//                    if (__result == null || __result == PawnPath.NotFound || !__result.Found)
-//                    {
-//                        try
-//                        {
-//                            __result?.Dispose();
-//                            fallbackCall = true;
-//                            dig          = false;
-//                            __result     = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
-//                        }
-//                        catch (Exception er)
-//                        {
-//                            Log.Error($"ISMA: Error occured in FindPath fallback call {er}");
-//                        }
-//                        finally
-//                        {
-//                            fallbackCall = false;
-//                        }
-//                    }
-                    if (dig && !(__result?.nodes.NullOrEmpty() ?? true))
+	                if (dig && !(__result?.nodes.NullOrEmpty() ?? true))
                     {
                         blocked.Clear();
                         Thing blocker;

@@ -30,13 +30,18 @@ namespace CombatAI
         /*      Cache
          * ----- ----- ----- -----
          */
-
+        
         public Dictionary<Pair<int, int>, int> regionWiseDist = new Dictionary<Pair<int, int>, int>(64);
 
         /* 
          * ----- ----- ----- -----
          */
+        
+        public List<IPawnGroup> groupsForScribing = new List<IPawnGroup>(); 
 
+        /*      Cache
+         * ----- ----- ----- -----
+         */
 
         public MapComponent_CombatAI(Map map) : base(map)
         {
@@ -132,6 +137,19 @@ namespace CombatAI
         public void EnqueueOffThreadAction(Action action)
         {
             asyncActions.EnqueueOffThreadAction(action);
+        }
+
+        public void RegisterPawnGroupForScribing(IPawnGroup group)
+        {
+	        
+        }
+
+        public override void ExposeData()
+        {
+	        base.ExposeData();
+	        groupsForScribing.RemoveAll(g => !g.IsValid);
+	        Scribe_Collections.Look(ref groupsForScribing, "mapPawnGroups", LookMode.Deep);
+	        groupsForScribing ??= new List<IPawnGroup>();
         }
     }
 }
