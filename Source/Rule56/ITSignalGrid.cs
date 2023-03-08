@@ -18,12 +18,12 @@ namespace CombatAI
     {
         private readonly IFieldInfo[]                  cells;
         private readonly IField<byte>[]                cells_aiming;
-        private readonly IField<float>[]               cells_blunt;
         private readonly IField<Vector2>[]             cells_dir;
         private readonly IField<ulong>[]               cells_staticFlags;
         private readonly IField<ulong>[]               cells_dynamicFlags;
         private readonly IField<MetaCombatAttribute>[] cells_meta;
         private readonly IField<float>[]               cells_sharp;
+        private readonly IField<float>[]               cells_blunt;
         private readonly IField<float>[]               cells_strength;
 
         private readonly CellIndices indices;

@@ -156,10 +156,10 @@ namespace CombatAI.Patches
                     map.GetCellFlooder().Flood(root,
                                                node =>
                                                {
-                                                   float val = (node.dist - node.distAbs) / (node.distAbs + 1f) * 2 + (sightReader.GetVisibilityToEnemies(node.cell) - rootVis) * 0.25f + Maths.Min(avoidanceReader.GetProximity(node.cell), 4f) - Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;
+                                                   float val = (node.dist - node.distAbs) / (node.distAbs + 1f) * 2 + (sightReader.GetVisibilityToEnemies(node.cell) - rootVis) * 0.5f + Maths.Min(avoidanceReader.GetProximity(node.cell), 2f) + Maths.Min(avoidanceReader.GetDanger(node.cell), 1f) - interceptors.grid.Get(node.cell) * 4 + (sightReader.GetThreat(node.cell) - rootThreat) * 0.5f;
                                                    if (rootDutyDestDist > 0)
                                                    {
-                                                       val += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -2f, 2f);
+                                                       val += Mathf.Clamp((Maths.Sqrt_Fast(dutyDest.DistanceToSquared(node.cell), 3) - rootDutyDestDist) * 0.25f, -0.5f, 0.5f);
                                                    }
                                                    if (effectiveRange > 0)
                                                    {
@@ -169,7 +169,7 @@ namespace CombatAI.Patches
                                                },
                                                cell =>
                                                {
-	                                               return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 4 - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
+	                                               return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2.5f - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
                                                },
                                                cell =>
                                                {

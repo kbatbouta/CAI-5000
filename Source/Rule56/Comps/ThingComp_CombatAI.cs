@@ -720,6 +720,10 @@ namespace CombatAI.Comps
 				// ranged
 				else
 				{
+					if (selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) && GenTicks.TicksGame - selPawn.CurJob.startTick < 60)
+					{
+						return;
+					}
 					// if CE is active skip reaction if the pawn is reloading or hunkering down.
 					if (Mod_CE.active && (selPawn.CurJobDef.Is(Mod_CE.ReloadWeapon) || selPawn.CurJobDef.Is(Mod_CE.HunkerDown)))
 					{
@@ -851,7 +855,7 @@ namespace CombatAI.Comps
 					{
 						rangedEnemiesTargetingSelf.Remove(nearestEnemy);
 					}
-					bool retreatMeleeThreat = nearestMeleeEnemy != null && nearestMeleeEnemyDist < Maths.Max(verb.EffectiveRange / 3f, 9);
+					bool retreatMeleeThreat = nearestMeleeEnemy != null && verb.EffectiveRange > 16 && nearestMeleeEnemyDist < Maths.Max(verb.EffectiveRange / 3f, 9) && 0.25f * data.NumAllies < data.NumEnemies;
 					bool retreatThreat      = !retreatMeleeThreat && nearestEnemy != null && nearestEnemyDist < Maths.Max(verb.EffectiveRange / 4f, 5);
 					_bestEnemy = retreatMeleeThreat ? nearestMeleeEnemy : nearestEnemy;
 					// retreat because of a close melee threat
@@ -911,27 +915,32 @@ namespace CombatAI.Comps
 									}
 								}
 							}
-							float moveBias = Mathf.Clamp01(2f * shootingNum / (rangedNum + 1f));
+							float distOffset = Mathf.Clamp(2.0f * shootingNum - rangedEnemiesTargetingSelf.Count, 0, 25);
+							float moveBias   = Mathf.Clamp01(2f * shootingNum / (rangedNum + 1f));
+							if (Finder.Settings.Debug_LogJobs && distOffset > 0)
+							{
+								selPawn.Map.debugDrawer.FlashCell(selPos, distOffset / 20f, $"{distOffset}");
+							}
 							if (moveBias <= 0.5f)
 							{
 								moveBias = 0f;
 							}
 							if (bestEnemyVisibleNow)
 							{
-								if (nearestEnemyDist > 8)
+								if (nearestEnemyDist > 6)
 								{
 									CastPositionRequest request = new CastPositionRequest();
 									request.caster              = selPawn;
 									request.target              = nearestEnemy;
 									request.maxRangeFromTarget  = 9999;
 									request.verb                = verb;
-									request.maxRangeFromCaster  = Maths.Max(Maths.Min(verb.EffectiveRange, nearestEnemyDist) / 2f, 10f);
+									request.maxRangeFromCaster  = Maths.Max(Maths.Min(verb.EffectiveRange, nearestEnemyDist) / 2f, 10f) + distOffset;
 									request.wantCoverFromTarget = true;
 									if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && cell != selPos && (ShouldMoveTo(cell) || Rand.Chance(moveBias)))
 									{
 										StartOrQueueCoverJob(cell, 0);
 									}
-									else if (!selPawn.CurJob.Is(JobDefOf.Wait_Combat))
+									else if (ShouldShootNow())
 									{
 										_last = 52;
 										Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
@@ -942,7 +951,7 @@ namespace CombatAI.Comps
 										data.LastInterrupted = GenTicks.TicksGame;
 									}
 								}
-								else
+								else if(ShouldShootNow())
 								{
 									_last = 53;
 									Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
@@ -968,7 +977,7 @@ namespace CombatAI.Comps
 										rangedEnemiesTargetingSelf.RemoveAt(Rand.Int % rangedEnemiesTargetingSelf.Count);
 									}
 									request.majorThreats       = rangedEnemiesTargetingSelf;
-									request.maxRangeFromCaster = Maths.Min(verb.EffectiveRange, 10f);
+									request.maxRangeFromCaster = Maths.Min(verb.EffectiveRange, 10f) + distOffset;
 								}
 								else
 								{
@@ -986,7 +995,7 @@ namespace CombatAI.Comps
 										_last = 71;
 										// fallback
 										request.target             = PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 90);
-										request.maxRangeFromCaster = Mathf.Min(request.maxRangeFromCaster, 5);
+										request.maxRangeFromCaster = Mathf.Min(request.maxRangeFromCaster, 5) + distOffset;
 										if (verb.CanHitFromCellIgnoringRange(selPos, request.target, out _) && CoverPositionFinder.TryFindCoverPosition(request, out cell) && (ShouldMoveTo(cell) || Rand.Chance(moveBias)))
 										{
 											StartOrQueueCoverJob(cell, 20);
@@ -1023,6 +1032,15 @@ namespace CombatAI.Comps
 			float magDiff    = Maths.Sqrt_Fast(sightReader.GetEnemyDirection(pos).sqrMagnitude, 4) - Maths.Sqrt_Fast(sightReader.GetEnemyDirection(newPos).sqrMagnitude, 4);
 			float threatDiff = curThreat - sightReader.GetThreat(newPos);
 			return Rand.Chance(visDiff) && Rand.Chance(threatDiff) && Rand.Chance(magDiff);
+		}
+		
+		/// <summary>
+		///		Whether the pawn should start shooting now.
+		/// </summary>
+		/// <returns></returns>
+		private bool ShouldShootNow()
+		{
+			return !selPawn.CurJob.Is(JobDefOf.Wait_Combat) && ((!selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) && !selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Duck)) || !ShouldMoveTo(selPawn.CurJob.targetA.Cell));
 		}
 
 		/// <summary>
