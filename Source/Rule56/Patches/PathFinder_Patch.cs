@@ -13,6 +13,7 @@ namespace CombatAI.Patches
     public static class PathFinder_Patch
     {
         public static bool FlashSearch;
+        public static bool FlashSapperPath;
 
         [HarmonyPatch(typeof(PathFinder), nameof(PathFinder.FindPath), typeof(IntVec3), typeof(LocalTargetInfo), typeof(TraverseParms), typeof(PathEndMode), typeof(PathFinderCostTuning))]
         private static class PathFinder_FindPath_Patch
@@ -151,31 +152,46 @@ namespace CombatAI.Patches
                 }
                 if (__state)
                 {
-//                    if (__result == null || __result == PawnPath.NotFound || !__result.Found)
-//                    {
-//                        try
-//                        {
-//                            __result?.Dispose();
-//                            fallbackCall = true;
-//                            dig          = false;
-//                            __result     = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
-//                        }
-//                        catch (Exception er)
-//                        {
-//                            Log.Error($"ISMA: Error occured in FindPath fallback call {er}");
-//                        }
-//                        finally
-//                        {
-//                            fallbackCall = false;
-//                        }
-//                    }
-                    if (dig && !(__result?.nodes.NullOrEmpty() ?? true))
+	                if (Finder.Settings.Debug_LogJobs && Finder.Settings.Debug && __result.Found)
+	                {
+		                Job job = pawn.CurJob;
+		                if (job != null)
+		                {
+			                comp.jobLogs ??= new List<JobLog>();
+			                JobLog log = comp.jobLogs.FirstOrDefault(j => j.id == job.loadID);
+			                if (log != null)
+			                {
+				                log.path       ??= new List<IntVec3>();
+				                log.pathSapper ??= new List<IntVec3>();
+				                log.path.Clear();
+				                log.pathSapper.Clear();
+				                log.path.AddRange(__result.nodes);
+			                }
+		                }
+	                }
+	                if (dig && !(__result?.nodes.NullOrEmpty() ?? true))
                     {
                         blocked.Clear();
                         Thing blocker;
-                        if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out IntVec3 cellAhead, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null)
+                        if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out IntVec3 cellAhead, out bool enemiesAhead, out bool enemiesBefore, FlashSapperPath) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null && !FlashSapperPath)
                         {
-                            if (!enemiesAhead || enemiesBefore || map.fogGrid.IsFogged(cellAhead) || cellAhead.HeuristicDistanceTo(cellBefore, map, 2) <= 8)
+	                        FlashSapperPath = false;
+	                        if (Finder.Settings.Debug_LogJobs && Finder.Settings.Debug && __result.Found)
+	                        {
+		                        Job job = pawn.CurJob;
+		                        if (job != null)
+		                        {
+			                        comp.jobLogs ??= new List<JobLog>();
+			                        JobLog log = comp.jobLogs.FirstOrDefault(j => j.id == job.loadID);
+			                        if (log != null)
+			                        {
+				                        log.pathSapper ??= new List<IntVec3>();
+				                        log.pathSapper.Clear();
+				                        log.pathSapper.AddRange(__result.nodes);
+			                        }
+		                        }
+	                        }
+	                        if (!enemiesAhead || enemiesBefore || map.fogGrid.IsFogged(cellAhead) || cellAhead.HeuristicDistanceTo(cellBefore, map, 2) <= 8)
                             {
                                 try
                                 {
@@ -199,7 +215,7 @@ namespace CombatAI.Patches
                                     fallbackCall = false;
                                 }
                             }
-                            else
+                            else if(!FlashSapperPath)
                             {
                                 comp.StartSapper(blocked, cellBefore, enemiesAhead);
                             }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using CombatAI.Abilities;
 using CombatAI.R;
 using CombatAI.Squads;
+using CombatAI.Utilities;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -154,6 +156,31 @@ namespace CombatAI.Comps
 			abilities      ??= new Pawn_AbilityCaster(selPawn);
 			abilities.pawn =   selPawn;
 		}
+		
+		#if DEBUG_REACTION
+		private static List<Thing> _buffer = new List<Thing>(16);
+		public override void CompTick()
+		{
+			base.CompTick();
+			if (selPawn.IsHashIntervalTick(15) && Find.Selector.SelectedPawns.Contains(selPawn))
+			{
+				List<Thing> buffer = _buffer;
+				buffer.Clear();
+				sightReader.GetEnemies(selPawn.Position, buffer);
+				foreach (var thing in buffer)
+				{
+					selPawn.Map.debugDrawer.FlashCell(thing.Position, 0.01f, "H", 15);
+				}
+				buffer.Clear();
+				sightReader.GetFriendlies(selPawn.Position, buffer);
+				foreach (var thing in buffer)
+				{
+					selPawn.Map.debugDrawer.FlashCell(thing.Position, 0.99f, "F", 15);
+				}
+				buffer.Clear();
+			}
+		}
+		#endif
 
 		public override void CompTickRare()
 		{
@@ -164,7 +191,7 @@ namespace CombatAI.Comps
 			}
 			if (IsDeadOrDowned)
 			{
-				if (escorts.Count > 0)
+				if (IsSapping || escorts.Count > 0)
 				{
 					ReleaseEscorts(false);
 					sapperNodes.Clear();
@@ -207,7 +234,7 @@ namespace CombatAI.Comps
 					comp.Notify_BeingTargeted(selPawn, selPawn.CurrentEffectiveVerb);
 				}
 			}
-			if (IsSapping && !IsDeadOrDowned)
+			if (IsSapping)
 			{
 				// end if this pawn is in
 				if (sapperNodes[0].GetEdifice(parent.Map) == null)
@@ -232,7 +259,7 @@ namespace CombatAI.Comps
 					TryStartSapperJob();
 				}
 			}
-			else if (forcedTarget.IsValid && !IsDeadOrDowned)
+			if (forcedTarget.IsValid)
 			{
 				if (Mod_CE.active && (selPawn.CurJobDef.Is(Mod_CE.ReloadWeapon) || selPawn.CurJobDef.Is(Mod_CE.HunkerDown)))
 				{
@@ -615,8 +642,13 @@ namespace CombatAI.Comps
 						_last = 30;
 						selPawn.jobs.StopAll();
 					}
-					bool bestEnemyIsRanged             = false;
-					bool bestEnemyIsMeleeAttackingAlly = false;
+					IntVec3 shiftedPos                    = PawnPathUtility.GetMovingShiftedPosition(selPawn, 240);
+					if (sightReader.GetVisibilityToEnemies(shiftedPos) > 0)
+					{
+						
+					}
+					bool    bestEnemyIsRanged             = false;
+					bool    bestEnemyIsMeleeAttackingAlly = false;
 					// TODO create melee reactions.
 					IEnumerator<AIEnvAgentInfo> enumeratorEnemies = data.EnemiesWhere(AIEnvAgentState.nearby);
 					while (enumeratorEnemies.MoveNext())
@@ -752,7 +784,33 @@ namespace CombatAI.Comps
 
 					void StartOrQueueCoverJob(IntVec3 cell, int codeOffset)
 					{
-						if (selPawn.CurJob.Is(JobDefOf.Wait_Combat))
+						Job curJob = selPawn.CurJob;
+						if (curJob != null && (curJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) || curJob.Is(JobDefOf.Goto)) && cell == curJob.targetA.Cell)
+						{
+							if (selPawn.jobs.jobQueue.Count == 0 || !selPawn.jobs.jobQueue[0].job.Is(JobDefOf.Wait_Combat))
+							{
+								Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 150 + 200);
+								job_waitCombat.targetA                        = nearestEnemy;
+								job_waitCombat.playerForced                   = forcedTarget.IsValid;
+								job_waitCombat.endIfCantShootTargetFromCurPos = true;
+								job_waitCombat.checkOverrideOnExpire          = true;
+								selPawn.jobs.ClearQueuedJobs();
+								selPawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
+							}
+						}
+						else if (cell == selPawn.Position)
+						{
+							if (!selPawn.CurJob.Is(JobDefOf.Wait_Combat))
+							{
+								Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 150 + 200);
+								job_waitCombat.targetA                        = nearestEnemy;
+								job_waitCombat.playerForced                   = forcedTarget.IsValid;
+								job_waitCombat.endIfCantShootTargetFromCurPos = true;
+								job_waitCombat.checkOverrideOnExpire          = true;
+								selPawn.jobs.StartJob(job_waitCombat, JobCondition.InterruptForced);
+							}
+						}
+						else if (selPawn.CurJob.Is(JobDefOf.Wait_Combat))
 						{
 							_last = 50 + codeOffset;
 							Job job_goto = JobMaker.MakeJob(CombatAI_JobDefOf.CombatAI_Goto_Cover, cell);
@@ -768,7 +826,6 @@ namespace CombatAI.Comps
 							selPawn.jobs.ClearQueuedJobs();
 							selPawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
 							selPawn.jobs.jobQueue.EnqueueFirst(job_goto);
-							data.LastInterrupted = GenTicks.TicksGame;
 						}
 						else
 						{
@@ -786,8 +843,8 @@ namespace CombatAI.Comps
 							selPawn.jobs.ClearQueuedJobs();
 							selPawn.jobs.StartJob(job_goto, JobCondition.InterruptForced);
 							selPawn.jobs.jobQueue.EnqueueFirst(job_waitCombat);
-							data.LastInterrupted = GenTicks.TicksGame;
 						}
+						data.LastInterrupted = GenTicks.TicksGame;
 					}
 
 					if (nearestEnemy != null && rangedEnemiesTargetingSelf.Contains(nearestEnemy))
@@ -870,7 +927,7 @@ namespace CombatAI.Comps
 									request.verb                = verb;
 									request.maxRangeFromCaster  = Maths.Max(Maths.Min(verb.EffectiveRange, nearestEnemyDist) / 2f, 10f);
 									request.wantCoverFromTarget = true;
-									if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && (ShouldMoveTo(cell) || Rand.Chance(moveBias)))
+									if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && cell != selPos && (ShouldMoveTo(cell) || Rand.Chance(moveBias)))
 									{
 										StartOrQueueCoverJob(cell, 0);
 									}
@@ -897,7 +954,7 @@ namespace CombatAI.Comps
 								}
 							}
 							// best enemy is approaching but not yet in view
-							else if (bestEnemyVisibleSoon || duty.Is(DutyDefOf.Escort) || duty.Is(CombatAI_DutyDefOf.CombatAI_Escort) || duty.Is(DutyDefOf.Defend) || duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) || duty.Is(DutyDefOf.HuntEnemiesIndividual))
+							else if (bestEnemyVisibleSoon)
 							{
 								_last = 60;
 								CoverPositionRequest request = new CoverPositionRequest();
@@ -951,6 +1008,10 @@ namespace CombatAI.Comps
 		private bool ShouldMoveTo(IntVec3 newPos)
 		{
 			IntVec3 pos           = selPawn.Position;
+			if (pos == newPos)
+			{
+				return true;
+			}
 			float   curVisibility = sightReader.GetVisibilityToEnemies(pos);
 			float   curThreat     = sightReader.GetVisibilityToEnemies(pos);
 			Job     job           = selPawn.CurJob;
@@ -1339,7 +1400,7 @@ namespace CombatAI.Comps
 					}
 					return false;
 				};
-				GenClosest.RegionwiseBFSWorker(selPawn.Position, selPawn.Map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 4, 15, out int _);
+				Verse.GenClosest.RegionwiseBFSWorker(selPawn.Position, selPawn.Map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 4, 15, out int _);
 			}
 			escorts.Clear();
 		}
@@ -1478,9 +1539,12 @@ namespace CombatAI.Comps
 				sapperNodes.Clear();
 				return;
 			}
-			if (selPawn.Destroyed || IsDeadOrDowned || selPawn.mindState.duty == null || !(selPawn.mindState.duty.Is(DutyDefOf.AssaultColony) || selPawn.mindState.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) || selPawn.mindState.duty.Is(DutyDefOf.AssaultThing)))
+			if (IsDeadOrDowned || !(selPawn.mindState.duty.Is(DutyDefOf.AssaultColony) || selPawn.mindState.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) || selPawn.mindState.duty.Is(DutyDefOf.AssaultThing)) || (selPawn.CurJob.Is(JobDefOf.Wait_Combat) || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Retreat) || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Duck)))
 			{
 				ReleaseEscorts(false);
+				cellBefore      = IntVec3.Invalid;
+				sapperStartTick = -1;
+				sapperNodes.Clear();
 				return;
 			}
 			Map   map     = selPawn.Map;
@@ -1493,7 +1557,11 @@ namespace CombatAI.Comps
 					job.playerForced       = true;
 					job.expiryInterval     = 3600;
 					job.maxNumMeleeAttacks = 300;
-					selPawn.jobs.StopAll();
+					if (Finder.Settings.Debug_LogJobs && Finder.Settings.Debug)
+					{
+						JobLog jobLog = selPawn.LogFor(job);
+						jobLog.note += $"rootJob=({selPawn.CurJob?.def}:{selPawn.CurJob?.loadID}),";
+					}
 					selPawn.jobs.StartJob(job, JobCondition.InterruptForced);
 					if (findEscorts && Rand.Chance(1 - Maths.Min(escorts.Count / 12, 0.85f)))
 					{
@@ -1529,7 +1597,7 @@ namespace CombatAI.Comps
 							}
 							return false;
 						};
-						GenClosest.RegionwiseBFSWorker(selPawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 10, 40, out int _);
+						Verse.GenClosest.RegionwiseBFSWorker(selPawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 10, 40, out int _);
 					}
 				}
 			}
@@ -1544,7 +1612,7 @@ namespace CombatAI.Comps
 				{
 					attackTarget = -1;
 				}
-				else if (!enemyVerb.IsMeleeAttack && enemyVerb.currentTarget is { IsValid: true, HasThing: true } && (enemyVerb.WarmingUp && enemyVerb.WarmupTicksLeft < 45 || enemyVerb.Bursting))
+				else if (!enemyVerb.IsMeleeAttack && enemyVerb.currentTarget is { IsValid: true, HasThing: true } && (enemyVerb.WarmingUp && enemyVerb.WarmupTicksLeft < 60 || enemyVerb.Bursting))
 				{
 					attackTarget = enemyVerb.currentTarget.Thing.thingIDNumber;
 				}
@@ -1615,7 +1683,7 @@ namespace CombatAI.Comps
                         .Select(t => t as Pawn)
                         .Where(p => !p.Dead && !p.Downed && PawnPathUtility.GetMovingShiftedPosition(p, 60).DistanceToSquared(shiftedPos) < sightRangeSqr && verb.CanHitTargetFrom(shiftedPos, PawnPathUtility.GetMovingShiftedPosition(p, 60)) && p.HostileTo(pawn))
                         .ToList();
-                    GUIUtility.ExecuteSafeGUIAction(() =>
+                    Gui.GUIUtility.ExecuteSafeGUIAction(() =>
                     {
                         Vector2 drawPosUI = drawPos.MapToUIPosition();
                         Text.Font = GameFont.Tiny;

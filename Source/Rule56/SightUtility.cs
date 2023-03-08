@@ -8,6 +8,15 @@ namespace CombatAI
 {
     public static class SightUtility
     {
+	    public static float GetSightRadius_Fast(Thing thing)
+	    {
+		    if (!TKVCache<int, SightGrid.ISightRadius, float>.TryGet(thing.thingIDNumber, out float val, 12000))
+		    {
+			    TKVCache<int, SightGrid.ISightRadius, float>.Put(thing.thingIDNumber, val = GetSightRadius(thing).sight);
+		    }
+		    return val;
+	    }
+	    
 	    public static SightGrid.ISightRadius GetSightRadius(Thing thing)
         {
             bool                   isSmartPawn = false;
@@ -68,6 +77,7 @@ namespace CombatAI
                 result.sight = result.sight + 8;
             }
             result.createdAt = GenTicks.TicksGame;
+            TKVCache<int, SightGrid.ISightRadius, float>.Put(thing.thingIDNumber, result.sight);
             return result;
         }
 

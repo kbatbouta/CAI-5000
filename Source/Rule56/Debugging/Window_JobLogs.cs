@@ -213,6 +213,41 @@ namespace CombatAI
                     }
                 });
             }
+            if (ButtonText(collapsible_dutyTest, "Flash sapper path to"))
+            {
+	            Find.Targeter.BeginTargeting(new TargetingParameters
+	            {
+		            canTargetAnimals   = false,
+		            canTargetBuildings = false,
+		            canTargetCorpses   = false,
+		            canTargetHumans    = false,
+		            canTargetSelf      = false,
+		            canTargetMechs     = false,
+		            canTargetLocations = true
+	            }, info =>
+	            {
+		            if (info.Cell.IsValid)
+		            {
+			            PathFinder_Patch.FlashSapperPath = true;
+			            try
+			            {
+				            PawnPath path = pawn.Map.pathFinder.FindPath(pawn.Position, info.Cell, TraverseParms.For(pawn, Danger.Deadly, TraverseMode.PassAllDestroyableThings));
+				            if (path is { Found: true })
+				            {
+					            path.ReleaseToPool();
+				            }
+			            }
+			            catch (Exception er)
+			            {
+				            Log.Error(er.ToString());
+			            }
+			            finally
+			            {
+				            PathFinder_Patch.FlashSapperPath = false;
+			            }
+		            }
+	            });
+            }
             if (ButtonText(collapsible_dutyTest, "Region-wise distance"))
             {
                 Find.Targeter.BeginTargeting(new TargetingParameters
@@ -447,10 +482,30 @@ namespace CombatAI
                     UnityEngine.GUIUtility.systemCopyBuffer = selectedLog.ToString();
                     Messages.Message("Job info copied to clipboard", MessageTypeDefOf.CautionInput);
                 }
+                if (selectedLog.path != null && Widgets.ButtonText(rect.LeftPartPixels(300).RightPartPixels(150), "Flash path"))
+                { 
+	                Messages.Message("Flashed path", MessageTypeDefOf.CautionInput);
+	                map.debugDrawer.debugCells.Clear();
+	                for (int i = 0; i < selectedLog.path.Count; i++)
+	                {
+		                map.debugDrawer.FlashCell(selectedLog.path[i],(float)i / (selectedLog.path.Count), $"{selectedLog.path.Count - i}");
+	                }
+	                
+                }
+                if (selectedLog.pathSapper != null && Widgets.ButtonText(rect.LeftPartPixels(450).RightPartPixels(150), "Flash sapper path"))
+                {
+	                Messages.Message("Flashed sapper path", MessageTypeDefOf.CautionInput);
+	                map.debugDrawer.debugCells.Clear();
+	                for (int i = 0; i < selectedLog.pathSapper.Count; i++)
+	                {
+		                map.debugDrawer.FlashCell(selectedLog.pathSapper[i],(float)i / (selectedLog.pathSapper.Count), $"{selectedLog.pathSapper.Count - i}");
+	                }
+                }
             });
             collapsible.Label($"JobDef.defName:\t{selectedLog.job}");
             collapsible.Line(1);
             collapsible.Label($"DutyDef.defName:\t{selectedLog.duty}");
+            collapsible.Label($"Notes:\t{selectedLog.note}");
             collapsible.Line(1);
             collapsible.Lambda(40, rect =>
             {

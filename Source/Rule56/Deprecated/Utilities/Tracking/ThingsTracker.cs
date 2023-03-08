@@ -1,6 +1,13 @@
 ﻿namespace CombatAI.Utilities
 {
 #if DEBUG_REACTION
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Runtime.CompilerServices;
+	using RimWorld;
+	using UnityEngine;
+	using Verse;
 	public class ThingsTracker : MapComponent
 	{
 

@@ -169,17 +169,7 @@ namespace CombatAI.Patches
                                                },
                                                cell =>
                                                {
-                                                   //Vector2 dir = sightReader.GetEnemyDirection(cell);
-                                                   //IntVec3 adjustedLoc;
-                                                   //if (dir.sqrMagnitude < 4)
-                                                   //{
-                                                   //    adjustedLoc = targetPosition;
-                                                   //}
-                                                   //else
-                                                   //{
-                                                   //    adjustedLoc = cell + new IntVec3((int)dir.x, 0, (int)dir.y);  
-                                                   //}
-                                                   return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 2 - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
+	                                               return (sightReader.GetVisibilityToEnemies(cell) - rootVis) * 4 - interceptors.grid.Get(cell) + (sightReader.GetThreat(cell) - rootThreat) * 0.25f;
                                                },
                                                cell =>
                                                {

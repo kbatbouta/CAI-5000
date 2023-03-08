@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -28,7 +29,7 @@ namespace CombatAI
             return true;
         }
 
-        public static bool TryGetSapperSubPath(this PawnPath path, Pawn pawn, List<IntVec3> store, int sightAhead, int sightStep, out IntVec3 cellBefore, out IntVec3 cellAhead, out bool enemiesAhead, out bool enemiesBefore)
+        public static bool TryGetSapperSubPath(this PawnPath path, Pawn pawn, List<IntVec3> store, int sightAhead, int sightStep, out IntVec3 cellBefore, out IntVec3 cellAhead, out bool enemiesAhead, out bool enemiesBefore, bool debugFlash = false)
         {
             cellBefore    = IntVec3.Invalid;
             cellAhead     = IntVec3.Invalid;
@@ -43,10 +44,14 @@ namespace CombatAI
             int       i    = path.curNodeIndex - 1;
             int       num  = 0;
             IntVec3   loc  = path.nodes[path.curNodeIndex];
+            if (debugFlash)
+            {
+	            map.debugDrawer.debugCells.Clear();
+            }
             while (i >= 0)
             {
                 IntVec3 next = path.nodes[i];
-                if (store.Count == 0 && reader.GetAbsVisibilityToEnemies(next) > 0)
+                if (store.Count == 0 && reader.GetVisibilityToEnemies(next) > 0)
                 {
                     enemiesBefore = true;
                 }
@@ -106,6 +111,10 @@ namespace CombatAI
                     blocked = true;
                     store.Add(next);
                 }
+                if (debugFlash)
+                {
+	                map.debugDrawer.FlashCell(next, blocked ? 0.99f : 0.01f, blocked ? "B" : "");
+                }
                 if (!blocked && num > 0)
                 {
                     cellAhead = next;
@@ -114,6 +123,20 @@ namespace CombatAI
                 loc = next;
                 i--;
             }
+            if (store.Count > 0 && i < 0)
+            {
+	            return false;
+            }
+            if (debugFlash)
+            {
+	            int k = i;
+	            while (k >= 0)
+	            {
+		            IntVec3 next = path.nodes[k];
+		            map.debugDrawer.FlashCell(next, 0.5f, "+");
+		            k--;
+	            }
+            }
             if (store.Count > 0)
             {
                 int i0    = i;
@@ -121,7 +144,7 @@ namespace CombatAI
                 while (i >= limit)
                 {
                     IntVec3 next = path.nodes[i];
-                    if (reader.GetAbsVisibilityToEnemies(next) > 0 || home != null && home.innerGrid[next])
+                    if (reader.GetVisibilityToEnemies(next) > 0 || home != null && home.innerGrid[next])
                     {
                         enemiesAhead = true;
                         break;
@@ -148,11 +171,22 @@ namespace CombatAI
             return store.Count > 0 && cellAhead.IsValid;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool WalkableBy(this IntVec3 cell, Pawn pawn)
         {
-            if (!cell.WalkableBy(pawn.Map, pawn))
+//            if (!cell.WalkableBy(pawn.Map, pawn))
+//            {
+//                return false;
+//            }
+            Building building = cell.GetEdifice(pawn.Map);
+            if (building != null && (building.def.Fillage == FillCategory.Full || building.def.passability == Traversability.Impassable))
             {
-                return false;
+	            return false;
+            }
+            TerrainDef terrainDef = cell.GetTerrain(pawn.Map);
+            if (terrainDef != null && terrainDef.passability == Traversability.Impassable)
+            {
+	            return false;
             }
             return true;
         }
