@@ -106,8 +106,14 @@ namespace CombatAI.Patches
                             parms.maxDanger     = Danger.Deadly;
                             parms.canBashDoors  = true;
                             parms.canBashFences = true;
+                            bool tunneler  = pawn.def == CombatAI_ThingDefOf.Mech_Tunneler;
+                            if (tunneler)
+                            {
+	                            miningSkill    = 15f;
+	                            costMultiplier = 1;
+                            }
                             bool humanlike = pawn.RaceProps.Humanlike;
-                            if (humanlike)
+                            if (humanlike || tunneler)
                             {
                                 parms.mode = TraverseMode.PassAllDestroyableThings;
                             }
@@ -121,7 +127,7 @@ namespace CombatAI.Patches
                                 tuning                            = new PathFinderCostTuning();
                                 tuning.costBlockedDoor            = (int)(15f * costMultiplier);
                                 tuning.costBlockedDoorPerHitPoint = costMultiplier - 1;
-                                if (humanlike)
+                                if (humanlike || tunneler)
                                 {
                                     tuning.costBlockedWallBase                 = (int)(32f * costMultiplier);
                                     tuning.costBlockedWallExtraForNaturalWalls = (int)(32f * costMultiplier);
@@ -133,9 +139,8 @@ namespace CombatAI.Patches
                     }
                     checkAvoidance  = Finder.Settings.Flank_Enabled && avoidanceReader != null && !isPlayer;
                     checkVisibility = sightReader != null;
-//					counter         = 0;
-                    flashCost = Finder.Settings.Debug_DebugPathfinding && Find.Selector.SelectedPawns.Contains(pawn);
-                    __state = true;
+                    flashCost       = Finder.Settings.Debug_DebugPathfinding && Find.Selector.SelectedPawns.Contains(pawn);
+                    __state         = true;
                     return;
                 }
                 __state = false;

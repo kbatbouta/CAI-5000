@@ -643,10 +643,6 @@ namespace CombatAI.Comps
 						selPawn.jobs.StopAll();
 					}
 					IntVec3 shiftedPos                    = PawnPathUtility.GetMovingShiftedPosition(selPawn, 240);
-					if (sightReader.GetVisibilityToEnemies(shiftedPos) > 0)
-					{
-						
-					}
 					bool    bestEnemyIsRanged             = false;
 					bool    bestEnemyIsMeleeAttackingAlly = false;
 					// TODO create melee reactions.
@@ -1590,6 +1586,7 @@ namespace CombatAI.Comps
 						{
 							if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
 							    && !ally.CurJobDef.Is(JobDefOf.Mine)
+							    && ally.def != CombatAI_ThingDefOf.Mech_Tunneler
 							    && ally.mindState?.duty?.def != CombatAI_DutyDefOf.CombatAI_Escort
 							    && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
 							    && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
