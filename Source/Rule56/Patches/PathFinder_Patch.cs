@@ -95,6 +95,7 @@ namespace CombatAI.Patches
                         comp               = pawn.AI();
                         if (dig = Finder.Settings.Pather_KillboxKiller
                                   && isRaider
+                                  && (!pawn.guest?.IsPrisoner ?? false)
                                   && comp != null && comp.CanSappOrEscort && !comp.IsSapping
                                   && !pawn.mindState.duty.Is(DutyDefOf.Sapper) && !pawn.CurJob.Is(JobDefOf.Mine) && !pawn.mindState.duty.Is(DutyDefOf.ExitMapRandom) && !pawn.mindState.duty.Is(DutyDefOf.Escort))
                         {
