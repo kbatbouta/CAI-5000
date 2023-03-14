@@ -13,6 +13,7 @@ namespace CombatAI.Patches
     public static class PathFinder_Patch
     {
         public static bool FlashSearch;
+        public static bool FlashSapperPath;
 
         [HarmonyPatch(typeof(PathFinder), nameof(PathFinder.FindPath), typeof(IntVec3), typeof(LocalTargetInfo), typeof(TraverseParms), typeof(PathEndMode), typeof(PathFinderCostTuning))]
         private static class PathFinder_FindPath_Patch
@@ -94,6 +95,7 @@ namespace CombatAI.Patches
                         comp               = pawn.AI();
                         if (dig = Finder.Settings.Pather_KillboxKiller
                                   && isRaider
+                                  && (!pawn.guest?.IsPrisoner ?? false)
                                   && comp != null && comp.CanSappOrEscort && !comp.IsSapping
                                   && !pawn.mindState.duty.Is(DutyDefOf.Sapper) && !pawn.CurJob.Is(JobDefOf.Mine) && !pawn.mindState.duty.Is(DutyDefOf.ExitMapRandom) && !pawn.mindState.duty.Is(DutyDefOf.Escort))
                         {
@@ -105,8 +107,14 @@ namespace CombatAI.Patches
                             parms.maxDanger     = Danger.Deadly;
                             parms.canBashDoors  = true;
                             parms.canBashFences = true;
+                            bool tunneler  = pawn.def == CombatAI_ThingDefOf.Mech_Tunneler;
+                            if (tunneler)
+                            {
+	                            miningSkill    = 15f;
+	                            costMultiplier = 1;
+                            }
                             bool humanlike = pawn.RaceProps.Humanlike;
-                            if (humanlike)
+                            if (humanlike || tunneler)
                             {
                                 parms.mode = TraverseMode.PassAllDestroyableThings;
                             }
@@ -120,7 +128,7 @@ namespace CombatAI.Patches
                                 tuning                            = new PathFinderCostTuning();
                                 tuning.costBlockedDoor            = (int)(15f * costMultiplier);
                                 tuning.costBlockedDoorPerHitPoint = costMultiplier - 1;
-                                if (humanlike)
+                                if (humanlike || tunneler)
                                 {
                                     tuning.costBlockedWallBase                 = (int)(32f * costMultiplier);
                                     tuning.costBlockedWallExtraForNaturalWalls = (int)(32f * costMultiplier);
@@ -132,9 +140,8 @@ namespace CombatAI.Patches
                     }
                     checkAvoidance  = Finder.Settings.Flank_Enabled && avoidanceReader != null && !isPlayer;
                     checkVisibility = sightReader != null;
-//					counter         = 0;
-                    flashCost = Finder.Settings.Debug_DebugPathfinding && Find.Selector.SelectedPawns.Contains(pawn);
-                    __state = true;
+                    flashCost       = Finder.Settings.Debug_DebugPathfinding && Find.Selector.SelectedPawns.Contains(pawn);
+                    __state         = true;
                     return;
                 }
                 __state = false;
@@ -151,31 +158,46 @@ namespace CombatAI.Patches
                 }
                 if (__state)
                 {
-//                    if (__result == null || __result == PawnPath.NotFound || !__result.Found)
-//                    {
-//                        try
-//                        {
-//                            __result?.Dispose();
-//                            fallbackCall = true;
-//                            dig          = false;
-//                            __result     = __instance.FindPath(start, dest, original_traverseParms, origina_peMode, tuning);
-//                        }
-//                        catch (Exception er)
-//                        {
-//                            Log.Error($"ISMA: Error occured in FindPath fallback call {er}");
-//                        }
-//                        finally
-//                        {
-//                            fallbackCall = false;
-//                        }
-//                    }
-                    if (dig && !(__result?.nodes.NullOrEmpty() ?? true))
+	                if (Finder.Settings.Debug_LogJobs && Finder.Settings.Debug && __result.Found)
+	                {
+		                Job job = pawn.CurJob;
+		                if (job != null)
+		                {
+			                comp.jobLogs ??= new List<JobLog>();
+			                JobLog log = comp.jobLogs.FirstOrDefault(j => j.id == job.loadID);
+			                if (log != null)
+			                {
+				                log.path       ??= new List<IntVec3>();
+				                log.pathSapper ??= new List<IntVec3>();
+				                log.path.Clear();
+				                log.pathSapper.Clear();
+				                log.path.AddRange(__result.nodes);
+			                }
+		                }
+	                }
+	                if (dig && !(__result?.nodes.NullOrEmpty() ?? true))
                     {
                         blocked.Clear();
                         Thing blocker;
-                        if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out IntVec3 cellAhead, out bool enemiesAhead, out bool enemiesBefore) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null)
+                        if (__result.TryGetSapperSubPath(pawn, blocked, 15, 3, out IntVec3 cellBefore, out IntVec3 cellAhead, out bool enemiesAhead, out bool enemiesBefore, FlashSapperPath) && blocked.Count > 0 && (blocker = blocked[0].GetEdifice(map)) != null && !FlashSapperPath)
                         {
-                            if (!enemiesAhead || enemiesBefore || map.fogGrid.IsFogged(cellAhead) || cellAhead.HeuristicDistanceTo(cellBefore, map, 2) <= 8)
+	                        FlashSapperPath = false;
+	                        if (Finder.Settings.Debug_LogJobs && Finder.Settings.Debug && __result.Found)
+	                        {
+		                        Job job = pawn.CurJob;
+		                        if (job != null)
+		                        {
+			                        comp.jobLogs ??= new List<JobLog>();
+			                        JobLog log = comp.jobLogs.FirstOrDefault(j => j.id == job.loadID);
+			                        if (log != null)
+			                        {
+				                        log.pathSapper ??= new List<IntVec3>();
+				                        log.pathSapper.Clear();
+				                        log.pathSapper.AddRange(__result.nodes);
+			                        }
+		                        }
+	                        }
+	                        if (!enemiesAhead || enemiesBefore || map.fogGrid.IsFogged(cellAhead) || cellAhead.HeuristicDistanceTo(cellBefore, map, 2) <= 8)
                             {
                                 try
                                 {
@@ -199,7 +221,7 @@ namespace CombatAI.Patches
                                     fallbackCall = false;
                                 }
                             }
-                            else
+                            else if(!FlashSapperPath)
                             {
                                 comp.StartSapper(blocked, cellBefore, enemiesAhead);
                             }

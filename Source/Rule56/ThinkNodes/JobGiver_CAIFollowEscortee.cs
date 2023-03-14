@@ -19,6 +19,7 @@ namespace CombatAI
 				Map                   map           = pawn.Map;
 				MapComponent_CombatAI comp          = map.AI();
 				IntVec3               bestCell      = IntVec3.Invalid;
+				IntVec3               pawnPos       = pawn.Position;
 				float                 bestCellScore = float.MaxValue;
 				float                 radius        = pawn.mindState.duty.radius * 0.8f;
 				Action<CellFlooder.Node> action = (node) =>
@@ -38,7 +39,7 @@ namespace CombatAI
 						bestCell      = node.cell;
 					}
 				};
-				comp.flooder.Flood(root, action, maxDist: Mathf.CeilToInt(radius));
+				comp.flooder.Flood(root, action, maxDist: Mathf.CeilToInt(Maths.Max(radius, Mathf.Abs(pawnPos.x - root.x) + Mathf.Abs(pawnPos.z - root.z))));
 				if (bestCell.IsValid && pawn.CanReach(bestCell, PathEndMode.ClosestTouch, Danger.Deadly, true, true, TraverseMode.PassDoors))
 				{
 					Job job_goto = JobMaker.MakeJob(JobDefOf.Goto, bestCell);

@@ -10,8 +10,8 @@ namespace CombatAI
 {
     public class SightTracker : MapComponent
     {
-        private readonly HashSet<IntVec3> _drawnCells = new HashSet<IntVec3>();
-        private          int              updateCounter;
+	    private readonly        HashSet<IntVec3> _drawnCells  = new HashSet<IntVec3>();
+        private                 int              updateCounter;
 
         public readonly SightGrid        colonistsAndFriendlies;
         public readonly IThingsUInt64Map factionedUInt64Map;
@@ -253,23 +253,16 @@ namespace CombatAI
             if (faction == null)
             {
                 reader = new SightReader(this,
-                                         new ITSignalGrid[]
+                                         new SightGrid[]
                                          {
                                          },
                                          new[]
                                          {
-                                             insectsAndMechs.grid
+                                             insectsAndMechs
                                          },
                                          new[]
                                          {
-                                             wildlife.grid, colonistsAndFriendlies.grid, raidersAndHostiles.grid
-                                         },
-                                         new ITRegionGrid[]
-                                         {
-                                         },
-                                         new[]
-                                         {
-                                             insectsAndMechs.grid_regions
+                                             wildlife, colonistsAndFriendlies, raidersAndHostiles
                                          });
                 return true;
             }
@@ -278,23 +271,15 @@ namespace CombatAI
                 reader = new SightReader(this,
                                          new[]
                                          {
-                                             insectsAndMechs.grid
+                                             insectsAndMechs
                                          },
                                          new[]
                                          {
-                                             colonistsAndFriendlies.grid, raidersAndHostiles.grid
+                                             colonistsAndFriendlies, raidersAndHostiles
                                          },
                                          new[]
                                          {
-                                             wildlife.grid
-                                         },
-                                         new[]
-                                         {
-                                             insectsAndMechs.grid_regions
-                                         },
-                                         new[]
-                                         {
-                                             colonistsAndFriendlies.grid_regions, raidersAndHostiles.grid_regions
+                                             wildlife
                                          });
                 return true;
             }
@@ -304,23 +289,15 @@ namespace CombatAI
                 reader = new SightReader(this,
                                          new[]
                                          {
-                                             colonistsAndFriendlies.grid
+                                             colonistsAndFriendlies
                                          },
                                          new[]
                                          {
-                                             raidersAndHostiles.grid, insectsAndMechs.grid
+                                             raidersAndHostiles, insectsAndMechs
                                          },
                                          new[]
                                          {
-                                             wildlife.grid
-                                         },
-                                         new[]
-                                         {
-                                             colonistsAndFriendlies.grid_regions
-                                         },
-                                         new[]
-                                         {
-                                             raidersAndHostiles.grid_regions, insectsAndMechs.grid_regions
+                                             wildlife
                                          });
             }
             else
@@ -328,23 +305,15 @@ namespace CombatAI
                 reader = new SightReader(this,
                                          new[]
                                          {
-                                             raidersAndHostiles.grid
+                                             raidersAndHostiles
                                          },
                                          new[]
                                          {
-                                             colonistsAndFriendlies.grid, insectsAndMechs.grid
+                                             colonistsAndFriendlies, insectsAndMechs
                                          },
                                          new[]
                                          {
-                                             wildlife.grid
-                                         },
-                                         new[]
-                                         {
-                                             raidersAndHostiles.grid_regions
-                                         },
-                                         new[]
-                                         {
-                                             colonistsAndFriendlies.grid_regions, insectsAndMechs.grid_regions
+                                             wildlife
                                          });
             }
             return true;
@@ -355,23 +324,16 @@ namespace CombatAI
             if (faction == null)
             {
                 reader = new SightReader(this,
-                                         new ITSignalGrid[]
+                                         new SightGrid[]
                                          {
                                          },
                                          new[]
                                          {
-                                             insectsAndMechs.grid
+                                             insectsAndMechs
                                          },
                                          new[]
                                          {
-                                             wildlife.grid, colonistsAndFriendlies.grid, raidersAndHostiles.grid
-                                         },
-                                         new ITRegionGrid[]
-                                         {
-                                         },
-                                         new[]
-                                         {
-                                             insectsAndMechs.grid_regions
+                                             wildlife, colonistsAndFriendlies, raidersAndHostiles
                                          });
                 return true;
             }
@@ -380,23 +342,15 @@ namespace CombatAI
                 reader = new SightReader(this,
                                          new[]
                                          {
-                                             insectsAndMechs.grid
+                                             insectsAndMechs
                                          },
                                          new[]
                                          {
-                                             colonistsAndFriendlies.grid, raidersAndHostiles.grid
+                                             colonistsAndFriendlies, raidersAndHostiles
                                          },
                                          new[]
                                          {
-                                             wildlife.grid
-                                         },
-                                         new[]
-                                         {
-                                             insectsAndMechs.grid_regions
-                                         },
-                                         new[]
-                                         {
-                                             colonistsAndFriendlies.grid_regions, raidersAndHostiles.grid_regions
+                                             wildlife
                                          });
                 return true;
             }
@@ -406,23 +360,15 @@ namespace CombatAI
                 reader = new SightReader(this,
                                          new[]
                                          {
-                                             colonistsAndFriendlies.grid
+                                             colonistsAndFriendlies
                                          },
                                          new[]
                                          {
-                                             raidersAndHostiles.grid, insectsAndMechs.grid
+                                             raidersAndHostiles, insectsAndMechs
                                          },
                                          new[]
                                          {
-                                             wildlife.grid
-                                         },
-                                         new[]
-                                         {
-                                             colonistsAndFriendlies.grid_regions
-                                         },
-                                         new[]
-                                         {
-                                             raidersAndHostiles.grid_regions, insectsAndMechs.grid_regions
+                                             wildlife
                                          });
             }
             else
@@ -430,23 +376,15 @@ namespace CombatAI
                 reader = new SightReader(this,
                                          new[]
                                          {
-                                             raidersAndHostiles.grid
+                                             raidersAndHostiles
                                          },
                                          new[]
                                          {
-                                             colonistsAndFriendlies.grid, insectsAndMechs.grid
+                                             colonistsAndFriendlies, insectsAndMechs
                                          },
                                          new[]
                                          {
-                                             wildlife.grid
-                                         },
-                                         new[]
-                                         {
-                                             raidersAndHostiles.grid_regions
-                                         },
-                                         new[]
-                                         {
-                                             colonistsAndFriendlies.grid_regions, insectsAndMechs.grid_regions
+                                             wildlife
                                          });
             }
             return true;
@@ -567,29 +505,49 @@ namespace CombatAI
 
         public class SightReader
         {
-            private readonly CellIndices indices;
+	        private readonly CellIndices indices;
 
-            public ArmorReport    armor;
-            public ITSignalGrid[] friendlies;
+            public          ArmorReport    armor;
+            public readonly ITSignalGrid[] friendlies;
+            public readonly ITRegionGrid[] friendlies_regions;
+            public readonly ITSignalGrid[] hostiles;
+            public readonly ITRegionGrid[] hostiles_regions;
+            public readonly ITSignalGrid[] neutrals;
 
-            public ITRegionGrid[] friendlies_regions;
-            public ITSignalGrid[] hostiles;
-            public ITRegionGrid[] hostiles_regions;
-            public ITSignalGrid[] neutrals;
+            private readonly SightGrid[] hSight;
+            private readonly SightGrid[] fSight;
+            private readonly SightGrid[] nSight;
 
-            public SightReader(SightTracker tracker, ITSignalGrid[] friendlies, ITSignalGrid[] hostiles, ITSignalGrid[] neutrals, ITRegionGrid[] friendlies_regions, ITRegionGrid[] hostiles_regions)
+            public SightReader(SightTracker tracker, SightGrid[] friendlies, SightGrid[] hostiles, SightGrid[] neutrals)
             {
-                Tacker                  = tracker;
-                Map                     = tracker.map;
-                indices                 = tracker.map.cellIndices;
-                this.friendlies         = friendlies.ToArray();
-                this.hostiles           = hostiles.ToArray();
-                this.neutrals           = neutrals.ToArray();
-                this.friendlies_regions = friendlies_regions.ToArray();
-                this.hostiles_regions   = hostiles_regions.ToArray();
+                Tracker               = tracker;
+                Map                   = tracker.map;
+                indices               = tracker.map.cellIndices;
+                this.hSight           = hostiles;
+                this.hostiles         = new ITSignalGrid[hostiles.Length];
+                this.hostiles_regions = new ITRegionGrid[hostiles.Length];
+                for (int i = 0; i < hostiles.Length; i++)
+                {
+	                this.hostiles[i]         = hostiles[i].grid;
+	                this.hostiles_regions[i] = hostiles[i].grid_regions;
+                }
+                this.fSight              = friendlies;
+                this.friendlies         = new ITSignalGrid[friendlies.Length];
+                this.friendlies_regions = new ITRegionGrid[friendlies.Length];
+                for (int i = 0; i < friendlies.Length; i++)
+                {
+	                this.friendlies[i]         = friendlies[i].grid;
+	                this.friendlies_regions[i] = friendlies[i].grid_regions;
+                }
+                this.nSight    = neutrals;
+                this.neutrals = new ITSignalGrid[neutrals.Length];
+                for (int i = 0; i < neutrals.Length; i++)
+                {
+	                this.neutrals[i] = neutrals[i].grid;
+                }
             }
-
-            public SightTracker Tacker
+            
+            public SightTracker Tracker
             {
                 get;
             }
@@ -783,7 +741,28 @@ namespace CombatAI
                 }
                 return value;
             }
-
+            public void GetEnemies(IntVec3 cell, List<Thing> store)
+            {
+	            ulong flags = GetDynamicEnemyFlags(cell);
+	            if (flags != 0)
+	            {
+		            for (int i = 0; i < hSight.Length; i++)
+		            {
+			            hSight[i].GetThings(flags, cell, store);
+		            }
+	            }
+            }
+            public void GetFriendlies(IntVec3 cell, List<Thing> store)
+            {
+	            ulong flags = GetDynamicFriendlyFlags(cell);
+	            if (flags != 0)
+	            {
+		            for (int i = 0; i < fSight.Length; i++)
+		            {
+			            fSight[i].GetThings(flags, cell, store);
+		            }
+	            }
+            }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public float GetVisibilityToEnemies(IntVec3 cell)
             {
@@ -815,44 +794,61 @@ namespace CombatAI
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public bool CheckFlags(IntVec3 cell, ulong flags)
+            public ulong GetStaticEnemyFlags(IntVec3 cell)
             {
-                return CheckFlags(indices.CellToIndex(cell), flags);
+                return GetStaticEnemyFlags(indices.CellToIndex(cell));
             }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public bool CheckFlags(int index, ulong flags)
-            {
-                return (flags & GetEnemyFlags(index)) == flags;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public ulong GetEnemyFlags(IntVec3 cell)
-            {
-                return GetEnemyFlags(indices.CellToIndex(cell));
-            }
-            public ulong GetEnemyFlags(int index)
+            public ulong GetStaticEnemyFlags(int index)
             {
                 ulong value = 0;
                 for (int i = 0; i < hostiles.Length; i++)
                 {
-                    value |= hostiles[i].GetFlagsAt(index);
+                    value |= hostiles[i].GetStaticFlagsAt(index);
                 }
                 return value;
             }
-
+            
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public ulong GetFriendlyFlags(IntVec3 cell)
+            public ulong GetDynamicEnemyFlags(IntVec3 cell)
             {
-                return GetFriendlyFlags(indices.CellToIndex(cell));
+	            return GetDynamicEnemyFlags(indices.CellToIndex(cell));
             }
-            public ulong GetFriendlyFlags(int index)
+            public ulong GetDynamicEnemyFlags(int index)
+            {
+	            ulong value = 0;
+	            for (int i = 0; i < hostiles.Length; i++)
+	            {
+		            value |= hostiles[i].GetDynamicFlagsAt(index);
+	            }
+	            return value;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ulong GetStaticFriendlyFlags(IntVec3 cell)
+            {
+                return GetStaticFriendlyFlags(indices.CellToIndex(cell));
+            }
+            public ulong GetStaticFriendlyFlags(int index)
             {
                 ulong value = 0;
                 for (int i = 0; i < friendlies.Length; i++)
                 {
-                    value |= friendlies[i].GetFlagsAt(index);
+                    value |= friendlies[i].GetStaticFlagsAt(index);
                 }
                 return value;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ulong GetDynamicFriendlyFlags(IntVec3 cell)
+            {
+	            return GetDynamicFriendlyFlags(indices.CellToIndex(cell));
+            }
+            public ulong GetDynamicFriendlyFlags(int index)
+            {
+	            ulong value = 0;
+	            for (int i = 0; i < friendlies.Length; i++)
+	            {
+		            value |= friendlies[i].GetDynamicFlagsAt(index);
+	            }
+	            return value;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

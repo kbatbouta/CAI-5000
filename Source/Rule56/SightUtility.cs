@@ -8,6 +8,15 @@ namespace CombatAI
 {
     public static class SightUtility
     {
+	    public static float GetSightRadius_Fast(Thing thing)
+	    {
+		    if (!TKVCache<int, SightGrid.ISightRadius, float>.TryGet(thing.thingIDNumber, out float val, 12000))
+		    {
+			    TKVCache<int, SightGrid.ISightRadius, float>.Put(thing.thingIDNumber, val = GetSightRadius(thing).sight);
+		    }
+		    return val;
+	    }
+	    
 	    public static SightGrid.ISightRadius GetSightRadius(Thing thing)
         {
             bool                   isSmartPawn = false;
@@ -18,7 +27,7 @@ namespace CombatAI
                 result = GetSightRadius_Sighter(sighter);
                 Faction f = thing.Faction;
 
-                if (f != null && (f.IsPlayerSafe() || !f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies))
+                if (f != null && (f.IsPlayerSafe() || (!f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies)))
                 {
                     result.fog = Maths.Max(Mathf.CeilToInt(GetFogRadius(thing, result.sight) * Finder.Settings.FogOfWar_RangeMultiplier), 3);
                 }
@@ -28,7 +37,7 @@ namespace CombatAI
                 result = GetSightRadius_Pawn(pawn);
                 Faction f = thing.Faction;
                 isSmartPawn = !pawn.RaceProps.Animal && !(pawn.Dead || pawn.Downed);
-                if (f != null && (f.IsPlayerSafe() || !f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies))
+                if (f != null && (f.IsPlayerSafe() || (!f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies)))
                 {
                     if (pawn.RaceProps.Animal)
                     {
@@ -51,7 +60,7 @@ namespace CombatAI
                 {
                     Faction f = thing.Faction;
 
-                    if (f != null && (f.IsPlayerSafe() || !f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies))
+                    if (f != null && (f.IsPlayerSafe() || (!f.HostileTo(Faction.OfPlayer) && Finder.Settings.FogOfWar_Allies)))
                     {
                         result.fog = Maths.Max(Mathf.CeilToInt(GetFogRadius(thing, result.sight) * Finder.Settings.FogOfWar_RangeMultiplier), 3);
                     }
@@ -68,6 +77,7 @@ namespace CombatAI
                 result.sight = result.sight + 8;
             }
             result.createdAt = GenTicks.TicksGame;
+            TKVCache<int, SightGrid.ISightRadius, float>.Put(thing.thingIDNumber, result.sight);
             return result;
         }
 
@@ -163,11 +173,12 @@ namespace CombatAI
                 {
                     return 3;
                 }
-                float vision  = pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Sight) ?? 1f;
-                float hearing = pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Hearing) ?? 1f;
-                float rest    = Mathf.Lerp(0.65f, 1f, pawn.needs?.rest?.curLevelInt ?? 1f);
-                float mul     = Mathf.Clamp(Maths.Min(vision, hearing, rest) * 0.6f + Maths.Max(vision, hearing, rest) * 0.4f, 0.5f, 1.5f);
-                return Maths.Max(Maths.Max(sightRadius, 17) * mul, 10);
+                float vision        = Maths.Sqr(pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Sight) ?? 1f);
+                float consciousness = Maths.Sqr(pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Consciousness) ?? 1f);
+                float hearing       = Mathf.Lerp(0.80f, 1f, pawn.health.capacities?.GetLevel(PawnCapacityDefOf.Hearing) ?? 1f);
+                float rest          = Mathf.Lerp(0.40f, 1f, pawn.needs?.rest?.curLevelInt ?? 1f);
+                float mul           = Mathf.Clamp(Maths.Min(rest, Maths.Min(hearing, vision, consciousness)) * 0.80f + Maths.Max(rest, Maths.Max(hearing, vision, consciousness)) * 0.20f, 0.15f, 2.5f);
+                return Maths.Max(Maths.Max(sightRadius, 10) * mul, 3);
             }
             return sightRadius;
         }

@@ -14,9 +14,12 @@ namespace CombatAI
         public                  string        duty;
         public                  int           id;
         public                  string        job;
+        public                  string        note = string.Empty;
         public                  IntVec3       origin;
         public                  List<string>  stacktrace;
         public                  List<string>  thinknode;
+        public                  List<IntVec3> path;
+        public                  List<IntVec3> pathSapper;
 
         public int timestamp;
 
@@ -104,6 +107,7 @@ namespace CombatAI
             builder.AppendFormat("duty:\t{0}\n", duty);
             builder.AppendFormat("timestamp:\t{0}\n", timestamp);
             builder.AppendFormat("(origin:{0}, dest:{1})\n", origin, destination);
+            builder.AppendFormat($"note: {note}\n");
             if (destination.IsValid)
             {
                 builder.AppendFormat("distanceToDest:\n{0}",destination.DistanceTo(origin));

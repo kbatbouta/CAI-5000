@@ -15,6 +15,7 @@ namespace CombatAI
 			MetaCombatAttributeUtility.ClearCache();
 			LordToil_AssaultColony_Patch.ClearCache();
 			AttackTargetFinder_Patch.ClearCache();
+			TrashUtility_Patch.ClearCache();
 			if (mapRemoved)
 			{
 				DamageUtility.ClearCache();
@@ -24,6 +25,7 @@ namespace CombatAI
 		
 		public static void ClearShortCache()
 		{
+			TrashUtility_Patch.ClearCache();
 			TCacheHelper.ClearCache();
 			StatCache.ClearCache();
 			CompCache.ClearCaches();
