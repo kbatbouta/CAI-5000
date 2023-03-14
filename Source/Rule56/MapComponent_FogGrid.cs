@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -8,19 +10,24 @@ namespace CombatAI
     [StaticConstructorOnStartup]
     public class MapComponent_FogGrid : MapComponent
     {
-        private const int SECTION_SIZE = 16;
-
+	    private const int SECTION_SIZE = 16;
+	    
         private static          float     zoom;
         private static readonly Texture2D fogTex;
         private static readonly Mesh      mesh;
         private static readonly Shader    fogShader;
 
-        private readonly AsyncActions asyncActions;
-        private readonly ISection[][] grid2d;
-        private readonly Rect         mapRect;
-        private          bool         alive;
-        public           CellIndices  cellIndices;
-        public           GlowGrid     glow;
+        private readonly object _lockerSpots = new object();
+        
+        private readonly HashSet<ITempSpot> spotsQueued;
+        private readonly List<Vector3>   spotBuffer;
+        private readonly AsyncActions    asyncActions;
+        private readonly ISection[][]    grid2d;
+        private readonly Rect            mapRect;
+        private volatile int             ticksGame;
+        private          bool            alive;
+        public           CellIndices     cellIndices;
+        public           GlowGrid        glow;
 
         public  bool[] grid;
         private bool   initialized;
@@ -34,7 +41,7 @@ namespace CombatAI
 
         static MapComponent_FogGrid()
         {
-            fogTex = new Texture2D(SECTION_SIZE, SECTION_SIZE, TextureFormat.RGBAFloat, true);
+	        fogTex = new Texture2D(SECTION_SIZE, SECTION_SIZE, TextureFormat.RGBAFloat, true);
             fogTex.Apply();
             mesh      = CombatAI_MeshMaker.NewPlaneMesh(Vector2.zero, Vector2.one * SECTION_SIZE);
             fogShader = AssetBundleDatabase.Get<Shader>("assets/fogshader.shader");
@@ -44,6 +51,8 @@ namespace CombatAI
         public MapComponent_FogGrid(Map map) : base(map)
         {
             alive        = true;
+            spotsQueued  = new HashSet<ITempSpot>(16);
+            spotBuffer   = new List<Vector3>(256);
             asyncActions = new AsyncActions();
             cellIndices  = map.cellIndices;
             mapRect      = new Rect(0, 0, cellIndices.mapSizeX, cellIndices.mapSizeZ);
@@ -82,7 +91,7 @@ namespace CombatAI
 
         public override void MapComponentUpdate()
         {
-            if (!initialized)
+	        if (!initialized)
             {
                 initialized = true;
                 for (int i = 0; i < grid2d.Length; i++)
@@ -107,6 +116,7 @@ namespace CombatAI
                 ready = false;
                 return;
             }
+            ticksGame = GenTicks.TicksGame;
             if (!ready)
             {
                 sight = map.GetComp_Fast<SightTracker>().colonistsAndFriendlies;
@@ -130,6 +140,18 @@ namespace CombatAI
                 zoom = Mathf.CeilToInt(Mathf.Clamp(Find.CameraDriver?.rootPos.y ?? 30, 15, 30f));
                 DrawFog(Mathf.FloorToInt(mapScreenRect.xMin / SECTION_SIZE), Mathf.FloorToInt(mapScreenRect.yMin / SECTION_SIZE), Mathf.FloorToInt(mapScreenRect.xMax / SECTION_SIZE), Mathf.FloorToInt(mapScreenRect.yMax / SECTION_SIZE));
             }
+        }
+
+        public void RevealSpot(IntVec3 cell, float radius, int duration)
+        {
+	        ITempSpot spot = new ITempSpot();
+	        spot.center   = cell;
+	        spot.radius   = Maths.Max(radius, 1f) * Finder.Settings.FogOfWar_RangeMultiplier;
+	        spot.duration = duration;
+	        lock (_lockerSpots)
+	        {
+		        spotsQueued.Add(spot);
+	        }
         }
 
         public override void MapRemoved()
@@ -169,27 +191,65 @@ namespace CombatAI
 
         private void OffThreadLoop(int minU, int minV, int maxU, int maxV)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            while (alive)
-            {
-                stopwatch.Restart();
-                if (ready && Finder.Settings.FogOfWar_Enabled)
-                {
-                    for (int u = minU; u < maxU; u++)
-                    {
-                        for (int v = minV; v < maxV; v++)
-                        {
-                            grid2d[u][v].Update();
-                        }
-                    }
-                }
-                stopwatch.Stop();
-                float t = 0.064f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
-                if (t > 0f)
-                {
-                    Thread.Sleep(Mathf.CeilToInt(t * 1000));
-                }
-            }
+	        Stopwatch       stopwatch = new Stopwatch();
+	        List<ITempSpot> spots     = new List<ITempSpot>();
+	        while (alive)
+	        {
+		        stopwatch.Restart();
+		        if (ready && Finder.Settings.FogOfWar_Enabled)
+		        {
+			        lock (_lockerSpots)
+			        {
+				        if (spotsQueued.Count > 0)
+				        {
+					        spots.AddRange(spotsQueued);
+					        spotsQueued.Clear();
+				        }
+			        }
+			        if (spots.Count > 0)
+			        {
+				        int ticks = ticksGame;
+				        while (spots.Count > 0)
+				        {
+					        ITempSpot spot = spots.Pop();
+					        Action<IntVec3, int, int, float> setAction = (cell, carry, dist, coverRating) =>
+					        {
+						        if (cell.InBounds(map))
+						        {
+							        int      u       = cell.x / SECTION_SIZE;
+							        int      v       = cell.z / SECTION_SIZE;
+							        ISection section = grid2d[u][v];
+							        if (section != null)
+							        {
+								        ITempCell tCell = new ITempCell();
+								        tCell.u         = (byte)(cell.x % SECTION_SIZE);
+								        tCell.v         = (byte)(cell.z % SECTION_SIZE);
+								        tCell.val       = Mathf.Clamp01(1f - cell.DistanceTo_Fast(spot.center) / spot.radius);
+								        tCell.timestamp = GenTicks.TicksGame;
+								        tCell.duration  = (short) spot.duration;
+								        section.extraCells.Add(tCell);
+							        }
+						        }
+					        };
+					        setAction(spot.center, 0, 0, 0);
+					        ShadowCastingUtility.CastWeighted(map, spot.center, setAction, Mathf.CeilToInt(spot.radius), 16, spotBuffer);
+				        }
+			        }
+			        for (int u = minU; u < maxU; u++)
+			        {
+				        for (int v = minV; v < maxV; v++)
+				        {
+					        grid2d[u][v].Update();
+				        }
+			        }
+			        stopwatch.Stop();
+			        float t = 0.064f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
+			        if (t > 0f)
+			        {
+				        Thread.Sleep(Mathf.CeilToInt(t * 1000));
+			        }
+		        }
+	        }
         }
 
         private class ISection
@@ -199,17 +259,19 @@ namespace CombatAI
             private readonly Material             mat;
             private readonly Mesh                 mesh;
             private readonly Vector3              pos;
+            public readonly  List<ITempCell>      extraCells;
             public           bool                 dirty = true;
             public           Rect                 rect;
             public           float                s_color;
 
             public ISection(MapComponent_FogGrid comp, Rect rect, Rect mapRect, Mesh mesh, Texture2D tex, Shader shader)
             {
-                this.comp = comp;
-                this.rect = rect;
-                this.mesh = mesh;
-                pos       = new Vector3(rect.position.x, 8, rect.position.y);
-                mat       = new Material(shader);
+	            this.extraCells = new List<ITempCell>();
+	            this.comp  = comp;
+                this.rect  = rect;
+                this.mesh  = mesh;
+                pos        = new Vector3(rect.position.x, 8, rect.position.y);
+                mat        = new Material(shader);
                 mat.SetVector("_Color", new Vector4(0.1f, 0.1f, 0.1f, 0.8f));
                 mat.SetTexture("_Tex", tex);
                 cells = new float[256];
@@ -244,59 +306,78 @@ namespace CombatAI
                 ColorInt[] glowGrid = comp.glow.glowGrid;
                 float      glowSky  = comp.SkyGlow;
                 bool       changed  = false;
+                
+                void SetCell(int x, int z, float glowOffset, float visibilityOffset)
+                {
+	                int index = indices.CellToIndex(loc = pos + new IntVec3(x, 0, z));
+	                if (index >= 0 && index < numGridCells)
+	                {
+		                float val;
+		                float old = cells[x * SECTION_SIZE + z];
+		                if (!walls.CanBeSeenOver(index))
+		                {
+			                val              = 0.5f;
+			                comp.grid[index] = false;
+		                }
+		                else
+		                {
+			                float visRLimit  = 0;
+			                float visibility = fogGrid.Get(index) + visibilityOffset;
+			                if (glowSky < 1)
+			                {
+				                ColorInt glow = glowGrid[index];
+				                visRLimit = Mathf.Lerp(0, 0.5f, 1 - (Maths.Max(Mathf.Clamp01(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f), glowSky) + glowOffset));
+			                }
+			                if (visibility <= visRLimit + 1e-3f)
+			                {
+				                comp.grid[index] = true;
+			                }
+			                else
+			                {
+				                comp.grid[index] = false;
+			                }
+			                val = Maths.Max(1 - visibility, 0);
+		                }
+		                if (old != val)
+		                {
+			                changed = true;
+			                if (val > old)
+			                {
+				                cells[x * SECTION_SIZE + z] = Maths.Min(old + 0.1f, val);
+			                }
+			                else
+			                {
+				                cells[x * SECTION_SIZE + z] = Maths.Max(old - 0.4f, val);
+			                }
+		                }
+	                }
+	                else
+	                {
+		                cells[x * SECTION_SIZE + z] = 0f;
+	                }
+                }
                 if (fogGrid != null)
                 {
                     for (int x = 0; x < SECTION_SIZE; x++)
                     {
                         for (int z = 0; z < SECTION_SIZE; z++)
                         {
-                            int index = indices.CellToIndex(loc = pos + new IntVec3(x, 0, z));
-                            if (index >= 0 && index < numGridCells)
-                            {
-                                float val;
-                                float old = cells[x * SECTION_SIZE + z];
-                                if (!walls.CanBeSeenOver(index))
-                                {
-                                    val              = 0.5f;
-                                    comp.grid[index] = false;
-                                }
-                                else
-                                {
-                                    float visRLimit  = 0;
-                                    float visibility = fogGrid.Get(index);
-                                    if (glowSky < 1)
-                                    {
-                                        ColorInt glow = glowGrid[index];
-                                        visRLimit = Mathf.Lerp(0, 0.5f, 1 - Maths.Max(Mathf.Clamp01(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f), glowSky));
-                                    }
-                                    if (visibility <= visRLimit + 1e-3f)
-                                    {
-                                        comp.grid[index] = true;
-                                    }
-                                    else
-                                    {
-                                        comp.grid[index] = false;
-                                    }
-                                    val = Maths.Max(1 - visibility, 0);
-                                }
-                                if (old != val)
-                                {
-                                    changed = true;
-                                    if (val > old)
-                                    {
-                                        cells[x * SECTION_SIZE + z] = Maths.Min(old + 0.1f, val);
-                                    }
-                                    else
-                                    {
-                                        cells[x * SECTION_SIZE + z] = Maths.Max(old - 0.4f, val);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                cells[x * SECTION_SIZE + z] = 0f;
-                            }
+	                        SetCell(x, z, 0, 0);
                         }
+                    }
+                    int ticks = comp.ticksGame;
+                    int i     = 0;
+                    while (i < extraCells.Count)
+                    {
+	                    ITempCell tCell = extraCells[i];
+	                    if (tCell.timestamp + tCell.duration < ticks)
+	                    {
+		                    extraCells.RemoveAt(i);
+		                    continue;
+	                    }
+	                    i++;
+	                    float fade = Mathf.Lerp(0.7f, 1.0f,1f - (float)(GenTicks.TicksGame - tCell.timestamp) / tCell.duration);
+	                    SetCell(tCell.u,tCell.v, 0.5f * fade * tCell.val,  fade * tCell.val);
                     }
                 }
                 dirty = changed;
@@ -306,6 +387,37 @@ namespace CombatAI
             {
                 GenDraw.DrawMeshNowOrLater(mesh, pos, Quaternion.identity, mat, false);
             }
+        }
+
+        private struct ITempSpot : IEquatable<ITempSpot>
+        {
+	        public IntVec3 center;
+	        public float   radius;
+	        public int     duration;
+	        
+	        public override bool Equals(object obj)
+	        {
+		        return obj is ITempSpot other && other.Equals(this);
+	        }
+	        
+	        public bool Equals(ITempSpot other)
+	        {
+		        return center == other.center;
+	        }
+
+	        public override int GetHashCode()
+	        {
+		        return center.GetHashCode();
+	        }
+        }
+        
+        private struct ITempCell
+        {
+	        public byte  u;
+	        public byte  v;
+	        public float val;
+	        public int   timestamp;
+	        public short duration;
         }
     }
 }
