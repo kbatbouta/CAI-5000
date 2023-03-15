@@ -4,7 +4,7 @@ namespace CombatAI
     public class Settings : ModSettings
     {
 
-        private const int version                             = 10;
+        private const int version                             = 11;
         public        int Advanced_SightThreadIdleSleepTimeMS = 1;
 
         /*
@@ -78,7 +78,7 @@ namespace CombatAI
         public bool  FinishedQuickSetup;
 
 
-        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(3, 5, 16);
+        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 2, 16);
         public SightPerformanceSettings SightSettings_MechsAndInsects      = new SightPerformanceSettings(3, 10, 6);
         public SightPerformanceSettings SightSettings_SettlementTurrets    = new SightPerformanceSettings(8, 15, 12);
         public SightPerformanceSettings SightSettings_Wildlife             = new SightPerformanceSettings(6, 5, 4);
@@ -94,7 +94,7 @@ namespace CombatAI
             Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders.{version}");
             if (SightSettings_FriendliesAndRaiders == null)
             {
-                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(3, 5, 16);
+                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 2, 16);
             }
             Scribe_Deep.Look(ref SightSettings_MechsAndInsects, $"CombatAI.SightSettings_MechsAndInsects.{version}");
             if (SightSettings_MechsAndInsects == null)

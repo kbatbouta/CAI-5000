@@ -24,10 +24,10 @@ namespace CombatAI
                     Finder.Settings.Pathfinding_SappingMul     = 1.5f;
                     Finder.Settings.Pathfinding_SquadPathWidth = 1;
 
-                    Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
+                    Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
                     if (Current.ProgramState != ProgramState.Playing)
                     {
-                        Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 10;
+                        Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 2;
                     }
                     Finder.Settings.SightSettings_Wildlife.interval = 6;
                     if (Current.ProgramState != ProgramState.Playing)
@@ -54,11 +54,11 @@ namespace CombatAI
                     Finder.Settings.Enable_Sprinting                            = false;
                     Finder.Settings.Enable_Groups                               = true;
                     Finder.Settings.Pathfinding_SappingMul                      = 1.3f;
-                    Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 3;
+                    Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
                     Finder.Settings.Pathfinding_SquadPathWidth                  = 2;
                     if (Current.ProgramState != ProgramState.Playing)
                     {
-                        Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 5;
+                        Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 2;
                     }
                     Finder.Settings.SightSettings_Wildlife.interval = 3;
                     if (Current.ProgramState != ProgramState.Playing)
@@ -88,10 +88,10 @@ namespace CombatAI
                     Finder.Settings.Pathfinding_SappingMul                      = 1.0f;
                     Finder.Settings.Pathfinding_SquadPathWidth                  = 4;
                     
-                    Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 2;
+                    Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
                     if (Current.ProgramState != ProgramState.Playing)
                     {
-                        Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 5;
+                        Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 2;
                     }
                     Finder.Settings.SightSettings_Wildlife.interval = 2;
                     if (Current.ProgramState != ProgramState.Playing)
@@ -123,7 +123,7 @@ namespace CombatAI
                     Finder.Settings.SightSettings_FriendliesAndRaiders.interval = 1;
                     if (Current.ProgramState != ProgramState.Playing)
                     {
-                        Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 5;
+                        Finder.Settings.SightSettings_FriendliesAndRaiders.buckets = 2;
                     }
                     Finder.Settings.SightSettings_Wildlife.interval = 2;
                     if (Current.ProgramState != ProgramState.Playing)

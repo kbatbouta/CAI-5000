@@ -243,7 +243,7 @@ namespace CombatAI
 				        }
 			        }
 			        stopwatch.Stop();
-			        float t = 0.064f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
+			        float t = 0.016f - (float)stopwatch.ElapsedTicks / Stopwatch.Frequency;
 			        if (t > 0f)
 			        {
 				        Thread.Sleep(Mathf.CeilToInt(t * 1000));

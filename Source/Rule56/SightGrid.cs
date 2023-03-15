@@ -416,7 +416,7 @@ namespace CombatAI
 			}
 			int     ticks  = GenTicks.TicksGame;
 			IntVec3 origin = item.thing.Position;
-			IntVec3 pos    = GetShiftedPosition(item.thing, (int)Maths.Min(45 * Find.TickManager.TickRateMultiplier, 90), item.path);
+			IntVec3 pos    = GetShiftedPosition(item.thing, (int)Maths.Min(settings.interval * settings.buckets * Find.TickManager.TickRateMultiplier, 90), item.path);
 			if (!pos.InBounds(map))
 			{
 				Log.Error($"ISMA: SighGridUpdater {item.thing} position is outside the map's bounds!");
