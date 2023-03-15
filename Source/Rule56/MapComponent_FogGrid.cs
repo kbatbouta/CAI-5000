@@ -270,7 +270,7 @@ namespace CombatAI
 	            this.comp  = comp;
                 this.rect  = rect;
                 this.mesh  = mesh;
-                pos        = new Vector3(rect.position.x, 8, rect.position.y);
+                pos        = new Vector3(rect.position.x, AltitudeLayer.FogOfWar.AltitudeFor(), rect.position.y);
                 mat        = new Material(shader);
                 mat.SetVector("_Color", new Vector4(0.1f, 0.1f, 0.1f, 0.8f));
                 mat.SetTexture("_Tex", tex);
@@ -307,9 +307,9 @@ namespace CombatAI
                 float      glowSky  = comp.SkyGlow;
                 bool       changed  = false;
                 
-                void SetCell(int x, int z, float glowOffset, float visibilityOffset)
+                void SetCell(int x, int z, float glowOffset, float visibilityOffset, bool allowLowerValues)
                 {
-	                int index = indices.CellToIndex(loc = pos + new IntVec3(x, 0, z));
+	                int     index = indices.CellToIndex(loc = pos + new IntVec3(x, 0, z));
 	                if (index >= 0 && index < numGridCells)
 	                {
 		                float val;
@@ -321,33 +321,49 @@ namespace CombatAI
 		                }
 		                else
 		                {
-			                float visRLimit  = 0;
-			                float visibility = fogGrid.Get(index) + visibilityOffset;
+			                float visRLimit   = 0;
+			                float visibility  = fogGrid.Get(index);
+			                float visibility2 = visibility;
+			                for (int i = 0; i < 8; i++)
+			                {
+				                visibility2 += fogGrid.Get(GenAdj.AdjacentCellsAround[i] + loc);
+			                }
+			                visibility = Maths.Max(visibility2 / 9, visibility) + visibilityOffset;
 			                if (glowSky < 1)
 			                {
 				                ColorInt glow = glowGrid[index];
 				                visRLimit = Mathf.Lerp(0, 0.5f, 1 - (Maths.Max(Mathf.Clamp01(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f), glowSky) + glowOffset));
 			                }
-			                if (visibility <= visRLimit + 1e-3f)
-			                {
-				                comp.grid[index] = true;
-			                }
-			                else
-			                {
-				                comp.grid[index] = false;
-			                }
 			                val = Maths.Max(1 - visibility, 0);
+			                if (allowLowerValues || old >= val)
+			                {
+				                if (visibility <= visRLimit + 1e-3f)
+				                {
+					                comp.grid[index] = true;
+				                }
+				                else
+				                {
+					                comp.grid[index] = false;
+				                }
+			                }
 		                }
 		                if (old != val)
 		                {
 			                changed = true;
-			                if (val > old)
+			                if (allowLowerValues)
 			                {
-				                cells[x * SECTION_SIZE + z] = Maths.Min(old + 0.1f, val);
+				                if (val > old)
+				                {
+					                cells[x * SECTION_SIZE + z] = Maths.Min(old + 0.5f, val);
+				                }
+				                else
+				                {
+					                cells[x * SECTION_SIZE + z] = Maths.Max(old - 0.5f, val);
+				                }
 			                }
 			                else
 			                {
-				                cells[x * SECTION_SIZE + z] = Maths.Max(old - 0.4f, val);
+				                cells[x * SECTION_SIZE + z] = Maths.Min(old, val);
 			                }
 		                }
 	                }
@@ -362,7 +378,7 @@ namespace CombatAI
                     {
                         for (int z = 0; z < SECTION_SIZE; z++)
                         {
-	                        SetCell(x, z, 0, 0);
+	                        SetCell(x, z, 0, 0, true);
                         }
                     }
                     int ticks = comp.ticksGame;
@@ -373,11 +389,12 @@ namespace CombatAI
 	                    if (tCell.timestamp + tCell.duration < ticks)
 	                    {
 		                    extraCells.RemoveAt(i);
+		                    changed = true;
 		                    continue;
 	                    }
 	                    i++;
 	                    float fade = Mathf.Lerp(0.7f, 1.0f,1f - (float)(GenTicks.TicksGame - tCell.timestamp) / tCell.duration);
-	                    SetCell(tCell.u,tCell.v, 0.5f * fade * tCell.val,  fade * tCell.val);
+	                    SetCell(tCell.u,tCell.v, 0.5f * fade * tCell.val,  fade * tCell.val, false);
                     }
                 }
                 dirty = changed;

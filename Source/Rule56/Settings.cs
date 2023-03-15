@@ -4,7 +4,7 @@ namespace CombatAI
     public class Settings : ModSettings
     {
 
-        private const int version                             = 5;
+        private const int version                             = 10;
         public        int Advanced_SightThreadIdleSleepTimeMS = 1;
 
         /*
@@ -49,9 +49,9 @@ namespace CombatAI
         public bool FogOfWar_AnimalsSmartOnly = true;
 
         public bool  FogOfWar_Enabled;
-        public float FogOfWar_FogColor            = 0.35f;
+        public float FogOfWar_FogColor            = 0.5f;
         public float FogOfWar_RangeFadeMultiplier = 0.5f;
-        public float FogOfWar_RangeMultiplier     = 1.0f;
+        public float FogOfWar_RangeMultiplier     = 1.8f;
         public bool  FogOfWar_Turrets             = true;
 
         /*                 
@@ -132,9 +132,9 @@ namespace CombatAI
             Scribe_Values.Look(ref Pathfinding_DestWeight, $"Pathfinding_DestWeight.{version}", 0.85f);
             Scribe_Values.Look(ref Pathfinding_SquadPathWidth, $"Pathfinding_SquadPathWidth.{version}", 4);
             Scribe_Values.Look(ref AdvancedUser, $"AdvancedUser.{version}");
-            Scribe_Values.Look(ref FogOfWar_FogColor, $"FogOfWar_FogColor.{version}", 0.35f);
+            Scribe_Values.Look(ref FogOfWar_FogColor, $"FogOfWar_FogColor.{version}", 0.65f);
             Scribe_Values.Look(ref FogOfWar_RangeFadeMultiplier, $"FogOfWar_RangeFadeMultiplier.{version}", 0.5f);
-            Scribe_Values.Look(ref FogOfWar_RangeMultiplier, $"FogOfWar_RangeMultiplier.{version}", 1.0f);
+            Scribe_Values.Look(ref FogOfWar_RangeMultiplier, $"FogOfWar_RangeMultiplier.{version}", 1.8f);
             Scribe_Values.Look(ref Pather_KillboxKiller, $"Pather_KillboxKiller.{version}", true);
             Scribe_Values.Look(ref PerformanceOpt_Enabled, $"PerformanceOpt_Enabled.{version}", true);
             Scribe_Values.Look(ref FogOfWar_Enabled, $"FogOfWar_Enabled.{version}");

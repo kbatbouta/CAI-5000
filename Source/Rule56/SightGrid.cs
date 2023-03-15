@@ -483,6 +483,7 @@ namespace CombatAI
 					availability = MetaCombatAttribute.Free;
 				}
 			}
+			Vector3 drawPos = item.thing.DrawPos;
 			scanForEnemies &= !engagedInMelee;
 			ISightRadius sightRadius = item.cachedSightRadius;
 			Action action = () =>
@@ -500,15 +501,15 @@ namespace CombatAI
 					for (int i = 0; i < item.path.Count; i++)
 					{
 						IntVec3 cell = item.path[i];
-						float   d2   = pos.DistanceToSquared(cell);
+						float   d3   = Maths.Sqr(drawPos.x - cell.x) + Maths.Sqr(drawPos.z - cell.z);
 						float   val;
-						if (d2 < rSqr_fade)
+						if (d3 < rSqr_fade)
 						{
 							val = 1f;
 						}
 						else
 						{
-							val = 1f - Mathf.Clamp01((Maths.Sqrt_Fast(d2, 5) - r_fade) / d_fade);
+							val = 1f - Mathf.Clamp01((Maths.Sqrt_Fast(d3, 5) - r_fade) / d_fade);
 						}
 						gridFog.Set(cell, val);
 					}
@@ -531,14 +532,15 @@ namespace CombatAI
 					}
 					if (playerAlliance && d2 < rSqr_fog)
 					{
+						float d3 = Maths.Sqr(drawPos.x - cell.x) + Maths.Sqr(drawPos.z - cell.z);
 						float val;
-						if (d2 < rSqr_fade)
+						if (d3 < rSqr_fade)
 						{
 							val = 1f;
 						}
 						else
 						{
-							val = 1f - Mathf.Clamp01((Maths.Sqrt_Fast(d2, 5) - r_fade) / d_fade);
+							val = 1f - Mathf.Clamp01((Maths.Sqrt_Fast(d3, 5) - r_fade) / d_fade);
 						}
 						gridFog?.Set(cell, val);
 					}
