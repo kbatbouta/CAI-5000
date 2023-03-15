@@ -323,12 +323,19 @@ namespace CombatAI
 		                {
 			                float visRLimit   = 0;
 			                float visibility  = fogGrid.Get(index);
-			                float visibility2 = visibility;
-			                for (int i = 0; i < 8; i++)
+			                float visibilityAdj = 0;
+			                for (int i = 0; i < 9; i++)
 			                {
-				                visibility2 += fogGrid.Get(GenAdj.AdjacentCellsAround[i] + loc);
+				                int adjIndex = index + indices.mapSizeX * (i / 3 - 1) + (i % 3) - 1;
+				                if (adjIndex >= 0 && adjIndex < numGridCells)
+				                {
+					                if (walls.CanBeSeenOver(adjIndex))
+					                {
+						                visibilityAdj += fogGrid.Get(adjIndex);       
+					                }
+				                }   
 			                }
-			                visibility = Maths.Max(visibility2 / 9, visibility) + visibilityOffset;
+			                visibility = Maths.Max(visibilityAdj / 9, visibility) + visibilityOffset;
 			                if (glowSky < 1)
 			                {
 				                ColorInt glow = glowGrid[index];
