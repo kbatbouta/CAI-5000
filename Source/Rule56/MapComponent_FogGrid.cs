@@ -312,34 +312,26 @@ namespace CombatAI
 					int index = indices.CellToIndex(loc = pos + new IntVec3(x, 0, z));
 					if (index >= 0 && index < numGridCells)
 					{
-						float val;
-						float old = cells[x * SECTION_SIZE + z];
-//		                if (!walls.CanBeSeenOver(index))
-//		                {
-//			                val              = 0.5f;
-//			                comp.grid[index] = false;
-//		                }
-//		                else
-//		                {
-						bool  isWall;
+						float old           = cells[x * SECTION_SIZE + z];
+						bool  isWall        = !walls.CanBeSeenOver(index);
 						float visRLimit     = 0;
-						float visibility    = fogGrid.Get(index) * (!(isWall = walls.CanBeSeenOver(index)) ? 0.5f : 1f);
+						float visibility    = fogGrid.Get(index);
 						float visibilityAdj = 0;
 						for (int i = 0; i < 9; i++)
 						{
 							int adjIndex = index + indices.mapSizeX * (i / 3 - 1) + i % 3 - 1;
-							if (adjIndex >= 0 && adjIndex < numGridCells)
+							if (adjIndex >= 0 && adjIndex < numGridCells && (isWall || walls.CanBeSeenOver(adjIndex)))
 							{
-								visibilityAdj += fogGrid.Get(adjIndex) * (!walls.CanBeSeenOver(adjIndex) ? 0.5f : 1f);
+								visibilityAdj += fogGrid.Get(adjIndex);
 							}
 						}
 						visibility = Maths.Max(visibilityAdj / 9, visibility) + visibilityOffset;
 						if (glowSky < 1)
 						{
 							ColorInt glow = glowGrid[index];
-							visRLimit = Mathf.Lerp(0, 0.5f, 1 - (Maths.Max(Mathf.Clamp01(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f), glowSky) + glowOffset));
+							visRLimit = Mathf.Lerp(0, 0.5f, 1 - (Maths.Max(!isWall ? 1f : Mathf.Clamp01(Maths.Max(glow.r, glow.g, glow.b) / 255f * 3.6f), glowSky) + glowOffset));
 						}
-						val = Maths.Max(1 - visibility, 0);
+						float val = Maths.Max(1 - visibility, 0);
 						if (allowLowerValues || old >= val)
 						{
 							if (visibility <= visRLimit + 1e-3f)
@@ -351,7 +343,6 @@ namespace CombatAI
 								comp.grid[index] = false;
 							}
 						}
-//		                }
 						if (old != val)
 						{
 							changed = true;
