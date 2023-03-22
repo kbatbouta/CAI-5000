@@ -515,18 +515,26 @@ namespace CombatAI
 					}
 				}
 				MetaCombatAttribute attr = item.cachedDamage.attributes | availability;
-				grid.Next(GetFlags(item), item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, attr);
+				grid.Next(pos, GetFlags(item), item.cachedDamage.adjustedSharp, item.cachedDamage.adjustedBlunt, attr);
 				grid_regions.Next();
 				Action<IntVec3, int, int, float> setAction = (cell, carry, dist, coverRating) =>
 				{
 					float d2         = pos.DistanceToSquared(cell);
 					float visibility = 0f;
-					if (!engagedInMelee && d2 < rSqr_sight)
+					if (!engagedInMelee)
 					{
-						visibility = Maths.Max(1f - coverRating, 0.20f);
-						if (visibility > 0f)
+						if (d2 < rSqr_sight)
 						{
-							grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
+							visibility = Maths.Max(1f - coverRating, 0.20f);
+							if (visibility > 0f)
+							{
+								grid.Set(cell, visibility, new Vector2(cell.x - pos.x, cell.z - pos.z));
+								grid_regions.Set(cell);
+							}
+						}
+						else if(d2 < 360)
+						{
+							grid.Set(cell, 0, new Vector2(cell.x - pos.x, cell.z - pos.z));
 							grid_regions.Set(cell);
 						}
 					}
@@ -566,6 +574,7 @@ namespace CombatAI
 				{
 					ShadowCastingUtility.CastWeighted(map, pos, item.CctvTop.LookDirection, setAction, Maths.Max(sightRadius.scan, sightRadius.fog, sightRadius.sight), item.CctvTop.BaseWidth, settings.carryLimit, buffer);
 				}
+				grid.curRoot = IntVec3.Invalid;
 				flooder.Flood(origin, node =>
 				{
 					if (!grid.IsSet(node.cell))
@@ -589,7 +598,7 @@ namespace CombatAI
 				}, maxDist: defenseMode ? 32 : 12, maxCellNum: defenseMode ? 325 : 225, passThroughDoors: true);
 				grid.Set(origin, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
 				grid.Set(pos, 1.0f, new Vector2(origin.x - pos.x, origin.z - pos.z));
-				grid.Next(GetFlags(item), 0, 0, item.cachedDamage.attributes);
+				grid.Next(pos, GetFlags(item), 0, 0, item.cachedDamage.attributes);
 				grid.Set(flagPos, item.Pawn == null || !item.Pawn.Downed ? GetFlags(item) : 0);
 				if (scanForEnemies)
 				{

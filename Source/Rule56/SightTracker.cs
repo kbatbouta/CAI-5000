@@ -107,7 +107,16 @@ namespace CombatAI
                         reader.armor = pawn.GetArmorReport();
                         if (reader != null)
                         {
-                            IntVec3 center = pawn.Position;
+	                        if (Input.GetKey(KeyCode.LeftShift))
+	                        {
+		                        IntVec3 cell = reader.GetNearestEnemy(pawn.Position);
+		                        if (cell.IsValid && cell.InBounds(map))
+		                        {
+			                        map.debugDrawer.FlashCell(cell, 0.99f, $"XXXX", 15);
+			                        map.debugDrawer.FlashCell(cell, 0.99f, $"XXXX", 15);
+		                        }
+	                        }
+	                        IntVec3 center = pawn.Position;
                             if (center.InBounds(map))
                             {
                                 for (int i = center.x - 64; i < center.x + 64; i++)
@@ -136,6 +145,26 @@ namespace CombatAI
                                                 {
                                                     map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
                                                 }
+                                            }
+                                            else if (Finder.Settings.Debug_DebugAvailability)
+                                            {
+	                                            if (!Input.GetKey(KeyCode.LeftShift))
+	                                            {
+		                                            float value = reader.GetEnemyAvailability(cell);
+		                                            if (value > 0)
+		                                            {
+			                                            map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
+		                                            }
+	                                            }
+	                                            else
+	                                            {
+//		                                            List<Thing> store = new List<Thing>();
+		                                            IntVec3     loc   = reader.GetNearestEnemy(cell);
+		                                            if (loc.IsValid)
+		                                            {
+			                                            map.debugDrawer.FlashCell(loc, 0.99f, $"{loc}", 15);
+		                                            }
+	                                            }
                                             }
                                         }
                                     }
@@ -187,11 +216,26 @@ namespace CombatAI
                                     }
                                     else if (Finder.Settings.Debug_DebugAvailability)
                                     {
-                                        float value = raidersAndHostiles.grid.GetAvailability(cell) + colonistsAndFriendlies.grid.GetAvailability(cell) + insectsAndMechs.grid.GetAvailability(cell);
-                                        if (value > 0)
-                                        {
-                                            map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
-                                        }
+	                                    if (!Input.GetKey(KeyCode.LeftShift))
+	                                    {
+		                                    float value = raidersAndHostiles.grid.GetAvailability(cell) + colonistsAndFriendlies.grid.GetAvailability(cell) + insectsAndMechs.grid.GetAvailability(cell);
+		                                    if (value > 0)
+		                                    {
+			                                    map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 20f), $"{Math.Round(value, 2)}", 15);
+		                                    }
+	                                    }
+	                                    else
+	                                    {
+		                                    IntVec3 loc  = raidersAndHostiles.grid.GetNearestSourceAt(cell);
+		                                    if (loc.IsValid)
+		                                    {
+			                                    float value = loc.DistanceTo(cell);
+			                                    if (value > 0)
+			                                    {
+				                                    map.debugDrawer.FlashCell(cell, Mathf.Clamp01(value / 80), $"{loc}", 15);
+			                                    }
+		                                    }
+	                                    }
                                     }
                                 }
                             }
@@ -710,6 +754,51 @@ namespace CombatAI
                     value += hostiles[i].GetSignalNum(index);
                 }
                 return value;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public IntVec3 GetNearestEnemy(int index)
+            {
+	            return GetNearestEnemy(indices.IndexToCell(index));
+            }
+            public IntVec3 GetNearestEnemy(IntVec3 pos)
+            {
+	            IntVec3 result = IntVec3.Invalid;
+	            int     min    = 999 * 999;
+	            for (int i = 0; i < hostiles.Length; i++)
+	            {
+		            IntVec3 cell = hostiles[i].GetNearestSourceAt(pos);
+		            if (cell.IsValid)
+		            {
+			            int dist = cell.DistanceToSquared(pos);
+			            if (dist < min)
+			            {
+				            min    = dist;
+				            result = cell;
+			            }
+		            }
+	            }
+	            return result;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public IntVec3 GetNearestEnemy(int index, List<Thing> store)
+            {
+	            return GetNearestEnemy(indices.IndexToCell(index), store);
+            }
+            public IntVec3 GetNearestEnemy(IntVec3 pos, List<Thing> store)
+            {
+	            IntVec3 result = GetNearestEnemy(pos);
+	            if (result.IsValid)
+	            {
+		            ulong flags = GetStaticEnemyFlags(result);
+		            if (flags != 0)
+		            {
+			            for (int i = 0; i < hSight.Length; i++)
+			            {
+				            hSight[i].GetThings(flags, result, store);
+			            }
+		            }
+	            }
+	            return result;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
