@@ -456,11 +456,12 @@ namespace CombatAI.Comps
 				data.LastInterrupted = GenTicks.TicksGame + Rand.Int % 240;
 				return;
 			}
-			IntVec3 selPos                = selPawn.Position;
-			Pawn    nearestMeleeEnemy     = null;
-			float   nearestMeleeEnemyDist = 1e5f;
-			Thing   nearestEnemy          = null;
-			float   nearestEnemyDist      = 1e5f;
+			Settings.FactionTechSettings techSettings          = Finder.Settings.GetTechSettings(parent.Faction?.def.techLevel ?? TechLevel.Undefined);
+			IntVec3                      selPos                = selPawn.Position;
+			Pawn                         nearestMeleeEnemy     = null;
+			float                        nearestMeleeEnemyDist = 1e5f;
+			Thing                        nearestEnemy          = null;
+			float                        nearestEnemyDist      = 1e5f;
 
 			// used to update nearest enemy THing
 			void UpdateNearestEnemy(Thing enemy)
@@ -546,7 +547,7 @@ namespace CombatAI.Comps
 						MoteMaker.ThrowText(selPawn.DrawPos, selPawn.Map, $"r:{Math.Round(retreatRoll)},d:{possibleDmg}", Color.white);
 					}
 					// major retreat attempt if the pawn is doomed
-					if (possibleDmg - retreatRoll > 0.001f && possibleDmg >= 50)
+					if (possibleDmg * techSettings.retreat - retreatRoll > 0.001f && possibleDmg * techSettings.retreat >= 50)
 					{
 						_last      = 10;
 						_bestEnemy = nearestMeleeEnemy;
@@ -585,7 +586,7 @@ namespace CombatAI.Comps
 						}
 					}
 					// try minor retreat (duck for cover fast)
-					if (possibleDmg - retreatRoll * 0.5f > 0.001f && possibleDmg >= 30)
+					if (possibleDmg * techSettings.duck - retreatRoll * 0.5f > 0.001f && possibleDmg * techSettings.duck >= 30)
 					{
 						// selPawn.Map.debugDrawer.FlashCell(selPos, 1.0f, $"{possibleDmg}, {targetedBy.Count}, {rangedEnemiesTargetingSelf.Count}");
 						CoverPositionRequest request = new CoverPositionRequest();
@@ -851,8 +852,8 @@ namespace CombatAI.Comps
 					{
 						rangedEnemiesTargetingSelf.Remove(nearestEnemy);
 					}
-					bool retreatMeleeThreat = nearestMeleeEnemy != null && verb.EffectiveRange > 16 && nearestMeleeEnemyDist < Maths.Max(verb.EffectiveRange / 3f, 9) && 0.25f * data.NumAllies < data.NumEnemies;
-					bool retreatThreat      = !retreatMeleeThreat && nearestEnemy != null && nearestEnemyDist < Maths.Max(verb.EffectiveRange / 4f, 5);
+					bool retreatMeleeThreat = nearestMeleeEnemy != null && verb.EffectiveRange * techSettings.retreat > 16 && nearestMeleeEnemyDist < Maths.Max(verb.EffectiveRange * techSettings.retreat / 3f, 9) && 0.25f * data.NumAllies < data.NumEnemies;
+					bool retreatThreat      = !retreatMeleeThreat && nearestEnemy != null && nearestEnemyDist < Maths.Max(verb.EffectiveRange * techSettings.retreat / 4f, 5);
 					_bestEnemy = retreatMeleeThreat ? nearestMeleeEnemy : nearestEnemy;
 					// retreat because of a close melee threat
 					if (bodySize < 2.0f && (retreatThreat || retreatMeleeThreat))
@@ -912,7 +913,7 @@ namespace CombatAI.Comps
 								}
 							}
 							float distOffset = Mathf.Clamp(2.0f * shootingNum - rangedEnemiesTargetingSelf.Count, 0, 25);
-							float moveBias   = Mathf.Clamp01(2f * shootingNum / (rangedNum + 1f));
+							float moveBias   = Mathf.Clamp01(2f * shootingNum / (rangedNum + 1f) * techSettings.group);
 							if (Finder.Settings.Debug_LogJobs && distOffset > 0)
 							{
 								selPawn.Map.debugDrawer.FlashCell(selPos, distOffset / 20f, $"{distOffset}");
@@ -923,14 +924,14 @@ namespace CombatAI.Comps
 							}
 							if (bestEnemyVisibleNow)
 							{
-								if (nearestEnemyDist > 6)
+								if (nearestEnemyDist > 6 * techSettings.cover)
 								{
 									CastPositionRequest request = new CastPositionRequest();
 									request.caster              = selPawn;
 									request.target              = nearestEnemy;
 									request.maxRangeFromTarget  = 9999;
 									request.verb                = verb;
-									request.maxRangeFromCaster  = Maths.Max(Maths.Min(verb.EffectiveRange, nearestEnemyDist) / 2f, 10f) + distOffset;
+									request.maxRangeFromCaster  = Maths.Max(Maths.Min(verb.EffectiveRange, nearestEnemyDist) / 2f, 10f) * techSettings.cover + distOffset;
 									request.wantCoverFromTarget = true;
 									if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && cell != selPos && (ShouldMoveTo(cell) || Rand.Chance(moveBias)))
 									{
@@ -979,7 +980,8 @@ namespace CombatAI.Comps
 								{
 									request.maxRangeFromCaster = Maths.Max(verb.EffectiveRange / 2f, 10f);
 								}
-								request.checkBlockChance = true;
+								request.maxRangeFromCaster *= techSettings.cover;
+								request.checkBlockChance   =  true;
 								if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
 								{
 									if ((ShouldMoveTo(cell) || Rand.Chance(moveBias)))

@@ -16,6 +16,7 @@ namespace CombatAI
         private readonly Listing_Collapsible                   collapsible_basic       = new Listing_Collapsible(true);
         private readonly Listing_Collapsible                   collapsible_debug       = new Listing_Collapsible(true);
         private readonly Listing_Collapsible                   collapsible_fog         = new Listing_Collapsible();
+        private readonly Listing_Collapsible                   collapsible_tech        = new Listing_Collapsible();
         private readonly Listing_Collapsible.Group_Collapsible collapsible_groupLeft   = new Listing_Collapsible.Group_Collapsible();
         private readonly Listing_Collapsible.Group_Collapsible collapsible_groupRight  = new Listing_Collapsible.Group_Collapsible();
         private readonly Listing_Collapsible                   collapsible_performance = new Listing_Collapsible(true);
@@ -148,7 +149,11 @@ namespace CombatAI
             if (Finder.Settings.FogOfWar_Enabled)
             {
                 collapsible.Line(1);
-
+                if (collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_OldShader, ref Finder.Settings.FogOfWar_OldShader))
+                {
+	                Messages.Message(R.Keyed.CombatAI_Settings_Basic_FogOfWar_OldShader_Restart, MessageTypeDefOf.CautionInput);
+                }
+	            collapsible.Line(1);
                 collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Animals, ref Finder.Settings.FogOfWar_Animals);
                 collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_FogOfWar_Animals_SmartOnly, ref Finder.Settings.FogOfWar_AnimalsSmartOnly, disabled: !Finder.Settings.FogOfWar_Animals);
                 collapsible.Line(1);
@@ -328,6 +333,48 @@ namespace CombatAI
             }
         }
 
+        public void FillCollapsible_FactionTechSettings(Listing_Collapsible collapsible)
+        {
+	        collapsible.Label(R.Keyed.CombatAI_Settings_FactionTech_Desciption);
+	        collapsible.Line(1);
+	        foreach (TechLevel tech in Enum.GetValues(typeof(TechLevel)))
+	        {
+		        Settings.FactionTechSettings techSettings = Finder.Settings.GetTechSettings(tech);
+		        collapsible.Label(R.Keyed.CombatAI_Settings_FactionTech_Tech.Formatted(tech.ToStringHuman()));
+		        collapsible.Gap(1);
+		        collapsible.Lambda(25, rect =>
+		        {
+			        Widgets.HorizontalSlider(rect, ref techSettings.cover, new FloatRange(0.0f, 3.0f), Keyed.CombatAI_Settings_FactionTech_Cover.Formatted(Math.Round(techSettings.cover, 2)));
+		        }, useMargins: true);
+		        collapsible.Gap(1);
+		        collapsible.Lambda(25, rect =>
+		        {
+			        Widgets.HorizontalSlider(rect, ref techSettings.retreat, new FloatRange(0.0f, 3.0f), Keyed.CombatAI_Settings_FactionTech_Retreat.Formatted(Math.Round(techSettings.retreat, 2)));
+		        }, useMargins: true);
+		        collapsible.Gap(1);
+		        collapsible.Lambda(25, rect =>
+		        {
+			        Widgets.HorizontalSlider(rect, ref techSettings.pathing, new FloatRange(0.0f, 1.25f), Keyed.CombatAI_Settings_FactionTech_Pathing.Formatted(Math.Round(techSettings.pathing, 2)));
+		        }, useMargins: true);
+		        collapsible.Gap(1);
+		        collapsible.Lambda(25, rect =>
+		        {
+			        Widgets.HorizontalSlider(rect, ref techSettings.duck, new FloatRange(0.0f, 3.0f), Keyed.CombatAI_Settings_FactionTech_Duck.Formatted(Math.Round(techSettings.duck, 2)));
+		        }, useMargins: true);
+		        collapsible.Gap(1);
+		        collapsible.Lambda(25, rect =>
+		        {
+			        Widgets.HorizontalSlider(rect, ref techSettings.group, new FloatRange(0.0f, 3.0f), Keyed.CombatAI_Settings_FactionTech_Group.Formatted(Math.Round(techSettings.group, 2)));
+		        }, useMargins: true);
+		        collapsible.Gap(1);
+		        collapsible.Lambda(25, rect =>
+		        {
+			        Widgets.HorizontalSlider(rect, ref techSettings.sapping, new FloatRange(0.0f, 3.0f), Keyed.CombatAI_Settings_FactionTech_Sapping.Formatted(Math.Round(techSettings.sapping, 2)));
+		        }, useMargins: true);
+		        collapsible.Line(1);
+	        }
+        }
+
         private void FillCollapsible_Debugging(Listing_Collapsible collapsible)
         {
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Debugging_Enable, ref Finder.Settings.Debug);
@@ -366,6 +413,9 @@ namespace CombatAI
                 collapsible_fog.Group = collapsible_groupLeft;
                 collapsible_groupLeft.Register(collapsible_fog);
 
+                collapsible_tech.Group = collapsible_groupLeft;
+                collapsible_groupLeft.Register(collapsible_tech);
+                
                 collapsible_basic.Group = collapsible_groupLeft;
                 collapsible_groupLeft.Register(collapsible_basic);
                 collapsible_basic.Expanded = true;
@@ -384,7 +434,12 @@ namespace CombatAI
             FillCollapsible_Basic(collapsible_basic);
             collapsible_basic.End(ref rectLeft);
             rectLeft.yMin += 5;
-
+            
+            collapsible_tech.Begin(rectLeft, R.Keyed.CombatAI_Settings_FactionTech);
+            FillCollapsible_FactionTechSettings(collapsible_tech);
+            collapsible_tech.End(ref rectLeft);
+            rectLeft.yMin += 5;
+            
             collapsible_fog.Begin(rectLeft, Keyed.CombatAI_Settings_Basic_FogOfWar);
             FillCollapsible_FogOfWar(collapsible_fog);
             collapsible_fog.End(ref rectLeft);

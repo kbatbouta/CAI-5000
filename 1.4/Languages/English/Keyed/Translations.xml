@@ -37,6 +37,8 @@
     <CombatAI.Settings.Basic.SappingMul.Description>Cost multiplier for pathing through walls. Higher values means raiders are less likely to path through walls.</CombatAI.Settings.Basic.SappingMul.Description>
     <CombatAI.Settings.Basic.FogOfWar>[BETA] Fog of war</CombatAI.Settings.Basic.FogOfWar>
     <CombatAI.Settings.Basic.FogOfWar.Enable>Enable fog of war</CombatAI.Settings.Basic.FogOfWar.Enable>
+    <CombatAI.Settings.Basic.FogOfWar.OldShader>Use the old legacy shader</CombatAI.Settings.Basic.FogOfWar.OldShader>
+    <CombatAI.Settings.Basic.FogOfWar.OldShader.Restart>The new shader settings will be applied after restart!</CombatAI.Settings.Basic.FogOfWar.OldShader.Restart>
     <CombatAI.Settings.Basic.FogOfWar.Allies>Allies reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Allies>
     <CombatAI.Settings.Basic.FogOfWar.Animals>Colony animals reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Animals>
     <CombatAI.Settings.Basic.FogOfWar.Animals.SmartOnly>Only smart animals reveal fog of war</CombatAI.Settings.Basic.FogOfWar.Animals.SmartOnly>
@@ -79,4 +81,13 @@
     <CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval>Ticks between bucket updates {0} Ticks</CombatAI.Settings.Advance.Sight.Performance.Readouts.Interval>
     <CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit>{0} Things maximum can obstuct line of sight</CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit>
     <CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description>The maximum number of things along line of sight. This includes trees, buildings, etc. Higher values means more accurate sight model but higher performance impact.</CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description>
+    <CombatAI.Settings.FactionTech>Faction Tech Level Settings</CombatAI.Settings.FactionTech>
+    <CombatAI.Settings.FactionTech.Desciption>Here you can configure factions with different tech levels.</CombatAI.Settings.FactionTech.Desciption>
+    <CombatAI.Settings.FactionTech.Tech>Tech {0}</CombatAI.Settings.FactionTech.Tech>
+    <CombatAI.Settings.FactionTech.Duck>Duck {0}x. Higher values means more likely to duck for cover</CombatAI.Settings.FactionTech.Duck>
+    <CombatAI.Settings.FactionTech.Retreat>Retreat {0}x. Higher values means more likely to retreat</CombatAI.Settings.FactionTech.Retreat>
+    <CombatAI.Settings.FactionTech.Cover>Cover {0}x. Higher values means more aggressive cover</CombatAI.Settings.FactionTech.Cover>
+    <CombatAI.Settings.FactionTech.Pathing>Pathing {0}x. Higher values means more aggressive pathing</CombatAI.Settings.FactionTech.Pathing>
+    <CombatAI.Settings.FactionTech.Sapping>Sapping {0}x. Higher values means less aggressive sapping</CombatAI.Settings.FactionTech.Sapping>
+    <CombatAI.Settings.FactionTech.Group>Charge {0}x. Higher values means groups are more likely to charge</CombatAI.Settings.FactionTech.Group>
 </LanguageData>

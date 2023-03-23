@@ -1,10 +1,13 @@
-﻿using Verse;
+﻿using System;
+using System.Collections.Generic;
+using RimWorld;
+using Verse;
 namespace CombatAI
 {
     public class Settings : ModSettings
     {
 
-        private const int version                             = 11;
+        private const int version                             = 12;
         public        int Advanced_SightThreadIdleSleepTimeMS = 1;
 
         /*
@@ -49,6 +52,7 @@ namespace CombatAI
         public bool FogOfWar_AnimalsSmartOnly = true;
 
         public bool  FogOfWar_Enabled;
+        public bool  FogOfWar_OldShader           = true;
         public float FogOfWar_FogColor            = 0.5f;
         public float FogOfWar_RangeFadeMultiplier = 0.5f;
         public float FogOfWar_RangeMultiplier     = 1.8f;
@@ -77,6 +81,8 @@ namespace CombatAI
         public bool  Retreat_Enabled            = true;
         public bool  FinishedQuickSetup;
 
+        private FactionTechSettings       FactionSettings_Undefined = new FactionTechSettings(TechLevel.Undefined, 1, 1, 1, 1, 1,1);
+        private List<FactionTechSettings> FactionSettings           = new List<FactionTechSettings>(); 
 
         public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 2, 16);
         public SightPerformanceSettings SightSettings_MechsAndInsects      = new SightPerformanceSettings(3, 10, 6);
@@ -88,10 +94,24 @@ namespace CombatAI
          * -- * -- * -- * -- * -- * -- * -- * -- * --
          */
 
+        public FactionTechSettings GetTechSettings(TechLevel level)
+        {
+	        for (int i = 0; i < FactionSettings.Count; i++)
+	        {
+		        FactionTechSettings settings = FactionSettings[i];
+		        if (settings.tech == level)
+		        {
+			        return settings;
+		        }
+	        }
+	        Log.Warning($"ISMA: Tech settings for {level} not found. returning default value.");
+	        return FactionSettings_Undefined;
+        }
+        
         public override void ExposeData()
         {
-            base.ExposeData();
-            Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders.{version}");
+	        base.ExposeData();
+	        Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders.{version}");
             if (SightSettings_FriendliesAndRaiders == null)
             {
                 SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 2, 16);
@@ -122,6 +142,7 @@ namespace CombatAI
 #endif
 
             Scribe_Values.Look(ref FinishedQuickSetup, $"FinishedQuickSetup2.{version}");
+            Scribe_Values.Look(ref FogOfWar_OldShader, $"FogOfWar_OldShader.{version}", true);
             Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
             Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);
             Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
@@ -149,6 +170,37 @@ namespace CombatAI
             Scribe_Values.Look(ref Pathfinding_SappingMul, $"Pathfinding_SappingMul2.{version}", 1.0f);
 
             //ScribeValues(); // Scribe values. (Will not scribe IExposables nor enums)
+
+            Scribe_Collections.Look(ref FactionSettings, $"FactionSettings.{version}", LookMode.Deep);
+            if (FactionSettings.NullOrEmpty())
+            {
+	            FactionSettings = new List<FactionTechSettings>();
+            }
+            foreach (TechLevel tech in Enum.GetValues(typeof(TechLevel)))
+            {
+	            if (!FactionSettings.Any(t => t.tech == tech))
+	            {
+		            FactionSettings.Clear();
+		            break;
+	            }
+            }
+            if (FactionSettings.NullOrEmpty())
+            {
+	            ResetTechSettings();
+            }
+        }
+
+        public void ResetTechSettings()
+        {
+	        FactionSettings.Clear();
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Undefined, retreat: 1, duck: 1, cover: 1, sapping: 1, pathing: 1, group: 1));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Animal, retreat: 0.0f, duck: 0.0f, cover: 0.25f, sapping: 2.0f, pathing: 1.15f, group: 2.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Neolithic, retreat: 0.0f, duck: 0.0f, cover: 0.25f, sapping: 0.75f, pathing: 1.1f, group: 2.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Medieval, retreat: 0.25f, duck: 0.25f, cover: 0.5f, sapping: 0.50f, pathing: 1f, group: 2.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Industrial, retreat: 0.75f, duck: 0.75f, cover: 1, sapping: 1, pathing: 1, group: 1.25f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Spacer, retreat: 0.95f, duck: 0.95f, cover: 1, sapping: 1, pathing: 1, group: 1.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Archotech, retreat: 1, duck: 1, cover: 1, sapping: 1, pathing: 1, group: 1.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Ultra, retreat: 1.15f, duck: 1.15f, cover: 1.15f, sapping: 1.0f, pathing: 1, group: 1.0f));
         }
         /*                 
          * -- * -- * -- * -- * -- * -- * -- * -- * --
@@ -183,6 +235,43 @@ namespace CombatAI
                 Scribe_Values.Look(ref buckets, $"buckets.{version}");
                 Scribe_Values.Look(ref carryLimit, $"carryLimit.{version}");
             }
+        }
+
+        public class FactionTechSettings : IExposable
+        {
+	        public float     retreat;
+	        public float     duck;
+	        public float     cover;
+	        public float     sapping;
+	        public float     pathing;
+	        public float     group;
+	        public TechLevel tech;
+
+	        public FactionTechSettings()
+	        {
+	        }
+	        
+	        public FactionTechSettings(TechLevel tech, float retreat, float duck, float cover, float sapping, float pathing, float group)
+	        {
+		        this.tech    = tech;
+		        this.retreat = retreat;
+		        this.duck    = duck;
+		        this.cover   = cover;
+		        this.sapping = sapping;
+		        this.pathing = pathing;
+		        this.group   = group;
+	        }
+
+	        public void ExposeData()
+	        {
+		        Scribe_Values.Look(ref tech, $"tech.{version}", tech);
+		        Scribe_Values.Look(ref retreat, $"retreat.{version}", retreat);
+		        Scribe_Values.Look(ref duck, $"duck.{version}", duck);
+		        Scribe_Values.Look(ref cover, $"cover.{version}", cover);
+		        Scribe_Values.Look(ref sapping, $"sapping.{version}", sapping);
+		        Scribe_Values.Look(ref pathing, $"pathing.{version}", pathing);
+		        Scribe_Values.Look(ref group, $"group.{version}", group);
+	        }
         }
     }
 }

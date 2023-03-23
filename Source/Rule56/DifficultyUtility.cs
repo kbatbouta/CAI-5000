@@ -5,6 +5,7 @@ namespace CombatAI
     {
         public static void SetDifficulty(Difficulty difficulty)
         {
+	        Finder.Settings.ResetTechSettings();
             switch (difficulty)
             {
                 case Difficulty.Easy:

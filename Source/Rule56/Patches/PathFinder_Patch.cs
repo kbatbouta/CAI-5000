@@ -28,6 +28,7 @@ namespace CombatAI.Patches
             private static bool                             checkVisibility;
             private static bool                             dig;
             private static Pawn                             pawn;
+            private static Settings.FactionTechSettings     factionTechSettings;
             private static Map                              map;
             private static IntVec3                          destPos;
             private static PathFinder                       instance;
@@ -38,7 +39,6 @@ namespace CombatAI.Patches
             private static          float         threatAtDest;
             private static          float         availabilityAtDest;
             private static          float         visibilityAtDest;
-            private static          float         multiplier = 1.0f;
             private static          bool          flashCost;
             private static          bool          isRaider;
             private static          bool          isPlayer;
@@ -72,6 +72,8 @@ namespace CombatAI.Patches
                     walls    = __instance.map.GetComp_Fast<WallGrid>();
                     f_grid   = __instance.map.GetComp_Fast<MapComponent_CombatAI>().f_grid;
                     f_grid.Reset();
+                    // get faction data.
+                    factionTechSettings = Finder.Settings.GetTechSettings(pawn.Faction?.def.techLevel ?? TechLevel.Undefined);
                     // get temperature data.
                     temperatureRange = new FloatRange(pawn.GetStatValue_Fast(StatDefOf.ComfyTemperatureMin, 1600), pawn.GetStatValue_Fast(StatDefOf.ComfyTemperatureMax, 1600));
                     temperatureRange = temperatureRange.ExpandedBy(12);
@@ -101,6 +103,7 @@ namespace CombatAI.Patches
                         {
                             float costMultiplier = 1;
                             costMultiplier *= comp.TookDamageRecently(360) ? 4 : 1;
+                            costMultiplier *= factionTechSettings.sapping;
                             float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
                             isRaider = true;
                             TraverseParms parms = traverseParms;
@@ -238,20 +241,20 @@ namespace CombatAI.Patches
 
             public static void Reset()
             {
-                avoidanceReader  = null;
-                isRaider         = false;
-                isPlayer         = false;
-                multiplier       = 1f;
-                sightReader      = null;
-                dig              = false;
-                threatAtDest     = 0;
-                instance         = null;
-                visibilityAtDest = 0f;
-                map              = null;
-                walls            = null;
-                flashCost        = false;
-                pawn             = null;
-                f_grid           = null;
+                avoidanceReader     = null;
+                isRaider            = false;
+                isPlayer            = false;
+                factionTechSettings = null;
+                sightReader         = null;
+                dig                 = false;
+                threatAtDest        = 0;
+                instance            = null;
+                visibilityAtDest    = 0f;
+                map                 = null;
+                walls               = null;
+                flashCost           = false;
+                pawn                = null;
+                f_grid              = null;
             }
 
             /*
@@ -356,7 +359,7 @@ namespace CombatAI.Patches
                     {
                         //
                         // TODO make this into a maxcost -= something system
-                        value = value * multiplier * Finder.P75 * Mathf.Clamp(1 - PathFinder.calcGrid[parentIndex].knownCost / 2500, 0.1f, 1);
+                        value = value * factionTechSettings.pathing * Finder.P75 * Mathf.Clamp(1 - PathFinder.calcGrid[parentIndex].knownCost / 2500, 0.1f, 1);
                     }
                     return (int)value;
                 }
