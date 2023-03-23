@@ -232,6 +232,16 @@ namespace CombatAI.R
                    _CombatAI_Settings_Basic : _CombatAI_Settings_Basic = "CombatAI.Settings.Basic".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_RandomizedPersonality = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.RandomizedPersonality</c>. inner text:
+        ///
+        /// <code>Enable variation in faction tactics depending on the faction leader and the current time of year</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_RandomizedPersonality {
+            get => _CombatAI_Settings_Basic_RandomizedPersonality != null ? 
+                   _CombatAI_Settings_Basic_RandomizedPersonality : _CombatAI_Settings_Basic_RandomizedPersonality = "CombatAI.Settings.Basic.RandomizedPersonality".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic_Presets = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets</c>. inner text:
         ///

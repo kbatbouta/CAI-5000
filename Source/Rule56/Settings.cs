@@ -7,7 +7,7 @@ namespace CombatAI
     public class Settings : ModSettings
     {
 
-        private const int version                             = 12;
+        private const int version                             = 13;
         public        int Advanced_SightThreadIdleSleepTimeMS = 1;
 
         /*
@@ -17,7 +17,8 @@ namespace CombatAI
          */
 
         public bool AdvancedUser;
-        public bool Caster_Enabled = true;
+        public bool Caster_Enabled        = true;
+        public bool Personalities_Enabled = true;
 
         /*
          * 
@@ -142,6 +143,7 @@ namespace CombatAI
 #endif
 
             Scribe_Values.Look(ref FinishedQuickSetup, $"FinishedQuickSetup2.{version}");
+            Scribe_Values.Look(ref Personalities_Enabled, $"Personalities_Enabled.{version}", true);
             Scribe_Values.Look(ref FogOfWar_OldShader, $"FogOfWar_OldShader.{version}", true);
             Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
             Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);

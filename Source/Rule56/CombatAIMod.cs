@@ -129,8 +129,9 @@ namespace CombatAI
             {
                 Messages.Message(Keyed.CombatAI_Settings_Basic_PerformanceOpt_Warning, MessageTypeDefOf.CautionInput);
             }
-            collapsible.Line(1);
+            collapsible.Line(1);            
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_KillBoxKiller, ref Finder.Settings.Pather_KillboxKiller);
+            collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_RandomizedPersonality, ref Finder.Settings.Personalities_Enabled);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Pather, ref Finder.Settings.Pather_Enabled);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Caster, ref Finder.Settings.Caster_Enabled);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Temperature, ref Finder.Settings.Temperature_Enabled);

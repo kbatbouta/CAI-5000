@@ -60,6 +60,7 @@ namespace CombatAI.Gui
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_PerformanceOpt, ref Finder.Settings.PerformanceOpt_Enabled);
             collapsible.Line(1);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_KillBoxKiller, ref Finder.Settings.Pather_KillboxKiller);
+            collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_RandomizedPersonality, ref Finder.Settings.Personalities_Enabled);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Sprinting, ref Finder.Settings.Enable_Sprinting, Keyed.CombatAI_Settings_Basic_Sprinting_Description);
             collapsible.End(ref optionsRect);
             optionsRect.yMin              += 5;

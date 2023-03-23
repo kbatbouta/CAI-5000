@@ -210,6 +210,16 @@ namespace CombatAI
 	        return pawn.AI()?.squad?.squadIDNumber ?? 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static PersonalityTacker.PersonalityResult GetCombatPersonality(this Thing thing, int expiry = 240)
+        {
+	        if (!TKCache<int, PersonalityTacker.PersonalityResult>.TryGet(thing.thingIDNumber, out PersonalityTacker.PersonalityResult result, expiry))
+	        {
+		        TKCache<int, PersonalityTacker.PersonalityResult>.Put(thing.thingIDNumber, result = Current.Game.GetComponent<PersonalityTacker>().GetPersonality(thing));
+	        }
+	        return result;
+        }
+
         private class IsApproachingMeleeTargetCache
         {
         }

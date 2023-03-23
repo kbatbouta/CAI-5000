@@ -21,6 +21,7 @@
     <CombatAI.Animator.Controller>Hold</CombatAI.Animator.Controller>
     <CombatAI.Animator.Controller.Description>Hold at the current angle.</CombatAI.Animator.Controller.Description>
     <CombatAI.Settings.Basic>Basic Settings</CombatAI.Settings.Basic>
+    <CombatAI.Settings.Basic.RandomizedPersonality>Enable variation in faction tactics depending on the faction leader and the current time of year</CombatAI.Settings.Basic.RandomizedPersonality>
     <CombatAI.Settings.Basic.Presets>Performance/Difficulty presets</CombatAI.Settings.Basic.Presets>
     <CombatAI.Settings.Basic.Presets.Easy>Easy/Perf</CombatAI.Settings.Basic.Presets.Easy>
     <CombatAI.Settings.Basic.Presets.Normal>Normal</CombatAI.Settings.Basic.Presets.Normal>
