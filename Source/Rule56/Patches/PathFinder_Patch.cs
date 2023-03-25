@@ -52,7 +52,7 @@ namespace CombatAI.Patches
             [HarmonyPriority(int.MaxValue)]
             internal static void Prefix(PathFinder __instance, ref PawnPath __result, IntVec3 start, LocalTargetInfo dest, ref TraverseParms traverseParms, PathEndMode peMode, ref PathFinderCostTuning tuning, out bool __state)
             {
-                if (fallbackCall)
+	            if (fallbackCall)
                 {
                      __state = true;
                      return;
@@ -63,7 +63,7 @@ namespace CombatAI.Patches
                 // only allow factioned pawns.
                 if (Finder.Settings.Pather_Enabled && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
                 {
-                    destPos                = dest.Cell;
+	                destPos                = dest.Cell;
                     original_traverseParms = traverseParms;
                     origina_peMode         = peMode;
                     // prepare the modifications
@@ -84,38 +84,43 @@ namespace CombatAI.Patches
                     }
                     // set faction params.
                     isPlayer = pawn.Faction.IsPlayerSafe();
-                    isRaider = !isPlayer && (pawn.HostileTo(Faction.OfPlayerSilentFail) || map.ParentFaction != null && pawn.Faction.HostileTo(map.ParentFaction));
+                    isRaider = !isPlayer && ((map.ParentFaction != null && pawn.HostileTo(map.ParentFaction)) || pawn.Faction == Faction.OfMechanoids);
                     // grab different readers.
                     pawn.TryGetAvoidanceReader(out avoidanceReader);
                     pawn.TryGetSightReader(out sightReader);
                     // prepare sapping data
                     if (sightReader != null)
                     {
-                        threatAtDest       = sightReader.GetThreat(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
+	                    threatAtDest       = sightReader.GetThreat(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
                         availabilityAtDest = sightReader.GetEnemyAvailability(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
                         visibilityAtDest   = sightReader.GetVisibilityToEnemies(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
                         comp               = pawn.AI();
+                        Verb verb = pawn.TryGetAttackVerb();
                         if (dig = Finder.Settings.Pather_KillboxKiller
+                                  && (verb == null || (!verb.IsIncendiary_Ranged() && !(verb is Verb_ShootBeam || verb is Verb_SpewFire)))
                                   && isRaider
-                                  && (!pawn.guest?.IsPrisoner ?? false)
+                                  && (pawn.guest == null || !pawn.guest.IsPrisoner)
                                   && comp != null && comp.CanSappOrEscort && !comp.IsSapping
                                   && !pawn.mindState.duty.Is(DutyDefOf.Sapper) && !pawn.CurJob.Is(JobDefOf.Mine) && !pawn.mindState.duty.Is(DutyDefOf.ExitMapRandom) && !pawn.mindState.duty.Is(DutyDefOf.Escort))
                         {
-                            float costMultiplier = 1;
-                            costMultiplier *= comp.TookDamageRecently(360) ? 4 : 1;
-                            costMultiplier *= personality.sapping;
-                            float miningSkill = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? 0f;
-                            isRaider = true;
+	                        isRaider = true;
+                            float costMultiplier = (comp.TookDamageRecently(360) || comp.ReactedRecently(360)  ? 0.25f : 1) * personality.sapping;
+                            bool  tunneler       = pawn.def == CombatAI_ThingDefOf.Mech_Tunneler;
+                            float miningSkill    = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? (tunneler ? 15f : 0f);
+                            if (!Mod_CE.active && miningSkill < 9 && verb != null && !verb.IsMeleeAttack && !(verb.IsEMP()  || (verb.verbProps.CausesExplosion && verb.verbProps.defaultProjectile?.projectile?.explosionRadius > 2)))
+                            {
+	                            tunneler       =  true;
+	                            miningSkill    =  Maths.Max(verb.verbProps.defaultProjectile.projectile.damageAmountBase * verb.verbProps.burstShotCount / 4f, miningSkill);
+                            }
+                            if (pawn.mindState?.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) ?? false)
+                            {
+	                            miningSkill    *= 1.25f;
+	                            costMultiplier *= 0.75f;
+                            }
                             TraverseParms parms = traverseParms;
                             parms.maxDanger     = Danger.Deadly;
                             parms.canBashDoors  = true;
                             parms.canBashFences = true;
-                            bool tunneler  = pawn.def == CombatAI_ThingDefOf.Mech_Tunneler;
-                            if (tunneler)
-                            {
-	                            miningSkill    = 15f;
-	                            costMultiplier = 1;
-                            }
                             bool humanlike = pawn.RaceProps.Humanlike;
                             if (humanlike || tunneler)
                             {
@@ -128,16 +133,16 @@ namespace CombatAI.Patches
                             traverseParms = parms;
                             if (tuning == null)
                             {
-                                tuning                            = new PathFinderCostTuning();
-                                tuning.costBlockedDoor            = (int)(15f * costMultiplier);
-                                tuning.costBlockedDoorPerHitPoint = costMultiplier - 1;
-                                if (humanlike || tunneler)
-                                {
-                                    tuning.costBlockedWallBase                 = (int)(32f * costMultiplier);
-                                    tuning.costBlockedWallExtraForNaturalWalls = (int)(32f * costMultiplier);
-                                    tuning.costBlockedWallExtraPerHitPoint     = (20f - Mathf.Clamp(miningSkill, 5, 15)) / 100 * Finder.Settings.Pathfinding_SappingMul * costMultiplier;
-                                    tuning.costOffLordWalkGrid                 = 0;
-                                }
+	                            tuning                            = new PathFinderCostTuning();
+	                            tuning.costBlockedDoor            = (int)(15f * costMultiplier);
+	                            tuning.costBlockedDoorPerHitPoint = costMultiplier - 1;
+	                            if (humanlike || tunneler)
+	                            {
+		                            tuning.costBlockedWallBase                 = (int)(32f * costMultiplier);
+		                            tuning.costBlockedWallExtraForNaturalWalls = (int)(32f * costMultiplier);
+		                            tuning.costBlockedWallExtraPerHitPoint     = (20f - Mathf.Clamp(miningSkill, 5, 15)) / 100 * Finder.Settings.Pathfinding_SappingMul * costMultiplier;
+		                            tuning.costOffLordWalkGrid                 = 0;
+	                            }
                             }
                         }
                     }
@@ -200,7 +205,7 @@ namespace CombatAI.Patches
 			                        }
 		                        }
 	                        }
-	                        if (!enemiesAhead || enemiesBefore || map.fogGrid.IsFogged(cellAhead) || cellAhead.HeuristicDistanceTo(cellBefore, map, 2) <= 8)
+	                        if (!enemiesAhead || map.fogGrid.IsFogged(cellAhead) || cellAhead.HeuristicDistanceTo(cellBefore, map, 2) <= 8)
                             {
                                 try
                                 {
@@ -226,7 +231,7 @@ namespace CombatAI.Patches
                             }
                             else if(!FlashSapperPath)
                             {
-                                comp.StartSapper(blocked, cellBefore, enemiesAhead);
+                                comp.StartSapper(blocked, cellBefore, cellAhead, enemiesAhead);
                             }
                         }
                     }
@@ -339,7 +344,7 @@ namespace CombatAI.Patches
                                     if (visibilityParent > 0)
                                     {
                                         // we do this to prevent sapping where there is enemies.
-                                        value = 1000 * visibilityParent;
+                                        value = 400 * visibilityParent;
                                     }
                                 }
                             }

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using CombatAI.Abilities;
 using CombatAI.R;
 using CombatAI.Squads;
-using CombatAI.Utilities;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -50,7 +48,7 @@ namespace CombatAI.Comps
 		/// </summary>
 		public List<JobLog> jobLogs;
 		/// <summary>
-		/// Pawn squad
+		///     Pawn squad
 		/// </summary>
 		public Squad squad;
 		/// <summary>
@@ -61,7 +59,8 @@ namespace CombatAI.Comps
 		///     Cell to stand on while sapping
 		/// </summary>
 		private IntVec3 cellBefore = IntVec3.Invalid;
-		public AIAgentData data;
+		private IntVec3     cellAhead = IntVec3.Invalid;
+		public  AIAgentData data;
 		/// <summary>
 		///     Custom pawn duty tracker. Allows the execution of new duties then going back to the old one once the new one is
 		///     finished.
@@ -156,8 +155,8 @@ namespace CombatAI.Comps
 			abilities      ??= new Pawn_AbilityCaster(selPawn);
 			abilities.pawn =   selPawn;
 		}
-		
-		#if DEBUG_REACTION
+
+#if DEBUG_REACTION
 		private static List<Thing> _buffer = new List<Thing>(16);
 		public override void CompTick()
 		{
@@ -180,7 +179,7 @@ namespace CombatAI.Comps
 				buffer.Clear();
 			}
 		}
-		#endif
+#endif
 
 		public override void CompTickRare()
 		{
@@ -456,12 +455,12 @@ namespace CombatAI.Comps
 				data.LastInterrupted = GenTicks.TicksGame + Rand.Int % 240;
 				return;
 			}
-			PersonalityTacker.PersonalityResult personality    = parent.GetCombatPersonality();
-			IntVec3                      selPos                = selPawn.Position;
-			Pawn                         nearestMeleeEnemy     = null;
-			float                        nearestMeleeEnemyDist = 1e5f;
-			Thing                        nearestEnemy          = null;
-			float                        nearestEnemyDist      = 1e5f;
+			PersonalityTacker.PersonalityResult personality           = parent.GetCombatPersonality();
+			IntVec3                             selPos                = selPawn.Position;
+			Pawn                                nearestMeleeEnemy     = null;
+			float                               nearestMeleeEnemyDist = 1e5f;
+			Thing                               nearestEnemy          = null;
+			float                               nearestEnemyDist      = 1e5f;
 
 			// used to update nearest enemy THing
 			void UpdateNearestEnemy(Thing enemy)
@@ -922,6 +921,10 @@ namespace CombatAI.Comps
 							{
 								moveBias = 0f;
 							}
+							if (duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) && Rand.Chance(1 - moveBias))
+							{
+								return;
+							}
 							if (bestEnemyVisibleNow)
 							{
 								if (nearestEnemyDist > 6 * personality.cover)
@@ -948,7 +951,7 @@ namespace CombatAI.Comps
 										data.LastInterrupted = GenTicks.TicksGame;
 									}
 								}
-								else if(ShouldShootNow())
+								else if (ShouldShootNow())
 								{
 									_last = 53;
 									Job job_waitCombat = JobMaker.MakeJob(JobDefOf.Wait_Combat, Rand.Int % 100 + 100);
@@ -984,7 +987,7 @@ namespace CombatAI.Comps
 								request.checkBlockChance   =  true;
 								if (CoverPositionFinder.TryFindCoverPosition(request, out IntVec3 cell))
 								{
-									if ((ShouldMoveTo(cell) || Rand.Chance(moveBias)))
+									if (ShouldMoveTo(cell) || Rand.Chance(moveBias))
 									{
 										StartOrQueueCoverJob(cell, 10);
 									}
@@ -1014,14 +1017,14 @@ namespace CombatAI.Comps
 		/// <returns>Whether to move or not</returns>
 		private bool ShouldMoveTo(IntVec3 newPos)
 		{
-			IntVec3 pos           = selPawn.Position;
+			IntVec3 pos = selPawn.Position;
 			if (pos == newPos)
 			{
 				return true;
 			}
-			float   curVisibility = sightReader.GetVisibilityToEnemies(pos);
-			float   curThreat     = sightReader.GetVisibilityToEnemies(pos);
-			Job     job           = selPawn.CurJob;
+			float curVisibility = sightReader.GetVisibilityToEnemies(pos);
+			float curThreat     = sightReader.GetVisibilityToEnemies(pos);
+			Job   job           = selPawn.CurJob;
 			if (curThreat == 0 && curVisibility == 0 && !(job.Is(JobDefOf.Wait_Combat) || job.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) || job.Is(CombatAI_JobDefOf.CombatAI_Goto_Duck) || job.Is(CombatAI_JobDefOf.CombatAI_Goto_Retreat)))
 			{
 				return sightReader.GetVisibilityToEnemies(newPos) <= 2f && sightReader.GetThreat(newPos) < 1f;
@@ -1031,14 +1034,14 @@ namespace CombatAI.Comps
 			float threatDiff = curThreat - sightReader.GetThreat(newPos);
 			return Rand.Chance(visDiff) && Rand.Chance(threatDiff) && Rand.Chance(magDiff);
 		}
-		
+
 		/// <summary>
-		///		Whether the pawn should start shooting now.
+		///     Whether the pawn should start shooting now.
 		/// </summary>
 		/// <returns></returns>
 		private bool ShouldShootNow()
 		{
-			return !selPawn.CurJob.Is(JobDefOf.Wait_Combat) && ((!selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) && !selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Duck)) || !ShouldMoveTo(selPawn.CurJob.targetA.Cell));
+			return !selPawn.CurJob.Is(JobDefOf.Wait_Combat) && (!selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) && !selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Duck) || !ShouldMoveTo(selPawn.CurJob.targetA.Cell));
 		}
 
 		/// <summary>
@@ -1128,19 +1131,20 @@ namespace CombatAI.Comps
 		/// <param name="blocked">Blocked cells</param>
 		/// <param name="cellBefore">Cell before blocked cells</param>
 		/// <param name="findEscorts">Whether to look for escorts</param>
-		public void StartSapper(List<IntVec3> blocked, IntVec3 cellBefore, bool findEscorts)
+		public void StartSapper(List<IntVec3> blocked, IntVec3 cellBefore, IntVec3 cellAhead, bool findEscorts)
 		{
 			if (cellBefore.IsValid && sapperNodes.Count > 0 && GenTicks.TicksGame - sapperStartTick < 4800)
 			{
 				ReleaseEscorts(false);
 			}
 			this.cellBefore  = cellBefore;
+			this.cellAhead   = cellAhead;
 			this.findEscorts = findEscorts;
 			sapperStartTick  = GenTicks.TicksGame;
 			sapperNodes.Clear();
 			sapperNodes.AddRange(blocked);
 			_sap = 0;
-			TryStartSapperJob();
+//			TryStartSapperJob();
 		}
 
 		/// <summary>
@@ -1416,7 +1420,7 @@ namespace CombatAI.Comps
 					}
 					return false;
 				};
-				Verse.GenClosest.RegionwiseBFSWorker(selPawn.Position, selPawn.Map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 4, 15, out int _);
+				GenClosest.RegionwiseBFSWorker(selPawn.Position, selPawn.Map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 4, 15, out int _);
 			}
 			escorts.Clear();
 		}
@@ -1552,15 +1556,16 @@ namespace CombatAI.Comps
 
 		private void TryStartSapperJob()
 		{
-			if (sightReader.GetVisibilityToEnemies(cellBefore) > 0 || sapperNodes.Count == 0)
+			bool failed = sapperNodes.Count == 0 || (sightReader.GetVisibilityToFriendlies(cellAhead) > 0 && GenTicks.TicksGame - sapperStartTick > 1000);
+			if (failed)
 			{
-				ReleaseEscorts(false);
+				ReleaseEscorts(true);
 				cellBefore      = IntVec3.Invalid;
 				sapperStartTick = -1;
 				sapperNodes.Clear();
 				return;
 			}
-			if (IsDeadOrDowned || !(selPawn.mindState.duty.Is(DutyDefOf.AssaultColony) || selPawn.mindState.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) || selPawn.mindState.duty.Is(DutyDefOf.AssaultThing)) || (selPawn.CurJob.Is(JobDefOf.Wait_Combat) || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Retreat) || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Duck)))
+			if (IsDeadOrDowned || !(selPawn.mindState.duty.Is(DutyDefOf.AssaultColony) || selPawn.mindState.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) || selPawn.mindState.duty.Is(DutyDefOf.AssaultThing)) || selPawn.CurJob.Is(JobDefOf.Wait_Combat) || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Retreat)  || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Duck))
 			{
 				ReleaseEscorts(false);
 				cellBefore      = IntVec3.Invalid;
@@ -1572,54 +1577,159 @@ namespace CombatAI.Comps
 			Thing blocker = sapperNodes[0].GetEdifice(map);
 			if (blocker != null)
 			{
-				Job job = DigUtility.PassBlockerJob(selPawn, blocker, cellBefore, true, true);
-				if (job != null)
+				Job                                 job         = null;
+				float                               miningSkill = selPawn.GetSkillLevelSafe(SkillDefOf.Mining, 0);
+				PersonalityTacker.PersonalityResult personality = parent.GetCombatPersonality();
+				if (findEscorts && Rand.Chance(1 - Maths.Min(escorts.Count / (Maths.Max(miningSkill, 3) * personality.sapping), 0.85f)))
 				{
-					job.playerForced       = true;
-					job.expiryInterval     = 3600;
-					job.maxNumMeleeAttacks = 300;
-					if (Finder.Settings.Debug_LogJobs && Finder.Settings.Debug)
+					int     count       = escorts.Count;
+					int     countTarget = Rand.Int % 2 + Mathf.FloorToInt(Maths.Max(miningSkill, 3) * personality.sapping) + Maths.Min(sapperNodes.Count, 10);
+					Faction faction     = selPawn.Faction;
+					Predicate<Thing> validator = t =>
 					{
-						JobLog jobLog = selPawn.LogFor(job);
-						jobLog.note += $"rootJob=({selPawn.CurJob?.def}:{selPawn.CurJob?.loadID}),";
-					}
-					selPawn.jobs.StartJob(job, JobCondition.InterruptForced);
-					if (findEscorts && Rand.Chance(1 - Maths.Min(escorts.Count / 12, 0.85f)))
-					{
-						int     count       = escorts.Count;
-						int     countTarget = Rand.Int % 4 + 12 + Maths.Min(sapperNodes.Count, 10);
-						Faction faction     = selPawn.Faction;
-						Predicate<Thing> validator = t =>
+						if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
+						    && !ally.CurJobDef.Is(JobDefOf.Mine)
+						    && !ally.IsColonist
+						    && ally.def != CombatAI_ThingDefOf.Mech_Tunneler
+						    && ally.mindState?.duty?.def != CombatAI_DutyDefOf.CombatAI_Escort
+						    && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
+						    && ally.GetSkillLevelSafe(SkillDefOf.Mining, 0) < 9)
 						{
-							if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
-							    && !ally.CurJobDef.Is(JobDefOf.Mine)
-							    && ally.def != CombatAI_ThingDefOf.Mech_Tunneler
-							    && ally.mindState?.duty?.def != CombatAI_DutyDefOf.CombatAI_Escort
-							    && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
-							    && ally.skills?.GetSkill(SkillDefOf.Mining).Level < 10)
+							ThingComp_CombatAI comp = ally.AI();
+							if (comp?.duties != null && comp.duties?.Any(CombatAI_DutyDefOf.CombatAI_Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick > 600)
 							{
-								ThingComp_CombatAI comp = ally.AI();
-								if (comp?.duties != null && comp.duties?.Any(CombatAI_DutyDefOf.CombatAI_Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick > 600)
+								Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(selPawn, 20, 100, 600 + Mathf.CeilToInt(12 * selPawn.Position.DistanceTo(cellBefore)) + 540 * sapperNodes.Count + Rand.Int % 600);
+								if (ally.TryStartCustomDuty(custom))
 								{
-									Pawn_CustomDutyTracker.CustomPawnDuty custom = CustomDutyUtility.Escort(selPawn, 20, 100, 600 + Mathf.CeilToInt(12 * selPawn.Position.DistanceTo(cellBefore)) + 540 * sapperNodes.Count + Rand.Int % 600);
-									if (ally.TryStartCustomDuty(custom))
+									escorts.Add(ally);
+								}
+								if (comp.duties.curCustomDuty?.duty != duties.curCustomDuty?.duty)
+								{
+									count += 4;
+								}
+								else
+								{
+									count++;
+								}
+							}
+							return count == countTarget;
+						}
+						return false;
+					};
+					GenClosest.RegionwiseBFSWorker(selPawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 10, 40, out int _);
+				}
+				if (!Mod_CE.active && (escorts.Count >= 2 || miningSkill == 0))
+				{
+					Verb verb = selPawn.TryGetAttackVerb();
+					
+					if ((sightReader.GetAbsVisibilityToEnemies(cellBefore) > 0 || miningSkill < 9) && (verb.verbProps.burstShotCount > 1 || !selPawn.RaceProps.IsMechanoid) && verb != null && !verb.IsMeleeAttack && !(verb is Verb_SpewFire || verb is Verb_ShootBeam) && !verb.IsEMP() && !verb.verbProps.CausesExplosion)
+					{
+						CastPositionRequest request = new CastPositionRequest();
+						request.verb               = verb;
+						request.caster             = selPawn;
+						request.target             = blocker;
+						request.maxRangeFromTarget = 10;
+						Vector3 dir = (cellBefore - sapperNodes[0]).ToVector3();
+						request.validator = cell =>
+						{
+							return Mathf.Abs(Vector3.Angle((cell - sapperNodes[0]).ToVector3(), dir)) <= 45f && cellBefore.DistanceToSquared(cell) >= 9;
+						};
+						try
+						{
+							if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 loc))
+							{
+								job                     = JobMaker.MakeJob(JobDefOf.UseVerbOnThing);
+								job.targetA             = blocker;
+								job.targetB             = loc;
+								job.verbToUse           = verb;
+								job.preventFriendlyFire = true;
+								job.expiryInterval      = JobGiver_AIFightEnemy.ExpiryInterval_ShooterSucceeded.RandomInRange;
+								selPawn.jobs.StartJob(job, JobCondition.InterruptForced);
+								for (int i = 0; i < 4; i++)
+								{
+									job                     = JobMaker.MakeJob(JobDefOf.UseVerbOnThing);
+									job.targetA             = blocker;
+									job.targetB             = loc;
+									job.verbToUse           = verb;
+									job.preventFriendlyFire = true;
+									job.expiryInterval      = JobGiver_AIFightEnemy.ExpiryInterval_ShooterSucceeded.RandomInRange;
+									selPawn.jobs.jobQueue.EnqueueFirst(job);
+								}
+							}
+						}
+						catch (Exception er)
+						{
+							Log.Error($"1. {er}");
+						}
+					}
+				}
+				if (job == null)
+				{
+					if (sightReader.GetAbsVisibilityToEnemies(cellBefore) == 0 && miningSkill > 0)
+					{
+						job                    = DigUtility.PassBlockerJob(selPawn, blocker, cellBefore, true, true);
+						job.playerForced       = true;
+						job.expiryInterval     = 3600;
+						job.maxNumMeleeAttacks = 300;
+						selPawn.jobs.StartJob(job, JobCondition.InterruptForced);
+					}
+					else
+					{
+						ReleaseEscorts(true);
+						cellBefore      = IntVec3.Invalid;
+						sapperStartTick = -1;
+						sapperNodes.Clear();
+						return;
+					}
+				}
+				if (!Mod_CE.active && job.def == JobDefOf.UseVerbOnThing)
+				{
+					foreach (Pawn ally in escorts)
+					{
+						if (!ally.Destroyed && ally.Spawned && !ally.Downed && !ally.Dead && sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0 )
+						{
+							Verb verb = ally.TryGetAttackVerb();
+							if (!ally.CurJobDef.Is(JobDefOf.UseVerbOnThing) && verb != null && !(verb is Verb_SpewFire || verb is Verb_ShootBeam) && !verb.IsEMP() && !verb.verbProps.CausesExplosion)
+							{
+								CastPositionRequest request = new CastPositionRequest();
+								request.verb               = verb;
+								request.caster             = ally;
+								request.target             = blocker;
+								request.maxRangeFromTarget = 10;
+								Vector3 dir = (cellBefore - sapperNodes[0]).ToVector3();
+								request.validator = cell =>
+								{
+									return Mathf.Abs(Vector3.Angle((cell - sapperNodes[0]).ToVector3(), dir)) <= 45f && cellBefore.DistanceToSquared(cell) >= 9;
+								};
+								try
+								{
+									if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 loc))
 									{
-										escorts.Add(ally);
-									}
-									if (comp.duties.curCustomDuty?.duty != duties.curCustomDuty?.duty)
-									{
-										count += 3;
-									}
-									else
-									{
-										count++;
+										Job attack_job = JobMaker.MakeJob(JobDefOf.UseVerbOnThing);
+										attack_job.targetA             = blocker;
+										attack_job.targetB             = loc;
+										attack_job.verbToUse           = verb;
+										attack_job.preventFriendlyFire = true;
+										attack_job.expiryInterval      = JobGiver_AIFightEnemy.ExpiryInterval_ShooterSucceeded.RandomInRange;
+										ally.jobs.StartJob(attack_job, JobCondition.InterruptForced);
+										for (int i = 0; i < 4; i++)
+										{
+											attack_job                     = JobMaker.MakeJob(JobDefOf.UseVerbOnThing);
+											attack_job.targetA             = blocker;
+											attack_job.targetB             = loc;
+											attack_job.verbToUse           = verb;
+											attack_job.preventFriendlyFire = true;
+											attack_job.expiryInterval      = JobGiver_AIFightEnemy.ExpiryInterval_ShooterSucceeded.RandomInRange;
+											ally.jobs.jobQueue.EnqueueFirst(attack_job);
+										}
 									}
 								}
-								return count == countTarget;
+								catch (Exception er)
+								{
+									Log.Error($"2. {er}");
+								}
 							}
-							return false;
-						};
-						Verse.GenClosest.RegionwiseBFSWorker(selPawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 10, 40, out int _);
+						}
 					}
 				}
 			}

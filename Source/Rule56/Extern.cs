@@ -14,10 +14,10 @@ namespace CombatAI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ThingComp_CombatAI AI(this Pawn pawn)
         {
-            if (active)
-            {
-                return CombatAI_ThingComp(pawn);
-            }
+//            if (active)
+//            {
+//                return CombatAI_ThingComp(pawn);
+//            }
             return pawn.GetComp_Fast<ThingComp_CombatAI>();
         }
         

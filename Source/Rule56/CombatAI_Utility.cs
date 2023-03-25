@@ -162,6 +162,12 @@ namespace CombatAI
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetSkillLevelSafe(this Pawn pawn, SkillDef def, int fallback)
+        {
+	        return pawn?.skills?.GetSkill(def).Level ?? fallback;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetSightReader(this Pawn pawn, out SightReader reader)
         {
             if (pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out reader) && reader != null)

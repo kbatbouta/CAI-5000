@@ -7,7 +7,7 @@ namespace CombatAI
     public class Settings : ModSettings
     {
 
-        private const int version                             = 13;
+        private const int version                             = 15;
         public        int Advanced_SightThreadIdleSleepTimeMS = 1;
 
         /*
@@ -85,7 +85,7 @@ namespace CombatAI
         private FactionTechSettings       FactionSettings_Undefined = new FactionTechSettings(TechLevel.Undefined, 1, 1, 1, 1, 1,1);
         private List<FactionTechSettings> FactionSettings           = new List<FactionTechSettings>(); 
 
-        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 2, 16);
+        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 4, 16);
         public SightPerformanceSettings SightSettings_MechsAndInsects      = new SightPerformanceSettings(3, 10, 6);
         public SightPerformanceSettings SightSettings_SettlementTurrets    = new SightPerformanceSettings(8, 15, 12);
         public SightPerformanceSettings SightSettings_Wildlife             = new SightPerformanceSettings(6, 5, 4);
@@ -115,7 +115,7 @@ namespace CombatAI
 	        Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders.{version}");
             if (SightSettings_FriendliesAndRaiders == null)
             {
-                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 2, 16);
+                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 4, 16);
             }
             Scribe_Deep.Look(ref SightSettings_MechsAndInsects, $"CombatAI.SightSettings_MechsAndInsects.{version}");
             if (SightSettings_MechsAndInsects == null)
@@ -201,8 +201,8 @@ namespace CombatAI
 	        FactionSettings.Add(new FactionTechSettings(TechLevel.Medieval, retreat: 0.25f, duck: 0.25f, cover: 0.5f, sapping: 0.50f, pathing: 1f, group: 2.0f));
 	        FactionSettings.Add(new FactionTechSettings(TechLevel.Industrial, retreat: 0.75f, duck: 0.75f, cover: 1, sapping: 1, pathing: 1, group: 1.25f));
 	        FactionSettings.Add(new FactionTechSettings(TechLevel.Spacer, retreat: 0.95f, duck: 0.95f, cover: 1, sapping: 1, pathing: 1, group: 1.0f));
-	        FactionSettings.Add(new FactionTechSettings(TechLevel.Archotech, retreat: 1, duck: 1, cover: 1, sapping: 1, pathing: 1, group: 1.0f));
-	        FactionSettings.Add(new FactionTechSettings(TechLevel.Ultra, retreat: 1.15f, duck: 1.15f, cover: 1.15f, sapping: 1.0f, pathing: 1, group: 1.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Archotech, retreat: 1, duck: 1, cover: 1, sapping: 1, pathing: 0.9f, group: 1.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Ultra, retreat: 1.0f, duck: 1.0f, cover: 1.0f, sapping: 0.9f, pathing: 1, group: 1.0f));
         }
         /*                 
          * -- * -- * -- * -- * -- * -- * -- * -- * --

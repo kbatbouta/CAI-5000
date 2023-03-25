@@ -144,7 +144,7 @@ namespace CombatAI.Patches
                                         if (Rand.Chance(0.33f))
                                         {
                                             Pawn_CustomDutyTracker.CustomPawnDuty customDuty2 = CustomDutyUtility.DefendPoint(zone.Position, Rand.Range(30, 60), true, 3600 + Rand.Range(0, 60000));
-                                            force[j].EnqueueFirstCustomDuty(customDuty);
+                                            force[j].EnqueueFirstCustomDuty(customDuty2);
                                             if (Finder.Settings.Debug)
                                             {
                                                 Log.Message($"{comp.parent} task force {i} occupying area around {zone}");
@@ -183,7 +183,7 @@ namespace CombatAI.Patches
                                             if (Rand.Chance(0.33f))
                                             {
                                                 Pawn_CustomDutyTracker.CustomPawnDuty customDuty2 = CustomDutyUtility.DefendPoint(thing.Position, Rand.Range(30, 60), true, 3600 + Rand.Range(0, 60000));
-                                                force[j].EnqueueFirstCustomDuty(customDuty);
+                                                force[j].EnqueueFirstCustomDuty(customDuty2);
                                                 if (Finder.Settings.Debug)
                                                 {
                                                     Log.Message($"{comp.parent} task force {i} occupying area around {thing}");
