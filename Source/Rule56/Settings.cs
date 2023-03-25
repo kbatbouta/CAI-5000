@@ -25,7 +25,6 @@ namespace CombatAI
          * --  Debug  --
          * 
          */
-
 #if DEBUG
 		public bool Debug = true;
 		public bool Debug_LogJobs = true;
@@ -85,10 +84,10 @@ namespace CombatAI
         private FactionTechSettings       FactionSettings_Undefined = new FactionTechSettings(TechLevel.Undefined, 1, 1, 1, 1, 1,1);
         private List<FactionTechSettings> FactionSettings           = new List<FactionTechSettings>(); 
 
-        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 4, 16);
+        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 3, 16);
         public SightPerformanceSettings SightSettings_MechsAndInsects      = new SightPerformanceSettings(3, 10, 6);
-        public SightPerformanceSettings SightSettings_SettlementTurrets    = new SightPerformanceSettings(8, 15, 12);
-        public SightPerformanceSettings SightSettings_Wildlife             = new SightPerformanceSettings(6, 5, 4);
+        public SightPerformanceSettings SightSettings_Wildlife             = new SightPerformanceSettings(3, 10, 4);
+        public SightPerformanceSettings SightSettings_SettlementTurrets    = new SightPerformanceSettings(3, 15, 12);
         public bool                     Targeter_Enabled                   = true;
 
         /*                 
@@ -112,25 +111,25 @@ namespace CombatAI
         public override void ExposeData()
         {
 	        base.ExposeData();
-	        Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders.{version}");
+	        Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders2.{version}");
             if (SightSettings_FriendliesAndRaiders == null)
             {
-                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 4, 16);
+                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 3, 16);
             }
-            Scribe_Deep.Look(ref SightSettings_MechsAndInsects, $"CombatAI.SightSettings_MechsAndInsects.{version}");
+            Scribe_Deep.Look(ref SightSettings_MechsAndInsects, $"CombatAI.SightSettings_MechsAndInsects2.{version}");
             if (SightSettings_MechsAndInsects == null)
             {
                 SightSettings_MechsAndInsects = new SightPerformanceSettings(3, 10, 6);
             }
-            Scribe_Deep.Look(ref SightSettings_Wildlife, $"CombatAI.SightSettings_Wildlife.{version}");
+            Scribe_Deep.Look(ref SightSettings_Wildlife, $"CombatAI.SightSettings_Wildlife2.{version}");
             if (SightSettings_Wildlife == null)
             {
-                SightSettings_Wildlife = new SightPerformanceSettings(6, 10, 4);
+                SightSettings_Wildlife = new SightPerformanceSettings(3, 10, 4);
             }
-            Scribe_Deep.Look(ref SightSettings_SettlementTurrets, $"CombatAI.SightSettings_SettlementTurrets.{version}");
+            Scribe_Deep.Look(ref SightSettings_SettlementTurrets, $"CombatAI.SightSettings_SettlementTurrets2.{version}");
             if (SightSettings_SettlementTurrets == null)
             {
-                SightSettings_SettlementTurrets = new SightPerformanceSettings(8, 15, 12);
+                SightSettings_SettlementTurrets = new SightPerformanceSettings(3, 15, 12);
             }
             Scribe_Values.Look(ref LeanCE_Enabled, $"LeanCE_Enabled.{version}");
 

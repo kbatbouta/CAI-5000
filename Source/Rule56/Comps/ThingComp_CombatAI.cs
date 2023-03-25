@@ -730,8 +730,9 @@ namespace CombatAI.Comps
 					{
 						return;
 					}
-					bool bestEnemyVisibleNow  = false;
-					bool bestEnemyVisibleSoon = false;
+					bool  bestEnemyVisibleNow  = false;
+					bool  bestEnemyVisibleSoon = false;
+					ulong selFlags             = selPawn.GetThingFlags();
 					// A not fast check will check for retreat and for reactions to enemies that are visible or soon to be visible.
 					// A fast check will check only for retreat.
 					IEnumerator<AIEnvAgentInfo> enumerator = data.Enemies();
@@ -748,7 +749,7 @@ namespace CombatAI.Comps
 						if (info.thing.Spawned)
 						{
 							Pawn enemyPawn = info.thing as Pawn;
-							if (verb.CanHitTarget(info.thing))
+							if ((sightReader.GetDynamicFriendlyFlags(info.thing.Position) & selFlags) != 0 && verb.CanHitTarget(info.thing))
 							{
 								if (!bestEnemyVisibleNow)
 								{
@@ -760,7 +761,8 @@ namespace CombatAI.Comps
 							}
 							else if (enemyPawn != null && !bestEnemyVisibleNow)
 							{
-								if (verb.CanHitTarget(PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 120)))
+								IntVec3 temp = PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 120);
+								if ((sightReader.GetDynamicFriendlyFlags(temp) & selFlags) != 0 && verb.CanHitTarget(temp))
 								{
 									if (!bestEnemyVisibleSoon)
 									{
@@ -934,7 +936,7 @@ namespace CombatAI.Comps
 									request.target              = nearestEnemy;
 									request.maxRangeFromTarget  = 9999;
 									request.verb                = verb;
-									request.maxRangeFromCaster  = Maths.Max(Maths.Min(verb.EffectiveRange, nearestEnemyDist) / 2f, 10f) * personality.cover + distOffset;
+									request.maxRangeFromCaster  = (Maths.Max(Maths.Min(verb.EffectiveRange, nearestEnemyDist) / 2f, 10f) * personality.cover + distOffset) * Finder.P50;
 									request.wantCoverFromTarget = true;
 									if (CastPositionFinder.TryFindCastPosition(request, out IntVec3 cell) && cell != selPos && (ShouldMoveTo(cell) || Rand.Chance(moveBias)))
 									{
@@ -1737,7 +1739,7 @@ namespace CombatAI.Comps
 
 		private static int GetEnemyAttackTargetId(Thing enemy)
 		{
-			if (!TKVCache<int, LocalTargetInfo, int>.TryGet(enemy.thingIDNumber, out int attackTarget, 15) || attackTarget == -1)
+			if (!TKVCache<Thing, LocalTargetInfo, int>.TryGet(enemy, out int attackTarget, 15) || attackTarget == -1)
 			{
 				Verb enemyVerb = enemy.TryGetAttackVerb();
 				if (enemyVerb == null || enemyVerb is Verb_CastPsycast || enemyVerb is Verb_CastAbility)
@@ -1756,7 +1758,7 @@ namespace CombatAI.Comps
 				{
 					attackTarget = -1;
 				}
-				TKVCache<int, LocalTargetInfo, int>.Put(enemy.thingIDNumber, attackTarget);
+				TKVCache<Thing, LocalTargetInfo, int>.Put(enemy, attackTarget);
 			}
 			return attackTarget;
 		}

@@ -10,9 +10,9 @@ namespace CombatAI
     {
 	    public static float GetSightRadius_Fast(Thing thing)
 	    {
-		    if (!TKVCache<int, SightGrid.ISightRadius, float>.TryGet(thing.thingIDNumber, out float val, 12000))
+		    if (!TKVCache<Thing, SightGrid.ISightRadius, float>.TryGet(thing, out float val, 12000))
 		    {
-			    TKVCache<int, SightGrid.ISightRadius, float>.Put(thing.thingIDNumber, val = GetSightRadius(thing).sight);
+			    TKVCache<Thing, SightGrid.ISightRadius, float>.Put(thing, val = GetSightRadius(thing).sight);
 		    }
 		    return val;
 	    }

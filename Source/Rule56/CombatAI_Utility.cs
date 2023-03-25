@@ -100,12 +100,12 @@ namespace CombatAI
 
         public static bool IsApproachingMeleeTarget(this Pawn pawn, float distLimit = 5, bool allowCached = true)
         {
-            if (!allowCached || !TKVCache<int, IsApproachingMeleeTargetCache, bool>.TryGet(pawn.thingIDNumber, out bool result, 5))
+            if (!allowCached || !TKVCache<Pawn, IsApproachingMeleeTargetCache, bool>.TryGet(pawn, out bool result, 5))
             {
                 result = IsApproachingMeleeTarget(pawn, out _, distLimit);
                 if (allowCached)
                 {
-                    TKVCache<int, IsApproachingMeleeTargetCache, bool>.Put(pawn.thingIDNumber, result);
+                    TKVCache<Pawn, IsApproachingMeleeTargetCache, bool>.Put(pawn, result);
                 }
             }
             return result;
@@ -136,9 +136,9 @@ namespace CombatAI
                     {
                         return meleeVerbs.curMeleeVerb;
                     }
-                    if (!TKVCache<int, Pawn_MeleeVerbs, Verb>.TryGet(thing.thingIDNumber, out Verb verb, 480) || verb == null || verb.DirectOwner != thing)
+                    if (!TKVCache<Thing, Pawn_MeleeVerbs, Verb>.TryGet(thing, out Verb verb, 600) || verb == null || verb.DirectOwner != thing)
                     {
-                        TKVCache<int, Pawn_MeleeVerbs, Verb>.Put(thing.thingIDNumber, verb = meleeVerbs.TryGetMeleeVerb(null));
+                        TKVCache<Thing, Pawn_MeleeVerbs, Verb>.Put(thing, verb = meleeVerbs.TryGetMeleeVerb(null));
                         return verb;
                     }
                 }
@@ -219,9 +219,9 @@ namespace CombatAI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PersonalityTacker.PersonalityResult GetCombatPersonality(this Thing thing, int expiry = 240)
         {
-	        if (!TKCache<int, PersonalityTacker.PersonalityResult>.TryGet(thing.thingIDNumber, out PersonalityTacker.PersonalityResult result, expiry))
+	        if (!TKCache<Thing, PersonalityTacker.PersonalityResult>.TryGet(thing, out PersonalityTacker.PersonalityResult result, expiry))
 	        {
-		        TKCache<int, PersonalityTacker.PersonalityResult>.Put(thing.thingIDNumber, result = Current.Game.GetComponent<PersonalityTacker>().GetPersonality(thing));
+		        TKCache<Thing, PersonalityTacker.PersonalityResult>.Put(thing, result = Current.Game.GetComponent<PersonalityTacker>().GetPersonality(thing));
 	        }
 	        return result;
         }

@@ -10,6 +10,9 @@ namespace CombatAI
     [StaticConstructorOnStartup]
     public static class CoverPositionFinder
     {
+	    private static          int         checks             = 0;
+	    private static          int         checksSkipped      = 0;
+	    private static          int         checksFault        = 0;
         private static readonly CellMetrics metric_cover       = new CellMetrics();
         private static readonly CellMetrics metric_coverPath   = new CellMetrics();
         private static readonly CellMetrics metric_retreat     = new CellMetrics();
@@ -55,6 +58,9 @@ namespace CombatAI
 
         public static bool TryFindCoverPosition(CoverPositionRequest request, out IntVec3 coverCell, Action<IntVec3, float> callback = null)
         {
+	        checks        = 0;
+	        checksFault   = 0;
+	        checksSkipped = 0;
             request.caster.TryGetSightReader(out SightReader sightReader);
             request.caster.TryGetAvoidanceReader(out AvoidanceReader avoidanceReader);
             if (sightReader == null || avoidanceReader == null)
@@ -106,7 +112,8 @@ namespace CombatAI
             flooder.Flood(request.locus,
                           node =>
                           {
-                              if (request.verb != null && !request.verb.CanHitTargetFrom(node.cell, enemyLoc) || maxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
+	                          
+                              if (request.verb != null && (sightReader.GetNearestEnemy(node.cell).DistanceToSquared(enemyLoc) > Maths.Sqr(effectiveRange) || !request.verb.CanHitTargetFrom(node.cell, enemyLoc)) || maxDistSqr < request.locus.DistanceToSquared(node.cell) || !map.reservationManager.CanReserve(caster, node.cell))
                               {
                                   return;
                               }
@@ -170,11 +177,15 @@ namespace CombatAI
                           (int)Maths.Min(request.maxRangeFromLocus, 30)
             );
             coverCell = bestCell;
+//            Log.Message($"{checksSkipped}/{checks + checksSkipped}:{checksFault}");
             return bestCell.IsValid;
         }
 
         public static bool TryFindRetreatPosition(CoverPositionRequest request, out IntVec3 coverCell, Action<IntVec3, float> callback = null)
         {
+	        checks        = 0;
+	        checksFault   = 0;
+	        checksSkipped = 0;
             request.caster.TryGetSightReader(out SightReader sightReader);
             request.caster.TryGetAvoidanceReader(out AvoidanceReader avoidanceReader);
             if (sightReader == null || avoidanceReader == null)
@@ -293,11 +304,15 @@ namespace CombatAI
                 bestCell = cell;
             }
             coverCell = bestCell;
+//            Log.Message($"{checksSkipped}/{checks + checksSkipped}:{checksFault}");
             return bestCell.IsValid;
         }
 
         public static bool TryFindDuckPosition(CoverPositionRequest request, out IntVec3 coverCell, Action<IntVec3, float> callback = null)
         {
+	        checks        = 0;
+	        checksFault   = 0;
+	        checksSkipped = 0;
             request.caster.TryGetSightReader(out SightReader sightReader);
             request.caster.TryGetAvoidanceReader(out AvoidanceReader avoidanceReader);
             if (sightReader == null || avoidanceReader == null)
@@ -399,12 +414,50 @@ namespace CombatAI
                           (int)Maths.Min(request.maxRangeFromLocus, 30)
             );
             coverCell = bestCell;
+//            Log.Message($"{checksSkipped}/{checks + checksSkipped}:{checksFault}");
             return bestCell.IsValid && bestVisibleTo == 0;
         }
 
-        private static Func<IntVec3, bool> GetCanHitTargetFunc(Thing thing, Verb enemyVerb)
+        private static Func<IntVec3, bool> GetCanHitTargetFunc(Thing thing, Verb verb)
         {
-            return cell => enemyVerb.CanHitTarget(cell);
+	        IntVec3 position = thing.Position;
+	        if (thing.Map.Sight().TryGetReader(thing, out SightReader reader))
+	        {
+		        ulong thingFlags = thing.GetThingFlags();
+		        float minDistSqr = Maths.Min(reader.GetNearestEnemy(position).DistanceToSquared(position), Maths.Sqr(verb.EffectiveRange + 5));
+		        return cell =>
+		        {
+			        if (cell.DistanceToSquared(position) < minDistSqr && (reader.GetDynamicFriendlyFlags(cell) & thingFlags) != 0)
+			        {
+				        checks++;
+				        return verb.CanHitTarget(cell);
+			        }
+			        checksSkipped++;
+//			        if (verb.CanHitTarget(cell))
+//			        {
+//				        checksFault++;
+//			        }
+			        return false;
+		        };
+	        }
+	        else
+	        {
+		        float minDistSqr = Maths.Sqr(verb.EffectiveRange);
+		        return cell =>
+		        {
+			        if (cell.DistanceToSquared(position) < minDistSqr)
+			        {
+				        checks++;
+				        return verb.CanHitTarget(cell);
+			        }
+			        checksSkipped++;
+//			        if (verb.CanHitTarget(cell))
+//			        {
+//				        checksFault++;
+//			        }
+			        return false;
+		        };
+	        }
         }
     }
 }
