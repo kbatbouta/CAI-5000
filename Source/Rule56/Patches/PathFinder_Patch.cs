@@ -102,20 +102,15 @@ namespace CombatAI.Patches
                                   && (pawn.guest == null || !pawn.guest.IsPrisoner)
                                   && comp != null && comp.CanSappOrEscort && !comp.IsSapping
                                   && !pawn.mindState.duty.Is(DutyDefOf.Sapper) && !pawn.CurJob.Is(JobDefOf.Mine) && !pawn.mindState.duty.Is(DutyDefOf.ExitMapRandom) && !pawn.mindState.duty.Is(DutyDefOf.Escort))
-                        {
+                        { 
 	                        isRaider = true;
-                            float costMultiplier = (comp.TookDamageRecently(360) || comp.ReactedRecently(360)  ? 0.25f : 1) * personality.sapping;
+                            float costMultiplier = personality.sapping;
                             bool  tunneler       = pawn.def == CombatAI_ThingDefOf.Mech_Tunneler;
                             float miningSkill    = pawn.skills?.GetSkill(SkillDefOf.Mining)?.Level ?? (tunneler ? 15f : 0f);
                             if (!Mod_CE.active && miningSkill < 9 && verb != null && !verb.IsMeleeAttack && !(verb.IsEMP()  || (verb.verbProps.CausesExplosion && verb.verbProps.defaultProjectile?.projectile?.explosionRadius > 2)))
                             {
 	                            tunneler       =  true;
 	                            miningSkill    =  Maths.Max(verb.verbProps.defaultProjectile.projectile.damageAmountBase * verb.verbProps.burstShotCount / 4f, miningSkill);
-                            }
-                            if (pawn.mindState?.duty.Is(CombatAI_DutyDefOf.CombatAI_AssaultPoint) ?? false)
-                            {
-	                            miningSkill    *= 1.25f;
-	                            costMultiplier *= 0.75f;
                             }
                             TraverseParms parms = traverseParms;
                             parms.maxDanger     = Danger.Deadly;

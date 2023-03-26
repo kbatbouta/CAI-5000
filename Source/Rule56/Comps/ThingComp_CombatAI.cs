@@ -1561,7 +1561,7 @@ namespace CombatAI.Comps
 			bool failed = sapperNodes.Count == 0 || (sightReader.GetVisibilityToFriendlies(cellAhead) > 0 && GenTicks.TicksGame - sapperStartTick > 1000);
 			if (failed)
 			{
-				ReleaseEscorts(true);
+				ReleaseEscorts(false);
 				cellBefore      = IntVec3.Invalid;
 				sapperStartTick = -1;
 				sapperNodes.Clear();
@@ -1582,20 +1582,16 @@ namespace CombatAI.Comps
 				Job                                 job         = null;
 				float                               miningSkill = selPawn.GetSkillLevelSafe(SkillDefOf.Mining, 0);
 				PersonalityTacker.PersonalityResult personality = parent.GetCombatPersonality();
-				if (findEscorts && Rand.Chance(1 - Maths.Min(escorts.Count / (Maths.Max(miningSkill, 3) * personality.sapping), 0.85f)))
+				if (findEscorts && Rand.Chance(1 - Maths.Min(escorts.Count / (Maths.Max(miningSkill, 7) * personality.sapping), 0.85f)))
 				{
 					int     count       = escorts.Count;
-					int     countTarget = Rand.Int % 2 + Mathf.FloorToInt(Maths.Max(miningSkill, 3) * personality.sapping) + Maths.Min(sapperNodes.Count, 10);
+					int     countTarget = 7 + Mathf.FloorToInt(Maths.Max(miningSkill, 7) * personality.sapping) + Maths.Min(sapperNodes.Count, 10);
 					Faction faction     = selPawn.Faction;
 					Predicate<Thing> validator = t =>
 					{
-						if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed
-						    && !ally.CurJobDef.Is(JobDefOf.Mine)
-						    && !ally.IsColonist
-						    && ally.def != CombatAI_ThingDefOf.Mech_Tunneler
-						    && ally.mindState?.duty?.def != CombatAI_DutyDefOf.CombatAI_Escort
-						    && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0)
-						    && ally.GetSkillLevelSafe(SkillDefOf.Mining, 0) < 9)
+						if (count < countTarget && t.Faction == faction && t is Pawn ally && !ally.Destroyed && !ally.CurJobDef.Is(JobDefOf.Mine) && !ally.IsColonist && ally.def != CombatAI_ThingDefOf.Mech_Tunneler && ally.mindState?.duty?.def != CombatAI_DutyDefOf.CombatAI_Escort 
+						    && (sightReader == null || sightReader.GetAbsVisibilityToEnemies(ally.Position) == 0) 
+						    && ally.GetSkillLevelSafe(SkillDefOf.Mining, 0) < miningSkill)
 						{
 							ThingComp_CombatAI comp = ally.AI();
 							if (comp?.duties != null && comp.duties?.Any(CombatAI_DutyDefOf.CombatAI_Escort) == false && !comp.IsSapping && GenTicks.TicksGame - comp.releasedTick > 600)
@@ -1677,7 +1673,7 @@ namespace CombatAI.Comps
 					}
 					else
 					{
-						ReleaseEscorts(true);
+						ReleaseEscorts(false);
 						cellBefore      = IntVec3.Invalid;
 						sapperStartTick = -1;
 						sapperNodes.Clear();

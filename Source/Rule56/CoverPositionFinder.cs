@@ -12,7 +12,7 @@ namespace CombatAI
     {
 	    private static          int         checks             = 0;
 	    private static          int         checksSkipped      = 0;
-	    private static          int         checksFault        = 0;
+//	    private static          int         checksFault        = 0;
         private static readonly CellMetrics metric_cover       = new CellMetrics();
         private static readonly CellMetrics metric_coverPath   = new CellMetrics();
         private static readonly CellMetrics metric_retreat     = new CellMetrics();
@@ -59,7 +59,7 @@ namespace CombatAI
         public static bool TryFindCoverPosition(CoverPositionRequest request, out IntVec3 coverCell, Action<IntVec3, float> callback = null)
         {
 	        checks        = 0;
-	        checksFault   = 0;
+//	        checksFault   = 0;
 	        checksSkipped = 0;
             request.caster.TryGetSightReader(out SightReader sightReader);
             request.caster.TryGetAvoidanceReader(out AvoidanceReader avoidanceReader);
@@ -184,7 +184,7 @@ namespace CombatAI
         public static bool TryFindRetreatPosition(CoverPositionRequest request, out IntVec3 coverCell, Action<IntVec3, float> callback = null)
         {
 	        checks        = 0;
-	        checksFault   = 0;
+//	        checksFault   = 0;
 	        checksSkipped = 0;
             request.caster.TryGetSightReader(out SightReader sightReader);
             request.caster.TryGetAvoidanceReader(out AvoidanceReader avoidanceReader);
@@ -311,7 +311,7 @@ namespace CombatAI
         public static bool TryFindDuckPosition(CoverPositionRequest request, out IntVec3 coverCell, Action<IntVec3, float> callback = null)
         {
 	        checks        = 0;
-	        checksFault   = 0;
+//	        checksFault   = 0;
 	        checksSkipped = 0;
             request.caster.TryGetSightReader(out SightReader sightReader);
             request.caster.TryGetAvoidanceReader(out AvoidanceReader avoidanceReader);
