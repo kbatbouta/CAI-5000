@@ -91,7 +91,7 @@ namespace CombatAI
 
 		public override void MapComponentUpdate()
 		{
-			if (!initialized)
+			if (!initialized && Finder.Settings.FogOfWar_Enabled)
 			{
 				initialized = true;
 				for (int i = 0; i < grid2d.Length; i++)
@@ -248,6 +248,10 @@ namespace CombatAI
 					{
 						Thread.Sleep(Mathf.CeilToInt(t * 1000));
 					}
+				}
+				else
+				{
+					Thread.Sleep(100);
 				}
 			}
 		}
