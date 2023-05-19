@@ -7,7 +7,7 @@ namespace CombatAI
 {
     public class AsyncActions
     {
-        private static readonly List<AsyncActions> running = new();
+        private static readonly List<AsyncActions> running = new List<AsyncActions>();
         
         private readonly int hashOffset;
 
