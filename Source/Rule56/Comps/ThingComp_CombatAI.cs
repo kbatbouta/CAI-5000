@@ -693,7 +693,7 @@ namespace CombatAI.Comps
                                     UpdateNearestEnemy(info.thing);
                                 }
                             }
-                            if (enemyPawn != null && enemyPawn.CurrentEffectiveVerb.IsMeleeAttack)
+                            if (enemyPawn?.CurrentEffectiveVerb?.IsMeleeAttack ?? false)
                             {
                                 UpdateNearestEnemyMelee(enemyPawn);
                             }
