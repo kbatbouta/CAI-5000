@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using CombatAI.Abilities;
 using CombatAI.R;
 using CombatAI.Squads;
+using CombatAI.Utilities;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -337,7 +339,8 @@ namespace CombatAI.Comps
 		///     If OnScanStarted is not called before then this will result in an error.
 		///     Should only be called from the main thread.
 		/// </summary>
-		public void OnScanFinished()
+		/// <param name="progress">Used to debug where an exception was thrown</param>
+		public void OnScanFinished(ref int progress)
 		{
 			if (scanning == false)
 			{
@@ -351,6 +354,8 @@ namespace CombatAI.Comps
 			data.ReSetAllies(allAllies);
 			// update when this pawn last saw enemies
 			data.LastSawEnemies = data.NumEnemies > 0 ? GenTicks.TicksGame : -1;
+			// For debugging and logging.
+			progress = 1;
 			// skip for animals.
 			if (selPawn.mindState == null || selPawn.RaceProps.Animal || IsDeadOrDowned)
 			{
@@ -366,6 +371,8 @@ namespace CombatAI.Comps
 			{
 				return;
 			}
+			// For debugging and logging.
+			progress = 2;
 #if DEBUG_REACTION
             if (Finder.Settings.Debug && Finder.Settings.Debug_ValidateSight)
             {
@@ -384,6 +391,8 @@ namespace CombatAI.Comps
                         _visibleEnemies.Add(pawn);
                     }
                 }
+                // For debugging and logging.
+                progress = 21;
                 if (_path.Count == 0 || _path.Last() != parent.Position)
                 {
                     _path.Add(parent.Position);
@@ -405,8 +414,12 @@ namespace CombatAI.Comps
                         _colors.RemoveAt(0);
                     }
                 }
+                // For debugging and logging.
+                progress = 22;
             }
 #endif
+			// For debugging and logging.
+			progress = 3;
 			List<Thing> targetedBy = data.BeingTargetedBy;
 			// update when last saw enemies
 			data.LastSawEnemies = data.NumEnemies > 0 ? GenTicks.TicksGame : data.LastSawEnemies;
@@ -415,6 +428,8 @@ namespace CombatAI.Comps
 			{
 				return;
 			}
+			// For debugging and logging.
+			progress = 4;
 			// check if the TPS is good enough.
 			// reduce cooldown if the pawn hasn't seen enemies for a few ticks
 			if (!Finder.Performance.TpsCriticallyLow)
@@ -431,6 +446,8 @@ namespace CombatAI.Comps
 				}
 				lastSawEnemies = GenTicks.TicksGame;
 			}
+			// For debugging and logging.
+			progress = 5;
 			// get body size and use it in cooldown math.
 			float bodySize = selPawn.RaceProps.baseBodySize;
 			// pawn reaction cooldown changes with their body size.
@@ -448,6 +465,8 @@ namespace CombatAI.Comps
 			{
 				selPawn.jobs.StopAll();
 			}
+			// For debugging and logging.
+			progress = 6;
 			// Skip if some vanilla duties are active.
 			PawnDuty duty = selPawn.mindState.duty;
 			if (duty.Is(DutyDefOf.Build) || duty.Is(DutyDefOf.SleepForever) || duty.Is(DutyDefOf.TravelOrLeave))
@@ -472,7 +491,6 @@ namespace CombatAI.Comps
 					nearestEnemy     = enemy;
 				}
 			}
-
 			// used to update nearest melee pawn 
 			void UpdateNearestEnemyMelee(Thing enemy)
 			{
@@ -486,7 +504,8 @@ namespace CombatAI.Comps
 					}
 				}
 			}
-
+			// For debugging and logging.
+			progress = 7;
 			// check if the chance of survivability is high enough
 			// defensive actions
 			Verb verb = selPawn.CurrentEffectiveVerb;
@@ -498,7 +517,8 @@ namespace CombatAI.Comps
 			float       possibleDmgWarmup   = 0f;
 			float       possibleDmg         = 0f;
 			AIEnvThings enemies             = data.AllEnemies;
-
+			// For debugging and logging.
+			progress = 8;
 			rangedEnemiesTargetingSelf.Clear();
 			if (Finder.Settings.Retreat_Enabled && (bodySize < 2 || selPawn.RaceProps.Humanlike))
 			{
@@ -512,6 +532,8 @@ namespace CombatAI.Comps
                         continue;
                     }
 #endif
+					// For debugging and logging.
+					progress = 80;
 					if (GetEnemyAttackTargetId(enemy) == selPawn.thingIDNumber)
 					{
 						DamageReport damageReport = DamageUtility.GetDamageReport(enemy);
@@ -522,6 +544,7 @@ namespace CombatAI.Comps
 							{
 								UpdateNearestEnemyMelee(enemy);
 							}
+							progress = 81;
 							float damage = damageReport.SimulatedDamage(armor);
 							if (!damageReport.primaryIsRanged)
 							{
@@ -535,9 +558,12 @@ namespace CombatAI.Comps
 								possibleDmgWarmup += damageReport.primaryVerbProps.warmupTime;
 								rangedEnemiesTargetingSelf.Add(enemy);
 							}
+							progress = 82;
 						}
 					}
 				}
+				// For debugging and logging.
+				progress = 9;
 				if (rangedEnemiesTargetingSelf.Count > 0 && !selPawn.mindState.MeleeThreatStillThreat && !selPawn.IsApproachingMeleeTarget(8, false))
 				{
 					float retreatRoll = 15 + Rand.Range(0, 15 * rangedEnemiesTargetingSelf.Count) + data.NumAllies * 15;
@@ -545,6 +571,8 @@ namespace CombatAI.Comps
 					{
 						MoteMaker.ThrowText(selPawn.DrawPos, selPawn.Map, $"r:{Math.Round(retreatRoll)},d:{possibleDmg}", Color.white);
 					}
+					// For debugging and logging.
+					progress = 91;
 					// major retreat attempt if the pawn is doomed
 					if (possibleDmg * personality.retreat - retreatRoll > 0.001f && possibleDmg * personality.retreat >= 50)
 					{
@@ -558,6 +586,8 @@ namespace CombatAI.Comps
 						request.checkBlockChance   = true;
 						if (CoverPositionFinder.TryFindRetreatPosition(request, out IntVec3 cell))
 						{
+							// For debugging and logging.
+							progress = 911;
 							if (ShouldMoveTo(cell))
 							{
 								if (cell != selPos)
@@ -584,6 +614,8 @@ namespace CombatAI.Comps
 							}
 						}
 					}
+					// For debugging and logging.
+					progress = 92;
 					// try minor retreat (duck for cover fast)
 					if (possibleDmg * personality.duck - retreatRoll * 0.5f > 0.001f && possibleDmg * personality.duck >= 30)
 					{
@@ -627,16 +659,22 @@ namespace CombatAI.Comps
 					}
 				}
 			}
+			// For debugging and logging.
+			progress = 100;
 			if (duty.Is(DutyDefOf.ExitMapRandom))
 			{
 				return;
 			}
+			// For debugging and logging.
+			progress = 200;
 			// offensive actions
 			if (verb != null)
 			{
 				// if the pawn is retreating and the pawn is still in danger or recently took damage, skip any offensive reaction.
 				if (verb.IsMeleeAttack)
 				{
+					// For debugging and logging.
+					progress = 201;
 					if ((selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Retreat) || selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover)) && (rangedEnemiesTargetingSelf.Count == 0 || possibleDmg < 2.5f))
 					{
 						_last = 30;
@@ -647,6 +685,8 @@ namespace CombatAI.Comps
 					bool    bestEnemyIsMeleeAttackingAlly = false;
 					// TODO create melee reactions.
 					IEnumerator<AIEnvAgentInfo> enumeratorEnemies = data.EnemiesWhere(AIEnvAgentState.nearby);
+					// For debugging and logging.
+					progress = 202;
 					while (enumeratorEnemies.MoveNext())
 					{
 						AIEnvAgentInfo info = enumeratorEnemies.Current;
@@ -657,6 +697,8 @@ namespace CombatAI.Comps
                             continue;
                         }
 #endif
+						// For debugging and logging.
+						progress = 203;
 						if (info.thing.Spawned && selPawn.CanReach(info.thing, PathEndMode.Touch, Danger.Deadly))
 						{
 							Verb enemyVerb = info.thing.TryGetAttackVerb();
@@ -688,7 +730,11 @@ namespace CombatAI.Comps
 								}
 							}
 						}
+						// For debugging and logging.
+						progress = 204;
 					}
+					// For debugging and logging.
+					progress = 205;
 					if (nearestEnemy == null)
 					{
 						nearestEnemy = selPawn.mindState.enemyTarget;
@@ -697,6 +743,8 @@ namespace CombatAI.Comps
 					{
 						return;
 					}
+					// For debugging and logging.
+					progress = 206;
 					_bestEnemy = nearestEnemy;
 					if (!selPawn.mindState.MeleeThreatStillThreat || selPawn.stances?.stagger?.Staggered == false)
 					{
@@ -712,10 +760,14 @@ namespace CombatAI.Comps
 						// no enemy can be approached solo
 						// TODO
 					}
+					// For debugging and logging.
+					progress = 207;
 				}
 				// ranged
 				else
 				{
+					// For debugging and logging.
+					progress = 208;
 					if (selPawn.CurJob.Is(CombatAI_JobDefOf.CombatAI_Goto_Cover) && GenTicks.TicksGame - selPawn.CurJob.startTick < 60)
 					{
 						return;
@@ -725,6 +777,8 @@ namespace CombatAI.Comps
 					{
 						return;
 					}
+					// For debugging and logging.
+					progress = 209;
 					// check if the verb is available.
 					if (!verb.Available() || Mod_CE.active && Mod_CE.IsAimingCE(verb))
 					{
@@ -733,11 +787,14 @@ namespace CombatAI.Comps
 					bool  bestEnemyVisibleNow  = false;
 					bool  bestEnemyVisibleSoon = false;
 					ulong selFlags             = selPawn.GetThingFlags();
+					// For debugging and logging.
+					progress = 210;
 					// A not fast check will check for retreat and for reactions to enemies that are visible or soon to be visible.
 					// A fast check will check only for retreat.
 					IEnumerator<AIEnvAgentInfo> enumerator = data.Enemies();
 					while (enumerator.MoveNext())
 					{
+						progress = 301;
 						AIEnvAgentInfo info = enumerator.Current;
 #if DEBUG_REACTION
                         if (info.thing == null)
@@ -746,11 +803,15 @@ namespace CombatAI.Comps
                             continue;
                         }
 #endif
+						// For debugging and logging.
+						progress = 302;
 						if (info.thing.Spawned)
 						{
 							Pawn enemyPawn = info.thing as Pawn;
 							if ((sightReader.GetDynamicFriendlyFlags(info.thing.Position) & selFlags) != 0 && verb.CanHitTarget(info.thing))
 							{
+								// For debugging and logging.
+								progress = 311;
 								if (!bestEnemyVisibleNow)
 								{
 									nearestEnemy        = null;
@@ -761,6 +822,8 @@ namespace CombatAI.Comps
 							}
 							else if (enemyPawn != null && !bestEnemyVisibleNow)
 							{
+								// For debugging and logging.
+								progress = 312;
 								IntVec3 temp = PawnPathUtility.GetMovingShiftedPosition(enemyPawn, 120);
 								if ((sightReader.GetDynamicFriendlyFlags(temp) & selFlags) != 0 && verb.CanHitTarget(temp))
 								{
@@ -777,13 +840,15 @@ namespace CombatAI.Comps
 									UpdateNearestEnemy(info.thing);
 								}
 							}
-							if (enemyPawn != null && enemyPawn.CurrentEffectiveVerb.IsMeleeAttack)
+							// For debugging and logging.
+							progress = 303;
+							if (enemyPawn != null && (enemyPawn.CurrentEffectiveVerb?.IsMeleeAttack ?? false))
 							{
 								UpdateNearestEnemyMelee(enemyPawn);
 							}
 						}
 					}
-
+					progress = 400;
 					void StartOrQueueCoverJob(IntVec3 cell, int codeOffset)
 					{
 						Job curJob = selPawn.CurJob;
@@ -853,6 +918,7 @@ namespace CombatAI.Comps
 					{
 						rangedEnemiesTargetingSelf.Remove(nearestEnemy);
 					}
+					progress = 500;
 					bool retreatMeleeThreat = nearestMeleeEnemy != null && verb.EffectiveRange * personality.retreat > 16 && nearestMeleeEnemyDist < Maths.Max(verb.EffectiveRange * personality.retreat / 3f, 9) && 0.25f * data.NumAllies < data.NumEnemies;
 					bool retreatThreat      = !retreatMeleeThreat && nearestEnemy != null && nearestEnemyDist < Maths.Max(verb.EffectiveRange * personality.retreat / 4f, 5);
 					_bestEnemy = retreatMeleeThreat ? nearestMeleeEnemy : nearestEnemy;
@@ -1422,7 +1488,7 @@ namespace CombatAI.Comps
 					}
 					return false;
 				};
-				GenClosest.RegionwiseBFSWorker(selPawn.Position, selPawn.Map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 4, 15, out int _);
+				Verse.GenClosest.RegionwiseBFSWorker(selPawn.Position, selPawn.Map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 4, 15, out int _);
 			}
 			escorts.Clear();
 		}
@@ -1614,7 +1680,7 @@ namespace CombatAI.Comps
 						}
 						return false;
 					};
-					GenClosest.RegionwiseBFSWorker(selPawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 10, 40, out int _);
+					Verse.GenClosest.RegionwiseBFSWorker(selPawn.Position, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn), PathEndMode.InteractionCell, TraverseParms.For(selPawn), validator, null, 1, 10, 40, out int _);
 				}
 				if (!Mod_CE.active && (escorts.Count >= 2 || miningSkill == 0))
 				{

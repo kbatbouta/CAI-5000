@@ -101,7 +101,7 @@
         <PackageReference Include="Mono.TextTransform" Version="1.0.0" GeneratePathProperty="true" ExcludeAssets="runtime" />
         <PackageReference Include="Lib.Harmony" Version="2.2.2" ExcludeAssets="runtime" />
         <PackageReference Include="Microsoft.NETCore.Platforms" Version="5.0.3" />
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -120,7 +120,7 @@
             <TextTransform>$(PkgMono_TextTransform)\tools\TextTransform.exe</TextTransform>
         </PropertyGroup>
         <Message Text="Processing T4 files: @(TTFiles->'%(Identity)')" />
-        <Exec WorkingDirectory="$(ProjectDir)" Command="@(TTFiles->'pwd; mono $(TextTransform) --out=T4/Outputs/%(FileName).generated.cs T4/Sources/%(FileName).tt')" />
+       <!-- <Exec WorkingDirectory="$(ProjectDir)" Command="@(TTFiles->'$(TextTransform) &#45;&#45;out=T4/Outputs/%(FileName).generated.cs T4/Sources/%(FileName).tt')" />-->
     </Target>
     <!-- ................ -->
     <!--     Publisize    -->
@@ -163,7 +163,7 @@
         </ItemGroup>
     </Target>
     <PropertyGroup>
-        <TransformOnBuild>false</TransformOnBuild>
+        <TransformOnBuild>true</TransformOnBuild>
     </PropertyGroup>
     <ProjectExtensions>
         <MonoDevelop>

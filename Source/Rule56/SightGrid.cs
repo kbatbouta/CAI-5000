@@ -633,14 +633,16 @@ namespace CombatAI
 										}
 									}
 								}
+								int p = 0;
 								//
 								// notify the pawn so they can start processing targets.   
 								try
 								{
-									item.ai.OnScanFinished();
+									item.ai.OnScanFinished(ref p);
 								}
 								catch (Exception er)
 								{
+									Log.Error($"progress:{p} {item.thing?.thingIDNumber} {item.thing?.ToString()} encountered an error while doing OnScanFinished");
 									er.ShowExceptionGui();
 								}
 								item.spottings.Clear();
