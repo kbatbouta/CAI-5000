@@ -45,6 +45,7 @@ namespace CombatAI.Patches
             private static readonly List<IntVec3> blocked = new List<IntVec3>(128);
             private static          bool          fallbackCall;
             private static          ISGrid<float> f_grid;
+            private static          bool          avoidTempEnabled;
 
             private static TraverseParms original_traverseParms;
             private static PathEndMode   origina_peMode;
@@ -60,8 +61,11 @@ namespace CombatAI.Patches
 #if DEBUG
 				flashInstance = flashCost ? __instance : null;
 #endif
+	            var settings = Finder.Settings.GetDefKindSettings(traverseParms.pawn);
+	            //
+	            avoidTempEnabled = settings?.Temperature_Enabled ?? true;
                 // only allow factioned pawns.
-                if (Finder.Settings.Pather_Enabled && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
+                if ((settings?.Pather_Enabled ?? true) && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
                 {
 	                destPos                = dest.Cell;
                     original_traverseParms = traverseParms;
@@ -96,12 +100,15 @@ namespace CombatAI.Patches
                         visibilityAtDest   = sightReader.GetVisibilityToEnemies(dest.Cell) * Finder.Settings.Pathfinding_DestWeight;
                         comp               = pawn.AI();
                         Verb verb = pawn.TryGetAttackVerb();
-                        if (dig = Finder.Settings.Pather_KillboxKiller
-                                  && (verb == null || (!verb.IsIncendiary_Ranged() && !(verb is Verb_ShootBeam || verb is Verb_SpewFire)))
-                                  && isRaider
-                                  && (pawn.guest == null || !pawn.guest.IsPrisoner)
-                                  && comp != null && comp.CanSappOrEscort && !comp.IsSapping
-                                  && !pawn.mindState.duty.Is(DutyDefOf.Sapper) && !pawn.CurJob.Is(JobDefOf.Mine) && !pawn.mindState.duty.Is(DutyDefOf.ExitMapRandom) && !pawn.mindState.duty.Is(DutyDefOf.Escort))
+                        if (dig = ((settings?.Pather_KillboxKiller ?? true)
+                                   && (verb == null || (!verb.IsIncendiary_Ranged() &&
+                                                        !(verb is Verb_ShootBeam || verb is Verb_SpewFire)))
+                                   && isRaider
+                                   && (pawn.guest == null || !pawn.guest.IsPrisoner)
+                                   && comp != null && comp.CanSappOrEscort && !comp.IsSapping
+                                   && !pawn.mindState.duty.Is(DutyDefOf.Sapper) && !pawn.CurJob.Is(JobDefOf.Mine) &&
+                                   !pawn.mindState.duty.Is(DutyDefOf.ExitMapRandom) &&
+                                   !pawn.mindState.duty.Is(DutyDefOf.Escort)))
                         { 
 	                        isRaider = true;
                             float costMultiplier = personality.sapping;
@@ -241,6 +248,7 @@ namespace CombatAI.Patches
 
             public static void Reset()
             {
+	            avoidTempEnabled = false;
                 avoidanceReader  = null;
                 isRaider         = false;
                 isPlayer         = false;
@@ -301,7 +309,7 @@ namespace CombatAI.Patches
                     else
                     {
                         // find the cell cost offset
-                        if (Finder.Settings.Temperature_Enabled)
+                        if (avoidTempEnabled)
                         {
                             float temperature = GenTemperature.TryGetTemperature(index, map);
                             if (!temperatureRange.Includes(temperature))

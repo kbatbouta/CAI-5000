@@ -35,7 +35,6 @@
     </PropertyGroup>
     <ItemGroup>
         <Folder Include="T4\" />
-        <Folder Include="T4\Outputs\" />
         <Folder Include="Patches\" />
         <Folder Include="Collections\" />
         <Folder Include="Comps\" />
@@ -63,6 +62,14 @@
         <None Remove="Defs\Extensions\" />
         <None Remove="Cache\" />
         <None Remove="Comps\Deprecated\" />
+        <None Update="T4\Sources\Keyed.tt">
+          <Generator>TextTemplatingFileGenerator</Generator>
+          <LastGenOutput>Keyed.cs</LastGenOutput>
+        </None>
+        <None Update="T4\Sources\Tex.tt">
+          <Generator>TextTemplatingFileGenerator</Generator>
+          <LastGenOutput>Tex.cs</LastGenOutput>
+        </None>
     </ItemGroup>
     <ItemGroup>
         <None Include="..\..\1.4\**\*.xml" CopyToOutputDirectory="Never">
@@ -111,6 +118,16 @@
     <!-- Process T4 files -->
     <ItemGroup>
         <Compile Remove="ShadowCastingUtility.old.cs" />
+        <Compile Update="T4\Sources\Keyed.cs">
+          <AutoGen>True</AutoGen>
+          <DesignTime>True</DesignTime>
+          <DependentUpon>Keyed.tt</DependentUpon>
+        </Compile>
+        <Compile Update="T4\Sources\Tex.cs">
+          <AutoGen>True</AutoGen>
+          <DesignTime>True</DesignTime>
+          <DependentUpon>Tex.tt</DependentUpon>
+        </Compile>
     </ItemGroup>
     <Target Name="ProcessTT" BeforeTargets="BeforeBuild">
         <ItemGroup>

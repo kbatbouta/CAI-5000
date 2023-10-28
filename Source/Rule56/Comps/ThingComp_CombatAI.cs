@@ -354,6 +354,8 @@ namespace CombatAI.Comps
 			data.ReSetAllies(allAllies);
 			// update when this pawn last saw enemies
 			data.LastSawEnemies = data.NumEnemies > 0 ? GenTicks.TicksGame : -1;
+			//
+			var settings = parent is Pawn ? Finder.Settings.GetDefKindSettings(parent as Pawn) :  Finder.Settings.GetDefKindSettings(parent.def, null);
 			// For debugging and logging.
 			progress = 1;
 			// skip for animals.
@@ -520,7 +522,7 @@ namespace CombatAI.Comps
 			// For debugging and logging.
 			progress = 8;
 			rangedEnemiesTargetingSelf.Clear();
-			if (Finder.Settings.Retreat_Enabled && (bodySize < 2 || selPawn.RaceProps.Humanlike))
+			if ((settings?.Retreat_Enabled ?? true) && (bodySize < 2 || selPawn.RaceProps.Humanlike))
 			{
 				for (int i = 0; i < targetedBy.Count; i++)
 				{

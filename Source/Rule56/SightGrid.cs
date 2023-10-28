@@ -429,7 +429,7 @@ namespace CombatAI
 			}
 			SightTracker.SightReader reader = item.ai?.sightReader ?? null;
 			bool                     scanForEnemies;
-			if (scanForEnemies = Finder.Settings.React_Enabled && item.sighter == null && reader != null && item.ai != null && !item.ai.ReactedRecently(45) && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15))
+			if (scanForEnemies = (Finder.Settings.GetDefKindSettings(item.Pawn)?.React_Enabled ?? true) && item.sighter == null && reader != null && item.ai != null && !item.ai.ReactedRecently(45) && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15))
 			{
 				if (!item.registeredFaction.IsPlayerSafe() || (item.ai?.forcedTarget.IsValid ?? false))
 				{
