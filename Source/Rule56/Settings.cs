@@ -215,6 +215,7 @@ namespace CombatAI
             {
 	            if (!FactionSettings.Any(t => t.tech == tech))
 	            {
+		            Log.Error($"Tech level {tech} doesn't have tech settings. Resetting tech settings");
 		            FactionSettings.Clear();
 		            break;
 	            }
@@ -321,13 +322,13 @@ namespace CombatAI
 
 	        public void ExposeData()
 	        {
-		        Scribe_Values.Look(ref tech, $"tech.{version}", tech);
-		        Scribe_Values.Look(ref retreat, $"retreat.{version}", retreat);
-		        Scribe_Values.Look(ref duck, $"duck.{version}", duck);
-		        Scribe_Values.Look(ref cover, $"cover.{version}", cover);
-		        Scribe_Values.Look(ref sapping, $"sapping.{version}", sapping);
-		        Scribe_Values.Look(ref pathing, $"pathing.{version}", pathing);
-		        Scribe_Values.Look(ref group, $"group.{version}", group);
+		        Scribe_Values.Look(ref tech, $"tech.{version}");
+		        Scribe_Values.Look(ref retreat, $"retreat.{version}");
+		        Scribe_Values.Look(ref duck, $"duck.{version}");
+		        Scribe_Values.Look(ref cover, $"cover.{version}");
+		        Scribe_Values.Look(ref sapping, $"sapping.{version}");
+		        Scribe_Values.Look(ref pathing, $"pathing.{version}");
+		        Scribe_Values.Look(ref group, $"group.{version}");
 	        }
         }
     }
