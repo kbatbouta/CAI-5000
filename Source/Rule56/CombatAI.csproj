@@ -35,7 +35,6 @@
     </PropertyGroup>
     <ItemGroup>
         <Folder Include="T4\" />
-        <Folder Include="Patches\" />
         <Folder Include="Collections\" />
         <Folder Include="Comps\" />
         <Folder Include="Statistics\" />

@@ -8,29 +8,29 @@ namespace CombatAI.Gui
 {
 	public class Window_DefKindSettings : Window
 	{
-		private Vector2 pos;
-		private          (ThingDef, PawnKindDef, Settings.DefKindAISettings)? cur;
-		private readonly Listing_Collapsible collapsible;
+		private          Vector2                                                   pos;
+		private          (ThingDef, PawnKindDef, Settings.DefKindAISettings)?      cur;
+		private readonly Listing_Collapsible                                       collapsible;
 		private readonly List<(ThingDef, PawnKindDef, Settings.DefKindAISettings)> defs;
-		
+
 		public Window_DefKindSettings()
 		{
-			drawShadow           = true;
-			forcePause           = true;
-			layer                = WindowLayer.Super;
-			draggable            = false;
-			collapsible          = new Listing_Collapsible();
-			defs = new List<(ThingDef, PawnKindDef, Settings.DefKindAISettings)>();
-			foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(d => d.race != null))
+			drawShadow  = true;
+			forcePause  = true;
+			layer       = WindowLayer.Super;
+			draggable   = false;
+			collapsible = new Listing_Collapsible();
+			defs        = new List<(ThingDef, PawnKindDef, Settings.DefKindAISettings)>();
+			foreach (ThingDef def in DefDatabase<ThingDef>.AllDefs.Where(d => d.race != null))
 			{
-				foreach (var kind in DefDatabase<PawnKindDef>.AllDefs.Where(d => d.race == def))
+				foreach (PawnKindDef kind in DefDatabase<PawnKindDef>.AllDefs.Where(d => d.race == def))
 				{
 					defs.Add((def, kind, Finder.Settings.GetDefKindSettings(def, kind)));
 				}
 				defs.Add((def, null, Finder.Settings.GetDefKindSettings(def, null)));
 			}
 		}
-		
+
 		public override Vector2 InitialSize
 		{
 			get
@@ -50,14 +50,14 @@ namespace CombatAI.Gui
 			collapsible.Line(1);
 			if (cur != null)
 			{
-				var def = cur?.Item1;
-				var kind = cur?.Item2;
+				ThingDef    def  = cur?.Item1;
+				PawnKindDef kind = cur?.Item2;
 				collapsible.Label(Keyed.CombatAI_DefKindSettings_Selected + ":" + def.label + " " + (kind?.label ?? string.Empty), null, false, true, GUIFontSize.Smaller);
 				collapsible.Line(1);
-				var settings = cur?.Item3;
+				Settings.DefKindAISettings settings = cur?.Item3;
 				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Pather, ref settings.Pather_Enabled);
 				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_KillBoxKiller, ref settings.Pather_KillboxKiller, disabled: !settings.Pather_Enabled);
-				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Temperature, ref settings.Temperature_Enabled,    disabled: !settings.Pather_Enabled);
+				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Temperature, ref settings.Temperature_Enabled, disabled: !settings.Pather_Enabled);
 				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Reaction, ref settings.React_Enabled);
 				collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Retreat, ref settings.Retreat_Enabled);
 			}
@@ -70,8 +70,8 @@ namespace CombatAI.Gui
 			collapsible.End(ref inRect);
 			GUIUtility.ScrollView(inRect, ref pos, defs, (item) => 20, (rect, tuple) =>
 			{
-				var def  = tuple.Item1;
-				var kind = tuple.Item2;
+				ThingDef    def  = tuple.Item1;
+				PawnKindDef kind = tuple.Item2;
 				if (tuple == cur)
 				{
 					Widgets.DrawHighlight(rect);

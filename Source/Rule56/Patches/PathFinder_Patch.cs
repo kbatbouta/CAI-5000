@@ -65,7 +65,7 @@ namespace CombatAI.Patches
 	            //
 	            avoidTempEnabled = settings?.Temperature_Enabled ?? true;
                 // only allow factioned pawns.
-                if ((settings?.Pather_Enabled ?? true) && (pawn = traverseParms.pawn) != null && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
+                if ((settings?.Pather_Enabled ?? true) && (pawn = traverseParms.pawn) != null && !Mod_ZombieLand.IsZombie(pawn) && pawn.Faction != null && (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid || pawn.RaceProps.Insect))
                 {
 	                destPos                = dest.Cell;
                     original_traverseParms = traverseParms;
