@@ -8,6 +8,7 @@ namespace CombatAI.Gui
 {
 	public class Window_DefKindSettings : Window
 	{
+		private          string                                                    searchTerm;
 		private          Vector2                                                   pos;
 		private          (ThingDef, PawnKindDef, Settings.DefKindAISettings)?      cur;
 		private readonly Listing_Collapsible                                       collapsible;
@@ -21,6 +22,7 @@ namespace CombatAI.Gui
 			draggable   = false;
 			collapsible = new Listing_Collapsible();
 			defs        = new List<(ThingDef, PawnKindDef, Settings.DefKindAISettings)>();
+			searchTerm  = string.Empty;
 			foreach (ThingDef def in DefDatabase<ThingDef>.AllDefs.Where(d => d.race != null))
 			{
 				foreach (PawnKindDef kind in DefDatabase<PawnKindDef>.AllDefs.Where(d => d.race == def))
@@ -36,8 +38,8 @@ namespace CombatAI.Gui
 			get
 			{
 				Vector2 vec = new Vector2();
-				vec.x = Mathf.RoundToInt(Maths.Max(UI.screenWidth * 0.55f, 450));
-				vec.y = Mathf.RoundToInt(Maths.Max(UI.screenHeight * 0.55f, 400));
+				vec.x = Mathf.RoundToInt(Maths.Max(UI.screenWidth * 0.6f, 450));
+				vec.y = Mathf.RoundToInt(Maths.Max(UI.screenHeight * 0.9f, 400));
 				return vec;
 			}
 		}
@@ -68,7 +70,9 @@ namespace CombatAI.Gui
 				Widgets.Label(rect.RightPart(0.5f), "Kind");
 			}, false, true);
 			collapsible.End(ref inRect);
-			GUIUtility.ScrollView(inRect, ref pos, defs, (item) => 20, (rect, tuple) =>
+			searchTerm  =  Widgets.TextField(inRect.TopPartPixels(30).BottomPartPixels(25), searchTerm).ToLower().Trim();
+			inRect.yMin += 35;
+			GUIUtility.ScrollView(inRect.TopPartPixels(inRect.height - 45), ref pos, defs.Where(d => searchTerm.NullOrEmpty() || (d.Item1?.label?.StartsWith(searchTerm) ?? false) || (d.Item2?.label?.ToLower().StartsWith(searchTerm) ?? false)), (item) => 20, (rect, tuple) =>
 			{
 				ThingDef    def  = tuple.Item1;
 				PawnKindDef kind = tuple.Item2;
@@ -86,6 +90,14 @@ namespace CombatAI.Gui
 					cur = tuple;
 				}
 			});
+			inRect.yMin += inRect.height - 40;
+			var center = inRect.center;
+			inRect.width  = 200;
+			inRect.center = center;
+			if (Widgets.ButtonText(inRect, R.Keyed.CombatAI_Close))
+			{
+				this.Close();
+			}
 		}
 	}
 }
