@@ -10,6 +10,7 @@ namespace CombatAI
         {
 	        float sappingTech = 1;
 	        Finder.Settings.ResetTechSettings();
+	        Finder.Settings.Personalities_Enabled = true;
             switch (difficulty)
             {
                 case Difficulty.Easy:
