@@ -18,20 +18,24 @@ namespace CombatAI
     {
         private readonly IFieldInfo[]                  cells;
         private readonly IField<byte>[]                cells_aiming;
-        private readonly IField<float>[]               cells_blunt;
+        private readonly IField<Vector2>[]             cells_dist;
         private readonly IField<Vector2>[]             cells_dir;
-        private readonly IField<ulong>[]               cells_flags;
+        private readonly IField<ulong>[]               cells_staticFlags;
+        private readonly IField<ulong>[]               cells_dynamicFlags;
         private readonly IField<MetaCombatAttribute>[] cells_meta;
         private readonly IField<float>[]               cells_sharp;
+        private readonly IField<float>[]               cells_blunt;
         private readonly IField<float>[]               cells_strength;
 
         private readonly CellIndices indices;
 
         public readonly int                 NumGridCells;
-        private         byte                curAimAvailablity;
-        private         float               curBlunt;
-        private         MetaCombatAttribute curMeta;
-        private         float               curSharp;
+        public          IntVec3             curRoot;
+        public          byte                curAimAvailablity;
+        public          float               curBlunt;
+        public          MetaCombatAttribute curMeta;
+        public          ulong               curFlags;
+        public          float               curSharp;
 
 
         private short r_sig = 19;
@@ -41,14 +45,16 @@ namespace CombatAI
             indices      = map.cellIndices;
             NumGridCells = indices.NumGridCells;
 
-            cells          = new IFieldInfo[NumGridCells];
-            cells_strength = new IField<float>[NumGridCells];
-            cells_dir      = new IField<Vector2>[NumGridCells];
-            cells_flags    = new IField<ulong>[NumGridCells];
-            cells_blunt    = new IField<float>[NumGridCells];
-            cells_sharp    = new IField<float>[NumGridCells];
-            cells_meta     = new IField<MetaCombatAttribute>[NumGridCells];
-            cells_aiming   = new IField<byte>[NumGridCells];
+            cells              = new IFieldInfo[NumGridCells];
+            cells_strength     = new IField<float>[NumGridCells];
+            cells_dir          = new IField<Vector2>[NumGridCells];
+            cells_dist         = new IField<Vector2>[NumGridCells];
+            cells_staticFlags  = new IField<ulong>[NumGridCells];
+            cells_dynamicFlags = new IField<ulong>[NumGridCells];
+            cells_blunt        = new IField<float>[NumGridCells];
+            cells_sharp        = new IField<float>[NumGridCells];
+            cells_meta         = new IField<MetaCombatAttribute>[NumGridCells];
+            cells_aiming       = new IField<byte>[NumGridCells];
         }
 
         public short CycleNum
@@ -56,6 +62,16 @@ namespace CombatAI
             get;
             private set;
         } = 19;
+
+        private Vector2 ToV2(IntVec3 vec)
+        {
+	        return new Vector2(vec.x, vec.z);
+        }
+        
+        private IntVec3 ToIntV3(Vector2 vec)
+        {
+	        return new IntVec3((int)vec.x, 0, (int)vec.y);
+        }
 
         public void Set(IntVec3 cell, float signalStrength, Vector2 dir)
         {
@@ -71,14 +87,22 @@ namespace CombatAI
                     int dc = CycleNum - info.cycle;
                     if (dc == 0)
                     {
-                        info.num                    += 1;
-                        cells_strength[index].value += signalStrength;
-                        cells_dir[index].value      += dir;
-                        cells_meta[index].value     |= curMeta;
-                        cells_sharp[index].value    =  Maths.Max(curSharp, cells_sharp[index].value);
-                        cells_blunt[index].value    =  Maths.Max(curBlunt, cells_blunt[index].value);
-                        cells_aiming[index].value   += curAimAvailablity;
-//						cells_aiming[index].value   
+                        info.num                        += 1;
+                        cells_strength[index].value     += signalStrength;
+                        cells_dir[index].value          += dir;
+                        cells_meta[index].value         |= curMeta;
+                        if (curRoot.IsValid)
+                        {
+	                        Vector2 distVec = ToV2( curRoot - indices.IndexToCell(index));
+	                        if (distVec.sqrMagnitude < cells_dist[index].value.sqrMagnitude)
+	                        {
+		                        cells_dist[index].value = distVec;
+	                        }
+                        }
+                        cells_sharp[index].value        =  Maths.Max(curSharp, cells_sharp[index].value);
+                        cells_blunt[index].value        =  Maths.Max(curBlunt, cells_blunt[index].value);
+                        cells_aiming[index].value       += curAimAvailablity;
+                        cells_dynamicFlags[index].value |= curFlags;
                     }
                     else
                     {
@@ -94,7 +118,16 @@ namespace CombatAI
                         info.num = 1;
                         cells_strength[index].ReSet(signalStrength, expired);
                         cells_dir[index].ReSet(dir, expired);
-                        cells_flags[index].ReSet(0, expired);
+                        if (curRoot.IsValid)
+                        {
+	                        cells_dist[index].ReSet(ToV2(curRoot - indices.IndexToCell(index) ), expired);
+                        }
+                        else
+                        {
+	                        cells_dist[index].ReSet(new Vector2(1000, 1000), expired);
+                        }
+                        cells_staticFlags[index].ReSet(0, expired);
+                        cells_dynamicFlags[index].ReSet(curFlags, expired);
                         cells_meta[index].ReSet(curMeta, expired);
                         cells_sharp[index].ReSet(curSharp, expired);
                         cells_blunt[index].ReSet(curBlunt, expired);
@@ -121,13 +154,22 @@ namespace CombatAI
                     int dc = CycleNum - info.cycle;
                     if (dc == 0)
                     {
-                        info.num                    += 1;
-                        cells_strength[index].value += signalStrength;
-                        cells_dir[index].value      += dir;
-                        cells_meta[index].value     |= metaAttributes;
-                        cells_sharp[index].value    =  Maths.Max(curSharp, cells_sharp[index].value);
-                        cells_blunt[index].value    =  Maths.Max(curBlunt, cells_blunt[index].value);
-                        cells_aiming[index].value   += curAimAvailablity;
+                        info.num                        += 1;
+                        cells_strength[index].value     += signalStrength;
+                        cells_dir[index].value          += dir;
+                        cells_meta[index].value         |= metaAttributes;
+                        if (curRoot.IsValid)
+                        {
+	                        Vector2 distVec = ToV2( curRoot - indices.IndexToCell(index) );
+	                        if (distVec.sqrMagnitude < cells_dist[index].value.sqrMagnitude)
+	                        {
+		                        cells_dist[index].value = distVec;
+	                        }
+                        }
+                        cells_sharp[index].value        =  Maths.Max(curSharp, cells_sharp[index].value);
+                        cells_blunt[index].value        =  Maths.Max(curBlunt, cells_blunt[index].value);
+                        cells_aiming[index].value       += curAimAvailablity;
+                        cells_dynamicFlags[index].value |= curFlags;
                     }
                     else
                     {
@@ -143,7 +185,16 @@ namespace CombatAI
                         info.num = 1;
                         cells_strength[index].ReSet(signalStrength, expired);
                         cells_dir[index].ReSet(dir, expired);
-                        cells_flags[index].ReSet(0, expired);
+                        cells_staticFlags[index].ReSet(0, expired);
+                        cells_dynamicFlags[index].ReSet(curFlags, expired);
+                        if (curRoot.IsValid)
+                        {
+	                        cells_dist[index].ReSet(ToV2( curRoot - indices.IndexToCell(index)), expired);
+                        }
+                        else
+                        {
+	                        cells_dist[index].ReSet(new Vector2(1000, 1000), expired);
+                        }
                         cells_meta[index].ReSet(metaAttributes, expired);
                         cells_sharp[index].ReSet(curSharp, expired);
                         cells_blunt[index].ReSet(curBlunt, expired);
@@ -170,10 +221,11 @@ namespace CombatAI
                     int dc = CycleNum - info.cycle;
                     if (dc == 0)
                     {
-                        cells_meta[index].value   |= metaAttributes;
-                        cells_sharp[index].value  =  Maths.Max(curSharp, cells_sharp[index].value);
-                        cells_blunt[index].value  =  Maths.Max(curBlunt, cells_blunt[index].value);
-                        cells_aiming[index].value += curAimAvailablity;
+                        cells_meta[index].value         |= metaAttributes;
+                        cells_sharp[index].value        =  Maths.Max(curSharp, cells_sharp[index].value);
+                        cells_blunt[index].value        =  Maths.Max(curBlunt, cells_blunt[index].value);
+                        cells_aiming[index].value       += curAimAvailablity;
+                        cells_dynamicFlags[index].value |= curFlags;
                     }
                     else
                     {
@@ -189,8 +241,10 @@ namespace CombatAI
                         info.num = 0;
                         cells_strength[index].ReSet(0, expired);
                         cells_dir[index].ReSet(Vector2.zero, expired);
-                        cells_flags[index].ReSet(0, expired);
+                        cells_staticFlags[index].ReSet(0, expired);
+                        cells_dynamicFlags[index].ReSet(curFlags, expired);
                         cells_meta[index].ReSet(metaAttributes, expired);
+                        cells_dist[index].ReSet(new Vector2(1000, 1000), expired);
                         cells_sharp[index].ReSet(curSharp, expired);
                         cells_blunt[index].ReSet(curBlunt, expired);
                         cells_aiming[index].ReSet(curAimAvailablity, expired);
@@ -216,7 +270,7 @@ namespace CombatAI
                     int dc = CycleNum - info.cycle;
                     if (dc == 0)
                     {
-                        cells_flags[index].value  |= flags;
+                        cells_staticFlags[index].value  |= flags;
                         cells_sharp[index].value  =  Maths.Max(curSharp, cells_sharp[index].value);
                         cells_blunt[index].value  =  Maths.Max(curBlunt, cells_blunt[index].value);
                         cells_aiming[index].value += curAimAvailablity;
@@ -235,8 +289,10 @@ namespace CombatAI
                         info.num = 0;
                         cells_strength[index].ReSet(0, expired);
                         cells_dir[index].ReSet(Vector2.zero, expired);
-                        cells_flags[index].ReSet(flags, expired);
+                        cells_staticFlags[index].ReSet(flags, expired);
+                        cells_dynamicFlags[index].ReSet(curFlags, expired);
                         cells_meta[index].ReSet(curMeta, expired);
+                        cells_dist[index].ReSet(new Vector2(1000, 1000), expired);
                         cells_sharp[index].ReSet(curSharp, expired);
                         cells_blunt[index].ReSet(curBlunt, expired);
                         cells_aiming[index].ReSet(curAimAvailablity, expired);
@@ -265,8 +321,16 @@ namespace CombatAI
                         info.num                    += 1;
                         cells_strength[index].value += signalStrength;
                         cells_dir[index].value      += dir;
-                        cells_flags[index].value    |= flags;
+                        cells_staticFlags[index].value    |= flags;
                         cells_meta[index].value     |= curMeta;
+                        if (curRoot.IsValid)
+                        {
+	                        Vector2 distVec = ToV2( curRoot - indices.IndexToCell(index));
+	                        if (distVec.sqrMagnitude < cells_dist[index].value.sqrMagnitude)
+	                        {
+		                        cells_dist[index].value = distVec;
+	                        }
+                        }
                         cells_sharp[index].value    =  Maths.Max(curSharp, cells_sharp[index].value);
                         cells_blunt[index].value    =  Maths.Max(curBlunt, cells_blunt[index].value);
                         cells_aiming[index].value   += curAimAvailablity;
@@ -285,7 +349,16 @@ namespace CombatAI
                         info.num = 1;
                         cells_strength[index].ReSet(signalStrength, expired);
                         cells_dir[index].ReSet(dir, expired);
-                        cells_flags[index].ReSet(flags, expired);
+                        cells_staticFlags[index].ReSet(flags, expired);
+                        cells_dynamicFlags[index].ReSet(curFlags, expired);
+                        if (curRoot.IsValid)
+                        {
+	                        cells_dist[index].ReSet(ToV2(curRoot - indices.IndexToCell(index) ), expired);
+                        }
+                        else
+                        {
+	                        cells_dist[index].ReSet(new Vector2(1000, 1000), expired);
+                        }
                         cells_meta[index].ReSet(curMeta, expired);
                         cells_sharp[index].ReSet(curSharp, expired);
                         cells_blunt[index].ReSet(curBlunt, expired);
@@ -396,11 +469,11 @@ namespace CombatAI
             return signalNum = 0;
         }
 
-        public ulong GetFlagsAt(IntVec3 cell)
+        public ulong GetStaticFlagsAt(IntVec3 cell)
         {
-            return GetFlagsAt(indices.CellToIndex(cell));
+            return GetStaticFlagsAt(indices.CellToIndex(cell));
         }
-        public ulong GetFlagsAt(int index)
+        public ulong GetStaticFlagsAt(int index)
         {
             if (index >= 0 && index < NumGridCells)
             {
@@ -408,14 +481,74 @@ namespace CombatAI
                 switch (CycleNum - cell.cycle)
                 {
                     case 0:
-                        IField<ulong> flags = cells_flags[index];
+                        IField<ulong> flags = cells_staticFlags[index];
 
                         return flags.value | flags.valuePrev;
                     case 1:
-                        return cells_flags[index].value;
+                        return cells_staticFlags[index].value;
                 }
             }
             return 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IntVec3 GetNearestSourceAt(int index)
+        {
+	        return GetNearestSourceAtInner(index, indices.IndexToCell(index));
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IntVec3 GetNearestSourceAt(IntVec3 pos)
+        {
+	        return GetNearestSourceAtInner(indices.CellToIndex(pos), pos);
+        }
+        private IntVec3 GetNearestSourceAtInner(int index, IntVec3 pos)
+        {
+	        if (index >= 0 && index < NumGridCells)
+	        {
+		        IFieldInfo cell = cells[index];
+		        Vector2    offset;
+		        switch (CycleNum - cell.cycle)
+		        {
+			        case 0:
+				        IField<Vector2> dist = cells_dist[index];
+				        offset = (dist.value.sqrMagnitude < dist.valuePrev.sqrMagnitude ? dist.value : dist.valuePrev);
+				        if (offset.x > 300 || offset.y > 300)
+				        {
+					        return IntVec3.Invalid;
+				        }
+				        return pos + ToIntV3(offset);
+			        case 1:
+				        offset = cells_dist[index].value;
+				        if (offset.x > 300 || offset.y > 300)
+				        {
+					        return IntVec3.Invalid;
+				        }
+				        return pos + ToIntV3(offset);
+		        }
+	        }
+	        return IntVec3.Invalid;
+        }
+
+        public ulong GetDynamicFlagsAt(IntVec3 cell)
+        {
+	        return GetDynamicFlagsAt(indices.CellToIndex(cell));
+        }
+        public ulong GetDynamicFlagsAt(int index)
+        {
+	        if (index >= 0 && index < NumGridCells)
+	        {
+		        IFieldInfo cell = cells[index];
+		        switch (CycleNum - cell.cycle)
+		        {
+			        case 0:
+				        IField<ulong> flags = cells_dynamicFlags[index];
+
+				        return flags.value | flags.valuePrev;
+			        case 1:
+				        return cells_dynamicFlags[index].value;
+		        }
+	        }
+	        return 0;
         }
 
         public MetaCombatAttribute GetCombatAttributesAt(IntVec3 cell)
@@ -538,12 +671,14 @@ namespace CombatAI
         /// <param name="sharp">Sharp damage output/s</param>
         /// <param name="blunt">Blunt damage output/s</param>
         /// <param name="meta">Meta flags.</param>
-        public void Next(float sharp, float blunt, MetaCombatAttribute meta)
+        public void Next(IntVec3 root, ulong flags, float sharp, float blunt, MetaCombatAttribute meta)
         {
             if (r_sig++ == short.MaxValue)
             {
                 r_sig = 19;
             }
+            curRoot  = root;
+            curFlags = flags;
             curSharp = sharp;
             curBlunt = blunt;
             curMeta  = meta;

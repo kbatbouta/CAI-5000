@@ -68,7 +68,7 @@ namespace CombatAI
                         }
                     }
                 }
-                Verb effectiveVerb = pawn.CurrentEffectiveVerb;
+                Verb effectiveVerb = pawn.TryGetAttackVerb();
                 if (effectiveVerb != null)
                 {
                     if (!effectiveVerb.IsMeleeAttack && !pawn.Downed)
@@ -162,6 +162,14 @@ namespace CombatAI
                 return props.defaultProjectile.projectile?.damageDef ?? null;
             }
             return props.meleeDamageDef;
+        }
+
+        public static void Invalidate(Thing thing)
+        {
+	        if (reports.ContainsKey(thing.thingIDNumber))
+	        {
+		        reports.Remove(thing.thingIDNumber);
+	        }
         }
 
         public static void ClearCache()

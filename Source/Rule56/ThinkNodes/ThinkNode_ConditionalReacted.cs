@@ -12,8 +12,8 @@ namespace CombatAI
 
         public override bool Satisfied(Pawn pawn)
         {
-            ThingComp_CombatAI comp = pawn.AI();
-            if (comp != null)
+            ThingComp_CombatAI comp = pawn.GetComp_Fast<ThingComp_CombatAI>();
+            if (comp != null && comp.data != null)
             {
                 return comp.data.InterruptedRecently(ticks) || comp.data.RetreatedRecently(ticks);
             }

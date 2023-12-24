@@ -1,6 +1,12 @@
 ﻿namespace CombatAI.Utilities
 {
 #if DEBUG_REACTION
+	using System;
+	using System.Collections.Generic;
+	using System.Runtime.CompilerServices;
+	using System.Runtime.InteropServices;
+	using UnityEngine;
+	using Verse;
 	public class ThingsTrackingModel
 	{
 

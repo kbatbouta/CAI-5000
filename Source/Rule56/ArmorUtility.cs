@@ -21,7 +21,7 @@ namespace CombatAI
             {
                 return default(ArmorReport);
             }
-            if (collapsible != null || !reports.TryGetValue(pawn.thingIDNumber, out ArmorReport report) || GenTicks.TicksGame - report.createdAt > 900)
+            if (collapsible != null || !reports.TryGetValue(pawn.thingIDNumber, out ArmorReport report) || GenTicks.TicksGame - report.createdAt > 7200)
             {
                 reports[pawn.thingIDNumber] = report = CreateReport(pawn, collapsible);
             }
@@ -178,6 +178,14 @@ namespace CombatAI
                 }
                 return coverage;
             }
+        }
+        
+        public static void Invalidate(Thing thing)
+        {
+	        if (reports.ContainsKey(thing.thingIDNumber))
+	        {
+		        reports.Remove(thing.thingIDNumber);
+	        }
         }
     }
 }

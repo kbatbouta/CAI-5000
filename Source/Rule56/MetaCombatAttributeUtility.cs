@@ -102,12 +102,8 @@ namespace CombatAI
 
         public static void ClearCache()
         {
-            w_race.Clear();
-            w_kind.Clear();
-            w_pawn.Clear();
-            s_race.Clear();
-            s_kind.Clear();
-            s_pawn.Clear();
+	        w_pawn.Clear();
+	        s_pawn.Clear();
         }
     }
 }

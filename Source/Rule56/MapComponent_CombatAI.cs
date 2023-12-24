@@ -10,7 +10,7 @@ namespace CombatAI
 {
     public class MapComponent_CombatAI : MapComponent
     {
-
+	    private int clearCacheCountDown = 14400;
         /*      Threading
          * ----- ----- ----- -----
          */
@@ -24,6 +24,7 @@ namespace CombatAI
          */
 
         public CellFlooder flooder;
+        public CellFlooder flooder_heursitic;
 
         public InterceptorTracker interceptors;
         /*      Cache
@@ -39,10 +40,11 @@ namespace CombatAI
 
         public MapComponent_CombatAI(Map map) : base(map)
         {
-            flooder      = new CellFlooder(map);
-            f_grid       = new ISGrid<float>(map);
-            asyncActions = new AsyncActions();
-            interceptors = new InterceptorTracker(this);
+            flooder           = new CellFlooder(map);
+            flooder_heursitic = new CellFlooder(map);
+            f_grid            = new ISGrid<float>(map);
+            asyncActions      = new AsyncActions();
+            interceptors      = new InterceptorTracker(this);
         }
 
         public override void FinalizeInit()
@@ -58,6 +60,22 @@ namespace CombatAI
             base.MapComponentTick();
             asyncActions.ExecuteMainThreadActions();
             interceptors.Tick();
+        }
+
+        public override void MapComponentUpdate()
+        {
+	        base.MapComponentUpdate();
+	        if (clearCacheCountDown-- <= 0)
+	        {
+		        CacheUtility.ClearAllCache();
+		        regionWiseDist.Clear();
+		        clearCacheCountDown = 14400;
+	        }
+	        else if (clearCacheCountDown % 7200 == 0)
+	        {
+		        CacheUtility.ClearShortCache();
+		        regionWiseDist.Clear();
+	        }
         }
 
         public override void MapComponentOnGUI()

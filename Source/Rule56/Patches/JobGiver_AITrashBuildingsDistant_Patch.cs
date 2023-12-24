@@ -23,6 +23,10 @@ namespace CombatAI.Patches
                 {
                     return false;
                 }
+                if (pawn.TryGetSightReader(out SightTracker.SightReader reader) && reader.GetVisibilityToEnemies(pawn.Position) > 0)
+                {
+	                return false;
+                }
                 return true;
             }
 

@@ -64,12 +64,12 @@ namespace CombatAI
             Region                origin = first.GetRegion(map);
             if (origin == null)
             {
-                return int.MaxValue;
+                return short.MaxValue;
             }
             Region target = second.GetRegion(map);
             if (target == null)
             {
-                return int.MaxValue;
+                return short.MaxValue;
             }
             // always place the smaller id first.
             int a = origin.id;
@@ -107,11 +107,11 @@ namespace CombatAI
             MapComponent_CombatAI comp = map.AI();
             if (!first.IsValid)
             {
-                return float.MaxValue;
+                return short.MaxValue;
             }
             if (!second.IsValid)
             {
-                return float.MaxValue;
+                return short.MaxValue;
             }
             _regions.Clear();
             saveRegions                  = true;
@@ -124,7 +124,7 @@ namespace CombatAI
                 {
                     _distCell   = int.MaxValue;
                     _targetCell = second;
-                    comp.flooder.Flood(first, second, DistanceTo_CellWise_Delegate, null, Validator_CellWise_Delegate, 9999, 9999);
+                    comp.flooder_heursitic.Flood(first, second, DistanceTo_CellWise_Delegate, null, Validator_CellWise_Delegate, 9999, 9999);
                 }
             }
             catch (Exception exp)

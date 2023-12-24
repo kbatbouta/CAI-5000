@@ -30,7 +30,7 @@ namespace CombatAI
 
     public class CachedDict<A, B>
     {
-        private const int MAX_CACHE_SIZE = 10000;
+        private const int MAX_CACHE_SIZE = 2000;
 
         private readonly bool                         autoCleanUp;
         private readonly Dictionary<A, CachedUnit<B>> cache;

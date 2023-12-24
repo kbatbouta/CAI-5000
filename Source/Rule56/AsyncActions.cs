@@ -1,22 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Verse;
 namespace CombatAI
 {
     public class AsyncActions
     {
-
+        private static readonly List<AsyncActions> running = new List<AsyncActions>();
+        
         private readonly int hashOffset;
 
         public readonly  object locker_Main    = new object();
         public readonly  object locker_offMain = new object();
         private readonly int    mainLoopTickInterval;
 
-        private readonly List<Action> queuedMainThreadActions = new List<Action>();
-        private readonly List<Action> queuedOffThreadActions  = new List<Action>();
-        private readonly Thread       thread;
-        private          bool         mainThreadActionQueueEmpty;
+        private readonly List<Action>   queuedMainThreadActions = new List<Action>();
+        private readonly List<Action>   queuedOffThreadActions  = new List<Action>();
+        private readonly AutoResetEvent waitHandle              = new AutoResetEvent(false);
+        private readonly Thread         thread;
+        private          bool           mainThreadActionQueueEmpty;
 
         public AsyncActions(int mainLoopTickInterval = 5)
         {
@@ -34,6 +37,7 @@ namespace CombatAI
         public void Start()
         {
             thread.Start();
+            running.Add(this);
         }
 
         public void ExecuteMainThreadActions()
@@ -44,6 +48,7 @@ namespace CombatAI
         public void Kill()
         {
             Alive = false;
+            running.Remove(this);
             try
             {
                 lock (locker_Main)
@@ -55,9 +60,19 @@ namespace CombatAI
                     queuedOffThreadActions.Clear();
                 }
                 thread.Abort();
+                thread.Join(100);
+                waitHandle.Close();
             }
             catch (Exception)
             {
+            }
+        }
+
+        public static void KillAll()
+        {
+            foreach (AsyncActions asyncActions in running.ToList())
+            {
+                asyncActions.Kill();
             }
         }
 
@@ -72,6 +87,7 @@ namespace CombatAI
                 else
                 {
                     queuedOffThreadActions.Add(action);
+                    waitHandle.Set();
                 }
             }
         }
@@ -151,6 +167,10 @@ namespace CombatAI
                     {
                         action();
                     }
+                    catch (ThreadAbortException)
+                    {
+                        throw;
+                    }
                     catch (Exception er)
                     {
                         Log.Error(er.ToString());
@@ -158,7 +178,7 @@ namespace CombatAI
                 }
                 else
                 {
-                    Thread.Sleep(1);
+                    waitHandle.WaitOne();
                 }
             }
         }

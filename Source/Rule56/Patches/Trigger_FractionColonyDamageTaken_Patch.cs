@@ -11,7 +11,7 @@ namespace CombatAI.Patches
             public static void Prefix(ref float desiredColonyDamageFraction, ref float minDamage)
             {
                 minDamage                   *= 15f;
-                desiredColonyDamageFraction =  Maths.Max(Rand.Range(0.25f, 5.0f), desiredColonyDamageFraction);
+                desiredColonyDamageFraction =  Maths.Max(Rand.Range(0.75f, 5.0f), desiredColonyDamageFraction);
             }
         }
 

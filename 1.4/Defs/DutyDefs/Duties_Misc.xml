@@ -10,10 +10,19 @@
                 <li Class="JobGiver_TakeCombatEnhancingDrug">
                     <onlyIfInDanger>true</onlyIfInDanger>
                 </li>
+                <li Class="CombatAI.ThinkNode_ConditionalReacted">
+                    <ticks>900</ticks>
+                    <subNodes>
+                        <li Class="JobGiver_AIFightEnemies">
+                            <targetAcquireRadius>35</targetAcquireRadius>
+                            <targetKeepRadius>42</targetKeepRadius>
+                        </li>
+                    </subNodes>
+                </li>
                 <li Class="JobGiver_AIDefendPoint">
                     <targetAcquireRadius>65</targetAcquireRadius>
                     <targetKeepRadius>72</targetKeepRadius>
-                </li>
+                </li>                
                 <li Class="ThinkNode_ForbidOutsideFlagRadius">
                     <maxDistToSquadFlag>16</maxDistToSquadFlag>
                     <subNodes>
@@ -23,7 +32,7 @@
                     </subNodes>
                 </li>
                 <li Class="JobGiver_WanderNearDutyLocation">
-                    <wanderRadius>32</wanderRadius>
+                    <wanderRadius>12</wanderRadius>
                     <locomotionUrgencyOutsideRadius>Sprint</locomotionUrgencyOutsideRadius>
                 </li>
                 <li Class="JobGiver_AITrashBuildingsDistant">
@@ -45,9 +54,21 @@
                 <li Class="JobGiver_TakeCombatEnhancingDrug">
                     <onlyIfInDanger>true</onlyIfInDanger>
                 </li>
+                <li Class="ThinkNode_Subtree" MayRequire="Ludeon.RimWorld.Biotech">
+                    <treeDef>Abilities_Aggressive</treeDef>
+                </li>
+                <li Class="CombatAI.ThinkNode_ConditionalReacted">
+                    <ticks>900</ticks>
+                    <subNodes>
+                        <li Class="JobGiver_AIFightEnemies">
+                            <targetAcquireRadius>35</targetAcquireRadius>
+                            <targetKeepRadius>42</targetKeepRadius>
+                        </li>
+                    </subNodes>
+                </li>
                 <li Class="JobGiver_AIDefendPoint">
-                    <targetAcquireRadius>65</targetAcquireRadius>
-                    <targetKeepRadius>72</targetKeepRadius>
+                    <targetAcquireRadius>32</targetAcquireRadius>
+                    <targetKeepRadius>28</targetKeepRadius>
                 </li>
                 <li Class="ThinkNode_ForbidOutsideFlagRadius">
                     <maxDistToSquadFlag>16</maxDistToSquadFlag>
@@ -59,6 +80,7 @@
                 </li>
                 <li Class="JobGiver_WanderNearDutyLocation">
                     <wanderRadius>8</wanderRadius>
+                    <expiryInterval>30</expiryInterval>
                     <locomotionUrgencyOutsideRadius>Sprint</locomotionUrgencyOutsideRadius>
                 </li>
                 <li Class="JobGiver_AITrashBuildingsDistant">
@@ -78,17 +100,28 @@
                 <li Class="JobGiver_TakeCombatEnhancingDrug">
                     <onlyIfInDanger>true</onlyIfInDanger>
                 </li>
-                <li Class="JobGiver_AIDefendEscortee">
-                    <targetAcquireRadius>65</targetAcquireRadius>
-                    <targetKeepRadius>72</targetKeepRadius>
+                <li Class="CombatAI.ThinkNode_ConditionalReacted">
+                    <ticks>900</ticks>
+                    <subNodes>
+                        <li Class="JobGiver_AIFightEnemies">
+                            <targetAcquireRadius>35</targetAcquireRadius>
+                            <targetKeepRadius>42</targetKeepRadius>
+                        </li>
+                    </subNodes>
                 </li>
-                <li Class="JobGiver_AIFollowEscortee"/>
+                <li Class="JobGiver_AIDefendEscortee">
+                    <targetAcquireRadius>35</targetAcquireRadius>
+                    <targetKeepRadius>72</targetKeepRadius>
+                </li>        
+                <li Class="CombatAI.JobGiver_CAIFollowEscortee"/>
                 <li Class="ThinkNode_Subtree">
                     <treeDef>SatisfyVeryUrgentNeeds</treeDef>
                 </li>
                 <li Class="JobGiver_WanderNearDutyLocation">
                     <wanderRadius>8</wanderRadius>
-                </li>
+                    <expiryInterval>60</expiryInterval>
+                    <locomotionUrgencyOutsideRadius>Jog</locomotionUrgencyOutsideRadius>
+                </li>             
                 <li Class="JobGiver_AITrashBuildingsDistant">
                     <attackAllInert>true</attackAllInert>
                 </li>

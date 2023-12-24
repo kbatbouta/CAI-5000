@@ -27,7 +27,7 @@
         <defName>CombatAI_Goto_Cover</defName>
         <driverClass>JobDriver_Goto</driverClass>
         <reportString>moving.</reportString>
-        <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+        <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
         <carryThingAfterJob>true</carryThingAfterJob>
         <dropThingBeforeJob>false</dropThingBeforeJob>
         <checkOverrideOnDamage>Never</checkOverrideOnDamage>

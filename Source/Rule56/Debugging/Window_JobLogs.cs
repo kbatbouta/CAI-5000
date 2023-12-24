@@ -170,7 +170,8 @@ namespace CombatAI
                     {
                         foreach (Pawn other in Find.Selector.SelectedPawns)
                         {
-                            other.mindState.duty = new PawnDuty(DutyDefOf.Defend, escortee);
+                            other.mindState.duty        = new PawnDuty(CombatAI_DutyDefOf.CombatAI_Escort, escortee);
+                            other.mindState.duty.radius = 15;
                         }
                         Messages.Message($"Success: Escorting {escortee}", MessageTypeDefOf.CautionInput);
                     }
@@ -211,6 +212,41 @@ namespace CombatAI
                         }
                     }
                 });
+            }
+            if (ButtonText(collapsible_dutyTest, "Flash sapper path to"))
+            {
+	            Find.Targeter.BeginTargeting(new TargetingParameters
+	            {
+		            canTargetAnimals   = false,
+		            canTargetBuildings = false,
+		            canTargetCorpses   = false,
+		            canTargetHumans    = false,
+		            canTargetSelf      = false,
+		            canTargetMechs     = false,
+		            canTargetLocations = true
+	            }, info =>
+	            {
+		            if (info.Cell.IsValid)
+		            {
+			            PathFinder_Patch.FlashSapperPath = true;
+			            try
+			            {
+				            PawnPath path = pawn.Map.pathFinder.FindPath(pawn.Position, info.Cell, TraverseParms.For(pawn, Danger.Deadly, TraverseMode.PassAllDestroyableThings));
+				            if (path is { Found: true })
+				            {
+					            path.ReleaseToPool();
+				            }
+			            }
+			            catch (Exception er)
+			            {
+				            Log.Error(er.ToString());
+			            }
+			            finally
+			            {
+				            PathFinder_Patch.FlashSapperPath = false;
+			            }
+		            }
+	            });
             }
             if (ButtonText(collapsible_dutyTest, "Region-wise distance"))
             {
@@ -270,6 +306,7 @@ namespace CombatAI
             }
             if (ButtonText(collapsible_dutyTest, "Reachability check"))
             {
+                Pawn parentPawn = comp.selPawn;
                 Find.Targeter.BeginTargeting(new TargetingParameters
                 {
                     canTargetAnimals   = false,
@@ -281,14 +318,15 @@ namespace CombatAI
                     canTargetLocations = true,
                     validator = info =>
                     {
-                        if (info.Cell.IsValid)
+                        if (info.Cell.IsValid && info.Cell.InBounds(map))
                         {
-                            string result = $"ByPawn={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.ByPawn)}\n"
-                                            + $"NoPassClosedDoors={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.NoPassClosedDoors)}\n"
-                                            + $"NoPassClosedDoorsOrWater={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.NoPassClosedDoorsOrWater)}\n"
-                                            + $"PassDoors={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassDoors)}\n"
-                                            + $"PassAllDestroyableThings={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassAllDestroyableThings)}\n"
-                                            + $"PassAllDestroyableThingsNotWater={pawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassAllDestroyableThingsNotWater)}\n";
+                            string result = $"ByPawn={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.ByPawn)}\n"
+                                            + $"NoPassClosedDoors={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.NoPassClosedDoors)}\n"
+                                            + $"NoPassClosedDoorsOrWater={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.NoPassClosedDoorsOrWater)}\n"
+                                            + $"PassDoors={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassDoors)}\n"
+                                            + $"PassAllDestroyableThings={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassAllDestroyableThings)}\n"
+                                            + $"PassAllDestroyableThingsNotWater={parentPawn.CanReach(info.Cell, PathEndMode.InteractionCell, Danger.Deadly, true, true, TraverseMode.PassAllDestroyableThingsNotWater)}\n";
+                            Log.Message(result);
                         }
                         return true;
                     },
@@ -444,10 +482,30 @@ namespace CombatAI
                     UnityEngine.GUIUtility.systemCopyBuffer = selectedLog.ToString();
                     Messages.Message("Job info copied to clipboard", MessageTypeDefOf.CautionInput);
                 }
+                if (selectedLog.path != null && Widgets.ButtonText(rect.LeftPartPixels(300).RightPartPixels(150), "Flash path"))
+                { 
+	                Messages.Message("Flashed path", MessageTypeDefOf.CautionInput);
+	                map.debugDrawer.debugCells.Clear();
+	                for (int i = 0; i < selectedLog.path.Count; i++)
+	                {
+		                map.debugDrawer.FlashCell(selectedLog.path[i],(float)i / (selectedLog.path.Count), $"{selectedLog.path.Count - i}");
+	                }
+	                
+                }
+                if (selectedLog.pathSapper != null && Widgets.ButtonText(rect.LeftPartPixels(450).RightPartPixels(150), "Flash sapper path"))
+                {
+	                Messages.Message("Flashed sapper path", MessageTypeDefOf.CautionInput);
+	                map.debugDrawer.debugCells.Clear();
+	                for (int i = 0; i < selectedLog.pathSapper.Count; i++)
+	                {
+		                map.debugDrawer.FlashCell(selectedLog.pathSapper[i],(float)i / (selectedLog.pathSapper.Count), $"{selectedLog.pathSapper.Count - i}");
+	                }
+                }
             });
             collapsible.Label($"JobDef.defName:\t{selectedLog.job}");
             collapsible.Line(1);
             collapsible.Label($"DutyDef.defName:\t{selectedLog.duty}");
+            collapsible.Label($"Notes:\t{selectedLog.note}");
             collapsible.Line(1);
             collapsible.Lambda(40, rect =>
             {

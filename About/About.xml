@@ -28,6 +28,7 @@
         <li>Ludeon.RimWorld.Royalty</li>
         <li>brrainz.harmony</li>
         <li>zetrith.prepatcher</li>
+        <li>owlchemist.simplefx.vapor</li>
         <li>CETeam.CombatExtended</li>
     </loadAfter>
     <loadBefore>

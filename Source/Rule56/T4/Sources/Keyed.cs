@@ -5,7 +5,7 @@ namespace CombatAI.R
     // Auto generated file!
     // -------------------------------------------------
     // This file is auto generated! Mod path is:
-    // $(SolutionDir)/../../../1.4/Languages/English/Keyed/Translations.xml
+    // $(SolutionDir)/../../../../../1.4/Languages/English/Keyed/Translations.xml
     // -------------------------------------------------
     /// <summary> 
     /// <para>Keyed string database. This Class is generated automatically by a T4 template <c>Core/Assets/Keyed.tt</c></para> 
@@ -100,6 +100,36 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Quick_Welcome {
             get => _CombatAI_Quick_Welcome != null ? 
                    _CombatAI_Quick_Welcome : _CombatAI_Quick_Welcome = "CombatAI.Quick.Welcome".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_DefKindSettings_Title = null;
+        /// <summary> Keyed string. key=<c>CombatAI.DefKindSettings.Title</c>. inner text:
+        ///
+        /// <code>AI Race Settings</code>
+        /// </summary>       
+        public static TaggedString CombatAI_DefKindSettings_Title {
+            get => _CombatAI_DefKindSettings_Title != null ? 
+                   _CombatAI_DefKindSettings_Title : _CombatAI_DefKindSettings_Title = "CombatAI.DefKindSettings.Title".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_DefKindSettings_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.DefKindSettings.Description</c>. inner text:
+        ///
+        /// <code>Here you can configure different AI settings for each race.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_DefKindSettings_Description {
+            get => _CombatAI_DefKindSettings_Description != null ? 
+                   _CombatAI_DefKindSettings_Description : _CombatAI_DefKindSettings_Description = "CombatAI.DefKindSettings.Description".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_DefKindSettings_Selected = null;
+        /// <summary> Keyed string. key=<c>CombatAI.DefKindSettings.Selected</c>. inner text:
+        ///
+        /// <code>Selected</code>
+        /// </summary>       
+        public static TaggedString CombatAI_DefKindSettings_Selected {
+            get => _CombatAI_DefKindSettings_Selected != null ? 
+                   _CombatAI_DefKindSettings_Selected : _CombatAI_DefKindSettings_Selected = "CombatAI.DefKindSettings.Selected".Translate();
         }             
                       
         private static TaggedString _CombatAI_Gizmos_AttackMove = null;
@@ -230,6 +260,16 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Settings_Basic {
             get => _CombatAI_Settings_Basic != null ? 
                    _CombatAI_Settings_Basic : _CombatAI_Settings_Basic = "CombatAI.Settings.Basic".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_RandomizedPersonality = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.RandomizedPersonality</c>. inner text:
+        ///
+        /// <code>Enable variation in faction tactics depending on the faction leader and the current time of year</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_RandomizedPersonality {
+            get => _CombatAI_Settings_Basic_RandomizedPersonality != null ? 
+                   _CombatAI_Settings_Basic_RandomizedPersonality : _CombatAI_Settings_Basic_RandomizedPersonality = "CombatAI.Settings.Basic.RandomizedPersonality".Translate();
         }             
                       
         private static TaggedString _CombatAI_Settings_Basic_Presets = null;
@@ -390,6 +430,26 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Settings_Basic_FogOfWar_Enable {
             get => _CombatAI_Settings_Basic_FogOfWar_Enable != null ? 
                    _CombatAI_Settings_Basic_FogOfWar_Enable : _CombatAI_Settings_Basic_FogOfWar_Enable = "CombatAI.Settings.Basic.FogOfWar.Enable".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_OldShader = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.OldShader</c>. inner text:
+        ///
+        /// <code>Use the old legacy shader</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_OldShader {
+            get => _CombatAI_Settings_Basic_FogOfWar_OldShader != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_OldShader : _CombatAI_Settings_Basic_FogOfWar_OldShader = "CombatAI.Settings.Basic.FogOfWar.OldShader".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_FogOfWar_OldShader_Restart = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.FogOfWar.OldShader.Restart</c>. inner text:
+        ///
+        /// <code>The new shader settings will be applied after restart!</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_FogOfWar_OldShader_Restart {
+            get => _CombatAI_Settings_Basic_FogOfWar_OldShader_Restart != null ? 
+                   _CombatAI_Settings_Basic_FogOfWar_OldShader_Restart : _CombatAI_Settings_Basic_FogOfWar_OldShader_Restart = "CombatAI.Settings.Basic.FogOfWar.OldShader.Restart".Translate();
         }             
                       
         private static TaggedString _CombatAI_Settings_Basic_FogOfWar_Allies = null;
@@ -662,6 +722,26 @@ namespace CombatAI.R
                    _CombatAI_Settings_Advance : _CombatAI_Settings_Advance = "CombatAI.Settings.Advance".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Advance_SquadPathWidth = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.SquadPathWidth</c>. inner text:
+        ///
+        /// <code>Avoidance path width. Avoidance path width determine flanking aggressiveness.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_SquadPathWidth {
+            get => _CombatAI_Settings_Advance_SquadPathWidth != null ? 
+                   _CombatAI_Settings_Advance_SquadPathWidth : _CombatAI_Settings_Advance_SquadPathWidth = "CombatAI.Settings.Advance.SquadPathWidth".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_SquadPathWidth_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.SquadPathWidth.Description</c>. inner text:
+        ///
+        /// <code>Path width {0} cells (default: 1)</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_SquadPathWidth_Description {
+            get => _CombatAI_Settings_Advance_SquadPathWidth_Description != null ? 
+                   _CombatAI_Settings_Advance_SquadPathWidth_Description : _CombatAI_Settings_Advance_SquadPathWidth_Description = "CombatAI.Settings.Advance.SquadPathWidth.Description".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Advance_Warning = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Warning</c>. inner text:
         ///
@@ -790,6 +870,96 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description {
             get => _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description != null ? 
                    _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description : _CombatAI_Settings_Advance_Sight_Performance_Readouts_CarryLimit_Description = "CombatAI.Settings.Advance.Sight.Performance.Readouts.CarryLimit.Description".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_FactionTech = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.FactionTech</c>. inner text:
+        ///
+        /// <code>Faction Tech Level Settings</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_FactionTech {
+            get => _CombatAI_Settings_FactionTech != null ? 
+                   _CombatAI_Settings_FactionTech : _CombatAI_Settings_FactionTech = "CombatAI.Settings.FactionTech".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_FactionTech_Desciption = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.FactionTech.Desciption</c>. inner text:
+        ///
+        /// <code>Here you can configure factions with different tech levels.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_FactionTech_Desciption {
+            get => _CombatAI_Settings_FactionTech_Desciption != null ? 
+                   _CombatAI_Settings_FactionTech_Desciption : _CombatAI_Settings_FactionTech_Desciption = "CombatAI.Settings.FactionTech.Desciption".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_FactionTech_Tech = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.FactionTech.Tech</c>. inner text:
+        ///
+        /// <code>Tech {0}</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_FactionTech_Tech {
+            get => _CombatAI_Settings_FactionTech_Tech != null ? 
+                   _CombatAI_Settings_FactionTech_Tech : _CombatAI_Settings_FactionTech_Tech = "CombatAI.Settings.FactionTech.Tech".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_FactionTech_Duck = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.FactionTech.Duck</c>. inner text:
+        ///
+        /// <code>Duck {0}x. Higher values means more likely to duck for cover</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_FactionTech_Duck {
+            get => _CombatAI_Settings_FactionTech_Duck != null ? 
+                   _CombatAI_Settings_FactionTech_Duck : _CombatAI_Settings_FactionTech_Duck = "CombatAI.Settings.FactionTech.Duck".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_FactionTech_Retreat = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.FactionTech.Retreat</c>. inner text:
+        ///
+        /// <code>Retreat {0}x. Higher values means more likely to retreat</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_FactionTech_Retreat {
+            get => _CombatAI_Settings_FactionTech_Retreat != null ? 
+                   _CombatAI_Settings_FactionTech_Retreat : _CombatAI_Settings_FactionTech_Retreat = "CombatAI.Settings.FactionTech.Retreat".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_FactionTech_Cover = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.FactionTech.Cover</c>. inner text:
+        ///
+        /// <code>Cover {0}x. Higher values means more aggressive cover</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_FactionTech_Cover {
+            get => _CombatAI_Settings_FactionTech_Cover != null ? 
+                   _CombatAI_Settings_FactionTech_Cover : _CombatAI_Settings_FactionTech_Cover = "CombatAI.Settings.FactionTech.Cover".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_FactionTech_Pathing = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.FactionTech.Pathing</c>. inner text:
+        ///
+        /// <code>Pathing {0}x. Higher values means more aggressive pathing</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_FactionTech_Pathing {
+            get => _CombatAI_Settings_FactionTech_Pathing != null ? 
+                   _CombatAI_Settings_FactionTech_Pathing : _CombatAI_Settings_FactionTech_Pathing = "CombatAI.Settings.FactionTech.Pathing".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_FactionTech_Sapping = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.FactionTech.Sapping</c>. inner text:
+        ///
+        /// <code>Sapping {0}x. Higher values means less aggressive sapping</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_FactionTech_Sapping {
+            get => _CombatAI_Settings_FactionTech_Sapping != null ? 
+                   _CombatAI_Settings_FactionTech_Sapping : _CombatAI_Settings_FactionTech_Sapping = "CombatAI.Settings.FactionTech.Sapping".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_FactionTech_Group = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.FactionTech.Group</c>. inner text:
+        ///
+        /// <code>Charge {0}x. Higher values means groups are more likely to charge</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_FactionTech_Group {
+            get => _CombatAI_Settings_FactionTech_Group != null ? 
+                   _CombatAI_Settings_FactionTech_Group : _CombatAI_Settings_FactionTech_Group = "CombatAI.Settings.FactionTech.Group".Translate();
         }             
     }
 }

@@ -1,4 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
+using CombatAI.Comps;
+using CombatAI.Patches;
+using CombatAI.Squads;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -10,31 +13,44 @@ namespace CombatAI
 {
     public static class CombatAI_Utility
     {
-        public static bool Is<T>(this T def, T other) where T : Def
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+	    public static bool IsBurning_Fast(this Pawn pawn)
+	    {
+		    CompAttachBase comp = pawn.CompAttachBase();
+		    if (comp != null)
+		    {
+			    return comp.HasAttachment(ThingDefOf.Fire);
+		    }
+		    return false;
+	    }
+	    
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+	    public static bool Is<T>(this T def, T other) where T : Def
         {
             return def != null && other != null && def == other;
         }
 
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Is<T>(this Job job, T other) where T : Def
         {
             return job != null && other != null && job.def == other;
         }
-
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Is<T>(this PawnDuty duty, T other) where T : Def
         {
             return duty != null && other != null && duty.def == other;
         }
-
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Is<T>(this Thing thing, T other) where T : Def
         {
             return thing != null && other != null && thing.def == other;
         }
-
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Is<T>(this Thing thing, Thing other) where T : Def
         {
             return thing != null && other != null && thing == other;
         }
-
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDormant(this Thing thing)
         {
             if (!TKVCache<Thing, CompCanBeDormant, bool>.TryGet(thing, out bool value, 240))
@@ -84,12 +100,12 @@ namespace CombatAI
 
         public static bool IsApproachingMeleeTarget(this Pawn pawn, float distLimit = 5, bool allowCached = true)
         {
-            if (!allowCached || !TKVCache<int, IsApproachingMeleeTargetCache, bool>.TryGet(pawn.thingIDNumber, out bool result, 5))
+            if (!allowCached || !TKVCache<Pawn, IsApproachingMeleeTargetCache, bool>.TryGet(pawn, out bool result, 5))
             {
                 result = IsApproachingMeleeTarget(pawn, out _, distLimit);
                 if (allowCached)
                 {
-                    TKVCache<int, IsApproachingMeleeTargetCache, bool>.Put(pawn.thingIDNumber, result);
+                    TKVCache<Pawn, IsApproachingMeleeTargetCache, bool>.Put(pawn, result);
                 }
             }
             return result;
@@ -120,9 +136,9 @@ namespace CombatAI
                     {
                         return meleeVerbs.curMeleeVerb;
                     }
-                    if (!TKVCache<int, Pawn_MeleeVerbs, Verb>.TryGet(thing.thingIDNumber, out Verb verb, 480) || verb == null || verb.DirectOwner != thing)
+                    if (!TKVCache<Thing, Pawn_MeleeVerbs, Verb>.TryGet(thing, out Verb verb, 600) || verb == null || verb.DirectOwner != thing)
                     {
-                        TKVCache<int, Pawn_MeleeVerbs, Verb>.Put(thing.thingIDNumber, verb = meleeVerbs.TryGetMeleeVerb(null));
+                        TKVCache<Thing, Pawn_MeleeVerbs, Verb>.Put(thing, verb = meleeVerbs.TryGetMeleeVerb(null));
                         return verb;
                     }
                 }
@@ -134,18 +150,24 @@ namespace CombatAI
             }
             return null;
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasWeaponVisible(this Pawn pawn)
         {
             return (pawn.CurJob?.def.alwaysShowWeapon ?? false) || (pawn.mindState?.duty?.def.alwaysShowWeapon ?? false);
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetAvoidanceReader(this Pawn pawn, out AvoidanceReader reader)
         {
             return pawn.Map.GetComp_Fast<AvoidanceTracker>().TryGetReader(pawn, out reader);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetSkillLevelSafe(this Pawn pawn, SkillDef def, int fallback)
+        {
+	        return pawn?.skills?.GetSkill(def).Level ?? fallback;
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetSightReader(this Pawn pawn, out SightReader reader)
         {
             if (pawn.Map.GetComp_Fast<SightTracker>().TryGetReader(pawn, out reader) && reader != null)
@@ -155,28 +177,65 @@ namespace CombatAI
             }
             return false;
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISGrid<float> GetFloatGrid(this Map map)
         {
             ISGrid<float> grid = map.GetComp_Fast<MapComponent_CombatAI>().f_grid;
             grid.Reset();
             return grid;
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static CellFlooder GetCellFlooder(this Map map)
         {
             return map.GetComp_Fast<MapComponent_CombatAI>().flooder;
         }
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong GetThingFlags(this Thing thing)
         {
             return (ulong)1 << GetThingFlagsIndex(thing);
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetThingFlagsIndex(this Thing thing)
         {
             return thing.thingIDNumber % 64;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong GetSquadFlags(this Squad squad)
+        {
+	        return squad != null ? ((ulong)1 << (squad.squadIDNumber % 64)) : 0;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong GetSquadFlags(this Pawn pawn)
+        {
+	        return (ulong)1 << GetSquadFlagsIndex(pawn);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetSquadFlagsIndex(this Pawn pawn)
+        {
+	        return pawn.AI()?.squad?.squadIDNumber ?? 0;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRangedSappingCompatible(this Verb verb)
+        {
+	        return verb != null && !verb.IsMeleeAttack && verb != null && !(verb is Verb_SpewFire || verb is Verb_ShootBeam) && !verb.IsEMP() && !verb.verbProps.CausesExplosion;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsUsingVerb(this Pawn pawn)
+        {
+	        return pawn.CurJobDef?.Is(JobDefOf.UseVerbOnThing) ?? false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static PersonalityTacker.PersonalityResult GetCombatPersonality(this Thing thing, int expiry = 240)
+        {
+	        if (!TKCache<Thing, PersonalityTacker.PersonalityResult>.TryGet(thing, out PersonalityTacker.PersonalityResult result, expiry))
+	        {
+		        TKCache<Thing, PersonalityTacker.PersonalityResult>.Put(thing, result = Current.Game.GetComponent<PersonalityTacker>().GetPersonality(thing));
+	        }
+	        return result;
         }
 
         private class IsApproachingMeleeTargetCache

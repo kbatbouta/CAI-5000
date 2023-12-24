@@ -21,6 +21,7 @@ namespace CombatAI.Patches
             {
                 __instance.map.GetComp_Fast<SightTracker>().DeRegister(p);
                 __instance.map.GetComp_Fast<AvoidanceTracker>().DeRegister(p);
+                CacheUtility.ClearThingCache(p);
             }
         }
     }

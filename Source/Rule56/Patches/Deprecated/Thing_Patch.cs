@@ -1,10 +1,15 @@
-﻿#if DEBUG_REACTION
-using CombatAI.Utilities;
-#endif
-
-namespace CombatAI.Patches
+﻿namespace CombatAI.Patches.Debug
 {
 #if DEBUG_REACTION
+	using HarmonyLib;
+	using RimWorld;
+	using System;
+	using Verse;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Reflection;
+	using System.Reflection.Emit;
+	using CombatAI.Utilities;
 	public static class Thing_Patch
 	{
 		[HarmonyPatch(typeof(Thing), nameof(Thing.Position), MethodType.Setter)]
