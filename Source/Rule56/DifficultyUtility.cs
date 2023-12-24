@@ -195,10 +195,6 @@ namespace CombatAI
                     }
                     break;
             }
-            foreach (TechLevel tech in Enum.GetValues(typeof(TechLevel)))
-            {
-	            Finder.Settings.GetTechSettings(tech).sapping *= sappingTech;
-            }
         }
     }
 }

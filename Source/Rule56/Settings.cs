@@ -9,7 +9,7 @@ namespace CombatAI
     public class Settings : ModSettings
     {
 
-        private const int version                             = 16;
+        private const int version                             = 17;
         public        int Advanced_SightThreadIdleSleepTimeMS = 1;
 
         /*
