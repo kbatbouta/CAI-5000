@@ -215,6 +215,18 @@ namespace CombatAI
         {
 	        return pawn.AI()?.squad?.squadIDNumber ?? 0;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRangedSappingCompatible(this Verb verb)
+        {
+	        return verb != null && !verb.IsMeleeAttack && verb != null && !(verb is Verb_SpewFire || verb is Verb_ShootBeam) && !verb.IsEMP() && !verb.verbProps.CausesExplosion;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsUsingVerb(this Pawn pawn)
+        {
+	        return pawn.CurJobDef?.Is(JobDefOf.UseVerbOnThing) ?? false;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PersonalityTacker.PersonalityResult GetCombatPersonality(this Thing thing, int expiry = 240)
