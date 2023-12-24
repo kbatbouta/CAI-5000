@@ -1,11 +1,35 @@
 ﻿using CombatAI.Comps;
 using HarmonyLib;
 using RimWorld;
+using UnityEngine;
 using Verse;
 namespace CombatAI.Patches
 {
     public static class Faction_Patch
     {
+	    [HarmonyPatch(typeof(FactionUIUtility), nameof(FactionUIUtility.DrawFactionRow))]
+	    private static class FactionUIUtility_DrawFactionRow_Patch
+	    {
+		    public static void Prefix(Faction faction, float rowY, Rect fillRect)
+		    {
+			    if (DebugSettings.godMode)
+			    {
+				    Rect rect        = new Rect(90f, rowY, 300f, 80f);
+				    Rect rect2       = new Rect(0f, rowY, rect.xMax, 80f);
+				    var  settings    = Finder.Settings.GetTechSettings(faction.def.techLevel);
+				    var  m           = $"pathing:{settings.pathing}\nsapping:{settings.sapping}\ncover:{settings.cover}\nretreat:{settings.retreat}\n";
+				    var  tracker     = Current.Game.GetComp_Fast<PersonalityTacker>();
+				    var  personality = tracker.GetPersonality(faction);
+				    m += "leader personality:\n";
+				    m += $"pathing:{personality.pathing}\nsapping:{personality.sapping}\ncover:{personality.cover}\nretreat:{personality.retreat}\n";
+				    if (Mouse.IsOver(fillRect))
+				    {
+					    TooltipHandler.TipRegion(rect2, m);
+				    }
+			    }
+		    }
+	    }
+	    
         [HarmonyPatch(typeof(Faction), nameof(Faction.Notify_RelationKindChanged))]
         private static class Faction_Notify_Notify_RelationKindChanged_Patch
         {
