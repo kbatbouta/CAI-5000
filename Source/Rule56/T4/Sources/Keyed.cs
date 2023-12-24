@@ -282,6 +282,26 @@ namespace CombatAI.R
                    _CombatAI_Settings_Basic_Presets : _CombatAI_Settings_Basic_Presets = "CombatAI.Settings.Basic.Presets".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Basic_RandomizedSettings = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.RandomizedSettings</c>. inner text:
+        ///
+        /// <code>Dynamic Settings</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_RandomizedSettings {
+            get => _CombatAI_Settings_Basic_RandomizedSettings != null ? 
+                   _CombatAI_Settings_Basic_RandomizedSettings : _CombatAI_Settings_Basic_RandomizedSettings = "CombatAI.Settings.Basic.RandomizedSettings".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Basic_RandomizedSettings_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.RandomizedSettings.Description</c>. inner text:
+        ///
+        /// <code>Dynamic Settings changes the mod settings randomly overtime. This is used to make every raid feel different.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Basic_RandomizedSettings_Description {
+            get => _CombatAI_Settings_Basic_RandomizedSettings_Description != null ? 
+                   _CombatAI_Settings_Basic_RandomizedSettings_Description : _CombatAI_Settings_Basic_RandomizedSettings_Description = "CombatAI.Settings.Basic.RandomizedSettings.Description".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Basic_Presets_Easy = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Basic.Presets.Easy</c>. inner text:
         ///

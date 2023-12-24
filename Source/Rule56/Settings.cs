@@ -71,6 +71,7 @@ namespace CombatAI
          */
 
         public bool  LeanCE_Enabled;
+        public bool  RandomizedSettings            = false;
         public bool  Pather_DisableL1L2         = false;
         public float Pathfinding_DestWeight     = 0.85f;
         public float Pathfinding_SappingMul     = 1.0f;
@@ -180,6 +181,7 @@ namespace CombatAI
 	        }
 			Scribe_Collections.Look(ref _raceSettings, "raceSettings2");
 			_raceSettings ??= new Dictionary<string, DefKindAISettings>();
+			Scribe_Values.Look(ref RandomizedSettings, $"RandomizedSettings.{version}", false);
             Scribe_Values.Look(ref FinishedQuickSetup, $"FinishedQuickSetup2.{version}");
             Scribe_Values.Look(ref Personalities_Enabled, $"Personalities_Enabled.{version}", true);
             Scribe_Values.Look(ref FogOfWar_OldShader, $"FogOfWar_OldShader.{version}", true);
@@ -229,10 +231,10 @@ namespace CombatAI
         public void ResetTechSettings()
         {
 	        FactionSettings.Clear();
-	        FactionSettings.Add(new FactionTechSettings(TechLevel.Undefined, retreat: 1, duck: 1, cover: 1, sapping: 1, pathing: 1, group: 1));
-	        FactionSettings.Add(new FactionTechSettings(TechLevel.Animal, retreat: 0.0f, duck: 0.0f, cover: 0.25f, sapping: 2.0f, pathing: 1.15f, group: 2.0f));
-	        FactionSettings.Add(new FactionTechSettings(TechLevel.Neolithic, retreat: 0.0f, duck: 0.0f, cover: 0.25f, sapping: 0.75f, pathing: 1.1f, group: 2.0f));
-	        FactionSettings.Add(new FactionTechSettings(TechLevel.Medieval, retreat: 0.25f, duck: 0.25f, cover: 0.5f, sapping: 0.50f, pathing: 1f, group: 2.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Undefined, retreat: 1, duck: 1, cover: 1, sapping: 1, pathing: 0.1f, group: 1));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Animal, retreat: 0.0f, duck: 0.0f, cover: 0.25f, sapping: 0.25f, pathing: 1.15f, group: 2.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Neolithic, retreat: 0.0f, duck: 0.0f, cover: 0.25f, sapping: 0.5f, pathing: 1.1f, group: 2.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Medieval, retreat: 0.25f, duck: 0.25f, cover: 0.5f, sapping: 0.75f, pathing: 1f, group: 2.0f));
 	        FactionSettings.Add(new FactionTechSettings(TechLevel.Industrial, retreat: 0.75f, duck: 0.75f, cover: 1, sapping: 1, pathing: 1, group: 1.25f));
 	        FactionSettings.Add(new FactionTechSettings(TechLevel.Spacer, retreat: 0.95f, duck: 0.95f, cover: 1, sapping: 1, pathing: 1, group: 1.0f));
 	        FactionSettings.Add(new FactionTechSettings(TechLevel.Archotech, retreat: 1, duck: 1, cover: 1, sapping: 1, pathing: 0.9f, group: 1.0f));

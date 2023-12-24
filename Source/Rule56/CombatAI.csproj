@@ -117,15 +117,15 @@
     <!-- Process T4 files -->
     <ItemGroup>
         <Compile Remove="ShadowCastingUtility.old.cs" />
-        <Compile Update="T4\Sources\Keyed.cs">
-          <AutoGen>True</AutoGen>
-          <DesignTime>True</DesignTime>
-          <DependentUpon>Keyed.tt</DependentUpon>
-        </Compile>
         <Compile Update="T4\Sources\Tex.cs">
           <AutoGen>True</AutoGen>
           <DesignTime>True</DesignTime>
           <DependentUpon>Tex.tt</DependentUpon>
+        </Compile>
+        <Compile Update="T4\Sources\Keyed.cs">
+          <AutoGen>True</AutoGen>
+          <DesignTime>True</DesignTime>
+          <DependentUpon>Keyed.tt</DependentUpon>
         </Compile>
     </ItemGroup>
     <Target Name="ProcessTT" BeforeTargets="BeforeBuild">
