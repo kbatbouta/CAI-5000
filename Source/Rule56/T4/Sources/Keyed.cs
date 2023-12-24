@@ -5,7 +5,7 @@ namespace CombatAI.R
     // Auto generated file!
     // -------------------------------------------------
     // This file is auto generated! Mod path is:
-    // $(SolutionDir)/../../../1.4/Languages/English/Keyed/Translations.xml
+    // $(SolutionDir)/../../../../../1.4/Languages/English/Keyed/Translations.xml
     // -------------------------------------------------
     /// <summary> 
     /// <para>Keyed string database. This Class is generated automatically by a T4 template <c>Core/Assets/Keyed.tt</c></para> 
@@ -100,6 +100,36 @@ namespace CombatAI.R
         public static TaggedString CombatAI_Quick_Welcome {
             get => _CombatAI_Quick_Welcome != null ? 
                    _CombatAI_Quick_Welcome : _CombatAI_Quick_Welcome = "CombatAI.Quick.Welcome".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_DefKindSettings_Title = null;
+        /// <summary> Keyed string. key=<c>CombatAI.DefKindSettings.Title</c>. inner text:
+        ///
+        /// <code>AI Race Settings</code>
+        /// </summary>       
+        public static TaggedString CombatAI_DefKindSettings_Title {
+            get => _CombatAI_DefKindSettings_Title != null ? 
+                   _CombatAI_DefKindSettings_Title : _CombatAI_DefKindSettings_Title = "CombatAI.DefKindSettings.Title".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_DefKindSettings_Description = null;
+        /// <summary> Keyed string. key=<c>CombatAI.DefKindSettings.Description</c>. inner text:
+        ///
+        /// <code>Here you can configure different AI settings for each race.</code>
+        /// </summary>       
+        public static TaggedString CombatAI_DefKindSettings_Description {
+            get => _CombatAI_DefKindSettings_Description != null ? 
+                   _CombatAI_DefKindSettings_Description : _CombatAI_DefKindSettings_Description = "CombatAI.DefKindSettings.Description".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_DefKindSettings_Selected = null;
+        /// <summary> Keyed string. key=<c>CombatAI.DefKindSettings.Selected</c>. inner text:
+        ///
+        /// <code>Selected</code>
+        /// </summary>       
+        public static TaggedString CombatAI_DefKindSettings_Selected {
+            get => _CombatAI_DefKindSettings_Selected != null ? 
+                   _CombatAI_DefKindSettings_Selected : _CombatAI_DefKindSettings_Selected = "CombatAI.DefKindSettings.Selected".Translate();
         }             
                       
         private static TaggedString _CombatAI_Gizmos_AttackMove = null;

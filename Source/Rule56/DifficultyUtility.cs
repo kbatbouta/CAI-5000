@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using RimWorld;
 using Verse;
 namespace CombatAI
@@ -14,15 +15,27 @@ namespace CombatAI
                 case Difficulty.Easy:
                     Finder.Settings.Pathfinding_DestWeight = 0.875f;
                     Finder.Settings.Caster_Enabled         = false;
-                    Finder.Settings.Temperature_Enabled    = true;
+                    foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(d => d.race != null))
+                    {
+	                    var settings = Finder.Settings.GetDefKindSettings(def, null);
+	                    settings.Temperature_Enabled = true;
+	                    settings.Pather_Enabled = true;
+	                    settings.Pather_KillboxKiller = false;
+	                    settings.React_Enabled = false;
+	                    settings.Retreat_Enabled = false;
+	                    foreach (var kind in DefDatabase<PawnKindDef>.AllDefs.Where(d => d.race == def))
+	                    {
+		                    settings = Finder.Settings.GetDefKindSettings(def, kind);
+		                    settings.Temperature_Enabled = true;
+		                    settings.Pather_Enabled = true;
+		                    settings.Pather_KillboxKiller = false;
+		                    settings.React_Enabled = false;
+		                    settings.Retreat_Enabled = false;
+	                    }
+                    }
                     Finder.Settings.Targeter_Enabled       = false;
-                    Finder.Settings.Pather_Enabled         = true;
-                    Finder.Settings.Pather_KillboxKiller   = false;
                     Finder.Settings.PerformanceOpt_Enabled = true;
-                    Finder.Settings.React_Enabled          = false;
-                    Finder.Settings.Retreat_Enabled        = false;
                     Finder.Settings.Flank_Enabled          = false;
-
                     Finder.Settings.Enable_Sprinting           = false;
                     Finder.Settings.Enable_Groups              = false;
                     Finder.Settings.Pathfinding_SappingMul     = 1.5f;
@@ -47,13 +60,26 @@ namespace CombatAI
                 case Difficulty.Normal:
                     Finder.Settings.Pathfinding_DestWeight                      = 0.725f;
                     Finder.Settings.Caster_Enabled                              = true;
-                    Finder.Settings.Temperature_Enabled                         = true;
+                    foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(d => d.race != null))
+                    {
+	                    var settings = Finder.Settings.GetDefKindSettings(def, null);
+	                    settings.Temperature_Enabled = true;
+	                    settings.Pather_Enabled = true;
+	                    settings.Pather_KillboxKiller = true;
+	                    settings.React_Enabled = true;
+	                    settings.Retreat_Enabled = false;
+	                    foreach (var kind in DefDatabase<PawnKindDef>.AllDefs.Where(d => d.race == def))
+	                    {
+		                    settings = Finder.Settings.GetDefKindSettings(def, kind);
+		                    settings.Temperature_Enabled = true;
+		                    settings.Pather_Enabled = true;
+		                    settings.Pather_KillboxKiller = true;
+		                    settings.React_Enabled = true;
+		                    settings.Retreat_Enabled = false;
+	                    }
+                    }
                     Finder.Settings.Targeter_Enabled                            = true;
-                    Finder.Settings.Pather_Enabled                              = true;
-                    Finder.Settings.Pather_KillboxKiller                        = true;
                     Finder.Settings.PerformanceOpt_Enabled                      = true;
-                    Finder.Settings.React_Enabled                               = true;
-                    Finder.Settings.Retreat_Enabled                             = false;
                     Finder.Settings.Flank_Enabled                               = true;
                     Finder.Settings.Enable_Sprinting                            = false;
                     Finder.Settings.Enable_Groups                               = true;
@@ -78,12 +104,25 @@ namespace CombatAI
                 case Difficulty.Hard:
                     Finder.Settings.Pathfinding_DestWeight = 0.625f;
                     Finder.Settings.Caster_Enabled         = true;
-                    Finder.Settings.Temperature_Enabled    = true;
+                    foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(d => d.race != null))
+                    {
+	                    var settings = Finder.Settings.GetDefKindSettings(def, null);
+	                    settings.Temperature_Enabled = true;
+	                    settings.Pather_Enabled = true;
+	                    settings.Pather_KillboxKiller = true;
+	                    settings.React_Enabled = true;
+	                    settings.Retreat_Enabled = true;
+	                    foreach (var kind in DefDatabase<PawnKindDef>.AllDefs.Where(d => d.race == def))
+	                    {
+		                    settings = Finder.Settings.GetDefKindSettings(def, kind);
+		                    settings.Temperature_Enabled = true;
+		                    settings.Pather_Enabled = true;
+		                    settings.Pather_KillboxKiller = true;
+		                    settings.React_Enabled = true;
+		                    settings.Retreat_Enabled = true;
+	                    }
+                    }
                     Finder.Settings.Targeter_Enabled       = true;
-                    Finder.Settings.Pather_Enabled         = true;
-                    Finder.Settings.Pather_KillboxKiller   = true;
-                    Finder.Settings.React_Enabled          = true;
-                    Finder.Settings.Retreat_Enabled        = true;
                     Finder.Settings.Flank_Enabled          = true;
                     Finder.Settings.PerformanceOpt_Enabled = true;
 
@@ -112,12 +151,25 @@ namespace CombatAI
 	                sappingTech                            = 0.7f;
                     Finder.Settings.Pathfinding_DestWeight = 0.45f;
 	                Finder.Settings.Caster_Enabled         = true;
-                    Finder.Settings.Temperature_Enabled    = true;
                     Finder.Settings.Targeter_Enabled       = true;
-                    Finder.Settings.Pather_Enabled         = true;
-                    Finder.Settings.Pather_KillboxKiller   = true;
-                    Finder.Settings.React_Enabled          = true;
-                    Finder.Settings.Retreat_Enabled        = true;
+	                foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(d => d.race != null))
+	                {
+		                var settings = Finder.Settings.GetDefKindSettings(def, null);
+		                settings.Temperature_Enabled = true;
+		                settings.Pather_Enabled = true;
+		                settings.Pather_KillboxKiller = true;
+		                settings.React_Enabled = true;
+		                settings.Retreat_Enabled = true;
+		                foreach (var kind in DefDatabase<PawnKindDef>.AllDefs.Where(d => d.race == def))
+		                {
+			                settings = Finder.Settings.GetDefKindSettings(def, kind);
+			                settings.Temperature_Enabled = true;
+			                settings.Pather_Enabled = true;
+			                settings.Pather_KillboxKiller = true;
+			                settings.React_Enabled = true;
+			                settings.Retreat_Enabled = true;
+		                }
+	                }
                     Finder.Settings.Flank_Enabled          = true;
                     Finder.Settings.PerformanceOpt_Enabled = false;
 

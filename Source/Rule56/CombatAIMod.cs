@@ -77,11 +77,22 @@ namespace CombatAI
                 }, useMargins: false);
                 collapsible.Line(1);
             }
+
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_CELean, ref Finder.Settings.LeanCE_Enabled);
             collapsible.Line(1);
 
             collapsible.Label(Keyed.CombatAI_Settings_Basic_Presets);
             collapsible.Gap(1);
+            collapsible.Lambda(22, rect =>
+            {
+	            if (Widgets.ButtonText(rect, Keyed.CombatAI_DefKindSettings_Title))
+	            {
+		            if (!Find.WindowStack.windows.Any(w => w is Window_DefKindSettings))
+		            {
+			            Find.WindowStack.Add(new Window_DefKindSettings());
+		            }
+	            }
+            });
             collapsible.Label(Keyed.CombatAI_Settings_Basic_Presets_Description);
             collapsible.Lambda(25, inRect =>
             {
@@ -130,15 +141,10 @@ namespace CombatAI
                 Messages.Message(Keyed.CombatAI_Settings_Basic_PerformanceOpt_Warning, MessageTypeDefOf.CautionInput);
             }
             collapsible.Line(1);            
-            collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_KillBoxKiller, ref Finder.Settings.Pather_KillboxKiller);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_RandomizedPersonality, ref Finder.Settings.Personalities_Enabled);
-            collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Pather, ref Finder.Settings.Pather_Enabled);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Caster, ref Finder.Settings.Caster_Enabled);
-            collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Temperature, ref Finder.Settings.Temperature_Enabled);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Targeter, ref Finder.Settings.Targeter_Enabled);
-            collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Reaction, ref Finder.Settings.React_Enabled);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Flanking, ref Finder.Settings.Flank_Enabled);
-            collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Retreat, ref Finder.Settings.Retreat_Enabled);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Groups, ref Finder.Settings.Enable_Groups, Keyed.CombatAI_Settings_Basic_Groups_Description);
             collapsible.CheckboxLabeled(Keyed.CombatAI_Settings_Basic_Sprinting, ref Finder.Settings.Enable_Sprinting, Keyed.CombatAI_Settings_Basic_Sprinting_Description);
         }

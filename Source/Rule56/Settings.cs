@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using RimWorld;
 using Verse;
 namespace CombatAI
@@ -70,17 +72,15 @@ namespace CombatAI
 
         public bool  LeanCE_Enabled;
         public bool  Pather_DisableL1L2         = false;
-        public bool  Pather_Enabled             = true;
-        public bool  Pather_KillboxKiller       = true;
         public float Pathfinding_DestWeight     = 0.85f;
         public float Pathfinding_SappingMul     = 1.0f;
         public int   Pathfinding_SquadPathWidth = 4;
-        public bool  Temperature_Enabled        = true;
         public bool  PerformanceOpt_Enabled     = true;
-        public bool  React_Enabled              = true;
-        public bool  Retreat_Enabled            = true;
         public bool  FinishedQuickSetup;
 
+        private Dictionary<string, DefKindAISettings>                  _raceSettings     = new ();
+        private Dictionary<(ThingDef, PawnKindDef), DefKindAISettings> _raceSettingsTemp = new ();
+        
         private FactionTechSettings       FactionSettings_Undefined = new FactionTechSettings(TechLevel.Undefined, 1, 1, 1, 1, 1,1);
         private List<FactionTechSettings> FactionSettings           = new List<FactionTechSettings>(); 
 
@@ -89,6 +89,37 @@ namespace CombatAI
         public SightPerformanceSettings SightSettings_Wildlife             = new SightPerformanceSettings(3, 10, 4);
         public SightPerformanceSettings SightSettings_SettlementTurrets    = new SightPerformanceSettings(3, 15, 12);
         public bool                     Targeter_Enabled                   = true;
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public DefKindAISettings GetDefKindSettings(Pawn pawn)
+        {
+	        if (pawn == null)
+	        {
+		        return null;
+	        }
+	        return GetDefKindSettings(pawn.def, pawn.kindDef);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public DefKindAISettings GetDefKindSettings(ThingDef def, PawnKindDef kind)
+        {
+	        if (def == null)
+	        {
+		        return null;
+	        }
+	        if (_raceSettingsTemp.TryGetValue((def, kind), out var settings))
+	        {
+		        return settings;
+	        }
+	        var key = def.defName + "_" + kind?.defName ?? string.Empty;
+	        if (_raceSettings.TryGetValue(key, out settings))
+	        {
+		        _raceSettingsTemp[(def, kind)] = settings;
+		        return settings;
+	        }
+	        return _raceSettings[key] = _raceSettingsTemp[(def, kind)] = new DefKindAISettings();
+        }
 
         /*                 
          * -- * -- * -- * -- * -- * -- * -- * -- * --
@@ -140,16 +171,20 @@ namespace CombatAI
             Scribe_Values.Look(ref Debug, $"Release.Debug.{version}");
             Scribe_Values.Look(ref Debug_LogJobs, $"Release.Debug_LogJobs.{version}");
 #endif
-
+	        if (Scribe.mode == LoadSaveMode.Saving)
+	        {
+		        foreach (var pair in _raceSettingsTemp)
+		        {
+			        _raceSettings.TryAdd(pair.Key.Item1.defName + "_" + (pair.Key.Item2?.defName ?? string.Empty), pair.Value);
+		        }
+	        }
+			Scribe_Collections.Look(ref _raceSettings, "raceSettings2");
+			_raceSettings ??= new Dictionary<string, DefKindAISettings>();
             Scribe_Values.Look(ref FinishedQuickSetup, $"FinishedQuickSetup2.{version}");
             Scribe_Values.Look(ref Personalities_Enabled, $"Personalities_Enabled.{version}", true);
             Scribe_Values.Look(ref FogOfWar_OldShader, $"FogOfWar_OldShader.{version}", true);
-            Scribe_Values.Look(ref Pather_Enabled, $"Pather_Enabled.{version}", true);
             Scribe_Values.Look(ref Caster_Enabled, $"Caster_Enabled.{version}", true);
             Scribe_Values.Look(ref Targeter_Enabled, $"Targeter_Enabled.{version}", true);
-            Scribe_Values.Look(ref Temperature_Enabled, $"Temperature_Enabled.{version}", true);
-            Scribe_Values.Look(ref React_Enabled, $"React_Enabled.{version}", true);
-            Scribe_Values.Look(ref Retreat_Enabled, $"Retreat_Enabled.{version}", true);
             Scribe_Values.Look(ref Flank_Enabled, $"Flank_Enabled.{version}", true);
             Scribe_Values.Look(ref Pathfinding_DestWeight, $"Pathfinding_DestWeight.{version}", 0.85f);
             Scribe_Values.Look(ref Pathfinding_SquadPathWidth, $"Pathfinding_SquadPathWidth.{version}", 4);
@@ -157,7 +192,6 @@ namespace CombatAI
             Scribe_Values.Look(ref FogOfWar_FogColor, $"FogOfWar_FogColor.{version}", 0.65f);
             Scribe_Values.Look(ref FogOfWar_RangeFadeMultiplier, $"FogOfWar_RangeFadeMultiplier.{version}", 0.5f);
             Scribe_Values.Look(ref FogOfWar_RangeMultiplier, $"FogOfWar_RangeMultiplier.{version}", 1.8f);
-            Scribe_Values.Look(ref Pather_KillboxKiller, $"Pather_KillboxKiller.{version}", true);
             Scribe_Values.Look(ref PerformanceOpt_Enabled, $"PerformanceOpt_Enabled.{version}", true);
             Scribe_Values.Look(ref FogOfWar_Enabled, $"FogOfWar_Enabled.{version}");
             Scribe_Values.Look(ref Debug_ValidateSight, $"Debug_ValidateSight.{version}");
@@ -181,6 +215,7 @@ namespace CombatAI
             {
 	            if (!FactionSettings.Any(t => t.tech == tech))
 	            {
+		            Log.Error($"Tech level {tech} doesn't have tech settings. Resetting tech settings");
 		            FactionSettings.Clear();
 		            break;
 	            }
@@ -212,6 +247,28 @@ namespace CombatAI
          * -- Sub --
          * 
          */
+
+        public class DefKindAISettings : IExposable
+        {
+	        public bool  Pather_Enabled             = true;
+	        public bool  Pather_KillboxKiller       = true;
+	        public bool  Temperature_Enabled        = true;
+	        public bool  React_Enabled              = true;
+	        public bool  Retreat_Enabled            = true;
+	        
+	        public DefKindAISettings()
+	        {
+	        }
+	        
+	        public void ExposeData()
+	        {
+		        Scribe_Values.Look(ref Pather_Enabled, "Pather_Enabled", true);
+		        Scribe_Values.Look(ref Pather_KillboxKiller, "Pather_KillboxKiller", true);
+		        Scribe_Values.Look(ref Temperature_Enabled, "Temperature_Enabled", true);
+		        Scribe_Values.Look(ref React_Enabled, "React_Enabled", true);
+		        Scribe_Values.Look(ref Retreat_Enabled, "Retreat_Enabled", true);
+	        }
+        }
 
         public class SightPerformanceSettings : IExposable
         {
@@ -265,13 +322,13 @@ namespace CombatAI
 
 	        public void ExposeData()
 	        {
-		        Scribe_Values.Look(ref tech, $"tech.{version}", tech);
-		        Scribe_Values.Look(ref retreat, $"retreat.{version}", retreat);
-		        Scribe_Values.Look(ref duck, $"duck.{version}", duck);
-		        Scribe_Values.Look(ref cover, $"cover.{version}", cover);
-		        Scribe_Values.Look(ref sapping, $"sapping.{version}", sapping);
-		        Scribe_Values.Look(ref pathing, $"pathing.{version}", pathing);
-		        Scribe_Values.Look(ref group, $"group.{version}", group);
+		        Scribe_Values.Look(ref tech, $"tech.{version}");
+		        Scribe_Values.Look(ref retreat, $"retreat.{version}");
+		        Scribe_Values.Look(ref duck, $"duck.{version}");
+		        Scribe_Values.Look(ref cover, $"cover.{version}");
+		        Scribe_Values.Look(ref sapping, $"sapping.{version}");
+		        Scribe_Values.Look(ref pathing, $"pathing.{version}");
+		        Scribe_Values.Look(ref group, $"group.{version}");
 	        }
         }
     }

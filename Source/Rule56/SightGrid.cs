@@ -251,7 +251,7 @@ namespace CombatAI
 								Verb verb = thing.TryGetAttackVerb();
 								if (verb != null)
 								{
-									if ((verb.IsMeleeAttack && !GenSight.LineOfSight(cell, thing.Position, map, true)) || !verb.CanHitCellFromCellIgnoringRange(thing.Position, cell))
+									if (verb.IsMeleeAttack && !GenSight.LineOfSight(cell, thing.Position, map, true) || !verb.CanHitCellFromCellIgnoringRange(thing.Position, cell))
 									{
 										continue;
 									}
@@ -358,7 +358,7 @@ namespace CombatAI
 			{
 				return false;
 			}
-			return thing is Pawn pawn && !pawn.Dead || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter)) || thing.def.HasComp(typeof(ThingComp_CCTVTop));
+			return thing is Pawn pawn && !Mod_ZombieLand.IsZombie(pawn) && !pawn.Dead || thing is Building_Turret || thing.def.HasComp(typeof(ThingComp_Sighter)) || thing.def.HasComp(typeof(ThingComp_CCTVTop));
 		}
 
 		private bool Valid(IBucketableThing item)
@@ -429,7 +429,7 @@ namespace CombatAI
 			}
 			SightTracker.SightReader reader = item.ai?.sightReader ?? null;
 			bool                     scanForEnemies;
-			if (scanForEnemies = Finder.Settings.React_Enabled && item.sighter == null && reader != null && item.ai != null && !item.ai.ReactedRecently(45) && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15))
+			if (scanForEnemies = (Finder.Settings.GetDefKindSettings(item.Pawn)?.React_Enabled ?? true) && item.sighter == null && reader != null && item.ai != null && !item.ai.ReactedRecently(45) && ticks - item.lastScannedForEnemies >= (!Finder.Performance.TpsCriticallyLow ? 10 : 15))
 			{
 				if (!item.registeredFaction.IsPlayerSafe() || (item.ai?.forcedTarget.IsValid ?? false))
 				{
@@ -532,7 +532,7 @@ namespace CombatAI
 								grid_regions.Set(cell);
 							}
 						}
-						else if(d2 < 360)
+						else if (d2 < 360)
 						{
 							grid.Set(cell, 0, new Vector2(cell.x - pos.x, cell.z - pos.z));
 							grid_regions.Set(cell);

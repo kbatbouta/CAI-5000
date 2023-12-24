@@ -8,6 +8,9 @@
     <CombatAI.Hide>Hide</CombatAI.Hide>
     <CombatAI.Expand>Hide</CombatAI.Expand>
     <CombatAI.Quick.Welcome>Welcome to CAI-5000</CombatAI.Quick.Welcome>
+    <CombatAI.DefKindSettings.Title>AI Race Settings</CombatAI.DefKindSettings.Title>
+    <CombatAI.DefKindSettings.Description>Here you can configure different AI settings for each race.</CombatAI.DefKindSettings.Description>
+    <CombatAI.DefKindSettings.Selected>Selected</CombatAI.DefKindSettings.Selected>
     <CombatAI.Gizmos.AttackMove>Move-Attack</CombatAI.Gizmos.AttackMove>
     <CombatAI.Gizmos.AttackMove.Warning>Warning: Melee pawns cannot use move-attack. Melee pawns skipped.</CombatAI.Gizmos.AttackMove.Warning>
     <CombatAI.Gizmos.AttackMove.Cancel>Cancel Move-Attack</CombatAI.Gizmos.AttackMove.Cancel>
