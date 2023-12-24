@@ -237,7 +237,7 @@ namespace CombatAI
 	        FactionSettings.Add(new FactionTechSettings(TechLevel.Medieval, retreat: 0.25f, duck: 0.25f, cover: 0.5f, sapping: 0.75f, pathing: 1f, group: 2.0f));
 	        FactionSettings.Add(new FactionTechSettings(TechLevel.Industrial, retreat: 0.75f, duck: 0.75f, cover: 1, sapping: 1, pathing: 1, group: 1.25f));
 	        FactionSettings.Add(new FactionTechSettings(TechLevel.Spacer, retreat: 0.95f, duck: 0.95f, cover: 1, sapping: 1, pathing: 1, group: 1.0f));
-	        FactionSettings.Add(new FactionTechSettings(TechLevel.Archotech, retreat: 1, duck: 1, cover: 1, sapping: 1, pathing: 0.9f, group: 1.0f));
+	        FactionSettings.Add(new FactionTechSettings(TechLevel.Archotech, retreat: 1, duck: 1, cover: 1, sapping: 1, pathing: 1f, group: 1.0f));
 	        FactionSettings.Add(new FactionTechSettings(TechLevel.Ultra, retreat: 1.0f, duck: 1.0f, cover: 1.0f, sapping: 0.9f, pathing: 1, group: 1.0f));
         }
         /*                 
