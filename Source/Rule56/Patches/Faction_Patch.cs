@@ -17,11 +17,11 @@ namespace CombatAI.Patches
 				    Rect rect        = new Rect(90f, rowY, 300f, 80f);
 				    Rect rect2       = new Rect(0f, rowY, rect.xMax, 80f);
 				    var  settings    = Finder.Settings.GetTechSettings(faction.def.techLevel);
-				    var  m           = $"pathing:\\t\\t{settings.pathing}\nsapping:\\t\\t{settings.sapping}\ncover:\\t\\t{settings.cover}\nretreat:\\t\\t{settings.retreat}\n";
+				    var  m           = $"pathing:\t\t{settings.pathing}\nsapping:\t\t{settings.sapping}\ncover:\t\t{settings.cover}\nretreat:\t\t{settings.retreat}\n";
 				    var  tracker     = Current.Game.GetComp_Fast<PersonalityTacker>();
 				    var  personality = tracker.GetPersonality(faction);
 				    m += "************\nleader personality:\n";
-				    m += $"pathing:\\t\\t{personality.pathing}\nsapping:\t\t{personality.sapping}\ncover:\\t\\t{personality.cover}\nretreat:\\t\\t{personality.retreat}\n";
+				    m += $"pathing:\t\t{personality.pathing}\nsapping:\t\t{personality.sapping}\ncover:\t\t{personality.cover}\nretreat:\t\t{personality.retreat}\n";
 				    if (Mouse.IsOver(fillRect))
 				    {
 					    TooltipHandler.TipRegion(rect2, m);
