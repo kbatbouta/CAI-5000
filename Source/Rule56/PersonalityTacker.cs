@@ -45,7 +45,7 @@ namespace CombatAI
 			if (!TKVCache<int, Pawn, PersonalityResult>.TryGet(pawn.thingIDNumber, out PersonalityResult result) || !result.IsValid)
 			{
 				int seed = pawn.thingIDNumber;
-				Rand.PushState(91 + seed + (int)(GenTicks.TicksGame / GenDate.TicksPerYear));
+				Rand.PushState(91 + seed + (int)(GenTicks.TicksGame / GenDate.TicksPerYear / 2));
 				result         = PersonalityResult.Default;
 				result.retreat = Rand.Range(0.0f, 2.0f);
 				result.duck    = Rand.Range(0.0f, 2.0f);
@@ -64,8 +64,6 @@ namespace CombatAI
 			if (!TKVCache<int, Faction, PersonalityResult>.TryGet(faction.loadID, out PersonalityResult result) || !result.IsValid)
 			{
 				Settings.FactionTechSettings techSettings = Finder.Settings.GetTechSettings(faction.def.techLevel);
-				int                          seed         = faction.loadID;
-				Rand.PushState(91 + seed + (int)(GenTicks.TicksGame / (4 * GenDate.TicksPerYear)));
 				result         = PersonalityResult.Default;
 				result.retreat = techSettings.retreat;
 				result.duck    = techSettings.duck;
@@ -73,7 +71,6 @@ namespace CombatAI
 				result.pathing = techSettings.pathing;
 				result.cover   = techSettings.cover;
 				result.group   = techSettings.group;
-				Rand.PopState();
 				TKVCache<int, Faction, PersonalityResult>.Put(faction.loadID, result);	
 			}
 			return result;
