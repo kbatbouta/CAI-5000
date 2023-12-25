@@ -53,7 +53,6 @@ namespace CombatAI
         {
             base.WriteSettings();
             Finder.Settings.Write();
-            CacheUtility.ClearAllCache();
         }
 
         /*  ----------------------

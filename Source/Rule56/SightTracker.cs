@@ -41,18 +41,12 @@ namespace CombatAI
             raidersAndHostiles = new SightGrid[Finder.Settings.SightSettings_FriendliesAndRaiders.threads];
             for (int i = 0; i < raidersAndHostiles.Length; i++)
             {
-	            raidersAndHostiles[i] = new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders, id++)
-	            {
-		            trackFactions = true
-	            };
+	            raidersAndHostiles[i] = new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders, id++) { trackFactions = true };
             }
             insectsAndMechs = new SightGrid[Finder.Settings.SightSettings_MechsAndInsects.threads];
             for (int i = 0; i < insectsAndMechs.Length; i++)
             {
-	            insectsAndMechs[i] = new SightGrid(this, Finder.Settings.SightSettings_MechsAndInsects, id++)
-	            {
-		            trackFactions = false
-	            };
+	            insectsAndMechs[i] = new SightGrid(this, Finder.Settings.SightSettings_MechsAndInsects, id++) { trackFactions = false };
             }
             wildlife = new SightGrid[Finder.Settings.SightSettings_Wildlife.threads];
             for (int i = 0; i < wildlife.Length; i++)
@@ -444,7 +438,6 @@ namespace CombatAI
             things.AddRange(factionedUInt64Map.GetAllThings());
             things.AddRange(wildUInt64Map.GetAllThings());
             Faction player = Faction.OfPlayerSilentFail;
-            TKVCache<Faction, SightTracker, SightReader>.Clear();
             if (player != null)
             {
                 for (int i = 0; i < things.Count; i++)
