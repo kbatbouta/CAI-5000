@@ -27,7 +27,7 @@ namespace CombatAI
         
         public SightTracker(Map map) : base(map)
         {
-            colonistsAndFriendlies = new SightGrid[2];
+            colonistsAndFriendlies = new SightGrid[Finder.Settings.SightSettings_FriendliesAndRaiders.threads];
             int id = 0;
             for (int i = 0; i < colonistsAndFriendlies.Length; i++)
             {
@@ -38,7 +38,7 @@ namespace CombatAI
 		            trackFactions  = true
 	            };
             }
-            raidersAndHostiles = new SightGrid[2];
+            raidersAndHostiles = new SightGrid[Finder.Settings.SightSettings_FriendliesAndRaiders.threads];
             for (int i = 0; i < raidersAndHostiles.Length; i++)
             {
 	            raidersAndHostiles[i] = new SightGrid(this, Finder.Settings.SightSettings_FriendliesAndRaiders, id++)
@@ -46,7 +46,7 @@ namespace CombatAI
 		            trackFactions = true
 	            };
             }
-            insectsAndMechs = new SightGrid[1];
+            insectsAndMechs = new SightGrid[Finder.Settings.SightSettings_MechsAndInsects.threads];
             for (int i = 0; i < insectsAndMechs.Length; i++)
             {
 	            insectsAndMechs[i] = new SightGrid(this, Finder.Settings.SightSettings_MechsAndInsects, id++)
@@ -54,7 +54,7 @@ namespace CombatAI
 		            trackFactions = false
 	            };
             }
-            wildlife = new SightGrid[1];
+            wildlife = new SightGrid[Finder.Settings.SightSettings_Wildlife.threads];
             for (int i = 0; i < wildlife.Length; i++)
             {
 	            wildlife[i] = new SightGrid(this, Finder.Settings.SightSettings_Wildlife, id++) { trackFactions = false };
