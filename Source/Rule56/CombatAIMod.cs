@@ -496,7 +496,6 @@ namespace CombatAI
                 collapsible_performance.End(ref rectRight);
                 rectRight.yMin += 5;
             }
-            WriteSettings();
         }
 
         // TODO rework this.
