@@ -85,10 +85,10 @@ namespace CombatAI
         private FactionTechSettings       FactionSettings_Undefined = new FactionTechSettings(TechLevel.Undefined, 1, 1, 1, 1, 1,1);
         private List<FactionTechSettings> FactionSettings           = new List<FactionTechSettings>(); 
 
-        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 3, 16);
-        public SightPerformanceSettings SightSettings_MechsAndInsects      = new SightPerformanceSettings(3, 10, 6);
-        public SightPerformanceSettings SightSettings_Wildlife             = new SightPerformanceSettings(3, 10, 4);
-        public SightPerformanceSettings SightSettings_SettlementTurrets    = new SightPerformanceSettings(3, 15, 12);
+        public SightPerformanceSettings SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 3, 16, 1);
+        public SightPerformanceSettings SightSettings_MechsAndInsects      = new SightPerformanceSettings(3, 10, 6, 1);
+        public SightPerformanceSettings SightSettings_Wildlife             = new SightPerformanceSettings(3, 10, 4, 1);
+        public SightPerformanceSettings SightSettings_SettlementTurrets    = new SightPerformanceSettings(3, 15, 12, 1);
         public bool                     Targeter_Enabled                   = true;
 
 
@@ -146,22 +146,22 @@ namespace CombatAI
 	        Scribe_Deep.Look(ref SightSettings_FriendliesAndRaiders, $"CombatAI.SightSettings_FriendliesAndRaiders2.{version}");
             if (SightSettings_FriendliesAndRaiders == null)
             {
-                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 3, 16);
+                SightSettings_FriendliesAndRaiders = new SightPerformanceSettings(1, 3, 16, 1);
             }
             Scribe_Deep.Look(ref SightSettings_MechsAndInsects, $"CombatAI.SightSettings_MechsAndInsects2.{version}");
             if (SightSettings_MechsAndInsects == null)
             {
-                SightSettings_MechsAndInsects = new SightPerformanceSettings(3, 10, 6);
+                SightSettings_MechsAndInsects = new SightPerformanceSettings(3, 10, 6, 1);
             }
             Scribe_Deep.Look(ref SightSettings_Wildlife, $"CombatAI.SightSettings_Wildlife2.{version}");
             if (SightSettings_Wildlife == null)
             {
-                SightSettings_Wildlife = new SightPerformanceSettings(3, 10, 4);
+                SightSettings_Wildlife = new SightPerformanceSettings(3, 10, 4, 1);
             }
             Scribe_Deep.Look(ref SightSettings_SettlementTurrets, $"CombatAI.SightSettings_SettlementTurrets2.{version}");
             if (SightSettings_SettlementTurrets == null)
             {
-                SightSettings_SettlementTurrets = new SightPerformanceSettings(3, 15, 12);
+                SightSettings_SettlementTurrets = new SightPerformanceSettings(3, 15, 12, 1);
             }
             Scribe_Values.Look(ref LeanCE_Enabled, $"LeanCE_Enabled.{version}");
 
@@ -277,16 +277,18 @@ namespace CombatAI
             public int buckets;
             public int carryLimit;
             public int interval;
+            public int threads;
 
             public SightPerformanceSettings()
             {
             }
 
-            public SightPerformanceSettings(int interval, int buckets, int carryLimit)
+            public SightPerformanceSettings(int interval, int buckets, int carryLimit, int threads)
             {
                 this.interval   = interval;
                 this.buckets    = buckets;
                 this.carryLimit = carryLimit;
+                this.threads    = threads;
             }
 
             public void ExposeData()
@@ -294,6 +296,7 @@ namespace CombatAI
                 Scribe_Values.Look(ref interval, $"frequency.{version}");
                 Scribe_Values.Look(ref buckets, $"buckets.{version}");
                 Scribe_Values.Look(ref carryLimit, $"carryLimit.{version}");
+                Scribe_Values.Look(ref threads, $"threads.{version}", 1);
             }
         }
 

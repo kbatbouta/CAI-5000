@@ -227,6 +227,11 @@ namespace CombatAI
             {
                 Finder.Settings.SightSettings_FriendliesAndRaiders.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_FriendliesAndRaiders.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_FriendliesAndRaiders.interval), 0.05f);
             }, useMargins: true);
+            collapsible.Label(Keyed.CombatAI_Settings_Advance_Sight_Performance_Threads);
+            collapsible.Lambda(25, rect =>
+            {
+	            Finder.Settings.SightSettings_FriendliesAndRaiders.threads = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_FriendliesAndRaiders.threads, 1, 3, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Threads_Number.Formatted(Finder.Settings.SightSettings_FriendliesAndRaiders.threads), 0.05f);
+            }, useMargins: true);
             if (Current.ProgramState != ProgramState.Playing)
             {
                 collapsible.Lambda(25, rect =>
@@ -253,6 +258,12 @@ namespace CombatAI
             {
                 Finder.Settings.SightSettings_MechsAndInsects.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_MechsAndInsects.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_MechsAndInsects.interval), 0.05f);
             }, useMargins: true);
+            collapsible.Gap(1);
+            collapsible.Label(Keyed.CombatAI_Settings_Advance_Sight_Performance_Threads);
+            collapsible.Lambda(25, rect =>
+            {
+	            Finder.Settings.SightSettings_MechsAndInsects.threads = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_MechsAndInsects.threads, 1, 3, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Threads_Number.Formatted(Finder.Settings.SightSettings_MechsAndInsects.threads), 0.05f);
+            }, useMargins: true);
             if (Current.ProgramState != ProgramState.Playing)
             {
                 collapsible.Lambda(25, rect =>
@@ -278,6 +289,12 @@ namespace CombatAI
             collapsible.Lambda(25, rect =>
             {
                 Finder.Settings.SightSettings_Wildlife.interval = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_Wildlife.interval, 1, 20, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Readouts_Interval.Formatted(Finder.Settings.SightSettings_Wildlife.interval), 0.05f);
+            }, useMargins: true);
+            collapsible.Gap(1);
+            collapsible.Label(Keyed.CombatAI_Settings_Advance_Sight_Performance_Threads);
+            collapsible.Lambda(25, rect =>
+            {
+	            Finder.Settings.SightSettings_Wildlife.threads = (int)HorizontalSlider_NewTemp(rect, Finder.Settings.SightSettings_Wildlife.threads, 1, 3, false, Keyed.CombatAI_Settings_Advance_Sight_Performance_Threads_Number.Formatted(Finder.Settings.SightSettings_Wildlife.threads), 0.05f);
             }, useMargins: true);
             if (Current.ProgramState != ProgramState.Playing)
             {

@@ -31,12 +31,12 @@ namespace CombatAI
 		public  bool[] grid;
 		private bool   initialized;
 
-		private          Rect      mapScreenRect;
-		private          bool      ready;
-		public           SightGrid sight;
-		private volatile int       ticksGame;
-		private          int       updateNum;
-		public           WallGrid  walls;
+		private          Rect        mapScreenRect;
+		private          bool        ready;
+		public           SightGrid[] sight;
+		private volatile int         ticksGame;
+		private          int         updateNum;
+		public           WallGrid    walls;
 
 
 		static MapComponent_FogGrid()
@@ -303,7 +303,8 @@ namespace CombatAI
 				}
 				int         numGridCells = indices.NumGridCells;
 				WallGrid    walls        = comp.walls;
-				ITFloatGrid fogGrid      = comp.sight.gridFog;
+				ITFloatGrid fogGrid1     = comp.sight[0].gridFog;
+				ITFloatGrid fogGrid2     = comp.sight[1].gridFog;
 				IntVec3     pos          = this.pos.ToIntVec3();
 				IntVec3     loc;
 
@@ -319,14 +320,14 @@ namespace CombatAI
 						float old           = cells[x * SECTION_SIZE + z];
 						bool  isWall        = !walls.CanBeSeenOver(index);
 						float visRLimit     = 0;
-						float visibility    = fogGrid.Get(index);
+						float visibility    = fogGrid1.Get(index) + fogGrid2.Get(index);
 						float visibilityAdj = 0;
 						for (int i = 0; i < 9; i++)
 						{
 							int adjIndex = index + indices.mapSizeX * (i / 3 - 1) + i % 3 - 1;
 							if (adjIndex >= 0 && adjIndex < numGridCells && (isWall || walls.CanBeSeenOver(adjIndex)))
 							{
-								visibilityAdj += fogGrid.Get(adjIndex);
+								visibilityAdj += fogGrid1.Get(adjIndex) + fogGrid2.Get(adjIndex);
 							}
 						}
 						visibility = Maths.Max(visibilityAdj / 9, visibility) + visibilityOffset;
@@ -372,8 +373,7 @@ namespace CombatAI
 						cells[x * SECTION_SIZE + z] = 0f;
 					}
 				}
-
-				if (fogGrid != null)
+				if (fogGrid1 != null && fogGrid2 != null)
 				{
 					for (int x = 0; x < SECTION_SIZE; x++)
 					{

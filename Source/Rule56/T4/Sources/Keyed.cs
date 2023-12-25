@@ -802,6 +802,26 @@ namespace CombatAI.R
                    _CombatAI_Settings_Advance_Sight_Performance_Description : _CombatAI_Settings_Advance_Sight_Performance_Description = "CombatAI.Settings.Advance.Sight.Performance.Description".Translate();
         }             
                       
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Threads = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Threads</c>. inner text:
+        ///
+        /// <code>Number of processing threads</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Threads {
+            get => _CombatAI_Settings_Advance_Sight_Performance_Threads != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_Threads : _CombatAI_Settings_Advance_Sight_Performance_Threads = "CombatAI.Settings.Advance.Sight.Performance.Threads".Translate();
+        }             
+                      
+        private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_Threads_Number = null;
+        /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.Threads.Number</c>. inner text:
+        ///
+        /// <code>{0} threads</code>
+        /// </summary>       
+        public static TaggedString CombatAI_Settings_Advance_Sight_Performance_Threads_Number {
+            get => _CombatAI_Settings_Advance_Sight_Performance_Threads_Number != null ? 
+                   _CombatAI_Settings_Advance_Sight_Performance_Threads_Number : _CombatAI_Settings_Advance_Sight_Performance_Threads_Number = "CombatAI.Settings.Advance.Sight.Performance.Threads.Number".Translate();
+        }             
+                      
         private static TaggedString _CombatAI_Settings_Advance_Sight_Performance_FrienldiesAndEnemies = null;
         /// <summary> Keyed string. key=<c>CombatAI.Settings.Advance.Sight.Performance.FrienldiesAndEnemies</c>. inner text:
         ///
