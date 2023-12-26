@@ -503,6 +503,6 @@ namespace CombatAI
         {
             Widgets.HorizontalSlider(rect, ref val, new FloatRange(min, max), label, roundTo);
             return val;
-        }
+        } 
     }
 }

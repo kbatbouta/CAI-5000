@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -303,8 +304,6 @@ namespace CombatAI
 				}
 				int         numGridCells = indices.NumGridCells;
 				WallGrid    walls        = comp.walls;
-				ITFloatGrid fogGrid1     = comp.sight[0].gridFog;
-				ITFloatGrid fogGrid2     = comp.sight[1].gridFog;
 				IntVec3     pos          = this.pos.ToIntVec3();
 				IntVec3     loc;
 
@@ -320,14 +319,21 @@ namespace CombatAI
 						float old           = cells[x * SECTION_SIZE + z];
 						bool  isWall        = !walls.CanBeSeenOver(index);
 						float visRLimit     = 0;
-						float visibility    = fogGrid1.Get(index) + fogGrid2.Get(index);
+						float visibility    = 0;
+						foreach (SightGrid s in comp.sight)
+						{
+							visibility += s.gridFog.Get(index);
+						}
 						float visibilityAdj = 0;
 						for (int i = 0; i < 9; i++)
 						{
 							int adjIndex = index + indices.mapSizeX * (i / 3 - 1) + i % 3 - 1;
 							if (adjIndex >= 0 && adjIndex < numGridCells && (isWall || walls.CanBeSeenOver(adjIndex)))
 							{
-								visibilityAdj += fogGrid1.Get(adjIndex) + fogGrid2.Get(adjIndex);
+								foreach (SightGrid s in comp.sight)
+								{
+									visibilityAdj += s.gridFog.Get(adjIndex);
+								}
 							}
 						}
 						visibility = Maths.Max(visibilityAdj / 9, visibility) + visibilityOffset;
@@ -373,7 +379,7 @@ namespace CombatAI
 						cells[x * SECTION_SIZE + z] = 0f;
 					}
 				}
-				if (fogGrid1 != null && fogGrid2 != null)
+				if (comp.sight != null)
 				{
 					for (int x = 0; x < SECTION_SIZE; x++)
 					{
