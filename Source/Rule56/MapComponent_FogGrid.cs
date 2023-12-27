@@ -136,7 +136,6 @@ namespace CombatAI
 				rect.yMin     = Mathf.Clamp(cellRect.minZ - SECTION_SIZE, 0, cellIndices.mapSizeZ);
 				rect.yMax     = Mathf.Clamp(cellRect.maxZ + SECTION_SIZE, 0, cellIndices.mapSizeZ);
 				mapScreenRect = rect;
-				//mapScreenRect.ExpandedBy(32, 32);
 				asyncActions.ExecuteMainThreadActions();
 				zoom = Mathf.CeilToInt(Mathf.Clamp(Find.CameraDriver?.rootPos.y ?? 30, 15, 30f));
 				DrawFog(Mathf.FloorToInt(mapScreenRect.xMin / SECTION_SIZE), Mathf.FloorToInt(mapScreenRect.yMin / SECTION_SIZE), Mathf.FloorToInt(mapScreenRect.xMax / SECTION_SIZE), Mathf.FloorToInt(mapScreenRect.yMax / SECTION_SIZE));
@@ -226,7 +225,7 @@ namespace CombatAI
 										tCell.u         = (byte)(cell.x % SECTION_SIZE);
 										tCell.v         = (byte)(cell.z % SECTION_SIZE);
 										tCell.val       = Mathf.Clamp01(1f - cell.DistanceTo_Fast(spot.center) / spot.radius);
-										tCell.timestamp = GenTicks.TicksGame;
+										tCell.timestamp = ticks;
 										tCell.duration  = (short)spot.duration;
 										section.extraCells.Add(tCell);
 									}
@@ -320,9 +319,9 @@ namespace CombatAI
 						bool  isWall        = !walls.CanBeSeenOver(index);
 						float visRLimit     = 0;
 						float visibility    = 0;
-						foreach (SightGrid s in comp.sight)
+						for (int j = 0; j < comp.sight.Length; j++)
 						{
-							visibility += s.gridFog.Get(index);
+							visibility += comp.sight[j].gridFog.Get(index);
 						}
 						float visibilityAdj = 0;
 						for (int i = 0; i < 9; i++)
@@ -330,9 +329,9 @@ namespace CombatAI
 							int adjIndex = index + indices.mapSizeX * (i / 3 - 1) + i % 3 - 1;
 							if (adjIndex >= 0 && adjIndex < numGridCells && (isWall || walls.CanBeSeenOver(adjIndex)))
 							{
-								foreach (SightGrid s in comp.sight)
+								for (int j = 0; j < comp.sight.Length; j++)
 								{
-									visibilityAdj += s.gridFog.Get(adjIndex);
+									visibilityAdj += comp.sight[j].gridFog.Get(adjIndex);
 								}
 							}
 						}
