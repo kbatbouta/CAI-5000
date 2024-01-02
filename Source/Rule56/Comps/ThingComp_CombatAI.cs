@@ -210,11 +210,12 @@ namespace CombatAI.Comps
 				aggroTicks -= GenTicks.TickRareInterval;
 				if (aggroTicks <= 0)
 				{
-					if (aggroTarget.IsValid)
+					if (aggroTarget is { IsValid: true, HasThing: true } && aggroTarget.Thing.Spawned && (aggroTarget.Thing is not Pawn enemy || !(enemy.Downed || enemy.Dead)))
 					{
 						TryAggro(aggroTarget, 0.8f, Rand.Int);
 					}
 					aggroTarget = LocalTargetInfo.Invalid;
+					aggroTicks  = (int) 240;
 				}
 
 			}
@@ -229,7 +230,7 @@ namespace CombatAI.Comps
 			if (selPawn.IsApproachingMeleeTarget(out Thing target))
 			{
 				ThingComp_CombatAI comp = target.GetComp_Fast<ThingComp_CombatAI>();
-				;
+				
 				if (comp != null)
 				{
 					comp.Notify_BeingTargeted(selPawn, selPawn.CurrentEffectiveVerb);
@@ -430,8 +431,8 @@ namespace CombatAI.Comps
 				data.LastInterrupted = GenTicks.TicksGame + Rand.Int % 240;
 				return;
 			}
-			PersonalityTacker.PersonalityResult personality      = parent.GetCombatPersonality();
-			IntVec3                             selPos           = selPawn.Position;
+			PersonalityTacker.PersonalityResult personality = parent.GetCombatPersonality();
+			IntVec3                             selPos      = selPawn.Position;
 			// used to update nearest enemy THing
 			// For debugging and logging.
 			progress = 7;
