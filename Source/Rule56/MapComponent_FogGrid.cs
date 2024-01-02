@@ -195,9 +195,9 @@ namespace CombatAI
 			List<ITempSpot> spots     = new List<ITempSpot>();
 			while (alive)
 			{
-				stopwatch.Restart();
 				if (ready && Finder.Settings.FogOfWar_Enabled)
 				{
+					stopwatch.Restart();
 					lock (_lockerSpots)
 					{
 						if (spotsQueued.Count > 0)
@@ -321,7 +321,7 @@ namespace CombatAI
 						float visibility    = 0;
 						for (int j = 0; j < comp.sight.Length; j++)
 						{
-							visibility += comp.sight[j].gridFog.Get(index);
+							visibility = Maths.Max(comp.sight[j].gridFog.Get(index), visibility);
 						}
 						float visibilityAdj = 0;
 						for (int i = 0; i < 9; i++)
@@ -329,10 +329,12 @@ namespace CombatAI
 							int adjIndex = index + indices.mapSizeX * (i / 3 - 1) + i % 3 - 1;
 							if (adjIndex >= 0 && adjIndex < numGridCells && (isWall || walls.CanBeSeenOver(adjIndex)))
 							{
+								float adj = 0;
 								for (int j = 0; j < comp.sight.Length; j++)
 								{
-									visibilityAdj += comp.sight[j].gridFog.Get(adjIndex);
+									adj = Maths.Max(adj, comp.sight[j].gridFog.Get(adjIndex));
 								}
+								visibilityAdj += adj;
 							}
 						}
 						visibility = Maths.Max(visibilityAdj / 9, visibility) + visibilityOffset;
@@ -389,6 +391,8 @@ namespace CombatAI
 					}
 					int ticks = comp.ticksGame;
 					int i     = 0;
+					/*
+					TODO fix this
 					while (i < extraCells.Count)
 					{
 						ITempCell tCell = extraCells[i];
@@ -399,9 +403,9 @@ namespace CombatAI
 							continue;
 						}
 						i++;
-						float fade = Mathf.Lerp(0.7f, 1.0f, 1f - (float)(GenTicks.TicksGame - tCell.timestamp) / tCell.duration);
+						float fade = Maths.Max(cells[tCell.u * SECTION_SIZE + tCell.v], Mathf.Lerp(0.7f, 1.0f, 1f - (float)(GenTicks.TicksGame - tCell.timestamp) / tCell.duration));
 						SetCell(tCell.u, tCell.v, 0.5f * fade * tCell.val, fade * tCell.val, false);
-					}
+					}*/
 				}
 				dirty = changed;
 			}
